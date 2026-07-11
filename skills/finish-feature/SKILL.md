@@ -39,7 +39,18 @@ moved.
 Write `docs/project-tracking/changelog.d/YYYY-MM-DD-<slug>.md`. **Never edit CHANGELOG.md** on the
 feature branch.
 
-## 5. Open the PR
+## 5. Crucible review — run the skill
+
+**Do not skip.** Invoke the stack crucible skill and follow its output:
+
+- .NET / Blazor → `/crucible-blazor` (skill: `crucible-blazor`)
+- Next.js → `/crucible-nextjs` (skill: `crucible-nextjs`)
+
+Apply 🔴 blockers and 🟠 should-fix remediations; re-test. Proceed to the PR only when
+merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediations in the PR
+**Verification** section.
+
+## 6. Open the PR
 
 - **Done-done:** PR body includes `Closes #<issue>`.
 - **Live retest owed:** use `Refs #<issue>`; after merge move to **Verifying**; close → Done only
@@ -50,4 +61,4 @@ feature branch.
 
 ## Honesty bar
 
-Report failed tests, skipped steps, and "not live-verified" plainly.
+Report failed tests, skipped steps, crucible findings not yet fixed, and "not live-verified" plainly.
