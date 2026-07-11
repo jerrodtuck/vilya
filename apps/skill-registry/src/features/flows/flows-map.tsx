@@ -179,6 +179,13 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
             <div className="prompts">
               <div className="plabel">Prompts you can use</div>
               <PromptList items={drawerPrompts.items} />
+              {drawerPrompts.noteHtml ? (
+                <div
+                  className="note"
+                  style={{ marginTop: 10, fontSize: 12 }}
+                  dangerouslySetInnerHTML={{ __html: drawerPrompts.noteHtml }}
+                />
+              ) : null}
             </div>
           ) : null}
         </div>

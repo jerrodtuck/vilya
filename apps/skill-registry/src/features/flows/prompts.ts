@@ -15,6 +15,8 @@ export interface PromptGroup {
   c: string;
   wide?: boolean;
   items: PromptItem[];
+  /** Trusted, hand-authored HTML caveat rendered under the group's prompts. */
+  noteHtml?: string;
 }
 
 export const PROMPTS: PromptGroup[] = [
@@ -25,10 +27,33 @@ export const PROMPTS: PromptGroup[] = [
     wide: true,
     items: [
       {
-        label: "Session kickoff",
-        text: "You're my implementation partner on this .NET / Blazor repo. House rules: vertical-slice architecture, outcome-oriented SOLID, one issue = one branch = one worktree. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs before implementing. Hold the crucible review bar and report progress honestly.",
+        label: "Claude Code — session kickoff",
+        text: "You're my implementation partner on this repo. House rules: vertical-slice architecture, outcome-oriented SOLID, one issue = one branch = one worktree. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs before implementing. Hold the crucible review bar and report progress honestly.",
+      },
+      {
+        label: "Cursor — orchestrator kickoff (no comms layer)",
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, and labels from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat.
+
+Your job:
+- Watch the board and recommend what to work next (issue # + why).
+- Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug.
+- Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
+- I start a separate agent session on each worktree for implementation.
+- Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
+- Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.
+- One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.`,
+      },
+      {
+        label: "Cursor — worker kickoff A · orchestrator did setup",
+        text: "You're the implementer for issue #<N> (if unfilled, derive it from this worktree's branch: feat|fix|docs/<issue#>-slug), working only in this worktree. /start-feature already ran in the orchestrator session — issue, branch, worktree, and board Status are set; don't re-run it. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR — the orchestrator only sees the board. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. When the build is done, run the repo's crucible review skill (the crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /finish-feature — PR that Closes #<N>.",
+      },
+      {
+        label: "Cursor — worker kickoff B · worker does its own setup",
+        text: "You're the implementer for issue #<N>. No setup has run yet — run /start-feature on #<N> yourself: worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug, board Status to In Progress. Then do all feature work inside that worktree — never the main clone. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. When the build is done, run the repo's crucible review skill (the crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /finish-feature — PR that Closes #<N>.",
       },
     ],
+    noteHtml:
+      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely.",
   },
   {
     node: "START",
@@ -37,7 +62,7 @@ export const PROMPTS: PromptGroup[] = [
     items: [
       {
         label: "New brief",
-        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug, and give me the verify plan before you build. Consult me at any fork.",
+        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug, and give me the verify plan before you build. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
       },
       {
         label: "Existing issue",
@@ -124,7 +149,7 @@ export const PROMPTS: PromptGroup[] = [
     items: [
       {
         label: "Ship it",
-        text: "Finish the feature — run the suites and report exact counts, rebase onto the default branch, write the changelog fragment, and open the PR that Closes #<N>.",
+        text: "Finish the feature — run the suites and report exact counts, rebase onto the default branch, write the changelog fragment, run /crucible-<stack> and remediate until the signal reads Ready, then open the PR that Closes #<N> with the crucible result in Verification.",
       },
       {
         label: "Live retest owed",

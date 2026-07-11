@@ -81,7 +81,8 @@ export const NODES: Record<string, FlowNode> = {
     <li>Rebase onto the fresh default branch.</li>
     <li>Spec + issue reflect shipped vs. remaining (follow-ups as issues).</li>
     <li>One <code>changelog.d/</code> fragment — never edit <code>CHANGELOG.md</code> on the branch.</li>
-    <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b>.</li></ul>`,
+    <li><b>Crucible — do not skip:</b> run <code>/crucible-&lt;stack&gt;</code>, remediate 🔴/🟠 until <b>Ready</b>.</li>
+    <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b> — crucible + remediations go in Verification.</li></ul>`,
   },
   DONE: {
     kicker: "Merged",

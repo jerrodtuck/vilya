@@ -51,10 +51,13 @@ Recommend one. Trivial work → build.
 - **VSA non-negotiable:** feature logic lives in its slice; the shared kernel holds
   contracts/primitives only; no coupling across product or feature boundaries (in .NET, no
   `ProjectReference` into a sibling product; in JS/TS, no cross-feature internal imports).
-- Crucible review bar applies (`crucible-<stack>`).
+- **Crucible is mandatory before finish:** after implementation and green tests, run the stack
+  crucible skill (`/crucible-blazor` for .NET/Blazor, `/crucible-nextjs` for Next.js) — not a
+  verbal "hold the bar." Apply 🔴/🟠 remediations until merge-readiness is `Ready` (or
+  `Ready after blockers` with blockers fixed). Then [/finish-feature](../finish-feature/SKILL.md).
 
 ## 5. Verify plan up front
 
 State how the feature will be verified: which test projects, and any live / integration smoke owed
-against external systems (hardware, brokers, databases, third-party services). Then build. Close
-with [/finish-feature](../finish-feature/SKILL.md).
+against external systems (hardware, brokers, databases, third-party services). Then build.
+Close path: **tests green → `/crucible-<stack>` → remediate → `/finish-feature`**.
