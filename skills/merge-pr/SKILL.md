@@ -72,7 +72,9 @@ in-flight branch untouched, and `pull/<n>/head` works even for fork PRs:
 ```bash
 git fetch origin pull/<n>/head:pr-<n>
 git worktree add ../pr-<n> pr-<n>
-# run the Test command from GITHUB-PROJECTS.md inside ../pr-<n>
+# install deps first if the stack needs it — a fresh worktree has none
+# (`npm ci` for Node; `dotnet test` restores automatically)
+# then run the Test command from GITHUB-PROJECTS.md inside ../pr-<n>
 git worktree remove ../pr-<n> && git branch -D pr-<n>
 ```
 
@@ -98,6 +100,10 @@ gh pr merge <n> --repo <owner>/<repo> --squash --delete-branch
 
 - Squash commit title = PR title `(#n)`; body = PR body, so `Closes #issue` auto-closes on merge.
 - Merge only with checks green — or say explicitly which check you're waiving and why.
+- Running /merge-pr from the PR branch's **own worktree**? `--delete-branch` conflicts with the
+  active checkout — merge with `--squash` alone and delete the remote branch separately
+  (`git push origin --delete <branch>`); the local worktree/branch cleanup happens per step 5
+  once you're off the branch.
 
 ## 5. Board + cleanup
 
