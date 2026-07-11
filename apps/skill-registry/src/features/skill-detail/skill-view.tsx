@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { getSkillDetail } from "./skill-detail";
 import { rewriteSkillLinks } from "./rewrite-links";
-import { stackOf, invocationOf } from "@/shared/skills/meta";
+import { stackOf, invocationOf, levelOf } from "@/shared/skills/meta";
 
 export function SkillView({ slug }: { slug: string }) {
   const detail = getSkillDetail(slug);
@@ -31,6 +31,25 @@ export function SkillView({ slug }: { slug: string }) {
         <div className="fmrow">
           <span className="k">invocation</span>
           <span className="v">{invocationOf(skill)}</span>
+        </div>
+        <div className="fmrow">
+          <span className="k">install level</span>
+          <span className="v">
+            {levelOf(skill) === "user" ? (
+              <>
+                user — once via <code>scripts/install-skills</code> into{" "}
+                <code>~/.claude/skills</code> + <code>~/.cursor/skills</code>{" "}
+                (all projects); a repo can override it at{" "}
+                <code>.claude/skills/{skill.slug}/</code>
+              </>
+            ) : (
+              <>
+                project — lives in a repo&apos;s <code>.claude/skills/</code> /{" "}
+                <code>.cursor/skills/</code> and overrides any same-named
+                user-level skill
+              </>
+            )}
+          </span>
         </div>
         <div className="fmrow">
           <span className="k">disable-model-invocation</span>
