@@ -3,6 +3,7 @@ import Link from "next/link";
 import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { getSkillDetail } from "./skill-detail";
+import { rewriteSkillLinks } from "./rewrite-links";
 import { stackOf, invocationOf } from "@/shared/skills/meta";
 
 export function SkillView({ slug }: { slug: string }) {
@@ -10,8 +11,12 @@ export function SkillView({ slug }: { slug: string }) {
   if (!detail) notFound();
   const { skill, history } = detail;
   const fm = skill.frontmatter;
-  const bodyHtml = marked.parse(skill.body, { async: false }) as string;
+  const bodyHtml = rewriteSkillLinks(
+    marked.parse(skill.body, { async: false }) as string
+  );
   const references = Array.isArray(fm.references) ? fm.references : [];
+  const rawHref = `/skills/${skill.slug}/SKILL.md`;
+  const curlCmd = `curl -fLo ~/.claude/skills/${skill.slug}/SKILL.md --create-dirs https://vilya.jerrodtuck.com${rawHref}`;
 
   return (
     <>
@@ -35,7 +40,20 @@ export function SkillView({ slug }: { slug: string }) {
         </div>
         <div className="fmrow">
           <span className="k">source</span>
-          <span className="v"><code>{skill.filePath}</code></span>
+          <span className="v">
+            <a href={rawHref}>
+              <code>{skill.filePath}</code>
+            </a>{" "}
+            <a className="rawlink" href={rawHref} download="SKILL.md">
+              download
+            </a>
+          </span>
+        </div>
+        <div className="fmrow">
+          <span className="k">install (this skill)</span>
+          <span className="v">
+            <code>{curlCmd}</code>
+          </span>
         </div>
         {references.length > 0 ? (
           <div className="fmrow">

@@ -24,6 +24,13 @@ export function getSkillSlugs(): string[] {
     .sort();
 }
 
+/** The verbatim SKILL.md file — what install tooling and curl consume. */
+export function getSkillRaw(slug: string): string | null {
+  const filePath = path.join(SKILLS_DIR, slug, "SKILL.md");
+  if (!fs.existsSync(filePath)) return null;
+  return fs.readFileSync(filePath, "utf8");
+}
+
 export function loadSkill(slug: string): Skill | null {
   const filePath = path.join(SKILLS_DIR, slug, "SKILL.md");
   if (!fs.existsSync(filePath)) return null;

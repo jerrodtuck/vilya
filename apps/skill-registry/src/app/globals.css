@@ -179,6 +179,8 @@ h1 .you { color: var(--orch); }
 .libcard.wide { grid-column: 1 / -1; border-left-color: var(--orch); background: linear-gradient(180deg, #1a2230, #141821); }
 .libcard h4 { margin: 0 0 6px; font-size: 13.5px; font-family: ui-monospace, monospace; color: var(--text); }
 
+.rawlink { font-size: 12px; font-weight: 600; margin-left: 8px; }
+
 /* ---------- site: setup ---------- */
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
