@@ -36,6 +36,14 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code.
 - **The registry app** reads `skills/` as its source of truth (via `SKILLS_DIR`)
   and surfaces each skill's version history from git.
 
+## Deployment
+
+The site + registry deploy to **Railway** as one service from the **repo root**
+(the app reads `../../skills` and git history, so the service must not be
+scoped to `apps/skill-registry`). Config-as-code: `railway.json` (build/start
+commands, healthcheck), `nixpacks.toml` (adds `git` to the image), root
+`package.json` (proxy scripts). Live at **https://vilya.jerrodtuck.com**.
+
 ## The name
 
 Narya and Anduin are projects; **Vilya** is the ring that rules the process that

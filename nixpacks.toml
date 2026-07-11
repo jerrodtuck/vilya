@@ -1,0 +1,5 @@
+# Keep the default node toolchain and add git: the registry surfaces skill
+# version history via `git log` / `git show` at build and runtime. If git or
+# the .git directory is absent, the app degrades to its designed empty states.
+[phases.setup]
+nixPkgs = ["...", "git"]
