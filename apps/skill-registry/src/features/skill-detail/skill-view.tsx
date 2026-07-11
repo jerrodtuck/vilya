@@ -60,15 +60,26 @@ export function SkillView({ slug }: { slug: string }) {
         </p>
       ) : (
         <ol className="history">
-          {history.map((v) => (
-            <li key={v.hash}>
-              <code className="hash">{v.shortHash}</code>
-              <span className="subj">{v.subject}</span>
-              <span className="meta">
-                {new Date(v.date).toLocaleDateString()} · {v.author}
-              </span>
-            </li>
-          ))}
+          {history.map((v, idx) => {
+            const prev = history[idx + 1];
+            return (
+              <li key={v.hash}>
+                <code className="hash">{v.shortHash}</code>
+                <span className="subj">{v.subject}</span>
+                {prev ? (
+                  <Link
+                    className="compare"
+                    href={`/skills/${skill.slug}/diff/${prev.shortHash}/${v.shortHash}`}
+                  >
+                    compare
+                  </Link>
+                ) : null}
+                <span className="meta">
+                  {new Date(v.date).toLocaleDateString()} · {v.author}
+                </span>
+              </li>
+            );
+          })}
         </ol>
       )}
     </>

@@ -7,6 +7,23 @@ import type { SkillVersion } from "../skills/types";
 // appear in commit metadata, and no literal control char in the source.
 const SEP = String.fromCharCode(31);
 
+export function getFileAtCommit(filePath: string, hash: string): string | null {
+  try {
+    // In `<rev>:<path>`, a path starting with ./ or ../ is cwd-relative;
+    // anything else is repo-root-relative. Our filePath is cwd-relative.
+    const rel = filePath.split(/[\\/]+/).join("/");
+    const spec = rel.startsWith("./") || rel.startsWith("../") ? rel : `./${rel}`;
+    return execFileSync("git", ["show", `${hash}:${spec}`], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    // Bad hash, file absent at that commit, or not a git repo.
+    return null;
+  }
+}
+
 export function getFileHistory(filePath: string): SkillVersion[] {
   try {
     const format = ["%H", "%h", "%aI", "%an", "%s"].join(SEP);
