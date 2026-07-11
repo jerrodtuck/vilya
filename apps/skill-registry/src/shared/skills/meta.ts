@@ -33,3 +33,8 @@ export function invocationOf(skill: Skill): string {
   if (skill.slug === "night-shift") return "scheduler-fired";
   return "model + manual";
 }
+
+/** Install level; skills are user-level unless frontmatter says otherwise. */
+export function levelOf(skill: Skill): "user" | "project" {
+  return skill.frontmatter.level === "project" ? "project" : "user";
+}

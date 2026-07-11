@@ -11,6 +11,48 @@ export function SkillsReference() {
         would stop a scheduled task from firing the skill.
       </div>
 
+      <h2>Where skills live — user vs. project level</h2>
+      <div className="grid2">
+        <div className="refcard">
+          <h3>◆ User level (all seven canonical skills)</h3>
+          <ul>
+            <li>
+              Installed <b>once</b> by <code>scripts/install-skills</code> into{" "}
+              <code>~/.claude/skills/</code> and <code>~/.cursor/skills/</code>
+            </li>
+            <li>Shared by every project on the machine</li>
+            <li>
+              Update in one place — the repo&apos;s <code>skills/</code> is the
+              source of truth; re-run the script to sync
+            </li>
+          </ul>
+        </div>
+        <div className="refcard">
+          <h3>◆ Project level (the override)</h3>
+          <ul>
+            <li>
+              A repo may carry <code>.claude/skills/&lt;name&gt;/</code> (or{" "}
+              <code>.cursor/skills/&lt;name&gt;/</code>)
+            </li>
+            <li>
+              <b>Wins by name</b> over the user-level skill — the escape hatch
+              for a repo that needs a custom variant
+            </li>
+            <li>
+              None of the canonical skills require this; per-repo variation
+              belongs in <code>GITHUB-PROJECTS.md</code>, not skill forks
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p className="muted" style={{ marginTop: 12 }}>
+        <b style={{ color: "var(--text)" }}>One set of skills, both tools:</b>{" "}
+        Cursor honors the same SKILL.md standard, so the Claude-format skills
+        here are the <i>only</i> skills — nothing Cursor-specific is ever
+        authored. The install script simply places the same file into each
+        tool&apos;s search path.
+      </p>
+
       <h2>Frontmatter — shared vs. platform extensions</h2>
       <p className="muted">
         Author one <code>SKILL.md</code>. The shared fields work in both tools;
