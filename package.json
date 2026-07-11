@@ -1,0 +1,13 @@
+{
+  "name": "vilya",
+  "private": true,
+  "description": "The Dev Loop — skills, registry app, reference site, tracking model. App lives in apps/skill-registry; this root manifest exists so the service deploys from the repo root (the app reads ../../skills and git history at runtime).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "cd apps/skill-registry && npm ci && npm run build",
+    "start": "cd apps/skill-registry && npm run start",
+    "test": "cd apps/skill-registry && npm test"
+  }
+}
