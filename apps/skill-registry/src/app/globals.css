@@ -73,3 +73,24 @@ code { background: #0f1319; border: 1px solid var(--border); border-radius: 5px;
 .history .hash { flex: none; color: var(--start); }
 .history .subj { color: var(--text); flex: 1; }
 .history .meta { color: var(--faint); font-size: 12px; white-space: nowrap; }
+.history .compare { flex: none; font-size: 12px; font-weight: 600; }
+
+/* version diff */
+.added { color: var(--finish); font-weight: 700; }
+.removed { color: var(--docs); font-weight: 700; }
+.diffhead { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+.commitcard { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.commitcard .k { color: var(--faint); font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+.commitcard .hash { align-self: flex-start; color: var(--start); }
+.commitcard .subj { color: var(--text); }
+.commitcard .meta { color: var(--faint); font-size: 12px; }
+.diffwrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; margin-top: 14px; }
+.diff { border-collapse: collapse; width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.5; }
+.diff td { padding: 1px 10px; vertical-align: top; }
+.diff .ln { width: 1%; min-width: 42px; text-align: right; color: var(--faint); user-select: none; border-right: 1px solid #20262f; }
+.diff .code { white-space: pre-wrap; word-break: break-word; width: 49%; color: #d6dbe4; }
+.diff .code.void { background: #10131a; }
+.diff tr.add .code:last-child { background: rgba(79, 209, 139, .10); }
+.diff tr.del .code:first-of-type { background: rgba(242, 119, 154, .10); }
+.diff tr.change .code:first-of-type { background: rgba(242, 119, 154, .10); }
+.diff tr.change .code:last-child { background: rgba(79, 209, 139, .10); }
