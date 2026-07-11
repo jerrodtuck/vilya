@@ -12,9 +12,9 @@ here.
 |-----|-------|---------------|
 | Owner | `jerrodtuck` | your GitHub account/org (e.g. `jerrodtuck`) |
 | Repo | `jerrodtuck/vilya` | the repo issues live in |
-| Project number | `6` | `gh project list --owner <owner>` |
-| Project id | `PVT_kwHOAYNJN84BdHyu` | `gh project view <n> --owner <owner> --format json --jq .id` |
-| Status field id | `PVTSSF_lAHOAYNJN84BdHyuzhXrnW4` | see "Field ids" below |
+| Project number | `8` | `gh project list --owner <owner>` |
+| Project id | `PVT_kwHOAYNJN84BdH1y` | `gh project view <n> --owner <owner> --format json --jq .id` |
+| Status field id | `PVTSSF_lAHOAYNJN84BdH1yzhXrqCM` | see "Field ids" below |
 | **Stack** | `nextjs` | the repo's framework |
 | **Crucible variant** | `crucible-nextjs` | the review skill installed in this repo |
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
@@ -23,11 +23,19 @@ here.
 Status option ids (fill after first setup):
 
 ```text
-Todo:         04990f86
-In Progress:  015fba88
-Blocked:      b2d6bb1e
-Verifying:    089c44a8
-Done:         65660024
+Todo:         f75ad846
+In Progress:  47fc9ee4
+Blocked:      7e864448
+Verifying:    0fd3026c
+Done:         98236657
+```
+
+Native single-select fields on this board (beyond Status; labels remain what the
+skills read):
+
+```text
+Type  (PVTSSF_lAHOAYNJN84BdH1yzhXrqC4): Roadmap c3d24af8 · Epic 6021b0ae · Feature bca65912 · Bug 066550da · Task 888fb4a8
+Priority (PVTSSF_lAHOAYNJN84BdH1yzhXrqC8): Critical 015536b0 · High 5aa1bc85 · Medium aa763174 · Low 7522a137
 ```
 
 Get the Status field id + option ids in one shot:
