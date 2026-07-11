@@ -79,7 +79,7 @@ export function SetupView() {
         <div className="lvl global">
           <h3>◆ User level — the skills</h3>
           <p>
-            All seven skills, installed once in your global skills dir. Same
+            Every skill, installed once in your global skills dir. Same
             folder for every project. Update in one place.
           </p>
         </div>

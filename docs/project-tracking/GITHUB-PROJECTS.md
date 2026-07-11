@@ -18,6 +18,7 @@ here.
 | **Stack** | `nextjs` | the repo's framework |
 | **Crucible variant** | `crucible-nextjs` | the review skill installed in this repo |
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
+| **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
 | Default branch | `main` | `git remote show origin` |
 
 Status option ids (fill after first setup):
@@ -101,8 +102,13 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 
 ### PR close convention
 
-- Done-done at merge: `Closes #<issue>`
-- Live retest owed: `Refs #<issue>` → move to Verifying after merge
+- **Merge routing is declared on the issue at kickoff** (`/start-feature` verify plan):
+  `tests-only` · `local-smoke` (hands-on check pre-merge via `/merge-pr`) · `live-only`
+  (Verifying owed). Finish and merge read it — nobody re-decides at PR time.
+- Done-done at merge (`tests-only` / `local-smoke`): `Closes #<issue>`
+- Live retest owed (`live-only`): `Refs #<issue>` → move to Verifying after merge
+- **Merge method: squash, always** — one issue = one commit on the default branch;
+  `gh pr merge <n> --squash --delete-branch`. The operator merges via `/merge-pr`; agents never do.
 
 ## Process
 

@@ -39,6 +39,7 @@ export const NODES: Record<string, FlowNode> = {
     <ul><li>The <b>issue is the brief</b> — view it or create + add it to the board.</li>
     <li>Branch <code>feat|fix|docs/&lt;issue#&gt;-slug</code>; one issue = one worktree.</li>
     <li>Non-trivial design → a <code>docs/specs/</code> doc linked from the issue.</li>
+    <li>Verify plan on the issue declares the <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code> — finish and merge read it, nobody re-decides at PR time.</li>
     <li>Move the issue to <b>In Progress</b>.</li></ul>
     <p>Reads owner / project # / <code>area:*</code> labels from <code>GITHUB-PROJECTS.md</code>.</p>`,
   },
@@ -83,6 +84,18 @@ export const NODES: Record<string, FlowNode> = {
     <li>One <code>changelog.d/</code> fragment — never edit <code>CHANGELOG.md</code> on the branch.</li>
     <li><b>Crucible — do not skip:</b> run <code>/crucible-&lt;stack&gt;</code>, remediate 🔴/🟠 until <b>Ready</b>.</li>
     <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b> — crucible + remediations go in Verification.</li></ul>`,
+  },
+  MERGE: {
+    kicker: "/merge-pr",
+    title: "Review & merge",
+    c: "--merge",
+    bodyHtml: `
+    <p>The operator's side of the handshake — <b>nothing merges without you</b>. Finish (or night-shift) leaves an open PR; this skill lands it:</p>
+    <ul><li><b>Triage first</b> — CI status, the crucible signal + test counts in the PR's Verification section, diff size. Most loop PRs merge on review alone.</li>
+    <li><b>Checkout owed?</b> Fastest: <code>gh pr checkout &lt;n&gt;</code>. Isolated: fetch <code>pull/&lt;n&gt;/head</code> into a <b>throwaway worktree</b>, run the repo's test command, remove it.</li>
+    <li><b>Manual test owed?</b> If it runs locally, launch the app from that worktree (the repo's <b>Manual smoke</b> config) — the skill preps the click-path, <b>you do the clicking</b>, merge stays <code>Closes #</code>. Live-only (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>
+    <li><b>Squash, always</b> — one issue = one commit on the default branch: <code>gh pr merge --squash --delete-branch</code>. The PR body (with <code>Closes #</code>) becomes the commit message.</li>
+    <li>Confirm the board moved; prune the local worktree + branch.</li></ul>`,
   },
   DONE: {
     kicker: "Merged",
@@ -155,9 +168,16 @@ export const FLOWS: Record<string, FlowDef> = {
   happy: {
     label: "Happy path",
     descHtml:
-      "<b>Happy path.</b> start-feature → implement in the slice → review → finish-feature → merged to Done. The clean straight line.",
-    nodes: ["ORCH", "START", "IMPL", "REVIEW", "FINISH", "DONE"],
-    edges: ["o-s", "s-i", "i-r", "r-f", "f-d"],
+      "<b>Happy path.</b> start-feature → implement in the slice → review → finish-feature → merge-pr → Done. The clean straight line.",
+    nodes: ["ORCH", "START", "IMPL", "REVIEW", "FINISH", "MERGE", "DONE"],
+    edges: ["o-s", "s-i", "i-r", "r-f", "f-m", "m-d"],
+  },
+  merge: {
+    label: "Merge a PR",
+    descHtml:
+      "<b>Merge a PR.</b> An open PR — yours or night-shift's — gets triaged (CI, crucible signal, diff), a throwaway-worktree test run if warranted, then a squash merge: one issue, one commit on the default branch. The board auto-moves to Done.",
+    nodes: ["FINISH", "MERGE", "DONE"],
+    edges: ["f-m", "m-d"],
   },
   loop: {
     label: "Review ↔ Refactor",
@@ -191,8 +211,8 @@ export const FLOWS: Record<string, FlowDef> = {
     label: "Verifying",
     descHtml:
       "<b>Verifying.</b> A live/integration retest is owed — PR uses Refs #issue, merges to Verifying, and only reaches Done after live confirmation.",
-    nodes: ["FINISH", "VERIFY", "DONE"],
-    edges: ["f-verify", "verify-d"],
+    nodes: ["FINISH", "MERGE", "VERIFY", "DONE"],
+    edges: ["f-m", "m-verify", "verify-d"],
   },
   epic: {
     label: "Epic fan-out",
@@ -215,6 +235,7 @@ export const FLOW_COLORS: Record<string, string> = {
   everything: "--orch",
   happy: "--start",
   loop: "--review",
+  merge: "--merge",
   consult: "--consult",
   bug: "--docs",
   blocked: "--blocked",

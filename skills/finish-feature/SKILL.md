@@ -52,12 +52,17 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
 
 ## 6. Open the PR
 
-- **Done-done:** PR body includes `Closes #<issue>`.
-- **Live retest owed:** use `Refs #<issue>`; after merge move to **Verifying**; close → Done only
-  after live confirmation.
+- **`Closes #` vs `Refs #` comes from the issue's declared merge routing** (verify plan from
+  `/start-feature` step 5) — don't re-derive it here. No routing on the issue? Decide now, and
+  say in the PR that you did.
+- **Done-done** (`tests-only` / `local-smoke`): PR body includes `Closes #<issue>` — a
+  `local-smoke` still happens, pre-merge, in `/merge-pr`.
+- **Live retest owed** (`live-only`): use `Refs #<issue>`; after merge move to **Verifying**;
+  close → Done only after live confirmation.
 - Structure: **Summary** · **Remaining / deferred** (linked issues) · **Verification** ·
   **Operator actions**.
-- Do not merge from the task branch unless the operator asks.
+- Do not merge from the task branch unless the operator asks — merging is the operator's move,
+  via [/merge-pr](../merge-pr/SKILL.md).
 
 ## Honesty bar
 

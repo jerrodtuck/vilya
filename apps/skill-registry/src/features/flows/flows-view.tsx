@@ -174,7 +174,8 @@ export function FlowsView() {
           <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
             <b>4 · Morning — triage the report</b>
             <span>
-              One digest: ✅ PRs opened (review &amp; merge) · 🟡 needs your
+              One digest: ✅ PRs opened (review &amp; merge via{" "}
+              <code>/merge-pr</code>) · 🟡 needs your
               call (answer the fork, relabel) · 🔴 stuck (WIP branch pushed) ·
               ⏭️ skipped (and why). You wake to a review queue, not a mystery.
             </span>
@@ -201,7 +202,7 @@ export function FlowsView() {
         and the whole loop works. &nbsp;·&nbsp; Instruments:{" "}
         <b>
           /start-feature · crucible-{"{blazor,nextjs}"} · /finish-feature ·
-          /update-docs · /history · /night-shift
+          /merge-pr · /update-docs · /history · /night-shift
         </b>{" "}
         over the GitHub Projects board.
       </div>

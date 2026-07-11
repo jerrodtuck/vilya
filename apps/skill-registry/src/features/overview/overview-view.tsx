@@ -27,7 +27,9 @@ export function OverviewView() {
         <span className="arrow">→</span>
         <span className="lchip f">/finish-feature</span>
         <span className="arrow">→</span>
-        <span className="lchip f">PR / Done</span>
+        <span className="lchip f">/merge-pr</span>
+        <span className="arrow">→</span>
+        <span className="lchip f">Done</span>
       </div>
 
       <div className="cards">
@@ -35,15 +37,15 @@ export function OverviewView() {
           <h3>🗺️ Flows</h3>
           <p className="desc">
             The interactive map. Light up any path — happy path,
-            review↔refactor loop, consult forks, bug-mid-work, blocked,
-            verifying, epic fan-out, night shift.
+            review↔refactor loop, PR merge, consult forks, bug-mid-work,
+            blocked, verifying, epic fan-out, night shift.
           </p>
           <span className="more">Open the map →</span>
         </Link>
         <Link className="card" href="/skills">
           <h3>🧰 Skills</h3>
           <p className="desc">
-            The seven instruments, read live from their <code>SKILL.md</code>{" "}
+            The instruments, read live from their <code>SKILL.md</code>{" "}
             files — what each does, its trigger, invocation, and full version
             history.
           </p>
@@ -75,7 +77,7 @@ export function OverviewView() {
         into. Instruments:{" "}
         <b>
           /start-feature · crucible-blazor · crucible-nextjs · /finish-feature
-          · /update-docs · /history · night-shift
+          · /merge-pr · /update-docs · /history · night-shift
         </b>
         .
       </div>

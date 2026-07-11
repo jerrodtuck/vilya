@@ -8,9 +8,10 @@ across **.NET/Blazor and Next.js**.
 
 ```
 vilya/
-├── skills/                     # canonical source of truth — the 7 SKILL.md skills
+├── skills/                     # canonical source of truth — the SKILL.md skills
 │   ├── start-feature/          # process: issue → branch → consult
 │   ├── finish-feature/         # process: tests → PR → changelog
+│   ├── merge-pr/               # process: triage → test → squash-merge
 │   ├── update-docs/            # process: route work (issue vs files)
 │   ├── history/                # recall: reconstruct what we tried
 │   ├── crucible-blazor/        # review: strict VSA+SOLID+Blazor (manual-only)

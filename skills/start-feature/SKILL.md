@@ -56,8 +56,18 @@ Recommend one. Trivial work → build.
   verbal "hold the bar." Apply 🔴/🟠 remediations until merge-readiness is `Ready` (or
   `Ready after blockers` with blockers fixed). Then [/finish-feature](../finish-feature/SKILL.md).
 
-## 5. Verify plan up front
+## 5. Verify plan up front — including merge routing
 
-State how the feature will be verified: which test projects, and any live / integration smoke owed
-against external systems (hardware, brokers, databases, third-party services). Then build.
-Close path: **tests green → `/crucible-<stack>` → remediate → `/finish-feature`**.
+State how the feature will be verified, **on the issue** (kickoff comment), so finish and merge
+read it instead of re-deciding:
+
+- Which test projects / suites.
+- **Merge routing** — one of:
+  - `tests-only` — automated coverage is the whole story; PR will use `Closes #`.
+  - `local-smoke` — a hands-on check is owed but runs locally (launch the app, drive the flow);
+    done **pre-merge** via `/merge-pr`; PR still uses `Closes #`.
+  - `live-only` — verification needs the live / deployed system (hardware, brokers, real CygNet);
+    PR will use `Refs #` → **Verifying** → Done after live confirmation.
+
+Then build. Close path: **tests green → `/crucible-<stack>` → remediate → `/finish-feature` →
+operator merges via `/merge-pr`**.

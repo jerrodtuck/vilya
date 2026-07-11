@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { FLOWS, FLOW_COLORS, NODES } from "./data";
-import { EDGES, EDGE_LABELS, LENSES, NODE_GEOMS } from "./map-geometry";
+import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
 import { promptsForNode } from "./prompts";
 import { PromptList } from "./prompt-list";
 
@@ -17,7 +17,7 @@ const DEFAULT_DRAWER = {
     <p>Pick any node in the map to see what that skill does, when you invoke it, and what it reads from the repo config. The whole ecosystem is designed so that <b>you make the decisions and the skills carry the mechanics.</b></p>
     <h4><span class="swatch" style="background:var(--start)"></span>The linear spine</h4>
     <ul>
-      <li><code>/start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/finish-feature</code> → Done.</li>
+      <li><code>/start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/finish-feature</code> → <code>/merge-pr</code> → Done.</li>
       <li>Everything writes status to the <b>board</b> — that's your single source of truth.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--review)"></span>The engine: review ↔ refactor</h4>
@@ -115,7 +115,7 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
                 </text>
               </g>
             ))}
-            <path className="edge" d="M770,104 L770,121" stroke="var(--review)" opacity=".5" />
+            <path className="edge" d={LENS_CONNECTOR} stroke="var(--review)" opacity=".5" />
           </g>
 
           {NODE_GEOMS.map((n) => (
