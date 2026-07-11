@@ -50,6 +50,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The action's CLI installer does not support Windows; point it at
+          # the Claude Code already installed on the dev box instead.
+          path_to_claude_code_executable: C:\Users\jerro\.local\bin\claude.exe
           prompt: |
             You are running the Vilya NIGHT SHIFT (autonomous overnight loop) on
             ${{ github.repository }}, on a self-hosted runner that HAS the CygNet
