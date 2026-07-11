@@ -10,24 +10,24 @@ here.
 
 | Key | Value | How to get it |
 |-----|-------|---------------|
-| Owner | `<owner>` | your GitHub account/org (e.g. `jerrodtuck`) |
-| Repo | `<owner>/<repo>` | the repo issues live in |
-| Project number | `<n>` | `gh project list --owner <owner>` |
-| Project id | `<PVT_...>` | `gh project view <n> --owner <owner> --format json --jq .id` |
-| Status field id | `<PVTSSF_...>` | see "Field ids" below |
-| **Stack** | `blazor` \| `nextjs` \| … | the repo's framework |
-| **Crucible variant** | `crucible-blazor` \| `crucible-nextjs` | the review skill installed in this repo |
-| **Test command** | `dotnet test` \| `npm test && npm run build` \| … | what `/finish-feature` runs in step 1 |
-| Default branch | `master` or `main` | `git remote show origin` |
+| Owner | `jerrodtuck` | your GitHub account/org (e.g. `jerrodtuck`) |
+| Repo | `jerrodtuck/vilya` | the repo issues live in |
+| Project number | `6` | `gh project list --owner <owner>` |
+| Project id | `PVT_kwHOAYNJN84BdHyu` | `gh project view <n> --owner <owner> --format json --jq .id` |
+| Status field id | `PVTSSF_lAHOAYNJN84BdHyuzhXrnW4` | see "Field ids" below |
+| **Stack** | `nextjs` | the repo's framework |
+| **Crucible variant** | `crucible-nextjs` | the review skill installed in this repo |
+| **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
+| Default branch | `main` | `git remote show origin` |
 
 Status option ids (fill after first setup):
 
 ```text
-Todo:         <id>
-In Progress:  <id>
-Blocked:      <id>
-Verifying:    <id>
-Done:         <id>
+Todo:         04990f86
+In Progress:  015fba88
+Blocked:      b2d6bb1e
+Verifying:    089c44a8
+Done:         65660024
 ```
 
 Get the Status field id + option ids in one shot:
@@ -39,9 +39,9 @@ gh project field-list <n> --owner <owner> --format json \
 
 ### Area labels — define per repo
 
-Areas name *this* product's vertical slices. Replace the examples with your repo's slices:
+Areas name *this* product's vertical slices. This repo's areas:
 
-`area:<slice-a>` · `area:<slice-b>` · `area:docs` · `area:installer`
+`area:registry` · `area:skills` · `area:site` · `area:docs` · `area:installer`
 
 ## Model (same everywhere)
 
