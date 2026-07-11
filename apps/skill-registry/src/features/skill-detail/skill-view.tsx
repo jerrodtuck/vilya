@@ -16,7 +16,7 @@ export function SkillView({ slug }: { slug: string }) {
   return (
     <>
       <p className="crumb">
-        <Link href="/">← Registry</Link>
+        <Link href="/skills">← Skills</Link>
       </p>
       <div className="eyebrow">{stackOf(skill.slug)}</div>
       <h1 className="mono">{fm.name ?? skill.slug}</h1>

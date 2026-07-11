@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SiteNav } from "./site-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Vilya — Skill Registry",
+  title: "The Dev Loop",
   description:
-    "Git-native registry for the Vilya skills. The repo is the store; versions are commits.",
+    "VSA + SOLID skill orchestration for Claude Code + Cursor — the methodology, the flows, the skills, and the git-native registry.",
 };
 
 export default function RootLayout({
@@ -17,14 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div className="wrap">
-          <nav className="sitenav">
-            <Link className="brand" href="/">
-              ◆ Vilya
-            </Link>
-            <span className="nlinks">
-              <Link href="/">Registry</Link>
-            </span>
-          </nav>
+          <SiteNav />
           {children}
         </div>
       </body>
