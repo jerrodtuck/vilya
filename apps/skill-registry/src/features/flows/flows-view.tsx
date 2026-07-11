@@ -127,49 +127,62 @@ export function FlowsView() {
       </div>
 
       <div className="panel" style={{ marginTop: 16 }}>
-        <div className="kicker">Autonomous</div>
-        <h3>🌙 Night shift — the loop while you sleep</h3>
+        <div className="kicker">Autonomous · your runbook</div>
+        <h3>🌙 Night shift — how you actually run it</h3>
         <p className="muted" style={{ margin: "6px 0 12px", lineHeight: 1.55 }}>
-          A scheduled task fires a fresh unattended session each night. It runs
-          the same loop you run by day, with three differences that make it
-          safe to leave alone.
+          Wired as a GitHub Actions workflow (
+          <code>.github/workflows/night-shift.yml</code>) on a{" "}
+          <b>self-hosted runner</b> on your always-on dev box.{" "}
+          <b>Manual-only by default</b> — nothing fires until you say so, and a
+          run only ever touches <i>this</i> repo&apos;s board.
         </p>
         <div className="modes">
-          <div className="mode" style={{ ["--m" as string]: "var(--done)" }}>
-            <b>Eligibility gate</b>
+          <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
+            <b>1 · Before bed — pick the work</b>
             <span>
-              Only issues you&apos;ve labeled <code>auto:ready</code> —
-              well-specified, non-epic, no open decision. Highest priority
-              first, up to 3 a night.
+              Label well-specified issues <code>auto:ready</code>. That label
+              is the only opt-in the loop honors — epics and{" "}
+              <code>needs:decision</code> issues are skipped. No label, no
+              work.
             </span>
           </div>
-          <div className="mode" style={{ ["--m" as string]: "var(--blocked)" }}>
-            <b>Stops at forks</b>
+          <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
+            <b>2 · Fire the run</b>
             <span>
-              Hits a real design fork? It doesn&apos;t guess — it comments its
-              recommendation, labels the issue <code>needs:decision</code> →
-              Blocked, and moves on.
-            </span>
-          </div>
-          <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
-            <b>PR, never merge</b>
-            <span>
-              Ends at an open PR with green tests. Merge is always yours — you
-              wake to a review queue, not a surprise.
+              Actions → <b>night-shift</b> → <b>Run workflow</b>, or{" "}
+              <code>gh workflow run night-shift</code>. It takes up to 3
+              eligible issues, highest priority first — then walk away.
             </span>
           </div>
           <div className="mode" style={{ ["--m" as string]: "var(--review)" }}>
-            <b>Morning report</b>
+            <b>3 · While you sleep — the guarantees</b>
             <span>
-              One digest: ✅ PRs opened · 🟡 needs your call · 🔴 stuck · ⏭️
-              skipped. Honest and skimmable.
+              Same loop as daytime: build in the slice, crucible until{" "}
+              <b>Ready</b>, tests green. At a real design fork it never guesses
+              — it comments its recommendation, labels{" "}
+              <code>needs:decision</code>, moves the issue to Blocked. Opens
+              PRs, <b>never merges</b>.
+            </span>
+          </div>
+          <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
+            <b>4 · Morning — triage the report</b>
+            <span>
+              One digest: ✅ PRs opened (review &amp; merge) · 🟡 needs your
+              call (answer the fork, relabel) · 🔴 stuck (WIP branch pushed) ·
+              ⏭️ skipped (and why). You wake to a review queue, not a mystery.
             </span>
           </div>
         </div>
         <div className="note" style={{ marginTop: 14 }}>
-          <b>Prerequisite:</b> the scheduled session needs repo access +{" "}
-          <code>gh</code> auth (a scoped token, or a GitHub-side runner) and
-          the stack&apos;s toolchain. Wire that once — then it runs on its own.
+          <b>Plug in another repo:</b> copy the template at{" "}
+          <code>
+            docs/project-tracking/templates/night-shift-dotnet-cygnet.yml
+          </code>{" "}
+          (or adapt this repo&apos;s workflow) into that repo, register the
+          self-hosted runner there, and add its <code>ANTHROPIC_API_KEY</code>{" "}
+          secret. Each copy works only its own board. Want it truly nightly?
+          Uncomment the <code>schedule:</code> block — that&apos;s the
+          deliberate opt-in to autopilot.
         </div>
       </div>
 
