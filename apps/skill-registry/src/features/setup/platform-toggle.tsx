@@ -45,11 +45,15 @@ bash scripts/install-skills.sh         # macOS / Linux / Git Bash`}</pre>
       ) : (
         <div className="pane on">
           <p>
-            The same script installs the same <code>SKILL.md</code> files to
-            Cursor&apos;s directory in the same pass:
+            <b>Nothing extra to install.</b> Cursor scans{" "}
+            <code>~/.claude/skills</code> as one of its compatibility roots, so
+            the same install the script already did serves Cursor too. A second
+            copy in <code>~/.cursor/skills</code> would list every skill{" "}
+            <b>twice</b> in Cursor&apos;s slash menu — don&apos;t.
           </p>
-          <pre>{`~/.cursor/skills/<skill-name>/SKILL.md     # user level (all projects)
-.cursor/skills/<skill-name>/SKILL.md      # project level (override)`}</pre>
+          <pre>{`# only for OLD Cursor builds that read ~/.cursor/skills exclusively:
+powershell scripts/install-skills.ps1 -IncludeCursor
+bash scripts/install-skills.sh --include-cursor`}</pre>
           <p>
             Cursor reads the <b>same</b> <code>name</code> /{" "}
             <code>description</code> / <code>disable-model-invocation</code> and

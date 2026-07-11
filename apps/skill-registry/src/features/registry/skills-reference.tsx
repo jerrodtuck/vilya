@@ -18,7 +18,12 @@ export function SkillsReference() {
           <ul>
             <li>
               Installed <b>once</b> by <code>scripts/install-skills</code> into{" "}
-              <code>~/.claude/skills/</code> and <code>~/.cursor/skills/</code>
+              <code>~/.claude/skills/</code> — the single install root
+            </li>
+            <li>
+              Cursor discovers the same directory through its compatibility
+              roots — no second copy (it would double-list every skill in
+              Cursor&apos;s slash menu)
             </li>
             <li>Shared by every project on the machine</li>
             <li>
@@ -47,10 +52,13 @@ export function SkillsReference() {
       </div>
       <p className="muted" style={{ marginTop: 12 }}>
         <b style={{ color: "var(--text)" }}>One set of skills, both tools:</b>{" "}
-        Cursor honors the same SKILL.md standard, so the Claude-format skills
-        here are the <i>only</i> skills — nothing Cursor-specific is ever
-        authored. The install script simply places the same file into each
-        tool&apos;s search path.
+        Cursor honors the same SKILL.md standard <i>and</i> scans{" "}
+        <code>~/.claude/skills</code> itself, so the Claude-format skills here
+        are the <i>only</i> skills and <code>~/.claude/skills</code> is the
+        only install location — nothing Cursor-specific is ever authored or
+        copied. (Older Cursor builds that read only{" "}
+        <code>~/.cursor/skills</code>: run the install script with{" "}
+        <code>--include-cursor</code> / <code>-IncludeCursor</code>.)
       </p>
 
       <h2>Frontmatter — shared vs. platform extensions</h2>

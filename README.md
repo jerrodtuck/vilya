@@ -20,7 +20,7 @@ vilya/
 │   └── skill-registry/         # Next.js (VSA) app — The Dev Loop site + registry
 ├── docs/project-tracking/      # GITHUB-PROJECTS.md — the per-repo config template
 └── scripts/
-    ├── install-skills.sh       # sync skills → ~/.claude/skills + ~/.cursor/skills
+    ├── install-skills.sh       # sync skills → ~/.claude/skills (Cursor reads it too)
     └── install-skills.ps1      # (Windows)
 ```
 
@@ -28,8 +28,11 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code.
 
 ## The model
 
-- **Skills are user-level** — install once (`scripts/install-skills.*`) to both
-  Claude Code and Cursor; the same `SKILL.md` runs in both.
+- **Skills are user-level** — install once (`scripts/install-skills.*`) to
+  `~/.claude/skills`; Cursor scans that directory as a compatibility root, so
+  the same `SKILL.md` runs in both tools from one install. (A second copy in
+  `~/.cursor/skills` would double-list skills in Cursor — `--include-cursor`
+  exists only for old Cursor builds.)
 - **Per-repo config is the only thing that varies** — each project you run the
   loop on gets its own `docs/project-tracking/GITHUB-PROJECTS.md`.
 - **The registry app** reads `skills/` as its source of truth (via `SKILLS_DIR`)
