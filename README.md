@@ -17,8 +17,7 @@ vilya/
 │   ├── crucible-nextjs/        # review: same for feature-slice + server/client
 │   └── night-shift/            # autonomous: overnight loop → opens PRs
 ├── apps/
-│   └── skill-registry/         # Next.js (VSA) app — browses skills + git history
-├── site/                       # static, GitHub-Pages-ready reference site
+│   └── skill-registry/         # Next.js (VSA) app — The Dev Loop site + registry
 ├── docs/project-tracking/      # GITHUB-PROJECTS.md — the per-repo config template
 └── scripts/
     ├── install-skills.sh       # sync skills → ~/.claude/skills + ~/.cursor/skills
