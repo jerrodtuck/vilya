@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 
 export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const done = () => {
     setCopied(true);
