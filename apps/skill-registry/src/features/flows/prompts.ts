@@ -37,6 +37,7 @@ export const PROMPTS: PromptGroup[] = [
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
 - Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug.
+- Name every agent chat (chip) you kick off after its worktree folder — the title is exactly <issue#>-<slug> — so each chip maps 1:1 to its worktree at a glance.
 - Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
 - I start a separate agent session on each worktree for implementation.
 - Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
