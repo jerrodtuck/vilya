@@ -28,6 +28,8 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write # claude-code-action exchanges an OIDC token for its GitHub credentials
+  actions: read
 
 concurrency:
   group: night-shift
