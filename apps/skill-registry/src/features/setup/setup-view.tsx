@@ -98,12 +98,12 @@ export function SetupView() {
       <PlatformToggle />
 
       <div className="note">
-        <b>One body, both tools.</b> Because the frontmatter that matters is
-        shared, the same <code>SKILL.md</code> is what you install in both
-        places. The repo&apos;s <code>scripts/install-skills.(sh|ps1)</code>{" "}
-        sync script keeps <code>~/.claude/skills</code> and{" "}
-        <code>~/.cursor/skills</code> pointed at one source —{" "}
-        <code>skills/</code> in this repo.
+        <b>One body, both tools, one install root.</b> The frontmatter that
+        matters is shared, and Cursor scans <code>~/.claude/skills</code>{" "}
+        itself — so <code>scripts/install-skills.(sh|ps1)</code> syncs{" "}
+        <code>skills/</code> (the source of truth) to that single directory and
+        both tools pick it up. Installing to <code>~/.cursor/skills</code> as
+        well would double-list every skill in Cursor&apos;s slash menu.
       </div>
 
       <h2>Per-repo setup (one-time)</h2>
@@ -126,8 +126,11 @@ export function SetupView() {
         the download link and a ready-made one-liner. To pull one skill without
         cloning the repo:
       </p>
-      <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md
-curl -fLo ~/.cursor/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
+      <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
+      <p className="muted">
+        One destination is enough — Cursor scans <code>~/.claude/skills</code>{" "}
+        as a compatibility root, so both tools see it.
+      </p>
 
       <h2>How skills find the config at runtime</h2>
       <p className="muted">

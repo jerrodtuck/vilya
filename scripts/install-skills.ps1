@@ -1,9 +1,17 @@
-# Sync the canonical skills into the Claude Code + Cursor user-level skill dirs.
-# Run from anywhere:  pwsh scripts/install-skills.ps1   (or Windows PowerShell)
+# Sync the canonical skills into the user-level skill dir.
+# Run from anywhere:  powershell scripts/install-skills.ps1
+#
+# Default target is ~/.claude/skills ONLY. Current Cursor discovers that same
+# directory through its compatibility roots (~/.claude/skills, ~/.codex/skills,
+# ...), so a second copy in ~/.cursor/skills would list every skill twice in
+# Cursor's slash menu. Pass -IncludeCursor only for older Cursor builds that
+# read ~/.cursor/skills exclusively.
+param([switch]$IncludeCursor)
 $ErrorActionPreference = "Stop"
 
 $src = Join-Path $PSScriptRoot "..\skills"
-$targets = @("$HOME\.claude\skills", "$HOME\.cursor\skills")
+$targets = @("$HOME\.claude\skills")
+if ($IncludeCursor) { $targets += "$HOME\.cursor\skills" }
 
 foreach ($t in $targets) {
   New-Item -ItemType Directory -Force -Path $t | Out-Null
@@ -14,4 +22,4 @@ foreach ($t in $targets) {
     Write-Host "installed $($_.Name) -> $dest"
   }
 }
-Write-Host "done - one source of truth (skills/), installed to both tools."
+Write-Host "done - one source of truth (skills/), one install root (Cursor reads it too)."
