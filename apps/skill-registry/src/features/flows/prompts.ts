@@ -63,7 +63,7 @@ Your job:
     items: [
       {
         label: "New brief",
-        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug, and give me the verify plan before you build. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
+        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug, and give me the verify plan before you build — including the merge routing: tests-only, local-smoke, or live-only. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
       },
       {
         label: "Existing issue",
@@ -157,6 +157,31 @@ Your job:
         text: "Wrap it up, but a live retest is owed: open the PR with Refs #<N> and move it to Verifying instead of Done.",
       },
     ],
+  },
+  {
+    node: "MERGE",
+    group: "/merge-pr",
+    c: "--merge",
+    items: [
+      {
+        label: "Triage the queue",
+        text: "What's open and mergeable? For each PR: CI status, the crucible signal and test counts from its Verification section, diff size — and whether it needs a local checkout or can merge on review alone.",
+      },
+      {
+        label: "Checkout & test",
+        text: "Check out PR #<N> in a throwaway worktree, run the repo's test command, and report exact counts — then remove the worktree.",
+      },
+      {
+        label: "Manual smoke — set me up",
+        text: "PR #<N> needs a hands-on test. Check it out in a throwaway worktree, launch it per the repo's Manual smoke config, and give me the click-path: which screen, which action, what correct looks like. Hold the merge until I call it good.",
+      },
+      {
+        label: "Merge it",
+        text: "Squash-merge PR #<N> and delete the branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #), then prune the local worktree and branch.",
+      },
+    ],
+    noteHtml:
+      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never.",
   },
   {
     node: "VERIFY",

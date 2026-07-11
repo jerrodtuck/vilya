@@ -55,9 +55,10 @@ anything you'd normally consult on is not.
 
 ## 4. Never merge — always leave a PR
 
-- Open the PR (`Closes #<n>` if done-done, `Refs #<n>` → **Verifying** if a live retest is owed).
+- Open the PR (`Closes #<n>` if done-done, `Refs #<n>` → **Verifying** if a live retest is owed —
+  read the issue's declared merge routing; never downgrade `live-only` to `Closes #`).
 - **Never merge, never force-push a shared branch, never push to the default branch.** You open the
-  PR; the operator merges in the morning after review.
+  PR; the operator merges in the morning after review (via `/merge-pr`).
 
 ## 5. Guardrails (hard limits)
 

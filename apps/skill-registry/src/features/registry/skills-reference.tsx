@@ -14,7 +14,7 @@ export function SkillsReference() {
       <h2>Where skills live — user vs. project level</h2>
       <div className="grid2">
         <div className="refcard">
-          <h3>◆ User level (all seven canonical skills)</h3>
+          <h3>◆ User level (every canonical skill)</h3>
           <ul>
             <li>
               Installed <b>once</b> by <code>scripts/install-skills</code> into{" "}

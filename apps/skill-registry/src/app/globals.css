@@ -5,6 +5,7 @@
   --docs: #f2779a; --epic: #b48ead;
   --edge: #3a4250; --impl: #8f9bff; --refactor: #f5c77e; --done: #3fbf7f;
   --bug: #ff6b8a; --consult: #c792ea; --blocked: #ff8a5c; --verify: #57c7d4;
+  --merge: #a371f7;
   --todo: #8b95a6; --inprog: #7c8cff;
 }
 * { box-sizing: border-box; }
@@ -127,6 +128,7 @@ h1 .you { color: var(--orch); }
 .edge.lit.c-review { stroke: var(--review); }
 .edge.lit.c-start { stroke: var(--start); }
 .edge.lit.c-finish { stroke: var(--finish); }
+.edge.lit.c-merge { stroke: var(--merge); }
 .edge.lit.c-docs { stroke: var(--docs); }
 .edge.lit.c-blocked { stroke: var(--blocked); }
 .edge.lit.c-verify { stroke: var(--verify); }
