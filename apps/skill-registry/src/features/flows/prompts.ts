@@ -171,20 +171,24 @@ export const PROMPTS: PromptGroup[] = [
   },
   {
     node: "NIGHT",
-    group: "🌙 Night shift (scheduled)",
+    group: "🌙 Night shift (manual runner)",
     c: "--orch",
     items: [
       {
-        label: "Mark an issue safe for unattended work",
+        label: "1 · Mark an issue safe for unattended work",
         text: "Label issue #<N> auto:ready — it's specified well enough to run overnight without me.",
       },
       {
-        label: "The scheduled-task prompt (fires each night)",
-        text: "Run the night-shift skill on <owner>/<repo>. Take up to 3 auto:ready issues; run each through implement → crucible review → refactor-until-Ready → tests → open a PR. Stop at any real design fork and leave me a recommendation. Never merge. Post a morning report of PRs opened, decisions needed, and anything stuck.",
+        label: "2 · Fire tonight's run (shell command, not a prompt)",
+        text: "gh workflow run night-shift --repo <owner>/<repo>",
       },
       {
-        label: "Morning triage",
+        label: "3 · Morning triage",
         text: "Show me last night's night-shift report: which PRs are open and Ready, what needs my decision, and what got stuck.",
+      },
+      {
+        label: "Reference — the standing prompt baked into the workflow",
+        text: "Run the night-shift skill on <owner>/<repo>. Take up to 3 auto:ready issues; run each through implement → crucible review → refactor-until-Ready → tests → open a PR. Stop at any real design fork and leave me a recommendation. Never merge. Post a morning report of PRs opened, decisions needed, and anything stuck.",
       },
     ],
   },
