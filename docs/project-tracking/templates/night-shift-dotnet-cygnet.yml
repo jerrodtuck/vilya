@@ -15,9 +15,11 @@ name: night-shift (dotnet / cygnet)
 #   repo could run arbitrary code on your machine. Your repos are private, and the
 #   `auto:ready` gate means it only ever acts on issues you explicitly marked.
 
+# MANUAL-ONLY by default: fire it from Actions → night-shift → Run workflow.
+# To turn on the nightly schedule, uncomment the `schedule:` block.
 on:
-  schedule:
-    - cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST)
+  # schedule:
+  #   - cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST)
   workflow_dispatch: {}
 
 permissions:

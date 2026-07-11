@@ -1,8 +1,9 @@
 ### Added
 
-- **Night-shift overnight runner** — `.github/workflows/night-shift.yml` fires
-  the autonomous loop nightly (~2–3am America/Chicago) on a self-hosted runner
-  on the operator's always-on dev machine; `workflow_dispatch` for manual runs.
+- **Night-shift overnight runner** — `.github/workflows/night-shift.yml` runs
+  the autonomous loop on a self-hosted runner on the operator's always-on dev
+  machine. **Manual-only by default** (`workflow_dispatch`); the nightly cron
+  (~2–3am America/Chicago) ships commented out, ready to opt in.
   Follows `skills/night-shift/SKILL.md`: `auto:ready` gate, crucible-nextjs
   review bar, PRs only, never merges, morning report. (#23)
 - Reusable template for CygNet C# repos at
