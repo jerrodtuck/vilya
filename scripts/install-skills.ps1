@@ -14,4 +14,4 @@ foreach ($t in $targets) {
     Write-Host "installed $($_.Name) -> $dest"
   }
 }
-Write-Host "done — one source of truth (skills/), installed to both tools."
+Write-Host "done - one source of truth (skills/), installed to both tools."
