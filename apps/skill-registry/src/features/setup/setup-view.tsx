@@ -119,6 +119,16 @@ export function SetupView() {
         ))}
       </div>
 
+      <h2>Grab skills straight from this site</h2>
+      <p className="muted">
+        Every skill&apos;s canonical <code>SKILL.md</code> is served raw at{" "}
+        <code>/skills/&lt;name&gt;/SKILL.md</code> — each skill&apos;s page has
+        the download link and a ready-made one-liner. To pull one skill without
+        cloning the repo:
+      </p>
+      <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md
+curl -fLo ~/.cursor/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
+
       <h2>How skills find the config at runtime</h2>
       <p className="muted">
         Because skills are global, they don&apos;t use a relative path — they
