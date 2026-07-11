@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vilya — Skills</title>
+<style>
+  :root{--bg:#0d0f14;--surface:#161a22;--surface2:#1c212b;--border:#2a313d;--text:#e8ebf2;--muted:#98a2b3;--faint:#6b7686;--orch:#5ecfe6;--start:#7c8cff;--review:#f2b45c;--finish:#4fd18b;--docs:#f2779a;--epic:#b48ead;--blocked:#ff8a5c;--done:#4fd18b}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 22px 70px}
+  a{color:var(--orch)}
+  .sitenav{display:flex;align-items:center;gap:16px;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  .sitenav .brand{color:var(--orch);font-weight:700;text-decoration:none;font-size:15px}
+  .sitenav .nlinks{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+  .sitenav a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:600;padding:6px 11px;border-radius:8px}
+  .sitenav a:hover{color:var(--text);background:var(--surface2)}
+  .sitenav a.on{color:var(--text);background:var(--surface2)}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--orch);font-weight:600}
+  h1{font-size:27px;letter-spacing:-.01em;margin:6px 0 8px}
+  h2{font-size:18px;margin:32px 0 8px}
+  p.lead,p{color:var(--muted);font-size:14px;line-height:1.6;max-width:820px}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  td code,p code,li code{background:#0f1319;border:1px solid var(--border);border-radius:5px;padding:1px 5px;font-size:11.5px;color:#cdd4df}
+  td .nm{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;color:var(--text)}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+  .tag.manual{color:var(--review);border-color:#5c4a2e}
+  .tag.auto{color:var(--finish);border-color:#2b4f3c}
+  .tag.sched{color:var(--orch);border-color:#2e4f54}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .card{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:14px 16px}
+  .card h3{margin:0 0 7px;font-size:14px}
+  .card ul{margin:0;padding-left:17px}.card li{margin:4px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .callout{border:1px solid #5c4a2e;background:#1c1810;border-radius:12px;padding:13px 15px;margin-top:16px;color:#e7d6ac;font-size:13px;line-height:1.55}
+  .callout b{color:#ffcf7a}
+  ul{padding-left:18px}li{margin:4px 0;line-height:1.5}
+  .footer{margin-top:34px;color:var(--faint);font-size:12px;border-top:1px solid var(--border);padding-top:14px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sitenav">
+    <a class="brand" href="index.html">◆ Vilya</a>
+    <span class="nlinks"><a href="index.html">Overview</a><a href="flows.html">Flows</a><a href="skills.html" class="on">Skills</a><a href="setup.html">Setup</a></span>
+  </nav>
+
+  <div class="eyebrow">The toolset</div>
+  <h1>Skills</h1>
+  <p class="lead">Seven instruments. Each is one <code>SKILL.md</code> — a shared body plus portable frontmatter — that runs in both Claude Code and Cursor. All repo-specific values come from that repo's <code>GITHUB-PROJECTS.md</code>.</p>
+
+  <table>
+    <thead><tr><th>Skill</th><th>Role</th><th>Stack</th><th>Trigger</th><th>Invocation</th></tr></thead>
+    <tbody>
+      <tr><td><span class="nm">/start-feature</span></td><td>Issue → branch → consult, then build in the slice</td><td>any</td><td>“start on…”, “pick up #N”, “work the next thing”</td><td><span class="tag auto">model + manual</span></td></tr>
+      <tr><td><span class="nm">crucible-blazor</span></td><td>Strict VSA + SOLID + Blazor refactor-oriented review</td><td>Blazor / .NET</td><td>“crucible”</td><td><span class="tag manual">manual only</span></td></tr>
+      <tr><td><span class="nm">crucible-nextjs</span></td><td>Same, for feature-slice + server/client boundary</td><td>Next.js / React</td><td>“crucible”</td><td><span class="tag manual">manual only</span></td></tr>
+      <tr><td><span class="nm">/finish-feature</span></td><td>Tests (repo command) → rebase → changelog → PR</td><td>any</td><td>“wrap up”, “ship it”, “open the PR”</td><td><span class="tag auto">model + manual</span></td></tr>
+      <tr><td><span class="nm">/update-docs</span></td><td>Router — new work = issue, design = files</td><td>any</td><td>“track this”, “where does this go”</td><td><span class="tag auto">model + manual</span></td></tr>
+      <tr><td><span class="nm">/history</span></td><td>Reconstruct what we tried, in order (read-only)</td><td>any</td><td>“history of #N”, “catch me up on…”</td><td><span class="tag auto">model + manual</span></td></tr>
+      <tr><td><span class="nm">night-shift</span></td><td>Autonomous overnight loop → opens PRs, never merges</td><td>any</td><td>scheduled task</td><td><span class="tag sched">scheduler-fired</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><b>Why Crucible is “manual only.”</b> The reviews carry <code>disable-model-invocation: true</code> — a deliberate, heavy review you run on command, not something that auto-fires on “review this.” <b>night-shift must NOT</b> have that flag: it would stop a scheduled task from firing the skill.</div>
+
+  <h2>Frontmatter — shared vs. platform extensions</h2>
+  <p>Author one <code>SKILL.md</code>. The shared fields work in both tools; Claude Code's extensions are additive and silently ignored by Cursor.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>✅ Shared (portable — define once)</h3>
+      <ul>
+        <li><code>name</code> — identifier / display name</li>
+        <li><code>description</code> — what it does + when to trigger</li>
+        <li><code>disable-model-invocation</code> — invoke-only, honored by both</li>
+        <li>Supporting files / references — markdown links to files in the skill folder, loaded on demand</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>➕ Claude Code extensions (ignored by Cursor)</h3>
+      <ul>
+        <li><code>allowed-tools</code> / <code>disallowed-tools</code></li>
+        <li><code>context: fork</code> + <code>agent</code> (subagent run)</li>
+        <li><code>model</code> · <code>effort</code> · <code>argument-hint</code> · <code>arguments</code></li>
+        <li><code>hooks</code> · <code>paths</code> · <code>${CLAUDE_SKILL_DIR}</code> path substitution</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:12px"><b style="color:var(--text)">Rule of thumb:</b> keep anything that must work in <i>both</i> tools in the shared fields and the body. Use Claude-only fields only as enhancements that degrade gracefully — never for behavior Cursor needs to get right.</p>
+
+  <h2>References (supporting files)</h2>
+  <p>Both tools support the same progressive-disclosure pattern: drop extra files (<code>reference.md</code>, <code>examples.md</code>, <code>scripts/</code>) in the skill folder and link them from <code>SKILL.md</code>; the agent loads them on demand. Claude Code adds <code>${CLAUDE_SKILL_DIR}</code> so bundled scripts resolve wherever the skill is installed. Our skills don't need references yet — but this is how you'd bundle, say, a shared VSA cheat-sheet with the Crucible reviews.</p>
+
+  <div class="footer">Each skill's full text lives in its <code>SKILL.md</code>. See <a href="setup.html">Setup</a> for where to install them per platform.</div>
+</div>
+</body>
+</html>

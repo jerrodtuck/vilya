@@ -1,0 +1,24 @@
+{
+  "name": "vilya-skill-registry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Git-native registry for the Vilya skills — reads SKILL.md files as the source of truth, surfaces version history from git.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "marked": "12.0.2",
+    "next": "^14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.16.11",
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.6.3"
+  }
+}
