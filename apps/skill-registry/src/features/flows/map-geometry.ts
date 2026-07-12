@@ -72,7 +72,7 @@ export const NODE_GEOMS: NodeGeom[] = [
   { id: "IMPL", x: 391, y: 122, w: 140, h: 56, rx: 13, title: "Implement", role: "in the vertical slice", dot: true },
   { id: "REVIEW", x: 579, y: 122, w: 140, h: 56, rx: 13, title: "crucible", role: "refactor-oriented review", dot: true },
   { id: "FINISH", x: 767, y: 122, w: 145, h: 56, rx: 13, title: "/finish-feature", role: "tests · PR · changelog", dot: true },
-  { id: "MERGE", x: 960, y: 122, w: 140, h: 56, rx: 13, title: "/merge-pr", role: "triage · test · squash", dot: true },
+  { id: "MERGE", x: 960, y: 122, w: 140, h: 56, rx: 13, title: "/merge-pr", role: "triage · smoke · squash", dot: true },
   { id: "DONE", x: 1146, y: 122, w: 114, h: 56, rx: 13, title: "Done", role: "Closes # · board", dot: true },
   { id: "EPIC", x: 20, y: 294, w: 130, h: 52, rx: 12, title: "Epic", role: "+ sub-issues" },
   { id: "BLOCKED", x: 200, y: 294, w: 140, h: 52, rx: 12, title: "Blocked", role: "external dependency" },

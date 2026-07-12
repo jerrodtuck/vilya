@@ -63,7 +63,7 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
 - Structure: **Summary** · **Remaining / deferred** (linked issues) · **Verification** ·
   **Operator actions**.
 - Do not merge from the task branch unless the operator asks — merging is the operator's move,
-  via [/merge-pr](../merge-pr/SKILL.md).
+  via [/merge-pr](../merge-pr/SKILL.md) (which hands worktree cleanup to [/prune](../prune/SKILL.md)).
 
 ## Honesty bar
 
