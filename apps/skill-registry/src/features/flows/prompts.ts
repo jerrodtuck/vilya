@@ -42,7 +42,8 @@ Your job:
 - I start a separate agent session on each worktree for implementation.
 - Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
 - Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.
-- One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.`,
+- One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
+- After /merge-pr squash: you own /prune from the main clone (dry-run, then --apply). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean %USERPROFILE%\\.cursor\\worktrees\\<repo>.`,
       },
       {
         label: "Cursor — worker kickoff A · orchestrator did setup",
@@ -52,9 +53,17 @@ Your job:
         label: "Cursor — worker kickoff B · worker does its own setup",
         text: "You're the implementer for issue #<N>. No setup has run yet — run /start-feature on #<N> yourself: worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug, board Status to In Progress. Then do all feature work inside that worktree — never the main clone. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. When the build is done, run the repo's crucible review skill (the crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /finish-feature — PR that Closes #<N>.",
       },
+      {
+        label: "Prune worktrees (dry-run)",
+        text: "From the main clone: /prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone). Touch nothing.",
+      },
+      {
+        label: "Prune worktrees — apply",
+        text: "From the main clone: /prune --apply — remove the eligible Cursor feature worktrees and paired local branches, then git fetch --prune. Skip dirty trees and anything with an open PR. Never run this from inside a worktree being removed.",
+      },
     ],
     noteHtml:
-      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely.",
+      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely. After squash-merge, <b>/prune</b> is an orchestrator job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>.",
   },
   {
     node: "START",
@@ -169,19 +178,19 @@ Your job:
       },
       {
         label: "Checkout & test",
-        text: "Check out PR #<N> in a throwaway worktree, run the repo's test command, and report exact counts — then remove the worktree.",
+        text: "Check out PR #<N> in a throwaway worktree, run the repo's test command, and report exact counts — then remove the throwaway worktree.",
       },
       {
-        label: "Manual smoke — set me up",
-        text: "PR #<N> needs a hands-on test. Check it out in a throwaway worktree, launch it per the repo's Manual smoke config, and give me the click-path: which screen, which action, what correct looks like. Hold the merge until I call it good.",
+        label: "Manual smoke — set me up (optional)",
+        text: "I want agent-prepped smoke for PR #<N>. Check it out in a throwaway worktree, launch it per the repo's Manual smoke config, and give me the click-path: which screen, which action, what correct looks like. Hold the merge until I call it good. (Default is I already smoked in the feature worktree — don't launch unless I ask.)",
       },
       {
         label: "Merge it",
-        text: "Squash-merge PR #<N> and delete the branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #), then prune the local worktree and branch.",
+        text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /prune from the main clone — do not delete the feature worktree from inside it.",
       },
     ],
     noteHtml:
-      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never.",
+      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never. Cleanup after squash is a handoff to <b>/prune</b> (orchestrator, main clone) — not an in-place delete from the feature worktree.",
   },
   {
     node: "VERIFY",

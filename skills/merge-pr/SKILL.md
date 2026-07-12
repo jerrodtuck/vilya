@@ -1,12 +1,18 @@
 ---
 name: merge-pr
-description: Operator-side PR merge flow — triage an open PR, fast-checkout and test when warranted, squash-merge, confirm the board moved, clean up branches/worktrees. Use when the user says "merge PR #N", "review and merge", "process the review queue", or the morning after /night-shift leaves PRs. Pairs with /finish-feature.
+description: >-
+  Operator-side PR merge flow — triage an open PR, confirm operator-owned smoke when
+  owed, squash-merge, confirm the board moved, hand off worktree/branch cleanup to
+  /prune. Use when the user says "merge PR #N", "review and merge", "process the
+  review queue", or the morning after /night-shift leaves PRs. Pairs with
+  /finish-feature and /prune.
 ---
 
 # Merge PR (any stack)
 
 > Companion: [/finish-feature](../finish-feature/SKILL.md) opens PRs; [/night-shift](../night-shift/SKILL.md)
-> leaves them overnight. This skill is the operator's side of the handshake — **nothing merges
+> leaves them overnight; [/prune](../prune/SKILL.md) cleans Cursor feature worktrees after
+> squash. This skill is the operator's side of the handshake — **nothing merges
 > without it**. Repo / test command / default branch come from this repo's
 > `docs/project-tracking/GITHUB-PROJECTS.md` config block.
 
@@ -53,12 +59,27 @@ Read the body's **Verification** (exact test counts + crucible merge-readiness s
   change has thin automated coverage. The routing was decided at kickoff (`/start-feature`
   step 5) — read it off the issue; re-derive only if it's missing, and say so. Where it runs:
   - Runnable **locally from the branch** (launch the app, click the affected flow) → do it
-    **pre-merge** in the checkout below; the PR keeps `Closes #` and merges done-done.
+    **pre-merge** (step 2); the PR keeps `Closes #` and merges done-done.
   - Only against the **live / deployed system** (hardware, brokers, a real CygNet, production
     data) → don't fake it locally. Merge with `Refs #`, move the issue to **Verifying**, and
     close it after the live confirmation. That's what the state is for.
 
-## 2. Fast checkout + test (when owed)
+## 2. Smoke + checkout (when owed)
+
+### Default — operator-owned smoke
+
+Daytime flow: the **operator** already smoked in the feature worktree (Explorer, local
+`dotnet` / `npm run dev`, click-path from the issue). Before merge:
+
+1. Confirm with the operator that smoke already happened (or that routing is `tests-only` /
+   merge-on-review and no smoke is owed).
+2. **Do not** launch the app, prep a throwaway worktree for clicking, or drive a browser
+   unless they explicitly ask.
+
+### Optional — agent-prepped smoke (only when asked)
+
+Use when the operator requests it (unfamiliar night-shift PR, `local-smoke` they have not
+run yet, "set me up"):
 
 Fastest when your main clone is clean:
 
@@ -80,11 +101,14 @@ git worktree remove ../pr-<n> && git branch -D pr-<n>
 
 Report exact counts, same bar as `/finish-feature` step 1.
 
-**Manual smoke (pre-merge):** launch the app from that same worktree using the **Manual smoke**
+**Manual smoke prep:** launch the app from that same worktree using the **Manual smoke**
 entry in `GITHUB-PROJECTS.md`, then hand the operator the click-path — which screen, which
-action, what correct looks like — derived from the issue's verify plan and the PR's Verification
-section. The agent preps the environment and the checklist; **the operator does the clicking.**
-Hold the merge until they call it good.
+action, what correct looks like — derived from the issue's verify plan and the PR's
+Verification section. The agent preps the environment and the checklist; **the operator does
+the clicking.** Hold the merge until they call it good.
+
+Throwaway `../pr-<n>` trees are removed in this step when you created them. The **feature**
+worktree from `/start-feature` is **not** deleted here — that is [/prune](../prune/SKILL.md).
 
 ## 3. Conflicts / stale branch
 
@@ -102,18 +126,23 @@ gh pr merge <n> --repo <owner>/<repo> --squash --delete-branch
 - Merge only with checks green — or say explicitly which check you're waiving and why.
 - Running /merge-pr from the PR branch's **own worktree**? `--delete-branch` conflicts with the
   active checkout — merge with `--squash` alone and delete the remote branch separately
-  (`git push origin --delete <branch>`); the local worktree/branch cleanup happens per step 5
-  once you're off the branch.
+  (`git push origin --delete <branch>`); local worktree/branch cleanup is the `/prune` handoff
+  once you are on the main clone.
 
-## 5. Board + cleanup
+## 5. Board + prune handoff
 
 - `Closes #` PR → the board workflow auto-moves the issue to **Done**. Verify it actually moved.
 - `Refs #` PR (live retest owed) → move the issue to **Verifying** yourself; it reaches Done only
   after live confirmation.
-- Local hygiene: remove the feature worktree, delete the local branch, `git fetch --prune`.
+- **Cleanup is a handoff, not an in-place delete:** tell the operator to run `/prune` (dry-run)
+  then `/prune --apply` from the **main clone**. If this session's cwd is inside the feature
+  worktree just merged, say so explicitly — do not attempt `git worktree remove` on the tree
+  you are standing in. Cursor Archive / Claude delete do **not** replace `/prune` for
+  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` paths.
 
 ## Honesty bar
 
 Never merge over red checks silently. Name any verification you skipped ("merged on review alone,
 no local run"). Distinguish **merged** from **merged and live-verified** — that's what Verifying
-is for.
+is for. Distinguish **merged** from **pruned** — leftover worktrees after squash are expected
+until `/prune --apply`.

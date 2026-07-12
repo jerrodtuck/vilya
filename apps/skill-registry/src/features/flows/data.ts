@@ -92,10 +92,11 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>The operator's side of the handshake — <b>nothing merges without you</b>. Finish (or night-shift) leaves an open PR; this skill lands it:</p>
     <ul><li><b>Triage first</b> — CI status, the crucible signal + test counts in the PR's Verification section, diff size. Most loop PRs merge on review alone.</li>
+    <li><b>Smoke is yours by default</b> — confirm you already smoked in the feature worktree. The agent does <b>not</b> launch the app unless you ask (optional prep for unfamiliar / night-shift PRs).</li>
     <li><b>Checkout owed?</b> Fastest: <code>gh pr checkout &lt;n&gt;</code>. Isolated: fetch <code>pull/&lt;n&gt;/head</code> into a <b>throwaway worktree</b>, run the repo's test command, remove it.</li>
-    <li><b>Manual test owed?</b> If it runs locally, launch the app from that worktree (the repo's <b>Manual smoke</b> config) — the skill preps the click-path, <b>you do the clicking</b>, merge stays <code>Closes #</code>. Live-only (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>
+    <li><b>Live-only</b> (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>
     <li><b>Squash, always</b> — one issue = one commit on the default branch: <code>gh pr merge --squash --delete-branch</code>. The PR body (with <code>Closes #</code>) becomes the commit message.</li>
-    <li>Confirm the board moved; prune the local worktree + branch.</li></ul>`,
+    <li>Confirm the board moved; <b>handoff to <code>/prune</code></b> from the main clone — do not delete the feature worktree from inside it. Cursor Archive / Claude delete do not own <code>%USERPROFILE%\\.cursor\\worktrees\\&lt;repo&gt;</code>.</li></ul>`,
   },
   DONE: {
     kicker: "Merged",
@@ -168,14 +169,14 @@ export const FLOWS: Record<string, FlowDef> = {
   happy: {
     label: "Happy path",
     descHtml:
-      "<b>Happy path.</b> start-feature → implement in the slice → review → finish-feature → merge-pr → Done. The clean straight line.",
+      "<b>Happy path.</b> start-feature → implement in the slice → review → finish-feature → merge-pr → Done (then <code>/prune</code> from the main clone). The clean straight line.",
     nodes: ["ORCH", "START", "IMPL", "REVIEW", "FINISH", "MERGE", "DONE"],
     edges: ["o-s", "s-i", "i-r", "r-f", "f-m", "m-d"],
   },
   merge: {
     label: "Merge a PR",
     descHtml:
-      "<b>Merge a PR.</b> An open PR — yours or night-shift's — gets triaged (CI, crucible signal, diff), a throwaway-worktree test run if warranted, then a squash merge: one issue, one commit on the default branch. The board auto-moves to Done.",
+      "<b>Merge a PR.</b> An open PR — yours or night-shift's — gets triaged (CI, crucible signal, diff), operator-owned smoke when owed, then a squash merge: one issue, one commit on the default branch. Board → Done; worktree cleanup is <code>/prune</code> from the main clone.",
     nodes: ["FINISH", "MERGE", "DONE"],
     edges: ["f-m", "m-d"],
   },
