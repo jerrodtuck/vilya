@@ -8,6 +8,11 @@ import {
   mergeConfig,
   type GithubProjectsConfig,
 } from "./github-projects-config";
+import {
+  STACK_PRESETS,
+  suggestionFor,
+  usualFill,
+} from "./github-projects-defaults";
 import { generateFromTemplate } from "./github-projects-generate";
 import { parseConfig } from "./github-projects-parse";
 
@@ -124,7 +129,8 @@ export function GithubProjectsTool({
   }
 
   const parsed = parseConfig(paste);
-  const merged = mergeConfig(parsed, overridesToPartial(overrides));
+  const withOverrides = mergeConfig(parsed, overridesToPartial(overrides));
+  const merged = mergeConfig(withOverrides, usualFill(withOverrides));
   const generated = generateFromTemplate(merged, templateMarkdown);
   const checklist = configChecklist(merged);
   const kept = checklist.filter((i) => i.status === "kept").length;
@@ -132,21 +138,24 @@ export function GithubProjectsTool({
   const pasteActive = paste.trim() !== "";
   const liveHint = pasteActive
     ? missing > 0
-      ? `Live — ${kept} kept · ${missing} missing. Type in the empty checklist rows.`
+      ? `Live — ${kept} kept · ${missing} missing. Empty rows accept a value or a suggestion.`
       : `Live — ${kept} kept · 0 missing. Copy or download below.`
-    : "Paste a file and/or type missing values in the checklist — Generated updates live.";
+    : "Paste a file and/or fill missing checklist rows — usual Status ids and stack→crucible apply automatically.";
+
+  const setOverrideValue = (key: string, value: string) => {
+    setOverrides((prev) => {
+      if (value === "") {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  };
 
   const setOverride =
     (key: string) => (e: ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setOverrides((prev) => {
-        if (value === "") {
-          const next = { ...prev };
-          delete next[key];
-          return next;
-        }
-        return { ...prev, [key]: value };
-      });
+      setOverrideValue(key, e.target.value);
     };
 
   const download = () => {
@@ -164,9 +173,10 @@ export function GithubProjectsTool({
     <div className="gptool">
       <p className="muted" style={{ lineHeight: 1.55, marginTop: 0 }}>
         Paste a product repo&apos;s current file (or leave blank for a new
-        repo). Values land in the checklist; anything still missing gets a
-        text box right there. Both feed Vilya&apos;s latest template —
-        Generated updates live. Copy or download; nothing is pushed to GitHub.
+        repo). Missing checklist rows get a text box; Status option ids and
+        crucible (from stack) use the usual shared board defaults. Suggestions
+        on other gaps are one click. Generated updates live — nothing is pushed
+        to GitHub.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -210,7 +220,15 @@ export function GithubProjectsTool({
       <ul className="gpcheck">
         {checklist.map((item) => {
           const draft = overrides[item.key];
+          const suggestion = suggestionFor(item.key, merged);
           const showInput = item.status === "missing" || draft !== undefined;
+          const showStackPicks = item.key === "stack" && showInput;
+          const showSuggest =
+            showInput &&
+            suggestion !== "" &&
+            (draft ?? "") !== suggestion &&
+            item.status === "missing";
+
           return (
             <li key={item.key} className={item.status}>
               <span className="gpmark">
@@ -219,14 +237,42 @@ export function GithubProjectsTool({
               <span className="gplab">{item.label}</span>
               <span className="gpval">
                 {showInput ? (
-                  <input
-                    className="gpinline"
-                    value={draft ?? ""}
-                    onChange={setOverride(item.key)}
-                    placeholder="type value"
-                    aria-label={item.label}
-                    spellCheck={false}
-                  />
+                  <span className="gpedit">
+                    <input
+                      className="gpinline"
+                      value={draft ?? ""}
+                      onChange={setOverride(item.key)}
+                      placeholder={suggestion || "type value"}
+                      list={showStackPicks ? "gp-stack-presets" : undefined}
+                      aria-label={item.label}
+                      spellCheck={false}
+                    />
+                    {showStackPicks ? (
+                      <span className="gpsugs">
+                        {STACK_PRESETS.map((p) => (
+                          <button
+                            key={p.stack}
+                            type="button"
+                            className="gpsug"
+                            onClick={() => setOverrideValue("stack", p.stack)}
+                          >
+                            {p.stack}
+                          </button>
+                        ))}
+                      </span>
+                    ) : null}
+                    {showSuggest ? (
+                      <button
+                        type="button"
+                        className="gpsug"
+                        onClick={() => setOverrideValue(item.key, suggestion)}
+                      >
+                        use {suggestion.length > 42
+                          ? `${suggestion.slice(0, 40)}…`
+                          : suggestion}
+                      </button>
+                    ) : null}
+                  </span>
                 ) : (
                   item.value
                 )}
@@ -235,6 +281,11 @@ export function GithubProjectsTool({
           );
         })}
       </ul>
+      <datalist id="gp-stack-presets">
+        {STACK_PRESETS.map((p) => (
+          <option key={p.stack} value={p.stack} />
+        ))}
+      </datalist>
 
       <div className="gprow" style={{ marginTop: 18 }}>
         <h3 className="gph3" style={{ margin: 0, flex: 1 }}>
