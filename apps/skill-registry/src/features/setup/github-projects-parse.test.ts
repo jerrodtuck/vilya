@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import { emptyConfig } from "./github-projects-config";
 import { normalizeValue, parseConfig } from "./github-projects-parse";
 
@@ -116,5 +118,42 @@ describe("parseConfig", () => {
     expect(cfg.stack).toBe("");
     expect(cfg.areaLabels).toEqual([]);
     expect(cfg.statusOptions.todo).toBe("");
+  });
+
+  it("extracts Anduin-style prose + Status helper + Labels table", () => {
+    const anduin = fs.readFileSync(
+      path.join(__dirname, "anduin-paste.fixture.md"),
+      "utf8"
+    );
+    const cfg = parseConfig(anduin);
+    expect(cfg.owner).toBe("jerrodtuck");
+    expect(cfg.repo).toBe("jerrodtuck/anduin");
+    expect(cfg.projectNumber).toBe("4");
+    expect(cfg.projectId).toBe("PVT_kwHOAYNJN84BdC4c");
+    expect(cfg.statusFieldId).toBe("PVTSSF_lAHOAYNJN84BdC4czhXnTSM");
+    expect(cfg.manualSmoke).toContain("dotnet run --project src/Anduin.App");
+    expect(cfg.statusOptions).toEqual({
+      todo: "f75ad846",
+      inProgress: "47fc9ee4",
+      blocked: "7e864448",
+      verifying: "0fd3026c",
+      done: "98236657",
+    });
+    expect(cfg.areaLabels).toEqual([
+      "area:live-points",
+      "area:transactions",
+      "area:egress-mqtt",
+      "area:egress-sse",
+      "area:subscriptions",
+      "area:commands",
+      "area:host",
+      "area:building-blocks",
+      "area:docs",
+      "area:installer",
+    ]);
+    // Not present in Anduin-style files — stay blank for form overrides.
+    expect(cfg.stack).toBe("");
+    expect(cfg.crucibleVariant).toBe("");
+    expect(cfg.testCommand).toBe("");
   });
 });

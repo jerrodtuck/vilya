@@ -4,59 +4,80 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import {
   configChecklist,
+  emptyConfig,
   mergeConfig,
   type GithubProjectsConfig,
 } from "./github-projects-config";
+import {
+  STACK_PRESETS,
+  suggestionFor,
+  usualFill,
+} from "./github-projects-defaults";
 import { generateFromTemplate } from "./github-projects-generate";
 import { parseConfig } from "./github-projects-parse";
 
-const FORM_FIELDS = [
-  ["owner", "Owner"],
-  ["repo", "Repo"],
-  ["projectNumber", "Project number"],
-  ["projectId", "Project id"],
-  ["statusFieldId", "Status field id"],
-  ["stack", "Stack"],
-  ["crucibleVariant", "Crucible variant"],
-  ["testCommand", "Test command"],
-  ["manualSmoke", "Manual smoke"],
-  ["defaultBranch", "Default branch"],
-  ["planningModel", "Planning model"],
-  ["executionModel", "Execution model"],
-] as const;
+/** Checklist key → config override. Empty string means "no override". */
+type FieldOverrides = Record<string, string>;
 
-type FormFieldKey = (typeof FORM_FIELDS)[number][0];
+function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsConfig> {
+  const base = emptyConfig();
+  const status = { ...base.statusOptions };
+  let areaLabels = base.areaLabels;
+  const scalar: Partial<GithubProjectsConfig> = {};
 
-type FormState = Record<FormFieldKey, string> & { areaLabels: string };
+  for (const [key, raw] of Object.entries(overrides)) {
+    const value = raw.trim();
+    if (value === "") continue;
 
-const EMPTY_FORM: FormState = {
-  owner: "",
-  repo: "",
-  projectNumber: "",
-  projectId: "",
-  statusFieldId: "",
-  stack: "",
-  crucibleVariant: "",
-  testCommand: "",
-  manualSmoke: "",
-  defaultBranch: "",
-  planningModel: "",
-  executionModel: "",
-  areaLabels: "",
-};
-
-function formToOverrides(form: FormState): Partial<GithubProjectsConfig> {
-  const labels = form.areaLabels
-    .split(/[·,]/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s) => (s.startsWith("area:") ? s : `area:${s}`));
-
-  const overrides: Partial<GithubProjectsConfig> = { areaLabels: labels };
-  for (const [key] of FORM_FIELDS) {
-    overrides[key] = form[key];
+    switch (key) {
+      case "owner":
+      case "repo":
+      case "projectNumber":
+      case "projectId":
+      case "statusFieldId":
+      case "stack":
+      case "crucibleVariant":
+      case "testCommand":
+      case "manualSmoke":
+      case "defaultBranch":
+      case "planningModel":
+      case "executionModel":
+      case "typeFieldLine":
+      case "priorityFieldLine":
+        scalar[key] = value;
+        break;
+      case "status.todo":
+        status.todo = value;
+        break;
+      case "status.inProgress":
+        status.inProgress = value;
+        break;
+      case "status.blocked":
+        status.blocked = value;
+        break;
+      case "status.verifying":
+        status.verifying = value;
+        break;
+      case "status.done":
+        status.done = value;
+        break;
+      case "areaLabels":
+        areaLabels = value
+          .split(/[·,]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((s) => (s.startsWith("area:") ? s : `area:${s}`));
+        break;
+      default:
+        break;
+    }
   }
-  return overrides;
+
+  return {
+    ...scalar,
+    statusOptions: status,
+    areaLabels,
+  };
 }
 
 function CopyGenerated({ text }: { text: string }) {
@@ -93,21 +114,48 @@ export function GithubProjectsTool({
   templateMarkdown: string | null;
 }) {
   const [paste, setPaste] = useState("");
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [showForm, setShowForm] = useState(false);
+  const [overrides, setOverrides] = useState<FieldOverrides>({});
+
+  if (!templateMarkdown) {
+    return (
+      <div className="note">
+        <b>Template unavailable.</b> Could not read the bundled{" "}
+        <code>content/GITHUB-PROJECTS.md</code> (or{" "}
+        <code>docs/project-tracking/GITHUB-PROJECTS.md</code>) from this
+        runtime. Set <code>GITHUB_PROJECTS_TEMPLATE</code>, or rebuild so the
+        sync script copies the canonical template into the app.
+      </div>
+    );
+  }
 
   const parsed = parseConfig(paste);
-  const merged = mergeConfig(parsed, formToOverrides(form));
-  const generated = templateMarkdown
-    ? generateFromTemplate(merged, templateMarkdown)
-    : "";
+  const withOverrides = mergeConfig(parsed, overridesToPartial(overrides));
+  const merged = mergeConfig(withOverrides, usualFill(withOverrides));
+  const generated = generateFromTemplate(merged, templateMarkdown);
   const checklist = configChecklist(merged);
   const kept = checklist.filter((i) => i.status === "kept").length;
   const missing = checklist.filter((i) => i.status === "missing").length;
+  const pasteActive = paste.trim() !== "";
+  const liveHint = pasteActive
+    ? missing > 0
+      ? `Live — ${kept} kept · ${missing} missing. Empty rows accept a value or a suggestion.`
+      : `Live — ${kept} kept · 0 missing. Copy or download below.`
+    : "Paste a file and/or fill missing checklist rows — usual Status ids and stack→crucible apply automatically.";
 
-  const setField =
-    (key: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const setOverrideValue = (key: string, value: string) => {
+    setOverrides((prev) => {
+      if (value === "") {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  };
+
+  const setOverride =
+    (key: string) => (e: ChangeEvent<HTMLInputElement>) => {
+      setOverrideValue(key, e.target.value);
     };
 
   const download = () => {
@@ -121,24 +169,14 @@ export function GithubProjectsTool({
     URL.revokeObjectURL(url);
   };
 
-  if (!templateMarkdown) {
-    return (
-      <div className="note">
-        <b>Template unavailable.</b> Could not read{" "}
-        <code>docs/project-tracking/GITHUB-PROJECTS.md</code> from this
-        runtime. Set <code>GITHUB_PROJECTS_TEMPLATE</code> or run from the
-        monorepo checkout.
-      </div>
-    );
-  }
-
   return (
     <div className="gptool">
       <p className="muted" style={{ lineHeight: 1.55, marginTop: 0 }}>
         Paste a product repo&apos;s current file (or leave blank for a new
-        repo). Config values are extracted and filled into Vilya&apos;s latest
-        template — process sections always come from here. Copy or download;
-        nothing is pushed to GitHub.
+        repo). Missing checklist rows get a text box; Status option ids and
+        crucible (from stack) use the usual shared board defaults. Suggestions
+        on other gaps are one click. Generated updates live — nothing is pushed
+        to GitHub.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -150,62 +188,28 @@ export function GithubProjectsTool({
         rows={10}
         value={paste}
         onChange={(e) => setPaste(e.target.value)}
-        placeholder="Paste markdown here — or leave empty and fill the form below for a new repo"
+        placeholder="Paste markdown here — or leave empty and fill missing checklist rows for a new repo"
         spellCheck={false}
       />
+      <p
+        className={`gplive${pasteActive || kept > 0 ? " active" : ""}`}
+        aria-live="polite"
+      >
+        {liveHint}
+      </p>
 
       <div className="gprow">
         <button
           type="button"
           className="setupbtn"
-          onClick={() => setShowForm((v) => !v)}
-        >
-          {showForm ? "Hide form overrides" : "Show form overrides"}
-        </button>
-        <button
-          type="button"
-          className="setupbtn"
           onClick={() => {
             setPaste("");
-            setForm(EMPTY_FORM);
+            setOverrides({});
           }}
         >
           Clear
         </button>
       </div>
-
-      {showForm ? (
-        <div className="gpform">
-          <p className="muted" style={{ marginTop: 0 }}>
-            Non-empty fields override the paste (new-repo path: leave paste
-            empty and fill these).
-          </p>
-          <div className="gpgrid">
-            {FORM_FIELDS.map(([key, label]) => (
-              <label key={key} className="gplabel">
-                {label}
-                <input
-                  className="gpinput"
-                  value={form[key]}
-                  onChange={setField(key)}
-                  spellCheck={false}
-                />
-              </label>
-            ))}
-            <label className="gplabel gpwide">
-              Area labels{" "}
-              <span className="muted">(comma or · separated)</span>
-              <input
-                className="gpinput"
-                value={form.areaLabels}
-                onChange={setField("areaLabels")}
-                placeholder="area:api, area:ui"
-                spellCheck={false}
-              />
-            </label>
-          </div>
-        </div>
-      ) : null}
 
       <h3 className="gph3">
         Config checklist{" "}
@@ -214,18 +218,74 @@ export function GithubProjectsTool({
         </span>
       </h3>
       <ul className="gpcheck">
-        {checklist.map((item) => (
-          <li key={item.key} className={item.status}>
-            <span className="gpmark">
-              {item.status === "kept" ? "✓" : "·"}
-            </span>
-            <span className="gplab">{item.label}</span>
-            <span className="gpval">
-              {item.status === "kept" ? item.value : "missing — placeholder"}
-            </span>
-          </li>
-        ))}
+        {checklist.map((item) => {
+          const draft = overrides[item.key];
+          const suggestion = suggestionFor(item.key, merged);
+          const showInput = item.status === "missing" || draft !== undefined;
+          const showStackPicks = item.key === "stack" && showInput;
+          const showSuggest =
+            showInput &&
+            suggestion !== "" &&
+            (draft ?? "") !== suggestion &&
+            item.status === "missing";
+
+          return (
+            <li key={item.key} className={item.status}>
+              <span className="gpmark">
+                {item.status === "kept" ? "✓" : "·"}
+              </span>
+              <span className="gplab">{item.label}</span>
+              <span className="gpval">
+                {showInput ? (
+                  <span className="gpedit">
+                    <input
+                      className="gpinline"
+                      value={draft ?? ""}
+                      onChange={setOverride(item.key)}
+                      placeholder={suggestion || "type value"}
+                      list={showStackPicks ? "gp-stack-presets" : undefined}
+                      aria-label={item.label}
+                      spellCheck={false}
+                    />
+                    {showStackPicks ? (
+                      <span className="gpsugs">
+                        {STACK_PRESETS.map((p) => (
+                          <button
+                            key={p.stack}
+                            type="button"
+                            className="gpsug"
+                            onClick={() => setOverrideValue("stack", p.stack)}
+                          >
+                            {p.stack}
+                          </button>
+                        ))}
+                      </span>
+                    ) : null}
+                    {showSuggest ? (
+                      <button
+                        type="button"
+                        className="gpsug"
+                        onClick={() => setOverrideValue(item.key, suggestion)}
+                      >
+                        use {suggestion.length > 42
+                          ? `${suggestion.slice(0, 40)}…`
+                          : suggestion}
+                      </button>
+                    ) : null}
+                  </span>
+                ) : (
+                  item.value
+                )}
+              </span>
+            </li>
+          );
+        })}
       </ul>
+      <datalist id="gp-stack-presets">
+        {STACK_PRESETS.map((p) => (
+          <option key={p.stack} value={p.stack} />
+        ))}
+      </datalist>
 
       <div className="gprow" style={{ marginTop: 18 }}>
         <h3 className="gph3" style={{ margin: 0, flex: 1 }}>
