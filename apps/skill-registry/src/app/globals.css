@@ -218,17 +218,10 @@ h1 .you { color: var(--orch); }
 }
 .gplive.active { color: var(--finish); font-weight: 600; }
 .gprow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
-.gpform {
-  margin-top: 12px; border: 1px solid var(--border); border-radius: 12px;
-  background: var(--surface); padding: 14px 16px;
-}
-.gpgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
-@media (max-width: 760px) { .gpgrid { grid-template-columns: 1fr; } }
-.gpwide { grid-column: 1 / -1; }
 .gph3 { font-size: 15px; margin: 22px 0 8px; color: var(--text); }
 .gpcheck { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
 .gpcheck li {
-  display: grid; grid-template-columns: 18px 160px 1fr; gap: 10px; align-items: baseline;
+  display: grid; grid-template-columns: 18px 160px 1fr; gap: 10px; align-items: center;
   padding: 8px 12px; border-bottom: 1px solid #20262f; font-size: 12.5px;
 }
 .gpcheck li:last-child { border-bottom: 0; }
@@ -236,13 +229,13 @@ h1 .you { color: var(--orch); }
 .gpcheck li.kept .gpmark { color: var(--finish); }
 .gpcheck .gplab { color: var(--muted); font-weight: 600; }
 .gpcheck .gpval { color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
-.gpcheck li.missing .gpval { color: var(--faint); font-style: italic; font-family: inherit; }
-.gplink {
-  appearance: none; background: none; border: 0; padding: 0; margin: 0;
-  color: var(--start); font: inherit; font-style: italic; cursor: pointer;
-  text-decoration: underline; text-underline-offset: 2px;
+.gpcheck li.missing .gpval { color: var(--faint); font-style: normal; font-family: inherit; }
+.gpinline {
+  width: 100%; box-sizing: border-box; background: #0f1319; border: 1px solid var(--border);
+  border-radius: 7px; color: #cdd4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px; line-height: 1.4; padding: 6px 9px;
 }
-.gplink:hover { color: var(--text); }
+.gpinline:focus { outline: 1px solid var(--start); border-color: var(--start); }
 
 /* ---------- site: skills reference ---------- */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }

@@ -10,7 +10,7 @@ import path from "node:path";
  */
 function candidatePaths(
   cwd: string,
-  env: NodeJS.ProcessEnv
+  env: NodeJS.ProcessEnv | Record<string, string | undefined>
 ): string[] {
   const fromEnv = env.GITHUB_PROJECTS_TEMPLATE
     ? [path.resolve(cwd, env.GITHUB_PROJECTS_TEMPLATE)]
@@ -40,7 +40,7 @@ function candidatePaths(
 /** Latest Vilya template body, or null if the file is not available at runtime. */
 export function loadGithubProjectsTemplate(
   cwd: string = process.cwd(),
-  env: NodeJS.ProcessEnv = process.env
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env
 ): string | null {
   for (const filePath of candidatePaths(cwd, env)) {
     if (fs.existsSync(filePath)) {
