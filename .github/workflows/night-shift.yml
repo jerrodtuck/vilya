@@ -21,8 +21,8 @@ name: night-shift
 # MANUAL-ONLY by default: fire it from Actions → night-shift → Run workflow.
 # To turn on the nightly schedule later, uncomment the `schedule:` block.
 on:
-  # schedule:
-  cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST adjustment)
+  schedule:
+   cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST adjustment)
   workflow_dispatch: {}
 
 permissions:
