@@ -1,4 +1,6 @@
 // Feature slice: setup — install + per-repo guide (server component).
+import { GithubProjectsTool } from "./github-projects-tool";
+import { loadGithubProjectsTemplate } from "./load-github-projects-template";
 import { PlatformToggle } from "./platform-toggle";
 
 const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
@@ -14,6 +16,8 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
         owner · repo · project # · project id · status field + option ids ·
         stack · crucible variant · test command · default branch · optional{" "}
         <b>Models</b> (planning / execution) · your <code>area:*</code> labels
+        — or use <b>Regenerate GITHUB-PROJECTS.md</b> below to fill the latest
+        template from a paste / short form
       </>
     ),
   },
@@ -64,6 +68,8 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
 ];
 
 export function SetupView() {
+  const templateMarkdown = loadGithubProjectsTemplate();
+
   return (
     <>
       <div className="eyebrow">Install once, add a config per repo</div>
@@ -118,6 +124,9 @@ export function SetupView() {
           </div>
         ))}
       </div>
+
+      <h2>Regenerate GITHUB-PROJECTS.md</h2>
+      <GithubProjectsTool templateMarkdown={templateMarkdown} />
 
       <h2>Grab skills straight from this site</h2>
       <p className="muted">
