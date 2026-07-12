@@ -237,6 +237,12 @@ h1 .you { color: var(--orch); }
 .gpcheck .gplab { color: var(--muted); font-weight: 600; }
 .gpcheck .gpval { color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
 .gpcheck li.missing .gpval { color: var(--faint); font-style: italic; font-family: inherit; }
+.gplink {
+  appearance: none; background: none; border: 0; padding: 0; margin: 0;
+  color: var(--start); font: inherit; font-style: italic; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.gplink:hover { color: var(--text); }
 
 /* ---------- site: skills reference ---------- */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }

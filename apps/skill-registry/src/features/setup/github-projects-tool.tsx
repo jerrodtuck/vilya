@@ -23,11 +23,24 @@ const FORM_FIELDS = [
   ["defaultBranch", "Default branch"],
   ["planningModel", "Planning model"],
   ["executionModel", "Execution model"],
+  ["typeFieldLine", "Type field line"],
+  ["priorityFieldLine", "Priority field line"],
+] as const;
+
+const STATUS_FORM_FIELDS = [
+  ["statusTodo", "Status · Todo"],
+  ["statusInProgress", "Status · In Progress"],
+  ["statusBlocked", "Status · Blocked"],
+  ["statusVerifying", "Status · Verifying"],
+  ["statusDone", "Status · Done"],
 ] as const;
 
 type FormFieldKey = (typeof FORM_FIELDS)[number][0];
+type StatusFormKey = (typeof STATUS_FORM_FIELDS)[number][0];
 
-type FormState = Record<FormFieldKey, string> & { areaLabels: string };
+type FormState = Record<FormFieldKey | StatusFormKey, string> & {
+  areaLabels: string;
+};
 
 const EMPTY_FORM: FormState = {
   owner: "",
@@ -42,6 +55,13 @@ const EMPTY_FORM: FormState = {
   defaultBranch: "",
   planningModel: "",
   executionModel: "",
+  typeFieldLine: "",
+  priorityFieldLine: "",
+  statusTodo: "",
+  statusInProgress: "",
+  statusBlocked: "",
+  statusVerifying: "",
+  statusDone: "",
   areaLabels: "",
 };
 
@@ -52,7 +72,16 @@ function formToOverrides(form: FormState): Partial<GithubProjectsConfig> {
     .filter(Boolean)
     .map((s) => (s.startsWith("area:") ? s : `area:${s}`));
 
-  const overrides: Partial<GithubProjectsConfig> = { areaLabels: labels };
+  const overrides: Partial<GithubProjectsConfig> = {
+    areaLabels: labels,
+    statusOptions: {
+      todo: form.statusTodo,
+      inProgress: form.statusInProgress,
+      blocked: form.statusBlocked,
+      verifying: form.statusVerifying,
+      done: form.statusDone,
+    },
+  };
   for (const [key] of FORM_FIELDS) {
     overrides[key] = form[key];
   }
@@ -94,7 +123,8 @@ export function GithubProjectsTool({
 }) {
   const [paste, setPaste] = useState("");
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const formRef = useRef<HTMLDivElement>(null);
 
   if (!templateMarkdown) {
     return (
@@ -116,8 +146,10 @@ export function GithubProjectsTool({
   const missing = checklist.filter((i) => i.status === "missing").length;
   const pasteActive = paste.trim() !== "";
   const liveHint = pasteActive
-    ? `Live — ${kept} kept · ${missing} missing. Checklist and Generated file update as you paste.`
-    : "Live on paste — no Generate button. Checklist + Generated file update immediately; leave blank for a new-repo skeleton.";
+    ? missing > 0
+      ? `Live — ${kept} kept · ${missing} missing. Fill gaps in the form — Generated updates as you type.`
+      : `Live — ${kept} kept · 0 missing. Copy or download the Generated file.`
+    : "Live on paste — leave blank and fill the form for a new repo, or paste then fill any gaps.";
 
   const setField =
     (key: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -135,13 +167,21 @@ export function GithubProjectsTool({
     URL.revokeObjectURL(url);
   };
 
+  const revealForm = () => {
+    setShowForm(true);
+    queueMicrotask(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  };
+
   return (
     <div className="gptool">
       <p className="muted" style={{ lineHeight: 1.55, marginTop: 0 }}>
         Paste a product repo&apos;s current file (or leave blank for a new
         repo). Config values are extracted and filled into Vilya&apos;s latest
-        template — process sections always come from here. Copy or download;
-        nothing is pushed to GitHub.
+        template — process sections always come from here. Anything still
+        missing can be typed in the form; both feed the Generated file live.
+        Copy or download; nothing is pushed to GitHub.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -167,9 +207,13 @@ export function GithubProjectsTool({
         <button
           type="button"
           className="setupbtn"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => (showForm ? setShowForm(false) : revealForm())}
         >
-          {showForm ? "Hide form overrides" : "Show form overrides"}
+          {showForm
+            ? "Hide fill-in form"
+            : missing > 0
+              ? `Fill ${missing} missing fields`
+              : "Show fill-in form"}
         </button>
         <button
           type="button"
@@ -184,19 +228,52 @@ export function GithubProjectsTool({
       </div>
 
       {showForm ? (
-        <div className="gpform">
+        <div className="gpform" ref={formRef}>
           <p className="muted" style={{ marginTop: 0 }}>
-            Non-empty fields override the paste (new-repo path: leave paste
-            empty and fill these).
+            Non-empty fields override the paste and write into the Generated
+            file immediately. Use this for gaps (Stack, Crucible, Test command,
+            …) or the whole new-repo path with paste empty.
           </p>
           <div className="gpgrid">
             {FORM_FIELDS.map(([key, label]) => (
+              <label
+                key={key}
+                className={`gplabel${
+                  key === "typeFieldLine" || key === "priorityFieldLine"
+                    ? " gpwide"
+                    : ""
+                }`}
+              >
+                {label}
+                <input
+                  className="gpinput"
+                  value={form[key]}
+                  onChange={setField(key)}
+                  placeholder={
+                    key === "stack"
+                      ? "e.g. blazor or nextjs"
+                      : key === "crucibleVariant"
+                        ? "e.g. crucible-blazor"
+                        : key === "defaultBranch"
+                          ? "main or master"
+                          : key === "typeFieldLine"
+                            ? "Type  (PVTSSF_…): Roadmap … · Epic …"
+                            : key === "priorityFieldLine"
+                              ? "Priority (PVTSSF_…): Critical … · High …"
+                              : undefined
+                  }
+                  spellCheck={false}
+                />
+              </label>
+            ))}
+            {STATUS_FORM_FIELDS.map(([key, label]) => (
               <label key={key} className="gplabel">
                 {label}
                 <input
                   className="gpinput"
                   value={form[key]}
                   onChange={setField(key)}
+                  placeholder="option id"
                   spellCheck={false}
                 />
               </label>
@@ -230,7 +307,17 @@ export function GithubProjectsTool({
             </span>
             <span className="gplab">{item.label}</span>
             <span className="gpval">
-              {item.status === "kept" ? item.value : "missing — placeholder"}
+              {item.status === "kept" ? (
+                item.value
+              ) : (
+                <button
+                  type="button"
+                  className="gplink"
+                  onClick={revealForm}
+                >
+                  missing — fill in form
+                </button>
+              )}
             </span>
           </li>
         ))}
