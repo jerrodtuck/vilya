@@ -138,21 +138,19 @@ export function FlowsView() {
         <h3>Night shift — same chain, unattended</h3>
         <p className="muted" style={{ margin: "6px 0 12px", lineHeight: 1.55 }}>
           Full setup lives on the{" "}
-          <Link href="/night-shift">Night shift</Link> page. Short version:
-          label issues <code>auto:ready</code>, fire{" "}
-          <code>gh workflow run night-shift</code> on the <b>product</b> repo
-          (self-hosted runner + <code>CLAUDE_CODE_OAUTH_TOKEN</code>). The job
-          runs <code>/start-feature</code> → implement → crucible →{" "}
-          <code>/finish-feature</code>. Opens PRs, never merges. Personal
-          account = workflow + runner + secret <b>per repo</b>; org later =
-          shared runner pool (Claude billing stays personal).
+          <Link href="/night-shift">Night shift</Link> page (Actions or Desktop
+          routines). Short version: label <code>auto:ready</code>, fire the
+          launcher, wake to PRs — never auto-merge. Actions path: self-hosted
+          runner + <code>CLAUDE_CODE_OAUTH_TOKEN</code>; Bypass rides in
+          workflow <code>claude_args</code>. Desktop: enable Allow bypass in
+          Settings, set that routine to Bypass (not a user-global default).
         </p>
         <div className="note" style={{ marginTop: 8 }}>
           Templates: <code>.github/workflows/night-shift.yml</code> and{" "}
           <code>
             docs/project-tracking/templates/night-shift-dotnet-cygnet.yml
           </code>
-          . Manual-only until you uncomment <code>schedule:</code>.
+          . Cron <code>0 8 * * *</code> is active on this repo.
         </div>
       </div>
 

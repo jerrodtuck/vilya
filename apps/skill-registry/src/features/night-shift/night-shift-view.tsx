@@ -1,4 +1,4 @@
-// Feature slice: night-shift — unattended Dev Loop via GitHub Actions (server component).
+// Feature slice: night-shift — unattended Dev Loop (server component).
 import Link from "next/link";
 import { NightAgentMap } from "./night-agent-map";
 
@@ -9,9 +9,9 @@ export function NightShiftView() {
       <h1>Night shift</h1>
       <p className="lead">
         Night-shift is <b>not</b> a second methodology. It runs the daytime Dev
-        Loop unattended on a <b>product</b> repo via GitHub Actions + headless
-        Claude Code. This page maps the <b>agent machinery</b> — dispatch through
-        morning report. The methodology map stays on <Link href="/flows">Flows</Link>.
+        Loop unattended on a <b>product</b> repo. This page maps the{" "}
+        <b>agent machinery</b> — dispatch through morning report. The
+        methodology map stays on <Link href="/flows">Flows</Link>.
       </p>
 
       <NightAgentMap
@@ -24,8 +24,7 @@ export function NightShiftView() {
                 <b>1 · Before bed</b>
                 <span>
                   Label well-specified issues <code>auto:ready</code>. No label,
-                  no work. Cron fires ~2–3am Chicago, or run{" "}
-                  <code>gh workflow run night-shift</code>.
+                  no work. Then fire your chosen launcher (below).
                 </span>
               </div>
               <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
@@ -41,8 +40,8 @@ export function NightShiftView() {
                 <span>
                   Per-product{" "}
                   <code>docs/project-tracking/GITHUB-PROJECTS.md</code>. See{" "}
-                  <Link href="/setup">Setup</Link> for Models keys and runner
-                  notes; skill source of truth is{" "}
+                  <Link href="/setup">Setup</Link> for Models keys; skill source
+                  of truth is{" "}
                   <Link href="/skills/night-shift">/skills/night-shift</Link>.
                 </span>
               </div>
@@ -51,10 +50,58 @@ export function NightShiftView() {
         }
       />
 
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="kicker">Per-repo overnight setup</div>
+        <h3>Wire the launcher once</h3>
+        <p className="muted" style={{ lineHeight: 1.55, marginTop: 8 }}>
+          Shared prerequisites on every product repo:{" "}
+          <code>GITHUB-PROJECTS.md</code> filled, labels{" "}
+          <code>auto:ready</code> / <code>needs:decision</code>, skills
+          installed. The skill itself does <b>not</b> set permission mode —
+          the <b>launcher</b> must pass Bypass (or you approve every tool).
+          Do <b>not</b> put <code>defaultMode: bypassPermissions</code> in
+          user settings if you want daytime worktrees to keep prompting.
+        </p>
+
+        <div className="modes" style={{ marginTop: 14 }}>
+          <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
+            <b>A · GitHub Actions (canonical)</b>
+            <span>
+              Copy <code>.github/workflows/night-shift.yml</code> (or the
+              CygNet template under{" "}
+              <code>docs/project-tracking/templates/</code>). Register a
+              self-hosted runner on that <b>private</b> repo (
+              <code>self-hosted</code>, <code>windows</code>). Add secret{" "}
+              <code>CLAUDE_CODE_OAUTH_TOKEN</code> from{" "}
+              <code>claude setup-token</code>. Bypass is already in the
+              workflow&apos;s <code>claude_args</code> (
+              <code>--permission-mode bypassPermissions</code>). Fire with{" "}
+              <code>gh workflow run night-shift</code> or wait for cron{" "}
+              <code>0 8 * * *</code>.
+            </span>
+          </div>
+          <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
+            <b>B · Claude Code Desktop routines</b>
+            <span>
+              Schedule a routine that opens the product repo (or its worktree)
+              and runs the standing prompt: follow{" "}
+              <code>skills/night-shift/SKILL.md</code> exactly. Enable{" "}
+              <b>Allow bypass permissions mode</b> in Desktop Settings → Claude
+              Code, then set that routine/session to <b>Bypass permissions</b>.
+              Without that, overnight tool calls stop for approval. Prefer
+              Actions when you need a hard non-interactive guarantee —
+              Desktop scheduled tasks have been flaky about honoring Bypass.
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="note teal" style={{ marginTop: 16 }}>
-        Vilya ships the skill and workflow templates; each product repo enables
-        its own self-hosted runner and <code>CLAUDE_CODE_OAUTH_TOKEN</code>.
-        Self-hosted runners belong on <b>private</b> repos only.
+        Pipeline map above describes the <b>Actions</b> path (fresh{" "}
+        <code>_work</code> clone, OIDC → <code>claude[bot]</code>, subscription
+        brain). Desktop routines reuse your interactive checkout and identity —
+        same skill gates, different runner. Self-hosted Actions runners belong
+        on <b>private</b> repos only.
       </div>
 
       <div className="pagefoot">

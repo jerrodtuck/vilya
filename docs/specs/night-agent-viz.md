@@ -9,6 +9,8 @@
 
 Elevate `/night-shift` into a Flows-quality interactive pipeline that teaches how the
 unattended night agent works — distinct from the daytime Dev Loop map on `/flows`.
+Below the map: per-repo overnight setup for **two launchers** (Actions canonical;
+Desktop routines with explicit Bypass — never user-global `defaultMode`).
 
 ## Stage model
 
@@ -34,7 +36,14 @@ Steering safety gates (`needs:decision`, never-merge) share the distinct styling
 - Runner / `_work` mechanics are GitHub Actions self-hosted behavior, not named in YAML.
 - Bring-up walls documented in #23 / PRs #31–33; shared-profile caveat from #36.
 
+## Operator decision (2026-07-12)
+
+Setup strip under the map documents both launchers (**B**): Actions (`claude_args`
+Bypass) and Desktop routines (Settings → Allow bypass + per-routine Bypass). Do not
+default Bypass in `~/.claude/settings.json`.
+
 ## Verify
 
 - Vitest on stage model; `npm test && npm run build` in `apps/skill-registry`
-- Merge routing: **local-smoke** — click each stage on `/night-shift`; PR `Closes #36`
+- Merge routing: **local-smoke** — click each stage on `/night-shift`; confirm setup
+  strip names both launchers; PR `Closes #36`
