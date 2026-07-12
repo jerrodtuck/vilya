@@ -30,7 +30,8 @@ moved.
 
 ## 3. Spec + issue reflect shipped vs remaining
 
-- Update `docs/specs/<slug>.md` status if present.
+- Update `docs/specs/<slug>.md` status if present; bump **`Last updated: YYYY-MM-DD`** on that
+  revise.
 - Remaining work → follow-up issues on the board (not prose-only).
 - Do not claim Complete on unit tests alone when a live / integration retest is owed.
 

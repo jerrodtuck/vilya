@@ -41,7 +41,7 @@ For each target issue:
    `gh pr view <pr> --repo <owner>/<repo> --json title,mergedAt,body,files` plus its release note
    (grep `docs/project-tracking/changelog.d/` for the slug / PR number).
 5. **Decisions & reversals** — grep `docs/DECISIONS.md` for the topic (rationale, removed features,
-   "superseded by").
+   "superseded by"). **Do not** read the whole file end-to-end; search by topic or issue #.
 6. **Pre-migration forensics (only if applicable)** — if the repo kept legacy trackers before its
    GitHub-Projects migration and the issue traces to a legacy id (`BUG-…`, `fb_…`), grep those and
    note the origin. Repos with no legacy trackers skip this.

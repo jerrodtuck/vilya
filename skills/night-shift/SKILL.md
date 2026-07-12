@@ -1,15 +1,15 @@
 ---
 name: night-shift
-description: Autonomous overnight loop — pick the next eligible board issue and drive it start → implement → crucible review → refactor → PR without a human, stopping at any real decision fork. Meant to be launched by a scheduled task while you sleep. Opens PRs, never merges. Leaves a morning report.
+description: Autonomous overnight loop — pick the next eligible board issue and drive the daytime chain (start-feature → implement → crucible → finish-feature) without a human, stopping at any real decision fork. Meant to be launched by GitHub Actions while you sleep. Opens PRs, never merges. Leaves a morning report.
 ---
 
 # Night Shift — autonomous loop
 
-You are running **unattended** (a scheduled task fired this session; the operator is asleep). Your
-job: move one or more **eligible** issues from the board as far toward a mergeable PR as you honestly
-can, then leave a clear report for the morning. You are the whole loop tonight — but a cautious one.
+You are running **unattended** (GitHub Actions / headless Claude; the operator is asleep). Your job:
+move one or more **eligible** issues as far toward a mergeable PR as you honestly can, then leave a
+clear morning report. You are **not** a second methodology — you run the **same daytime chain**.
 
-Read the repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block for owner / repo / project /
+Read the product repo's `docs/project-tracking/GITHUB-PROJECTS.md` for owner / repo / project /
 labels / **stack** / **test command** / **crucible variant**.
 
 ## 0. Preflight — abort loudly, never silently
@@ -30,65 +30,62 @@ Eligible = **all** of:
 - Priority set; take highest priority, then oldest.
 
 No eligible issue → post "nothing eligible tonight" and stop. Take issues one at a time; loop back to
-step 1 only if budget remains (see §7).
+step 1 only if budget remains (see §6).
 
-## 2. Run the loop (the same one you run by day)
+## 2. Run the daytime chain (do not re-teach setup)
 
-1. Move the issue to **In Progress**. Branch `feat|fix/<issue#>-slug`.
-2. Read the owning **slice**. Build the change there — VSA + SOLID bar applies exactly as in daytime.
-3. **crucible review** (`<crucible variant>`): apply the top refactors, re-review, loop until
-   the signal reads **Ready** — cap at **3 refactor rounds**, then stop and report where it stands.
-4. Run the repo's **test command**. Green (and clean build/typecheck where that's the gate) is
-   required to open a PR as ready.
-5. **finish-feature**: write the `changelog.d/` fragment, open the PR.
+For the chosen issue, invoke the skills — worktrees, branches, board Status, verify plan, and merge
+routing are owned by `/start-feature`, not by this skill:
 
-## 3. The hard stop — decision forks
+1. **`/start-feature #<n>`** — issue, worktree, branch, In Progress, verify plan on the issue.
+2. **Implement** in the owning vertical slice (VSA + SOLID bar = daytime).
+3. **`/crucible-<stack>`** from config (`crucible-blazor` | `crucible-nextjs`): apply top
+   remediations, re-review until **Ready** — cap at **3 refactor rounds**, then stop and report.
+4. **`/finish-feature`** — tests green, changelog fragment, open the PR.
 
-If a **real design fork** appears (2–3 mechanisms with materially different, hard-to-reverse
-tradeoffs), **do not guess.**
+**Unattended consult:** when a real design fork appears during start-feature or implementation, do
+**not** wait for the operator. Comment options + your recommendation on the issue, label
+`needs:decision`, move to **Blocked**, and take the next eligible issue. (Daytime interactive
+consult still waits; only this unattended path skips the wait.)
 
-- Post the options + your recommendation as an issue comment.
-- Label the issue `needs:decision`, move it to **Blocked**, and move on to the next eligible issue.
-
-Guessing on a reversible detail is fine; guessing on architecture, data shape, public contracts, or
-anything you'd normally consult on is not.
-
-## 4. Never merge — always leave a PR
+## 3. Never merge — always leave a PR
 
 - Open the PR (`Closes #<n>` if done-done, `Refs #<n>` → **Verifying** if a live retest is owed —
   read the issue's declared merge routing; never downgrade `live-only` to `Closes #`).
 - **Never merge, never force-push a shared branch, never push to the default branch.** You open the
-  PR; the operator merges in the morning after review (via `/merge-pr`).
+  PR; the operator merges in the morning (via `/merge-pr`).
 
-## 5. Guardrails (hard limits)
+## 4. Guardrails (hard limits)
 
 - Touch only application code inside the slice. **No** secrets, CI/CD, infra, deploy scripts, or
   dependency-version bumps unless the issue is explicitly about that and labeled `auto:ready`.
+- Do **not** edit `docs/project-tracking/GITHUB-PROJECTS.md` on a feature branch unless the issue is
+  about that config.
 - Scope cap: if the change balloons past a reasonable single-PR size, or the tests won't go green
-  after honest effort, **stop, push the WIP branch, and report** — don't grind or hack around it.
+  after honest effort, **stop, push the WIP branch, and report**.
 - One issue = one branch = one PR. Don't batch unrelated changes.
 - Bugs found mid-work → new linked Bug issue (`/update-docs`), don't derail the current one.
 
-## 6. Morning report — the point of the whole thing
+## 5. Morning report — the point of the whole thing
 
-You wake the operator to a **review queue**, not a mystery. Post a single digest (issue comment on
-each worked issue, and/or a short comment on a standing "Night shift log" issue) covering, per issue:
+Wake the operator to a **review queue**. Post a digest (issue comments and/or a standing "Night
+shift log" issue) covering, per issue:
 
-- ✅ **PR opened** — link, test counts, readiness signal, anything deferred.
-- 🟡 **Needs your call** — the fork you stopped at + your recommendation.
-- 🔴 **Stuck** — what failed, where the WIP branch is, your best guess at the cause.
-- ⏭️ **Skipped** — ineligible issues and why.
+- **PR opened** — link, test counts, readiness signal, anything deferred.
+- **Needs your call** — the fork you stopped at + your recommendation.
+- **Stuck** — what failed, where the WIP branch is, your best guess at the cause.
+- **Skipped** — ineligible issues and why.
 
 Plain, honest, skimmable. If nothing shipped, say so and why.
 
-## 7. Budget
+## 6. Budget
 
 Default: up to **3 issues** per run, or stop earlier on a time/token budget. Prefer finishing one
 issue cleanly over starting three messily.
 
 ## One-time setup this skill assumes
 
-- Two labels on the board: `auto:ready` (operator marks an issue safe for unattended work) and
-  `needs:decision` (the loop sets this when it hits a fork).
-- A scheduled task that launches this skill nightly (see the orchestrator canvas "Night shift" flow).
-- Repo access + `gh` auth available to the scheduled session (a scoped token, or a GitHub-side runner).
+- Labels: `auto:ready`, `needs:decision`.
+- GitHub Actions workflow on the **product** repo (see `GITHUB-PROJECTS.md` Night-shift section and
+  Vilya's workflow templates). Manual `workflow_dispatch` until schedule is proven.
+- Repo access + `gh` auth available to the Actions job (`CLAUDE_CODE_OAUTH_TOKEN` + `GH_TOKEN`).

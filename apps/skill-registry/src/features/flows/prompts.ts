@@ -32,11 +32,11 @@ export const PROMPTS: PromptGroup[] = [
       },
       {
         label: "Cursor — orchestrator kickoff (no comms layer)",
-        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, and labels from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat.
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, and optional Planning/Execution model names from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat.
 
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
-- Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug.
+- Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Plan phase first (Plan mode / planning model), then hand implementation to a worker on the execution model.
 - Name every agent chat (chip) you kick off after its worktree folder — the title is exactly <issue#>-<slug> — so each chip maps 1:1 to its worktree at a glance.
 - Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
 - I start a separate agent session on each worktree for implementation.
@@ -63,7 +63,7 @@ Your job:
     items: [
       {
         label: "New brief",
-        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug, and give me the verify plan before you build — including the merge routing: tests-only, local-smoke, or live-only. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
+        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first (Plan mode / planning model from GITHUB-PROJECTS.md), give me the verify plan including merge routing (tests-only, local-smoke, or live-only), then stop so I can switch to the execution model before you build. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
       },
       {
         label: "Existing issue",
@@ -239,7 +239,7 @@ Your job:
       },
       {
         label: "Reference — the standing prompt baked into the workflow",
-        text: "Run the night-shift skill on <owner>/<repo>. Take up to 3 auto:ready issues; run each through implement → crucible review → refactor-until-Ready → tests → open a PR. Stop at any real design fork and leave me a recommendation. Never merge. Post a morning report of PRs opened, decisions needed, and anything stuck.",
+        text: "Follow skills/night-shift/SKILL.md exactly on this product repo. For each auto:ready issue run the daytime chain: /start-feature → implement → /crucible-<stack> → remediate → /finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Post the morning report.",
       },
     ],
   },
