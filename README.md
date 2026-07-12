@@ -39,7 +39,7 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live si
   `~/.cursor/skills` would double-list skills in Cursor — `--include-cursor`
   exists only for old Cursor builds.)
 - **Per-repo config is the only thing that varies** — each product you run the
-  loop on gets its own `docs/project-tracking/GITHUB-PROJECTS.md` (Models,
+  loop on gets its own `docs/project-tracking/GITHUB-PROJECTS.md` (board ids,
   shared-file rules, night-shift Actions topology).
 - **Happy path:** `/start-feature` → implement → crucible → `/finish-feature` →
   `/merge-pr`. `/update-docs` is routing only.

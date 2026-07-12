@@ -242,16 +242,16 @@ function parseProseFallbacks(markdown: string): Partial<GithubProjectsConfig> {
 }
 
 /**
- * Extract Repo config (+ Models, status ids, native fields, area labels) from a
- * pasted GITHUB-PROJECTS.md. Empty / missing paste → empty config (new-repo path).
+ * Extract Repo config (+ status ids, native fields, area labels) from a pasted
+ * GITHUB-PROJECTS.md. Empty / missing paste → empty config (new-repo path).
  * Prefer the Vilya Repo config table; fill gaps from prose / Status-helper layouts.
+ * Legacy ### Models sections are ignored (models are operator UI choices).
  */
 export function parseConfig(markdown: string): GithubProjectsConfig {
   const text = markdown.trim();
   if (text === "") return emptyConfig();
 
   const repo = parseTableMap(text, /^##\s+Repo config\b.*$/im);
-  const models = parseTableMap(text, /^###\s+Models\b.*$/im);
   const native = parseNativeFieldLines(text);
   const prose = parseProseFallbacks(text);
 
@@ -284,8 +284,6 @@ export function parseConfig(markdown: string): GithubProjectsConfig {
       get(repo, "default branch"),
       prose.defaultBranch ?? ""
     ),
-    planningModel: get(models, "planning model"),
-    executionModel: get(models, "execution model"),
     statusOptions: parseStatusOptions(text),
     typeFieldLine: native.typeFieldLine,
     priorityFieldLine: native.priorityFieldLine,

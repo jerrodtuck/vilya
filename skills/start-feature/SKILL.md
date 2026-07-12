@@ -6,8 +6,8 @@ description: Kick off a new feature or work stream on any repo's GitHub Projects
 # Start Feature (any stack)
 
 > **Scope:** Internal dev-process skill for a VSA-structured product repo. Companion:
-> [/finish-feature](../finish-feature/SKILL.md). Tracking model + this repo's project ids/labels /
-> optional Models: `docs/project-tracking/GITHUB-PROJECTS.md`.
+> [/finish-feature](../finish-feature/SKILL.md). Tracking model + this repo's project ids/labels:
+> `docs/project-tracking/GITHUB-PROJECTS.md`.
 
 All repo / project / label values come from this repo's `GITHUB-PROJECTS.md` **Repo config** block.
 If the repo isn't already known, detect it:
@@ -45,25 +45,20 @@ If the repo isn't already known, detect it:
 
 ## 3. Plan phase → then execute phase
 
-Read optional **Planning model** / **Execution model** from `GITHUB-PROJECTS.md`.
+**Contract:** create the plan first, then build. Which model you use for each phase is an
+**operator UI choice** (Cursor or Claude Code picker) — not stored in `GITHUB-PROJECTS.md`. Skills
+cannot switch the picker; they only produce artifacts and soft-ask for a handoff.
 
-**Cursor Plan mode is operator-gated.** Switching into Plan mode requires a human accept in the UI.
-If nobody accepts, the agent **never entered** Plan mode — do not assume the switch succeeded, and
-do not write as if Plan mode is active when it is not.
-
-1. **Plan phase** — produce the verify plan (step 5) and any design-fork consult; write the kickoff
-   comment on the issue; **do not implement yet.** How you run that phase:
-   - **Cursor, operator accepts Plan mode:** stay in / switch to Plan mode (planning model if set).
-   - **Cursor, unattended or accept unavailable (daytime fallback):** plan on the issue kickoff
-     comment and/or in-chat **without** a mode switch. Stay on the execution model. Same artifacts;
-     never pretend Plan mode ran.
-   - **Claude:** use the planning model.
-2. **Stop for model switch** (daytime) — only when a real Plan-mode session (or planning-model
-   handoff) actually ran: tell the operator to switch to the execution model before coding.
-   Skip the stop when (a) night-shift / Actions — planning is locked via the issue body and
-   `auto:ready`, build on the execution-class model for the whole run; or (b) Cursor daytime
-   fallback above — no mode switch happened, so proceed to execute after the kickoff plan is written.
-3. **Execute phase** — implement only after the plan is settled.
+1. **Plan phase** — on the **planning model** (whatever the operator selected): produce the verify
+   plan (step 5) and any design-fork consult; write the kickoff comment on the issue; **do not
+   implement yet.** Same artifacts whether you plan in Agent chat, Cursor Plan mode (optional IDE
+   helper — needs a human accept if you use it), Claude Code, or Cursor CLI (`--mode=plan`).
+2. **Stop for model switch** (daytime) — after the plan is written, ask the operator to switch to
+   the **execution model** before coding. Skip the stop when (a) night-shift / Actions / other
+   headless one-model runs — planning is locked via the issue body and `auto:ready`, stay on that
+   single model for the whole run; or (b) the operator already planned on the model they will build
+   with.
+3. **Execute phase** — on the **execution model**, implement only after the plan is settled.
 
 ## 4. Consult at decision forks — before implementing
 
@@ -103,5 +98,5 @@ read it instead of re-deciding:
   - `live-only` — verification needs the live / deployed system (hardware, brokers, real CygNet);
     PR will use `Refs #` → **Verifying** → Done after live confirmation.
 
-Then build (after the execute-phase switch in daytime). Close path: **tests green →
+Then build (after the daytime execution-model handoff when it applies). Close path: **tests green →
 `/crucible-<stack>` → remediate → `/finish-feature` → operator merges via `/merge-pr`**.

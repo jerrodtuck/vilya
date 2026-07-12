@@ -40,8 +40,6 @@ function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsCo
       case "testCommand":
       case "manualSmoke":
       case "defaultBranch":
-      case "planningModel":
-      case "executionModel":
       case "typeFieldLine":
       case "priorityFieldLine":
         scalar[key] = value;

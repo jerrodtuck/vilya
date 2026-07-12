@@ -2,11 +2,12 @@
 
 **Vilya is the Dev Loop system** (skills, prompts/flows, registry site, this template) — not a
 product target. **Copy this file into each product repo** at `docs/project-tracking/GITHUB-PROJECTS.md`
-and fill in the **Repo config** (and optional **Models**) block. Process sections below are shared
-across every product; only config values differ.
+and fill in the **Repo config** block. Process sections below are shared across every product; only
+config values differ.
 
 Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / …) read owner, project,
-labels, stack, test command, and crucible variant from here.
+labels, stack, test command, and crucible variant from here. Planning vs execution **models** are
+operator UI choices (Cursor or Claude Code) — not stored in this file; see `/start-feature`.
 
 ## Repo config — fill this in per repo
 
@@ -22,16 +23,6 @@ labels, stack, test command, and crucible variant from here.
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
 | **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
 | Default branch | `main` | `git remote show origin` |
-
-### Models (optional — change over time)
-
-Human-readable names only; skills do not pin models in frontmatter for both phases. Update these
-when your preferred planning or execution model changes — no skill body edits required.
-
-| Key | Value | Notes |
-|-----|-------|-------|
-| **Planning model** | *(operator choice)* | Used in `/start-feature` plan phase when planning actually runs (Cursor Plan mode is operator-gated — see skill; Claude planning model) |
-| **Execution model** | *(operator choice)* | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |
 
 Status option ids (fill after first setup):
 

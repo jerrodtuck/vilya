@@ -20,8 +20,6 @@ export interface GithubProjectsConfig {
   testCommand: string;
   manualSmoke: string;
   defaultBranch: string;
-  planningModel: string;
-  executionModel: string;
   statusOptions: StatusOptionIds;
   /** Raw Type field line from the native-fields block (may be empty). */
   typeFieldLine: string;
@@ -59,8 +57,6 @@ export function emptyConfig(): GithubProjectsConfig {
     testCommand: "",
     manualSmoke: "",
     defaultBranch: "",
-    planningModel: "",
-    executionModel: "",
     statusOptions: { ...EMPTY_STATUS_OPTIONS },
     typeFieldLine: "",
     priorityFieldLine: "",
@@ -88,8 +84,6 @@ export function mergeConfig(
     testCommand: pick(overrides.testCommand, parsed.testCommand),
     manualSmoke: pick(overrides.manualSmoke, parsed.manualSmoke),
     defaultBranch: pick(overrides.defaultBranch, parsed.defaultBranch),
-    planningModel: pick(overrides.planningModel, parsed.planningModel),
-    executionModel: pick(overrides.executionModel, parsed.executionModel),
     statusOptions: {
       todo: pick(statusOverrides?.todo, parsed.statusOptions.todo),
       inProgress: pick(
@@ -143,8 +137,6 @@ export function configChecklist(config: GithubProjectsConfig): ChecklistItem[] {
     item("testCommand", "Test command", config.testCommand),
     item("manualSmoke", "Manual smoke", config.manualSmoke),
     item("defaultBranch", "Default branch", config.defaultBranch),
-    item("planningModel", "Planning model", config.planningModel),
-    item("executionModel", "Execution model", config.executionModel),
     item("status.todo", "Status · Todo", so.todo),
     item("status.inProgress", "Status · In Progress", so.inProgress),
     item("status.blocked", "Status · Blocked", so.blocked),

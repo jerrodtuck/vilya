@@ -45,7 +45,7 @@ export function NightShiftView() {
                 <span>
                   Per-product{" "}
                   <code>docs/project-tracking/GITHUB-PROJECTS.md</code>. See{" "}
-                  <Link href="/setup">Setup</Link> for Models keys; skill source
+                  <Link href="/setup">Setup</Link> for repo config; skill source
                   of truth is{" "}
                   <Link href="/skills/night-shift">/skills/night-shift</Link>.
                 </span>

@@ -21,13 +21,6 @@ const SAMPLE = `# GitHub Projects — tracking model (template)
 | **Manual smoke** | \`dotnet run\` → http://localhost:5000 | launch for smoke |
 | Default branch | \`master\` | \`git remote show origin\` |
 
-### Models (optional — change over time)
-
-| Key | Value | Notes |
-|-----|-------|-------|
-| **Planning model** | \`opus\` | plan phase |
-| **Execution model** | \`sonnet\` | execute phase |
-
 Status option ids (fill after first setup):
 
 \`\`\`text
@@ -79,7 +72,7 @@ describe("parseConfig", () => {
     expect(parseConfig("   \n")).toEqual(emptyConfig());
   });
 
-  it("extracts repo config, models, status ids, native fields, and areas", () => {
+  it("extracts repo config, status ids, native fields, and areas", () => {
     const cfg = parseConfig(SAMPLE);
     expect(cfg.owner).toBe("acme");
     expect(cfg.repo).toBe("acme/widgets");
@@ -91,8 +84,6 @@ describe("parseConfig", () => {
     expect(cfg.testCommand).toBe("`dotnet test` (in `src/`)");
     expect(cfg.manualSmoke).toBe("`dotnet run` → http://localhost:5000");
     expect(cfg.defaultBranch).toBe("master");
-    expect(cfg.planningModel).toBe("opus");
-    expect(cfg.executionModel).toBe("sonnet");
     expect(cfg.statusOptions).toEqual({
       todo: "aaa",
       inProgress: "bbb",
@@ -103,6 +94,23 @@ describe("parseConfig", () => {
     expect(cfg.typeFieldLine).toContain("Type  (PVTSSF_type)");
     expect(cfg.priorityFieldLine).toContain("Priority (PVTSSF_pri)");
     expect(cfg.areaLabels).toEqual(["area:api", "area:ui", "area:docs"]);
+  });
+
+  it("ignores a legacy Models section in paste", () => {
+    const withLegacy = `${SAMPLE}
+
+### Models (optional — change over time)
+
+| Key | Value | Notes |
+|-----|-------|-------|
+| **Planning model** | \`opus\` | plan phase |
+| **Execution model** | \`sonnet\` | execute phase |
+`;
+    const cfg = parseConfig(withLegacy);
+    expect(cfg.owner).toBe("acme");
+    expect(cfg.defaultBranch).toBe("master");
+    expect(cfg).not.toHaveProperty("planningModel");
+    expect(cfg).not.toHaveProperty("executionModel");
   });
 
   it("tolerates missing optional sections", () => {
