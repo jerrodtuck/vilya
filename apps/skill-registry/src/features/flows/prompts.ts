@@ -59,11 +59,11 @@ Your job:
       },
       {
         label: "Prune worktrees — apply",
-        text: "From the main clone: /prune --apply — remove the eligible Cursor feature worktrees and paired local branches, then git fetch --prune. Skip dirty trees and anything with an open PR. Never run this from inside a worktree being removed.",
+        text: "From the main clone: /prune --apply — remove the eligible Cursor feature worktrees and paired local branches, then git fetch --prune. Skip dirty trees and anything with an open PR. Never run this from inside a worktree being removed. If Permission denied, identify cursor-agent-worker node.exe whose cmdline has --worker-dir / the worktree path; kill that PID only if I explicitly authorize, then re-apply.",
       },
     ],
     noteHtml:
-      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely. After squash-merge, <b>/prune</b> is an orchestrator job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>.",
+      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely. After squash-merge, <b>/prune</b> is an orchestrator job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>. Never auto-kill a leftover <code>cursor-agent-worker</code> lock; ask first.",
   },
   {
     node: "START",
@@ -186,11 +186,11 @@ Your job:
       },
       {
         label: "Merge it",
-        text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /prune from the main clone — do not delete the feature worktree from inside it.",
+        text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /prune from the main clone — do not delete the feature worktree from inside it. If prune hits Permission denied, follow /prune §5a (cursor-agent-worker lock) — kill only when I authorize.",
       },
     ],
     noteHtml:
-      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never. Cleanup after squash is a handoff to <b>/prune</b> (orchestrator, main clone) — not an in-place delete from the feature worktree.",
+      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never. Cleanup after squash is a handoff to <b>/prune</b> (orchestrator, main clone) — not an in-place delete from the feature worktree. Permission denied on folder delete → leftover <code>cursor-agent-worker</code>; operator-authorized kill only.",
   },
   {
     node: "VERIFY",
