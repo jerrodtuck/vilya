@@ -157,7 +157,7 @@ function buildConfigSections(config: GithubProjectsConfig): string {
   const modelsTable = [
     "| Key | Value | Notes |",
     "|-----|-------|-------|",
-    `| **Planning model** | ${modelCell(config.planningModel)} | Used in \`/start-feature\` plan phase (Cursor Plan mode / Claude planning model) |`,
+    `| **Planning model** | ${modelCell(config.planningModel)} | Used in \`/start-feature\` plan phase when planning actually runs (Cursor Plan mode is operator-gated — see skill; Claude planning model) |`,
     `| **Execution model** | ${modelCell(config.executionModel)} | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |`,
   ].join("\n");
 
