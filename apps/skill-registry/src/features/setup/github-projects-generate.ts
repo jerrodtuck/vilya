@@ -18,7 +18,6 @@ const PLACEHOLDER = {
   testCommand: "<test command>",
   manualSmoke: "<manual smoke or live-only>",
   defaultBranch: "main",
-  planningModel: "(operator choice)",
   statusTodo: "<todo-id>",
   statusInProgress: "<in-progress-id>",
   statusBlocked: "<blocked-id>",
@@ -74,16 +73,6 @@ function templateProcessBody(cleaned: string): string {
   const idx = cleaned.search(PROCESS_HEADING);
   if (idx === -1) return "";
   return cleaned.slice(idx).trimEnd();
-}
-
-function isModelPlaceholder(value: string): boolean {
-  const t = value.trim().toLowerCase();
-  return t === "" || t === "(operator choice)" || t === "operator choice";
-}
-
-function modelCell(value: string): string {
-  if (isModelPlaceholder(value)) return `*${PLACEHOLDER.planningModel}*`;
-  return backtick(value.trim());
 }
 
 function buildConfigSections(config: GithubProjectsConfig): string {
@@ -154,13 +143,6 @@ function buildConfigSections(config: GithubProjectsConfig): string {
     ...repoRows.map(([k, v, how]) => `| ${k} | ${v} | ${how} |`),
   ].join("\n");
 
-  const modelsTable = [
-    "| Key | Value | Notes |",
-    "|-----|-------|-------|",
-    `| **Planning model** | ${modelCell(config.planningModel)} | Used in \`/start-feature\` plan phase when planning actually runs (Cursor Plan mode is operator-gated — see skill; Claude planning model) |`,
-    `| **Execution model** | ${modelCell(config.executionModel)} | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |`,
-  ].join("\n");
-
   const statusBlock = [
     "```text",
     `Todo:         ${orPlaceholder(so.todo, PLACEHOLDER.statusTodo)}`,
@@ -182,13 +164,6 @@ function buildConfigSections(config: GithubProjectsConfig): string {
     "## Repo config — fill this in per repo",
     "",
     repoTable,
-    "",
-    "### Models (optional — change over time)",
-    "",
-    "Human-readable names only; skills do not pin models in frontmatter for both phases. Update these",
-    "when your preferred planning or execution model changes — no skill body edits required.",
-    "",
-    modelsTable,
     "",
     "Status option ids (fill after first setup):",
     "",

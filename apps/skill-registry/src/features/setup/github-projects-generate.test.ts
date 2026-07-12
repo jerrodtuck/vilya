@@ -31,16 +31,6 @@ const MINI_TEMPLATE = `# GitHub Projects — tracking model (template)
 | **Manual smoke** | \`npm run dev\` in \`apps/skill-registry\` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (\`/merge-pr\`); for hardware/live-only checks write \`live-only\` — those go through Verifying instead |
 | Default branch | \`main\` | \`git remote show origin\` |
 
-### Models (optional — change over time)
-
-Human-readable names only; skills do not pin models in frontmatter for both phases. Update these
-when your preferred planning or execution model changes — no skill body edits required.
-
-| Key | Value | Notes |
-|-----|-------|-------|
-| **Planning model** | *(operator choice)* | Used in \`/start-feature\` plan phase when planning actually runs (Cursor Plan mode is operator-gated — see skill; Claude planning model) |
-| **Execution model** | *(operator choice)* | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |
-
 Status option ids (fill after first setup):
 
 \`\`\`text
@@ -108,8 +98,6 @@ describe("generateFromTemplate", () => {
       testCommand: "dotnet test",
       manualSmoke: "dotnet run",
       defaultBranch: "master",
-      planningModel: "opus",
-      executionModel: "sonnet",
       statusOptions: {
         todo: "aaa",
         inProgress: "bbb",
@@ -127,11 +115,11 @@ describe("generateFromTemplate", () => {
     expect(out).toContain("| Repo | `acme/widgets` |");
     expect(out).toContain("| **Stack** | `blazor` |");
     expect(out).toContain("| **Crucible variant** | `crucible-blazor` |");
-    expect(out).toContain("`opus`");
-    expect(out).toContain("`sonnet`");
     expect(out).toContain("Todo:         aaa");
     expect(out).toContain("`area:api` · `area:ui`");
     expect(out).toContain("## Model (same everywhere)");
+    expect(out).not.toContain("### Models");
+    expect(out).not.toContain("Planning model");
     expect(out).not.toContain("jerrodtuck/vilya");
     expect(out).not.toContain("Implementation checklist");
     expect(out).not.toContain("f75ad846");
@@ -142,8 +130,9 @@ describe("generateFromTemplate", () => {
     expect(out).toContain("`<owner>`");
     expect(out).toContain("`<owner>/<repo>`");
     expect(out).toContain("crucible-<stack>");
-    expect(out).toContain("*(operator choice)*");
     expect(out).toContain("`area:<slice>`");
+    expect(out).not.toContain("### Models");
+    expect(out).not.toContain("*(operator choice)*");
     expect(out).not.toContain("PVT_kwHOAYNJN84BdH1y");
     expect(out).not.toContain("Implementation checklist");
   });

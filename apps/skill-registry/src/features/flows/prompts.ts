@@ -32,11 +32,11 @@ export const PROMPTS: PromptGroup[] = [
       },
       {
         label: "Cursor — orchestrator kickoff (no comms layer)",
-        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, and optional Planning/Execution model names from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat.
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat.
 
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
-- Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Plan phase first — prefer Plan mode / planning model when the operator accepts the Plan-mode UI switch; if unattended or accept is unavailable, plan on the issue kickoff comment without a mode switch (do not assume Plan mode). Then hand implementation to a worker on the execution model.
+- Kick off streams via /start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Plan phase first on the planning model (operator picks it in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime: ask the operator to switch to the execution model before handing a worker the build. Unattended / one-model runs skip that switch.
 - Name every agent chat (chip) you kick off after its worktree folder — the title is exactly <issue#>-<slug> — so each chip maps 1:1 to its worktree at a glance.
 - Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
 - I start a separate agent session on each worktree for implementation.
@@ -72,7 +72,7 @@ Your job:
     items: [
       {
         label: "New brief",
-        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first: use Plan mode / planning model from GITHUB-PROJECTS.md when I accept the Plan-mode UI switch; if I don't accept (or I'm away), plan on the issue / in-chat without a mode switch and stay on the execution model — do not assume Plan mode. Give me the verify plan including merge routing (tests-only, local-smoke, or live-only). Stop for an execution-model switch only if Plan mode actually ran. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
+        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first on the planning model (I pick it in the UI — not from GITHUB-PROJECTS.md). Give me the verify plan including merge routing (tests-only, local-smoke, or live-only). Then stop and ask me to switch to the execution model before coding — skip that stop if I'm already on the model I'll build with, or this is an unattended one-model run. Consult me at any fork. Close path: tests green → /crucible-<stack> → remediate → /finish-feature.",
       },
       {
         label: "Existing issue",

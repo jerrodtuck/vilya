@@ -14,10 +14,9 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
     sub: (
       <>
         owner · repo · project # · project id · status field + option ids ·
-        stack · crucible variant · test command · default branch · optional{" "}
-        <b>Models</b> (planning / execution) · your <code>area:*</code> labels
-        — or use <b>Regenerate GITHUB-PROJECTS.md</b> below to fill the latest
-        template from a paste / short form
+        stack · crucible variant · test command · default branch · your{" "}
+        <code>area:*</code> labels — or use <b>Regenerate GITHUB-PROJECTS.md</b>{" "}
+        below to fill the latest template from a paste / short form
       </>
     ),
   },
@@ -157,19 +156,16 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         repo&apos;s config block.
       </div>
 
-      <h2>Models (plan → execute)</h2>
+      <h2>Plan → execute (models)</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
-        Optional keys in <code>GITHUB-PROJECTS.md</code>:{" "}
-        <b>Planning model</b> and <b>Execution model</b>.{" "}
-        <code>/start-feature</code> plans first. Cursor Plan mode needs a human
-        UI accept — if you don&apos;t accept (or you&apos;re away), the agent
-        plans on the issue / in-chat without a mode switch and stays on the
-        execution model; it must not assume Plan mode ran. When Plan mode (or
-        your planning model) actually ran, switch to the execution model before
-        coding. Change the names in config when preferences shift — no skill
-        body edits. Night-shift / Actions stay on an execution-class model for
-        the whole unattended run (planning already locked via the issue +{" "}
-        <code>auto:ready</code>).
+        Not stored in <code>GITHUB-PROJECTS.md</code> — pickers differ across
+        Cursor and Claude Code, and preferences change often.{" "}
+        <code>/start-feature</code> plans first on your <b>planning model</b>,
+        then asks you to switch to an <b>execution model</b> before coding
+        (daytime). Skills cannot flip the picker. Cursor Plan mode / CLI{" "}
+        <code>--mode=plan</code> are optional helpers, not the contract.
+        Night-shift / Actions stay on one model for the whole unattended run
+        (planning already locked via the issue + <code>auto:ready</code>).
       </p>
 
       <h2>Shared files across worktrees</h2>

@@ -56,7 +56,7 @@ export function OverviewView() {
           <h3>⚙️ Setup</h3>
           <p className="desc">
             Install once at the user level; add one config file per repo.
-            Models keys, shared-file rules, platform toggle.
+            Shared-file rules, platform toggle, plan → execute flow.
           </p>
           <span className="more">Set up a project →</span>
         </Link>
