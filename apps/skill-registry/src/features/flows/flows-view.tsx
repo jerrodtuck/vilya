@@ -146,10 +146,24 @@ export function FlowsView() {
           Settings, set that routine to Bypass (not a user-global default).
         </p>
         <div className="note" style={{ marginTop: 8 }}>
-          Templates: <code>.github/workflows/night-shift.yml</code> and{" "}
-          <code>
-            docs/project-tracking/templates/night-shift-dotnet-cygnet.yml
-          </code>
+          Templates:{" "}
+          <a
+            href="https://github.com/jerrodtuck/vilya/blob/main/.github/workflows/night-shift.yml"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <code>.github/workflows/night-shift.yml</code>
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://github.com/jerrodtuck/vilya/blob/main/docs/project-tracking/templates/night-shift-dotnet-cygnet.yml"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <code>
+              docs/project-tracking/templates/night-shift-dotnet-cygnet.yml
+            </code>
+          </a>
           . Cron <code>0 8 * * *</code> is active on this repo.
         </div>
       </div>

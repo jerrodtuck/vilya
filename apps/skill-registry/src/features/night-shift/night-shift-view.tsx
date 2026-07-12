@@ -2,6 +2,11 @@
 import Link from "next/link";
 import { NightAgentMap } from "./night-agent-map";
 
+const REPO = "https://github.com/jerrodtuck/vilya";
+const WORKFLOW_HREF = `${REPO}/blob/main/.github/workflows/night-shift.yml`;
+const CYGNET_HREF = `${REPO}/blob/main/docs/project-tracking/templates/night-shift-dotnet-cygnet.yml`;
+const SKILL_SRC_HREF = `${REPO}/blob/main/skills/night-shift/SKILL.md`;
+
 export function NightShiftView() {
   return (
     <>
@@ -63,14 +68,37 @@ export function NightShiftView() {
           user settings if you want daytime worktrees to keep prompting.
         </p>
 
+        <p className="muted" style={{ lineHeight: 1.55, marginTop: 12 }}>
+          <b style={{ color: "var(--text)" }}>Artifacts</b>
+          {" · "}
+          <Link href="/skills/night-shift">skill (site)</Link>
+          {" · "}
+          <a href={SKILL_SRC_HREF} target="_blank" rel="noreferrer">
+            skill source
+          </a>
+          {" · "}
+          <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+            night-shift.yml
+          </a>
+          {" · "}
+          <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
+            CygNet template
+          </a>
+        </p>
+
         <div className="modes" style={{ marginTop: 14 }}>
           <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
             <b>A · GitHub Actions (canonical)</b>
             <span>
-              Copy <code>.github/workflows/night-shift.yml</code> (or the
-              CygNet template under{" "}
-              <code>docs/project-tracking/templates/</code>). Register a
-              self-hosted runner on that <b>private</b> repo (
+              Copy{" "}
+              <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+                <code>.github/workflows/night-shift.yml</code>
+              </a>{" "}
+              (or the{" "}
+              <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
+                CygNet template
+              </a>
+              ). Register a self-hosted runner on that <b>private</b> repo (
               <code>self-hosted</code>, <code>windows</code>). Add secret{" "}
               <code>CLAUDE_CODE_OAUTH_TOKEN</code> from{" "}
               <code>claude setup-token</code>. Bypass is already in the
@@ -85,12 +113,15 @@ export function NightShiftView() {
             <span>
               Schedule a routine that opens the product repo (or its worktree)
               and runs the standing prompt: follow{" "}
-              <code>skills/night-shift/SKILL.md</code> exactly. Enable{" "}
-              <b>Allow bypass permissions mode</b> in Desktop Settings → Claude
-              Code, then set that routine/session to <b>Bypass permissions</b>.
-              Without that, overnight tool calls stop for approval. Prefer
-              Actions when you need a hard non-interactive guarantee —
-              Desktop scheduled tasks have been flaky about honoring Bypass.
+              <Link href="/skills/night-shift">
+                <code>skills/night-shift/SKILL.md</code>
+              </Link>{" "}
+              exactly. Enable <b>Allow bypass permissions mode</b> in Desktop
+              Settings → Claude Code, then set that routine/session to{" "}
+              <b>Bypass permissions</b>. Without that, overnight tool calls stop
+              for approval. Prefer Actions when you need a hard non-interactive
+              guarantee — Desktop scheduled tasks have been flaky about
+              honoring Bypass.
             </span>
           </div>
         </div>
