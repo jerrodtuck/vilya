@@ -179,9 +179,10 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
       </p>
 
       <div className="note" style={{ marginTop: 16 }}>
-        Overnight runs: see <a href="/night-shift">Night shift</a> — same
-        daytime chain via Actions; personal per-repo runners or an org pool
-        later; secret is <code>CLAUDE_CODE_OAUTH_TOKEN</code>.
+        Overnight runs: full per-repo checklist on{" "}
+        <a href="/night-shift">Night shift</a> — Actions (canonical) or Claude
+        Code Desktop routines; Bypass is set by the <b>launcher</b>, not the
+        skill (and not a user-global default).
       </div>
 
       <div className="pagefoot">

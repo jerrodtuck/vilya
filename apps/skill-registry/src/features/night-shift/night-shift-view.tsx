@@ -1,5 +1,11 @@
-// Feature slice: night-shift — unattended Dev Loop via GitHub Actions (server component).
+// Feature slice: night-shift — unattended Dev Loop (server component).
 import Link from "next/link";
+import { NightAgentMap } from "./night-agent-map";
+
+const REPO = "https://github.com/jerrodtuck/vilya";
+const WORKFLOW_HREF = `${REPO}/blob/main/.github/workflows/night-shift.yml`;
+const CYGNET_HREF = `${REPO}/blob/main/docs/project-tracking/templates/night-shift-dotnet-cygnet.yml`;
+const SKILL_SRC_HREF = `${REPO}/blob/main/skills/night-shift/SKILL.md`;
 
 export function NightShiftView() {
   return (
@@ -8,124 +14,130 @@ export function NightShiftView() {
       <h1>Night shift</h1>
       <p className="lead">
         Night-shift is <b>not</b> a second methodology. It runs the daytime Dev
-        Loop unattended on a <b>product</b> repo via GitHub Actions + headless
-        Claude Code. Vilya ships the skill and workflow templates; each product
-        repo enables the runner.
+        Loop unattended on a <b>product</b> repo. This page maps the{" "}
+        <b>agent machinery</b> — dispatch through morning report. The
+        methodology map stays on <Link href="/flows">Flows</Link>.
       </p>
 
-      <div className="chipstrip">
-        <span className="lchip s">/start-feature</span>
-        <span className="arrow">→</span>
-        <span className="lchip">implement</span>
-        <span className="arrow">→</span>
-        <span className="lchip r">crucible</span>
-        <span className="arrow">→</span>
-        <span className="lchip f">/finish-feature</span>
-        <span className="arrow">→</span>
-        <span className="lchip f">PR (never merge)</span>
-      </div>
+      <NightAgentMap
+        aside={
+          <div className="panel">
+            <div className="kicker">Operator strip</div>
+            <h3>Before / after sleep</h3>
+            <div className="modes" style={{ marginTop: 12 }}>
+              <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
+                <b>1 · Before bed</b>
+                <span>
+                  Label well-specified issues <code>auto:ready</code>. No label,
+                  no work. Then fire your chosen launcher (below).
+                </span>
+              </div>
+              <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
+                <b>2 · Morning</b>
+                <span>
+                  Triage the report; merge Ready PRs with <code>/merge-pr</code>;
+                  answer forks and drop <code>needs:decision</code> when you
+                  decide.
+                </span>
+              </div>
+              <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
+                <b>Config</b>
+                <span>
+                  Per-product{" "}
+                  <code>docs/project-tracking/GITHUB-PROJECTS.md</code>. See{" "}
+                  <Link href="/setup">Setup</Link> for Models keys; skill source
+                  of truth is{" "}
+                  <Link href="/skills/night-shift">/skills/night-shift</Link>.
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+      />
 
       <div className="panel" style={{ marginTop: 20 }}>
-        <div className="kicker">Eligibility</div>
-        <h3>What the loop will touch</h3>
-        <ul className="muted" style={{ lineHeight: 1.6, marginTop: 8 }}>
-          <li>
-            Labeled <code>auto:ready</code> — your explicit opt-in
-          </li>
-          <li>
-            Not <code>needs:decision</code>, not <code>type:epic</code>
-          </li>
-          <li>Clear brief + acceptance on the issue body</li>
-          <li>
-            At a real design fork: comment + recommendation, label{" "}
-            <code>needs:decision</code>, Blocked, next issue — never guess
-          </li>
-        </ul>
-      </div>
-
-      <div className="panel" style={{ marginTop: 16 }}>
-        <div className="kicker">Actions setup</div>
-        <h3>Personal account (default)</h3>
+        <div className="kicker">Per-repo overnight setup</div>
+        <h3>Wire the launcher once</h3>
         <p className="muted" style={{ lineHeight: 1.55, marginTop: 8 }}>
-          For <b>each</b> product repo you want overnight:
+          Shared prerequisites on every product repo:{" "}
+          <code>GITHUB-PROJECTS.md</code> filled, labels{" "}
+          <code>auto:ready</code> / <code>needs:decision</code>, skills
+          installed. The skill itself does <b>not</b> set permission mode —
+          the <b>launcher</b> must pass Bypass (or you approve every tool).
+          Do <b>not</b> put <code>defaultMode: bypassPermissions</code> in
+          user settings if you want daytime worktrees to keep prompting.
         </p>
-        <ol className="muted" style={{ lineHeight: 1.7, marginTop: 8 }}>
-          <li>
-            Copy{" "}
-            <code>.github/workflows/night-shift.yml</code> (or the CygNet
-            template under <code>docs/project-tracking/templates/</code>)
-          </li>
-          <li>
-            Register a self-hosted runner <b>on that repo</b> (same machine may
-            be registered once per repo)
-          </li>
-          <li>
-            Add repo secret <code>CLAUDE_CODE_OAUTH_TOKEN</code> from{" "}
-            <code>claude setup-token</code> on your Max/Pro account
-          </li>
-          <li>
-            Fire with Actions → night-shift → Run workflow, or{" "}
-            <code>gh workflow run night-shift</code>. Manual-only until you
-            uncomment <code>schedule:</code>
-          </li>
-        </ol>
 
-        <h3 style={{ marginTop: 20 }}>Org later (shared runners)</h3>
-        <p className="muted" style={{ lineHeight: 1.55, marginTop: 8 }}>
-          Moving product repos under an org (e.g. <code>jestrion</code>) unlocks
-          an <b>org runner pool</b> — one registration can serve many repos.
-          Workflows stay per repo. This does <b>not</b> change the skills or the
-          chain.
+        <p className="muted" style={{ lineHeight: 1.55, marginTop: 12 }}>
+          <b style={{ color: "var(--text)" }}>Artifacts</b>
+          {" · "}
+          <Link href="/skills/night-shift">skill (site)</Link>
+          {" · "}
+          <a href={SKILL_SRC_HREF} target="_blank" rel="noreferrer">
+            skill source
+          </a>
+          {" · "}
+          <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+            night-shift.yml
+          </a>
+          {" · "}
+          <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
+            CygNet template
+          </a>
         </p>
-        <ul className="muted" style={{ lineHeight: 1.7, marginTop: 8 }}>
-          <li>
-            <b>Claude Max/Pro</b> stays personal — the OAuth token still bills
-            your subscription whether the secret lives on the repo or the org
-          </li>
-          <li>
-            <b>Personal GitHub Pro</b> does not cover the org — org Actions
-            entitlements follow the org&apos;s plan
-          </li>
-        </ul>
-      </div>
 
-      <div className="panel" style={{ marginTop: 16 }}>
-        <div className="kicker">Operator runbook</div>
-        <div className="modes" style={{ marginTop: 12 }}>
+        <div className="modes" style={{ marginTop: 14 }}>
           <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
-            <b>1 · Before bed</b>
+            <b>A · GitHub Actions (canonical)</b>
             <span>
-              Label well-specified issues <code>auto:ready</code>. No label, no
-              work.
+              Copy{" "}
+              <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+                <code>.github/workflows/night-shift.yml</code>
+              </a>{" "}
+              (or the{" "}
+              <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
+                CygNet template
+              </a>
+              ). Register a self-hosted runner on that <b>private</b> repo (
+              <code>self-hosted</code>, <code>windows</code>). Add secret{" "}
+              <code>CLAUDE_CODE_OAUTH_TOKEN</code> from{" "}
+              <code>claude setup-token</code>. Bypass is already in the
+              workflow&apos;s <code>claude_args</code> (
+              <code>--permission-mode bypassPermissions</code>). Fire with{" "}
+              <code>gh workflow run night-shift</code> or wait for cron{" "}
+              <code>0 8 * * *</code>.
             </span>
           </div>
           <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
-            <b>2 · Fire</b>
+            <b>B · Claude Code Desktop routines</b>
             <span>
-              <code>gh workflow run night-shift</code> on the product repo. Up
-              to 3 issues; prefer one finished cleanly.
-            </span>
-          </div>
-          <div className="mode" style={{ ["--m" as string]: "var(--finish)" }}>
-            <b>3 · Morning</b>
-            <span>
-              Triage the report; merge Ready PRs with <code>/merge-pr</code>;
-              answer forks and drop <code>needs:decision</code> when you decide.
+              Schedule a routine that opens the product repo (or its worktree)
+              and runs the standing prompt: follow{" "}
+              <Link href="/skills/night-shift">
+                <code>skills/night-shift/SKILL.md</code>
+              </Link>{" "}
+              exactly. Enable <b>Allow bypass permissions mode</b> in Desktop
+              Settings → Claude Code, then set that routine/session to{" "}
+              <b>Bypass permissions</b>. Without that, overnight tool calls stop
+              for approval. Prefer Actions when you need a hard non-interactive
+              guarantee — Desktop scheduled tasks have been flaky about
+              honoring Bypass.
             </span>
           </div>
         </div>
       </div>
 
-      <div className="note" style={{ marginTop: 16 }}>
-        Config for every skill — including night-shift — lives in that
-        product&apos;s{" "}
-        <code>docs/project-tracking/GITHUB-PROJECTS.md</code>. See{" "}
-        <Link href="/setup">Setup</Link> for Models keys and shared-file rules,{" "}
-        <Link href="/flows">Flows</Link> for the map.
+      <div className="note teal" style={{ marginTop: 16 }}>
+        Pipeline map above describes the <b>Actions</b> path (fresh{" "}
+        <code>_work</code> clone, OIDC → <code>claude[bot]</code>, subscription
+        brain). Desktop routines reuse your interactive checkout and identity —
+        same skill gates, different runner. Self-hosted Actions runners belong
+        on <b>private</b> repos only.
       </div>
 
       <div className="pagefoot">
-        Instrument: <b>/night-shift</b> · opens PRs only · never merges.
+        Instrument: <b>/night-shift</b> · opens PRs only · never merges ·{" "}
+        <Link href="/flows">Flows</Link> for the daytime map.
       </div>
     </>
   );

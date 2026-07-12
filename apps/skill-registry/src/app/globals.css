@@ -269,3 +269,17 @@ h1 .you { color: var(--orch); }
 .diff tr.del .code:first-of-type { background: rgba(242, 119, 154, .10); }
 .diff tr.change .code:first-of-type { background: rgba(242, 119, 154, .10); }
 .diff tr.change .code:last-child { background: rgba(79, 209, 139, .10); }
+
+/* ---------- site: night-shift (agent pipeline) ---------- */
+.ns-stage { background: radial-gradient(1000px 360px at 15% -20%, #1a2030, #0f131b); }
+.ns-fail-edge { stroke: var(--bug); opacity: .55; }
+.edge.ns-fail-edge.lit { stroke: var(--bug); stroke-width: 3; }
+.node.ns-safety .nbox { stroke-dasharray: 5 4; }
+.node.ns-failure .nbox { stroke-dasharray: 4 3; fill: #1c1418; }
+.node.ns-distinct.lit .nbox { filter: drop-shadow(0 0 8px var(--c)); }
+.chip.ns-chip-distinct { border-style: dashed; }
+.panel.ns-panel-distinct { border-color: #5c3b2e; box-shadow: inset 3px 0 0 var(--blocked); }
+.panel.ns-panel-distinct .kicker { color: var(--blocked); }
+.ns-safety-note { margin-top: 12px; padding: 10px 12px; border: 1px dashed #5c3b2e; border-radius: 8px; background: #1c1410; color: #e7d6ac; font-size: 13px; line-height: 1.5; }
+.ns-safety-note b { color: #ffcf7a; }
+.legend i.ns-legend-fail { border-top-color: var(--bug); }
