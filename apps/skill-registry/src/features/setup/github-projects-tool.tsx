@@ -96,14 +96,28 @@ export function GithubProjectsTool({
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
 
+  if (!templateMarkdown) {
+    return (
+      <div className="note">
+        <b>Template unavailable.</b> Could not read the bundled{" "}
+        <code>content/GITHUB-PROJECTS.md</code> (or{" "}
+        <code>docs/project-tracking/GITHUB-PROJECTS.md</code>) from this
+        runtime. Set <code>GITHUB_PROJECTS_TEMPLATE</code>, or rebuild so the
+        sync script copies the canonical template into the app.
+      </div>
+    );
+  }
+
   const parsed = parseConfig(paste);
   const merged = mergeConfig(parsed, formToOverrides(form));
-  const generated = templateMarkdown
-    ? generateFromTemplate(merged, templateMarkdown)
-    : "";
+  const generated = generateFromTemplate(merged, templateMarkdown);
   const checklist = configChecklist(merged);
   const kept = checklist.filter((i) => i.status === "kept").length;
   const missing = checklist.filter((i) => i.status === "missing").length;
+  const pasteActive = paste.trim() !== "";
+  const liveHint = pasteActive
+    ? `Live — ${kept} kept · ${missing} missing. Checklist and Generated file update as you paste.`
+    : "Live on paste — no Generate button. Checklist + Generated file update immediately; leave blank for a new-repo skeleton.";
 
   const setField =
     (key: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -120,17 +134,6 @@ export function GithubProjectsTool({
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  if (!templateMarkdown) {
-    return (
-      <div className="note">
-        <b>Template unavailable.</b> Could not read{" "}
-        <code>docs/project-tracking/GITHUB-PROJECTS.md</code> from this
-        runtime. Set <code>GITHUB_PROJECTS_TEMPLATE</code> or run from the
-        monorepo checkout.
-      </div>
-    );
-  }
 
   return (
     <div className="gptool">
@@ -150,9 +153,15 @@ export function GithubProjectsTool({
         rows={10}
         value={paste}
         onChange={(e) => setPaste(e.target.value)}
-        placeholder="Paste markdown here — or leave empty and fill the form below for a new repo"
+        placeholder="Paste markdown here — checklist and Generated file update live (or leave empty and fill the form below for a new repo)"
         spellCheck={false}
       />
+      <p
+        className={`gplive${pasteActive ? " active" : ""}`}
+        aria-live="polite"
+      >
+        {liveHint}
+      </p>
 
       <div className="gprow">
         <button

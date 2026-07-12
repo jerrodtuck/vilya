@@ -42,7 +42,7 @@ src/
   shared/                  # kernel — no feature logic
     skills/                #   load-skills, types, meta
     git/                   #   history (git log)
-content/skills/            # the store (the actual SKILL.md files)
+content/GITHUB-PROJECTS.md # bundled template for Setup → Regenerate (synced from docs/)
 ```
 
 No cross-feature imports; features compose the shared kernel. Data loading is in
