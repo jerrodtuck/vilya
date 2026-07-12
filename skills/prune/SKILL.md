@@ -105,14 +105,50 @@ git fetch --prune
 ```
 
 - Prefer `git worktree remove` before deleting the directory.
-- If remove fails because the path is locked (Cursor has the folder open): report it,
-  skip that row, continue others — do not fight the lock.
+- If remove fails because the path is locked: follow **§5a** — do not invent force
+  deletes, and do not kill processes unless the operator explicitly asks.
 - Re-run dry-run at the end and show what remains.
+
+## 5a. Lock holder — `cursor-agent-worker` (Windows / Cursor)
+
+Operator-proven sequence after `/merge-pr` when folder delete returns **Permission
+denied** even though the chip is closed / Archived:
+
+1. **Merge first** — PR MERGED, remote branch gone (already true for eligible rows).
+2. **Identify the holder** — a leftover `cursor-agent-worker` `node.exe` often keeps
+   the worktree open. On Windows, find PIDs whose command line includes the worktree
+   path and/or `--worker-dir` (same path under
+   `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*`):
+
+   ```powershell
+   $wt = "$env:USERPROFILE\.cursor\worktrees\<repo>\<issue#>-<slug>"
+   Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
+     Where-Object {
+       $_.CommandLine -match 'cursor-agent-worker|--worker-dir' -and
+       $_.CommandLine -like ("*{0}*" -f $wt)
+     } |
+     Select-Object ProcessId, CommandLine
+   ```
+
+   Confirm the cmdline actually names **this** worktree before offering a kill.
+3. **Operator-authorized kill only** — never auto-kill. Report the PID + a short
+   cmdline excerpt, ask. When they say yes:
+
+   ```powershell
+   Stop-Process -Id <pid> -Force
+   ```
+
+4. **Re-apply** — `/prune --apply` (scoped or full). `git worktree remove` /
+   `Remove-Item` should succeed once that lock is gone.
+
+Closing the chip or Cursor Archive is **not** enough when this worker is still
+alive. Skip the row and continue others if the operator declines the kill.
 
 ## 6. Honesty bar
 
 - Dry-run is the default; `--apply` is explicit.
-- Say when you skipped dirty / open-PR / cwd-inside rows.
+- Say when you skipped dirty / open-PR / cwd-inside / still-locked rows.
 - Do not claim Cursor Archive or Claude delete cleaned these paths.
+- Do not kill `cursor-agent-worker` (or any process) without an explicit operator ask.
 - After `/merge-pr`, one `/prune --apply` (or a dry-run the operator reviews) is the
   normal hygiene step — not an in-place delete from the feature worktree chat.

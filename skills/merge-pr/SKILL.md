@@ -138,7 +138,9 @@ gh pr merge <n> --repo <owner>/<repo> --squash --delete-branch
   then `/prune --apply` from the **main clone**. If this session's cwd is inside the feature
   worktree just merged, say so explicitly — do not attempt `git worktree remove` on the tree
   you are standing in. Cursor Archive / Claude delete do **not** replace `/prune` for
-  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` paths.
+  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` paths. If prune hits Permission
+  denied, see [/prune](../prune/SKILL.md) §5a — leftover `cursor-agent-worker` may hold
+  `--worker-dir`; kill only when the operator authorizes.
 
 ## Honesty bar
 
