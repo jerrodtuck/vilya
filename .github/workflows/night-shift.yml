@@ -22,7 +22,7 @@ name: night-shift
 # To turn on the nightly schedule later, uncomment the `schedule:` block.
 on:
   schedule:
-   cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST adjustment)
+     - cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST adjustment)
   workflow_dispatch: {}
 
 permissions:
