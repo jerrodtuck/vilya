@@ -1,10 +1,12 @@
 # GitHub Projects — tracking model (template)
 
-Repo-agnostic tracking model for a single .NET / C# product. **Copy this file into each repo** at
-`docs/project-tracking/GITHUB-PROJECTS.md` and fill in the **Repo config** block below. Everything
-under "Model" and "Process" is identical across every product; only the config block differs. The
-`start-feature` / `finish-feature` / `update-docs` skills read their repo/project/label values from
-here.
+**Vilya is the Dev Loop system** (skills, prompts/flows, registry site, this template) — not a
+product target. **Copy this file into each product repo** at `docs/project-tracking/GITHUB-PROJECTS.md`
+and fill in the **Repo config** (and optional **Models**) block. Process sections below are shared
+across every product; only config values differ.
+
+Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / …) read owner, project,
+labels, stack, test command, and crucible variant from here.
 
 ## Repo config — fill this in per repo
 
@@ -20,6 +22,16 @@ here.
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
 | **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
 | Default branch | `main` | `git remote show origin` |
+
+### Models (optional — change over time)
+
+Human-readable names only; skills do not pin models in frontmatter for both phases. Update these
+when your preferred planning or execution model changes — no skill body edits required.
+
+| Key | Value | Notes |
+|-----|-------|-------|
+| **Planning model** | *(operator choice)* | Used in `/start-feature` plan phase (Cursor Plan mode / Claude planning model) |
+| **Execution model** | *(operator choice)* | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |
 
 Status option ids (fill after first setup):
 
@@ -68,6 +80,7 @@ Areas name *this* product's vertical slices. This repo's areas:
 | **Priority** | `priority:critical` · `priority:high` · `priority:medium` · `priority:low` |
 | **Area** | repo-specific — see Repo config |
 | **Status** | Todo · In Progress · Blocked · Verifying · Done |
+| **Autonomy** | `auto:ready` (safe for night-shift) · `needs:decision` (loop stopped at a fork) |
 
 Sync the standard Type/Priority/Status labels into a new repo:
 
@@ -112,8 +125,46 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 
 ## Process
 
-New work = GitHub issue, never a new markdown tracker file. Drive with `/start-feature` and
-`/finish-feature`. One issue = one branch = one worktree (`feat|fix|docs/<issue#>-slug`).
+### Daytime chain (primary)
+
+New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
+(`feat|fix|docs/<issue#>-slug`).
+
+```text
+/start-feature → implement → /crucible-<stack> → remediate → /finish-feature → /merge-pr → Done
+```
+
+`/update-docs` is a **routing** skill (manual / mid-work: “where does this go?”, log a decision,
+capture a bug). It is **not** stepped by the happy path. Specs and changelog fragments are written
+inline by `/start-feature` and `/finish-feature`.
+
+### Shared files / worktrees
+
+| File | Parallel rule |
+|------|----------------|
+| This `GITHUB-PROJECTS.md` | **Read-only on feature branches** unless the issue is explicitly about changing config. Config edits prefer a docs/config issue and merge-boundary. |
+| `docs/DECISIONS.md` | Append-only, newest at top, dated `## YYYY-MM-DD — Title`. Prefer the decision on the **issue** first; one file append on the owning branch. **Read:** grep/search by topic or issue # — do not load the whole file by default. |
+| `docs/specs/*.md`, `docs/design/*.md`, `docs/VISION.md` | Slow-moving. On create: `Created: YYYY-MM-DD` + owning issue. On material revise: bump `Last updated: YYYY-MM-DD`. |
+| `docs/project-tracking/changelog.d/YYYY-MM-DD-<slug>.md` | One fragment per PR — safe in parallel. Never edit assembled `CHANGELOG.md` on a feature branch. |
+
+### Night-shift via GitHub Actions
+
+Night-shift is **not** a second methodology. It runs the **same daytime chain** unattended on a
+**product** repo (headless Claude Code via Actions). Vilya ships the skill + workflow templates;
+each product repo enables the workflow.
+
+Eligibility: labeled `auto:ready`, not `needs:decision`, not `type:epic`. Opens PRs; **never
+merges**. At a real design fork: comment options + recommendation, label `needs:decision`, Blocked,
+next issue.
+
+| Topology | What you configure |
+|----------|-------------------|
+| **Personal account** (current default) | Per product repo: `.github/workflows/night-shift.yml`, self-hosted runner **registered on that repo**, repo secret `CLAUDE_CODE_OAUTH_TOKEN` (`claude setup-token`). Same machine may be registered once per repo. |
+| **Org later** (e.g. `jestrion`) | Org self-hosted runners + runner groups; workflows still per repo; optional org-level secret. **Claude Max/Pro stays personal** — the OAuth token still bills your subscription. **Personal GitHub Pro does not cover the org** — org Actions entitlements follow the org’s plan. |
+
+Manual-only by default (`workflow_dispatch`). Uncomment `schedule:` only after a product run is
+proven green. Templates: this repo’s `.github/workflows/night-shift.yml` and
+`docs/project-tracking/templates/night-shift-dotnet-cygnet.yml`.
 
 ## One-time repo setup
 
@@ -123,7 +174,25 @@ New work = GitHub issue, never a new markdown tracker file. Drive with `/start-f
 4. Project → ⋯ → **Workflows**: Auto-add (`is:issue`), Item added → Todo, Item closed → Done,
    PR merged → Done, Auto-add sub-issues, Item reopened → In Progress.
 5. Recreate views: Current Work, Roadmap, Bugs, By area.
+6. (Optional) Night-shift: add workflow + runner + `CLAUDE_CODE_OAUTH_TOKEN`; see Night-shift via
+   GitHub Actions above.
 
 ## Frozen
 
 Do not invent `BUGS.md` / `ROADMAP.md` as live trackers — use the board.
+
+## Implementation checklist → board issues (Vilya meta)
+
+Live work is on the board (do not grow a markdown backlog here):
+
+| Slice | Issue |
+|-------|-------|
+| Site: `/night-shift` + nav + overview/setup/flows | #48 |
+| Docs: `GITHUB-PROJECTS.md` direction sections | #49 |
+| Skills: thin night-shift + unattended consult | #50 |
+| Skills: plan→execute in start-feature + prompts | #51 |
+| Skills: dating / DECISIONS read rules | #52 |
+| Actions: slim workflow prompts + CygNet template | #53 |
+| README purpose + install-skills | #54 |
+
+These slices are implemented together in the night-shift direction PR; close with `Closes #48 #49 #50 #51 #52 #53 #54` (or individual PRs later).

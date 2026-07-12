@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/flows", label: "Flows" },
   { href: "/skills", label: "Skills" },
   { href: "/setup", label: "Setup" },
+  { href: "/night-shift", label: "Night shift" },
 ];
 
 export function SiteNav() {

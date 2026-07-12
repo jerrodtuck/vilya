@@ -12,8 +12,8 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
     sub: (
       <>
         owner · repo · project # · project id · status field + option ids ·
-        stack · crucible variant · test command · default branch · your{" "}
-        <code>area:*</code> labels
+        stack · crucible variant · test command · default branch · optional{" "}
+        <b>Models</b> (planning / execution) · your <code>area:*</code> labels
       </>
     ),
   },
@@ -146,6 +146,33 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         Next.js repo → <code>crucible-nextjs</code>, test command{" "}
         <code>npm test &amp;&amp; npm run build</code>. Both go in the
         repo&apos;s config block.
+      </div>
+
+      <h2>Models (plan → execute)</h2>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        Optional keys in <code>GITHUB-PROJECTS.md</code>:{" "}
+        <b>Planning model</b> and <b>Execution model</b>.{" "}
+        <code>/start-feature</code> plans first (Cursor Plan mode / your
+        planning model), then you switch to the execution model before coding.
+        Change the names in config when preferences shift — no skill body edits.
+        Night-shift / Actions stay on an execution-class model for the whole
+        unattended run (planning already locked via the issue +{" "}
+        <code>auto:ready</code>).
+      </p>
+
+      <h2>Shared files across worktrees</h2>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        Product <code>GITHUB-PROJECTS.md</code> is <b>read-only on feature
+        branches</b> unless the issue is about changing config. Specs carry{" "}
+        <code>Created</code> / <code>Last updated</code> dates.{" "}
+        <code>DECISIONS.md</code> is append-newest-at-top — grep to read, do not
+        load end-to-end. Full table lives in that config file.
+      </p>
+
+      <div className="note" style={{ marginTop: 16 }}>
+        Overnight runs: see <a href="/night-shift">Night shift</a> — same
+        daytime chain via Actions; personal per-repo runners or an org pool
+        later; secret is <code>CLAUDE_CODE_OAUTH_TOKEN</code>.
       </div>
 
       <div className="pagefoot">

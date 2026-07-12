@@ -5,9 +5,9 @@ description: Kick off a new feature or work stream on any repo's GitHub Projects
 
 # Start Feature (any stack)
 
-> **Scope:** Internal dev-process skill for a VSA-structured .NET repo. Companion:
-> [/finish-feature](../finish-feature/SKILL.md). Tracking model + this repo's project ids/labels:
-> `docs/project-tracking/GITHUB-PROJECTS.md`.
+> **Scope:** Internal dev-process skill for a VSA-structured product repo. Companion:
+> [/finish-feature](../finish-feature/SKILL.md). Tracking model + this repo's project ids/labels /
+> optional Models: `docs/project-tracking/GITHUB-PROJECTS.md`.
 
 All repo / project / label values come from this repo's `GITHUB-PROJECTS.md` **Repo config** block.
 If the repo isn't already known, detect it:
@@ -26,7 +26,8 @@ If the repo isn't already known, detect it:
   `docs/project-tracking/GITHUB-PROJECTS.md`.
   Defect → `type:bug`; feature → `type:feature`; multi-stream → `type:epic` with sub-issues.
 - Extends an in-flight epic → link as **sub-issue** (`addSubIssue`).
-- Ambiguous which issue → ask.
+- Ambiguous which issue → ask (unless invoked by [/night-shift](../night-shift/SKILL.md) —
+  then skip and take a clearly eligible issue only).
 - Move to **In Progress** (or **Blocked** if kickoff is stuck on an external dependency).
 
 ## 2. Set up the worktree
@@ -34,20 +35,43 @@ If the repo isn't already known, detect it:
 1. Fetch the default branch (`git remote show origin` if unsure it's `master`/`main`); branch
    `feat/<issue#>-slug`, `fix/<issue#>-slug`, or `docs/<issue#>-slug`.
    `git config core.longpaths true` on Windows / a new worktree.
+   - Cursor daytime: `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>`
+   - Prefer never coding in the main clone when a parallel stream exists.
 2. Non-trivial design → `docs/specs/<slug>.md` linked from the issue (design doc, not tracker).
+   Include **`Created: YYYY-MM-DD`** and the owning issue link in the spec body.
 3. Read the real architecture around the change — prefer the owning **vertical slice**. Do not
    invent layer-cake or dumping-ground folders (.NET `Controllers/`·`Services/`·`Repositories/`, or
    a flat `components/`·`utils/` in JS/TS) for a feature.
 
-## 3. Consult at decision forks — before implementing
+## 3. Plan phase → then execute phase
+
+Read optional **Planning model** / **Execution model** from `GITHUB-PROJECTS.md`.
+
+1. **Plan phase** — Cursor: stay in / switch to Plan mode. Claude: use the planning model.
+   Produce the verify plan (step 5) and any design-fork consult. Write the kickoff comment on the
+   issue. **Do not implement yet.**
+2. **Stop for model switch** (daytime) — tell the operator to switch to the execution model before
+   coding. Night-shift / Actions: skip the stop; planning is already locked via the issue body and
+   `auto:ready` — build on the execution-class model for the whole run.
+3. **Execute phase** — implement only after the plan is settled.
+
+## 4. Consult at decision forks — before implementing
 
 For scoped/complex work, surface 2–3 viable mechanisms, their costs, and silent breakages.
-Recommend one. Trivial work → build.
+Recommend one.
 
-## 4. Working rules
+- **Daytime:** wait for the operator's call.
+- **Unattended (night-shift):** do not wait — comment options + recommendation, label
+  `needs:decision`, move to **Blocked**, and return control to night-shift for the next issue.
+
+Trivial work → build.
+
+## 5. Working rules
 
 - **The issue is the shared state.** Progress in issue comments / PR body — not markdown trackers.
-- **New defect mid-work** → new Bug issue, link it, keep going.
+- **New defect mid-work** → new Bug issue (`/update-docs`), link it, keep going.
+- Do **not** edit `docs/project-tracking/GITHUB-PROJECTS.md` on a feature branch unless this issue
+  is about that config.
 - **VSA non-negotiable:** feature logic lives in its slice; the shared kernel holds
   contracts/primitives only; no coupling across product or feature boundaries (in .NET, no
   `ProjectReference` into a sibling product; in JS/TS, no cross-feature internal imports).
@@ -56,7 +80,7 @@ Recommend one. Trivial work → build.
   verbal "hold the bar." Apply 🔴/🟠 remediations until merge-readiness is `Ready` (or
   `Ready after blockers` with blockers fixed). Then [/finish-feature](../finish-feature/SKILL.md).
 
-## 5. Verify plan up front — including merge routing
+## 6. Verify plan up front — including merge routing
 
 State how the feature will be verified, **on the issue** (kickoff comment), so finish and merge
 read it instead of re-deciding:
@@ -69,5 +93,5 @@ read it instead of re-deciding:
   - `live-only` — verification needs the live / deployed system (hardware, brokers, real CygNet);
     PR will use `Refs #` → **Verifying** → Done after live confirmation.
 
-Then build. Close path: **tests green → `/crucible-<stack>` → remediate → `/finish-feature` →
-operator merges via `/merge-pr`**.
+Then build (after the execute-phase switch in daytime). Close path: **tests green →
+`/crucible-<stack>` → remediate → `/finish-feature` → operator merges via `/merge-pr`**.

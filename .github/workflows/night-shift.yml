@@ -3,6 +3,7 @@ name: night-shift
 # Runs on the operator's always-on dev machine (node, git, gh already present).
 # The sibling template for CygNet C# repos lives at
 # docs/project-tracking/templates/night-shift-dotnet-cygnet.yml.
+# Process + personal-vs-org runner notes: docs/project-tracking/GITHUB-PROJECTS.md
 #
 # ── One-time setup on the dev box ─────────────────────────────────────────────
 #   repo → Settings → Actions → Runners → New self-hosted runner
@@ -10,7 +11,7 @@ name: night-shift
 #   ensure node 20+, Git for Windows, and gh are on the service account's PATH
 #   generate a subscription token on the dev box: `claude setup-token`
 #   repo → Settings → Secrets and variables → Actions → add CLAUDE_CODE_OAUTH_TOKEN
-#   (runs bill to the operator's Claude Max subscription, not pay-per-token API)
+#   (runs bill to the operator's Claude Max/Pro subscription, not pay-per-token API)
 #
 # ── SECURITY ──────────────────────────────────────────────────────────────────
 #   Self-hosted runners must ONLY be used on PRIVATE repos — a fork PR on a
@@ -54,24 +55,16 @@ jobs:
           # the Claude Code already installed on this dev box instead.
           path_to_claude_code_executable: C:\Users\jerro\.local\bin\claude.exe
           prompt: |
-            You are running the Vilya NIGHT SHIFT (autonomous overnight loop) on
-            ${{ github.repository }}. The operator is asleep.
+            You are running NIGHT SHIFT on ${{ github.repository }}. The operator is asleep.
 
-            Read and follow skills/night-shift/SKILL.md in this repo EXACTLY —
-            preflight, eligibility, the loop, the hard stop at decision forks,
-            never merge, morning report. Then:
-            - Config: docs/project-tracking/GITHUB-PROJECTS.md (owner, project #,
-              ids, labels, stack, crucible variant, test command).
-            - Review step: apply skills/crucible-nextjs/SKILL.md and loop until
-              the signal reads Ready (cap 3 refactor rounds).
-            - Work ONLY issues labeled `auto:ready`; skip `needs:decision` and
-              epics. Up to 3 issues; prefer one finished cleanly.
-            - Test command runs in apps/skill-registry: npm test && npm run build.
-              Green is required to open a PR as ready.
-            - Open PRs, NEVER merge, never push to main. At a real design fork:
-              comment your recommendation, label `needs:decision`, move the
-              issue to Blocked, move on.
-            - Finish with the morning report per the skill.
+            Follow skills/night-shift/SKILL.md EXACTLY. It runs the daytime chain for each
+            eligible auto:ready issue: /start-feature → implement → /crucible-<stack> from
+            docs/project-tracking/GITHUB-PROJECTS.md → remediate → /finish-feature.
+
+            Open PRs only — never merge, never push to the default branch. At a real design
+            fork: comment recommendation, label needs:decision, Blocked, next issue.
+            Finish with the morning report per the skill.
           claude_args: |
             --max-turns 60
             --allowedTools Edit,Read,Write,Bash
+            --permission-mode bypassPermissions

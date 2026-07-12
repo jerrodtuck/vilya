@@ -9,11 +9,12 @@ export function OverviewView() {
       </div>
       <h1>The Dev Loop</h1>
       <p className="lead">
-        A small set of skills that make <b>you the orchestrator</b>: you point
-        the skills, decide at the forks, and keep the board honest. Every skill
-        reads its per-repo settings from one config file, so the same skill
-        body runs across every project — and across both Claude Code and
-        Cursor.
+        <b>Vilya is the Dev Loop system</b> — not a product like Anduin or
+        Narya. A small set of skills make <b>you the orchestrator</b>: you
+        point them by day, decide at the forks, and keep the board honest.
+        Night-shift runs that <b>same</b> chain unattended via GitHub Actions on
+        each product repo. Every skill reads per-repo settings from one config
+        file, across Claude Code and Cursor.
       </p>
 
       <div className="chipstrip">
@@ -55,10 +56,17 @@ export function OverviewView() {
           <h3>⚙️ Setup</h3>
           <p className="desc">
             Install once at the user level; add one config file per repo.
-            Platform toggle for Claude Code vs Cursor install paths and
-            frontmatter.
+            Models keys, shared-file rules, platform toggle.
           </p>
           <span className="more">Set up a project →</span>
+        </Link>
+        <Link className="card" href="/night-shift">
+          <h3>Night shift</h3>
+          <p className="desc">
+            Same daytime chain, unattended. Actions on each product repo;
+            personal per-repo runners or org pool later; Claude stays personal.
+          </p>
+          <span className="more">Run overnight →</span>
         </Link>
       </div>
 
