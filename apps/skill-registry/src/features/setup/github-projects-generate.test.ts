@@ -38,7 +38,7 @@ when your preferred planning or execution model changes — no skill body edits 
 
 | Key | Value | Notes |
 |-----|-------|-------|
-| **Planning model** | *(operator choice)* | Used in \`/start-feature\` plan phase (Cursor Plan mode / Claude planning model) |
+| **Planning model** | *(operator choice)* | Used in \`/start-feature\` plan phase when planning actually runs (Cursor Plan mode is operator-gated — see skill; Claude planning model) |
 | **Execution model** | *(operator choice)* | Used after the plan is settled; night-shift / Actions use this class of model for the whole unattended run |
 
 Status option ids (fill after first setup):

@@ -47,12 +47,22 @@ If the repo isn't already known, detect it:
 
 Read optional **Planning model** / **Execution model** from `GITHUB-PROJECTS.md`.
 
-1. **Plan phase** — Cursor: stay in / switch to Plan mode. Claude: use the planning model.
-   Produce the verify plan (step 5) and any design-fork consult. Write the kickoff comment on the
-   issue. **Do not implement yet.**
-2. **Stop for model switch** (daytime) — tell the operator to switch to the execution model before
-   coding. Night-shift / Actions: skip the stop; planning is already locked via the issue body and
-   `auto:ready` — build on the execution-class model for the whole run.
+**Cursor Plan mode is operator-gated.** Switching into Plan mode requires a human accept in the UI.
+If nobody accepts, the agent **never entered** Plan mode — do not assume the switch succeeded, and
+do not write as if Plan mode is active when it is not.
+
+1. **Plan phase** — produce the verify plan (step 5) and any design-fork consult; write the kickoff
+   comment on the issue; **do not implement yet.** How you run that phase:
+   - **Cursor, operator accepts Plan mode:** stay in / switch to Plan mode (planning model if set).
+   - **Cursor, unattended or accept unavailable (daytime fallback):** plan on the issue kickoff
+     comment and/or in-chat **without** a mode switch. Stay on the execution model. Same artifacts;
+     never pretend Plan mode ran.
+   - **Claude:** use the planning model.
+2. **Stop for model switch** (daytime) — only when a real Plan-mode session (or planning-model
+   handoff) actually ran: tell the operator to switch to the execution model before coding.
+   Skip the stop when (a) night-shift / Actions — planning is locked via the issue body and
+   `auto:ready`, build on the execution-class model for the whole run; or (b) Cursor daytime
+   fallback above — no mode switch happened, so proceed to execute after the kickoff plan is written.
 3. **Execute phase** — implement only after the plan is settled.
 
 ## 4. Consult at decision forks — before implementing

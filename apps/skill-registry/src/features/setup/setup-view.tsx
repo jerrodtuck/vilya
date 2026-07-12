@@ -161,11 +161,14 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
       <p className="muted" style={{ lineHeight: 1.55 }}>
         Optional keys in <code>GITHUB-PROJECTS.md</code>:{" "}
         <b>Planning model</b> and <b>Execution model</b>.{" "}
-        <code>/start-feature</code> plans first (Cursor Plan mode / your
-        planning model), then you switch to the execution model before coding.
-        Change the names in config when preferences shift — no skill body edits.
-        Night-shift / Actions stay on an execution-class model for the whole
-        unattended run (planning already locked via the issue +{" "}
+        <code>/start-feature</code> plans first. Cursor Plan mode needs a human
+        UI accept — if you don&apos;t accept (or you&apos;re away), the agent
+        plans on the issue / in-chat without a mode switch and stays on the
+        execution model; it must not assume Plan mode ran. When Plan mode (or
+        your planning model) actually ran, switch to the execution model before
+        coding. Change the names in config when preferences shift — no skill
+        body edits. Night-shift / Actions stay on an execution-class model for
+        the whole unattended run (planning already locked via the issue +{" "}
         <code>auto:ready</code>).
       </p>
 
