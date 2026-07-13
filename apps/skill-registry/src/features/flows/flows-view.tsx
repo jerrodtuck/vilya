@@ -24,7 +24,7 @@ export function FlowsView() {
         </p>
         <div style={{ marginTop: 14 }}>
           <Link className="setupbtn" href="/setup">
-            ⚙ Per-project setup
+            Per-project setup
           </Link>
         </div>
       </header>
