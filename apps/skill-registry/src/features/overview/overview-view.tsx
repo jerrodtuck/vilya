@@ -1,5 +1,6 @@
 // Feature slice: overview — the methodology's front door (server component).
 import Link from "next/link";
+import { BoardStrip } from "@/shared/ui/board-strip";
 
 export function OverviewView() {
   return (
@@ -33,6 +34,19 @@ export function OverviewView() {
         <span className="arrow">→</span>
         <span className="lchip f">Done</span>
       </div>
+
+      <BoardStrip
+        flowsHref="/flows"
+        hint={
+          <>
+            Status is the only native field that moves work:{" "}
+            <b>Todo → In Progress → Blocked → Verifying → Done</b>. Skills read
+            project ids and labels from that repo&apos;s{" "}
+            <code>GITHUB-PROJECTS.md</code> — one file per product, skills stay
+            generic.
+          </>
+        }
+      />
 
       <div className="cards">
         <Link className="card" href="/flows">
@@ -82,8 +96,7 @@ export function OverviewView() {
       </div>
 
       <div className="pagefoot">
-        The board (GitHub Projects) is the one shared state every skill reports
-        into. Instruments:{" "}
+        Instruments:{" "}
         <b>
           /start-feature · crucible-blazor · crucible-nextjs · /finish-feature
           · /merge-pr · /update-docs · /history · night-shift
