@@ -231,7 +231,7 @@ Your job:
   },
   {
     node: "NIGHT",
-    group: "🌙 Night shift (manual runner)",
+    group: "Night shift (manual runner)",
     c: "--orch",
     items: [
       {

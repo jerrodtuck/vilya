@@ -224,9 +224,9 @@ export const FLOWS: Record<string, FlowDef> = {
     edges: ["o-epic", "epic-s"],
   },
   nightshift: {
-    label: "🌙 Night shift",
+    label: "Night shift",
     descHtml:
-      "<b>🌙 Night shift (autonomous).</b> A scheduled task fires while you sleep: it picks an <code>auto:ready</code> issue and runs the full loop — but <b>stops at any real design fork</b> (leaving you a recommendation) and ends at an <b>open PR, never a merge</b>. You wake to a review queue.",
+      "<b>Night shift (autonomous).</b> A scheduled task fires while you sleep: it picks an <code>auto:ready</code> issue and runs the full loop — but <b>stops at any real design fork</b> (leaving you a recommendation) and ends at an <b>open PR, never a merge</b>. You wake to a review queue.",
     nodes: ["ORCH", "START", "IMPL", "REVIEW", "REFACTOR", "FINISH"],
     edges: ["o-s", "s-i", "i-r", "r-ref", "ref-r", "r-f"],
   },

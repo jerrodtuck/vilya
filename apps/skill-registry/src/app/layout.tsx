@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import { SiteFooter } from "./site-footer";
 import { SiteNav } from "./site-nav";
 import "./globals.css";
 
@@ -14,12 +17,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <div className="wrap">
-          <SiteNav />
-          {children}
-        </div>
+    <html
+      lang="en"
+      className={`dark ${GeistSans.variable} ${GeistMono.variable}`}
+    >
+      <body className={GeistSans.className}>
+        <SiteNav />
+        <main className="wrap">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

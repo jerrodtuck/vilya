@@ -1,5 +1,6 @@
 // Feature slice: overview — the methodology's front door (server component).
 import Link from "next/link";
+import { BoardStrip } from "@/shared/ui/board-strip";
 
 export function OverviewView() {
   return (
@@ -8,16 +9,17 @@ export function OverviewView() {
         VSA + SOLID · .NET/Blazor · Next.js · Claude Code + Cursor
       </div>
       <h1>The Dev Loop</h1>
+      <p className="mono-kicker">01 · system</p>
       <p className="lead">
-        <b>Vilya is the Dev Loop system</b> — not a product like Anduin or
-        Narya. A small set of skills make <b>you the orchestrator</b>: you
-        point them by day, decide at the forks, and keep the board honest.
-        Night-shift runs that <b>same</b> chain unattended via GitHub Actions on
-        each product repo. Every skill reads per-repo settings from one config
-        file, across Claude Code and Cursor.
+        <b>Vilya is the Dev Loop</b> — the skills, board, and night-shift that
+        turn you into the orchestrator across every product repo. You point them
+        by day, decide at the forks, and keep the board honest. Night-shift runs
+        that <b>same</b> chain unattended. One{" "}
+        <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
+        speak the same skills.
       </p>
 
-      <div className="chipstrip">
+      <div className="chipstrip" aria-label="Daytime chain">
         <span className="lchip s">/start-feature</span>
         <span className="arrow">→</span>
         <span className="lchip">implement in the slice</span>
@@ -33,9 +35,22 @@ export function OverviewView() {
         <span className="lchip f">Done</span>
       </div>
 
+      <BoardStrip
+        flowsHref="/flows"
+        hint={
+          <>
+            Status is the only native field that moves work:{" "}
+            <b>Todo → In Progress → Blocked → Verifying → Done</b>. Skills read
+            project ids and labels from that repo&apos;s{" "}
+            <code>GITHUB-PROJECTS.md</code> — one file per product, skills stay
+            generic.
+          </>
+        }
+      />
+
       <div className="cards">
         <Link className="card" href="/flows">
-          <h3>🗺️ Flows</h3>
+          <h3>Flows</h3>
           <p className="desc">
             The interactive map. Light up any path — happy path,
             review↔refactor loop, PR merge, consult forks, bug-mid-work,
@@ -44,7 +59,7 @@ export function OverviewView() {
           <span className="more">Open the map →</span>
         </Link>
         <Link className="card" href="/skills">
-          <h3>🧰 Skills</h3>
+          <h3>Skills</h3>
           <p className="desc">
             The instruments, read live from their <code>SKILL.md</code>{" "}
             files — what each does, its trigger, invocation, and full version
@@ -53,7 +68,7 @@ export function OverviewView() {
           <span className="more">See the toolset →</span>
         </Link>
         <Link className="card" href="/setup">
-          <h3>⚙️ Setup</h3>
+          <h3>Setup</h3>
           <p className="desc">
             Install once at the user level; add one config file per repo.
             Shared-file rules, platform toggle, plan → execute flow.
@@ -81,8 +96,7 @@ export function OverviewView() {
       </div>
 
       <div className="pagefoot">
-        The board (GitHub Projects) is the one shared state every skill reports
-        into. Instruments:{" "}
+        Instruments:{" "}
         <b>
           /start-feature · crucible-blazor · crucible-nextjs · /finish-feature
           · /merge-pr · /update-docs · /history · night-shift

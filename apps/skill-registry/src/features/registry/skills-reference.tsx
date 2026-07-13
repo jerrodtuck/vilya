@@ -69,7 +69,7 @@ export function SkillsReference() {
       </p>
       <div className="grid2">
         <div className="refcard">
-          <h3>✅ Shared (portable — define once)</h3>
+          <h3>Shared (portable — define once)</h3>
           <ul>
             <li>
               <code>name</code> — identifier / display name

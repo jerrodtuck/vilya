@@ -1,6 +1,7 @@
 // Feature slice: flows — page composition (server component). The interactive
 // map is the client island; everything else renders on the server.
 import Link from "next/link";
+import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowsMap } from "./flows-map";
 import { PromptList } from "./prompt-list";
 import { PROMPTS } from "./prompts";
@@ -24,28 +25,22 @@ export function FlowsView() {
         </p>
         <div style={{ marginTop: 14 }}>
           <Link className="setupbtn" href="/setup">
-            ⚙ Per-project setup
+            Per-project setup
           </Link>
         </div>
       </header>
 
-      <div className="board">
-        <div className="blabel">
-          ▸ <b>GitHub&nbsp;Projects&nbsp;board</b> — the one shared state
-        </div>
-        <div className="pills">
-          <span className="pill todo">Todo</span>
-          <span className="pill inprog">In Progress</span>
-          <span className="pill blk">Blocked</span>
-          <span className="pill ver">Verifying</span>
-          <span className="pill dn">Done</span>
-        </div>
-        <div className="hint">
-          Every skill reads its repo/project/label values from that repo&apos;s{" "}
-          <code>GITHUB-PROJECTS.md</code> config block — one file per repo,
-          skills stay generic.
-        </div>
-      </div>
+      <BoardStrip
+        hint={
+          <>
+            Every skill reads its repo/project/label values from that
+            repo&apos;s <code>GITHUB-PROJECTS.md</code> config block — one file
+            per repo, skills stay generic.{" "}
+            <b>Blocked</b> holds design forks; <b>Verifying</b> is for
+            live-only confirmation after merge.
+          </>
+        }
+      />
 
       <FlowsMap
         aside={

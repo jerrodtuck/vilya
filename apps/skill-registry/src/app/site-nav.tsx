@@ -18,17 +18,23 @@ export function SiteNav() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <nav className="sitenav">
-      <Link className="brand" href="/">
-        ◆ Dev Loop
-      </Link>
-      <span className="nlinks">
-        {LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className={isOn(l.href) ? "on" : ""}>
-            {l.label}
-          </Link>
-        ))}
-      </span>
-    </nav>
+    <header className="sitenav-bar">
+      <nav className="sitenav">
+        <Link className="brand" href="/">
+          Dev Loop
+        </Link>
+        <span className="nlinks">
+          {LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={isOn(l.href) ? "on" : ""}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </span>
+      </nav>
+    </header>
   );
 }
