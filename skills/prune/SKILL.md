@@ -1,11 +1,12 @@
 ---
 name: prune
 description: >-
-  Orchestrator cleanup for Cursor feature worktrees and leftover local branches.
-  Dry-run by default; --apply removes eligible %USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*
-  folders after squash-merge. Use when the user says "prune", "prune worktrees",
-  "/prune", or after /merge-pr hands off cleanup. Run from the main clone — never
-  from inside a worktree being removed.
+  Orchestrator cleanup for feature worktrees + leftover local branches — both Cursor
+  (%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*) and Claude chip
+  (.claude/worktrees/<slug> on claude/* branches) trees. Dry-run by default; --apply
+  removes eligible worktrees after squash-merge. Use when the user says "prune", "prune
+  worktrees", "/prune", or after /merge-pr hands off cleanup. Run from the main clone —
+  never from inside a worktree being removed.
 ---
 
 # Prune (any stack)
@@ -17,16 +18,19 @@ description: >-
 
 ## Why this exists
 
-Daytime feature worktrees live under:
+Feature worktrees live under two roots:
 
 ```text
-%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>
+%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>   # Cursor daytime (/start-feature)
+<main-clone>\.claude\worktrees\<slug>                    # Claude chips (spawn_task / agent-view), claude/* branch
 ```
 
-They are created by `/start-feature` — **not** Cursor Parallel / Best-of-N pools and
-**not** Claude Code `--worktree` pools. **Cursor Archive** and **Claude delete** do
-**not** own this path. After squash-merge + remote branch delete, those folders and
-local `feat|fix|docs/<issue#>-*` branches pile up until you prune.
+**Prune owns both** — Cursor trees from `/start-feature`, and Claude **chip** trees
+(`spawn_task` / agent-view background sessions, on `claude/*` branches). It does **not**
+touch manual Claude Code `--worktree` pools (those are on `worktree-*` branches) or Cursor
+Parallel / Best-of-N pools. **Cursor Archive** and **Claude "delete session"** do **not**
+reliably remove chip folders — after squash-merge, the worktrees plus their local
+`feat|fix|docs/<issue#>-*` or `claude/*` branches pile up until you prune.
 
 ## 0. Where to run
 
@@ -54,20 +58,24 @@ Optional scope (when the operator names it):
 
 1. Resolve `<repo>` short name (`gh repo view --json name -q .name`, or the leaf of
    `nameWithOwner`).
-2. List directories matching `<issue#>-*` under
-   `%USERPROFILE%\.cursor\worktrees\<repo>\`
-   (bash: `$HOME/.cursor/worktrees/<repo>/`).
-3. Cross-check `git worktree list --porcelain` from the main clone so registered paths
-   and branch names are known. Orphan folders (on disk but not in `worktree list`)
-   still count — they are leftover after a failed remove.
+2. **`git worktree list --porcelain` from the main clone is the source of truth** — it
+   registers every worktree with its path and branch, across **both** worktree models:
+   - **Cursor daytime** (`/start-feature`):
+     `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>` on `feat|fix|docs/<issue#>-*`
+     branches (bash: `$HOME/.cursor/worktrees/<repo>/`).
+   - **Claude chips** (`spawn_task` / agent-view):
+     `<main-clone>\.claude\worktrees\<slug>` on `claude/*` branches.
+3. Also scan **both** roots on disk for **orphan folders** (on disk but absent from
+   `worktree list` — leftover after a failed/locked remove): `$HOME/.cursor/worktrees/<repo>/`
+   and `<main-clone>/.claude/worktrees/`. Orphans still count.
 
 ## 3. Eligibility (all must hold)
 
 | # | Gate | Fail → |
 |---|------|--------|
-| 1 | Folder name is `<digits>-…` (`/start-feature` layout) | skip |
+| 1 | Worktree is one of ours: a Cursor tree (`.cursor/worktrees/<repo>/` with a `<digits>-…` folder, `/start-feature` layout) **or** a Claude chip (`.claude/worktrees/` on a `claude/*` branch) | skip |
 | 2 | Path is not cwd (nor a parent of cwd) | skip + warn |
-| 3 | No **open** PR for the paired `feat\|fix\|docs/<issue#>-*` head | skip |
+| 3 | No **open** PR for the worktree's branch head (`feat\|fix\|docs/<issue#>-*` **or** `claude/*`) | skip |
 | 4 | Closed out: merged/closed PR for that head, **or** remote branch gone (`git ls-remote --heads origin <branch>` empty), **or** `git merge-base --is-ancestor <branch> origin/<default-branch>` | skip (unmerged) |
 | 5 | Worktree clean (`git status --porcelain` empty) on `--apply` | skip (no default `--force`) |
 
@@ -99,7 +107,7 @@ git worktree remove "<path>"          # add --force only if the operator explici
 # Unix:    rm -rf "<path>"
 
 # matching local branch still present
-git branch -D "<branch>"              # only the paired feat|fix|docs/<issue#>-* name
+git branch -D "<branch>"              # only the paired feat|fix|docs/<issue#>-* or claude/* name
 
 git fetch --prune
 ```
@@ -109,25 +117,29 @@ git fetch --prune
   deletes, and do not kill processes unless the operator explicitly asks.
 - Re-run dry-run at the end and show what remains.
 
-## 5a. Lock holder — `cursor-agent-worker` (Windows / Cursor)
+## 5a. Lock holder — Permission denied on a locked worktree
 
-Operator-proven sequence after `/merge-pr` when folder delete returns **Permission
-denied** even though the chip is closed / Archived:
+After `/merge-pr`, folder delete can return **Permission denied** even though the PR is
+merged, because a live process still holds the worktree open. Two cases:
+
+**Claude chip (`.claude/worktrees/<slug>`)** — the chip's own **session process** holds its
+worktree while that session is still alive. **Close the chip session in the UI** (agent view /
+background sessions) and the lock releases; then re-apply. This is the common case for
+`spawn_task` chips and needs **no** process kill. Only if closing the session isn't possible,
+fall back to the PID hunt below.
+
+**Cursor (`.cursor/worktrees/<repo>/<issue#>-*`)** — a leftover `cursor-agent-worker`
+`node.exe` keeps the worktree open even after the chip is closed / Archived.
 
 1. **Merge first** — PR MERGED, remote branch gone (already true for eligible rows).
-2. **Identify the holder** — a leftover `cursor-agent-worker` `node.exe` often keeps
-   the worktree open. On Windows, find PIDs whose command line includes the worktree
-   path and/or `--worker-dir` (same path under
-   `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*`):
+2. **Identify the holder** — find PIDs whose command line names the worktree path (for
+   Cursor, also `cursor-agent-worker` / `--worker-dir`):
 
    ```powershell
-   $wt = "$env:USERPROFILE\.cursor\worktrees\<repo>\<issue#>-<slug>"
-   Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
-     Where-Object {
-       $_.CommandLine -match 'cursor-agent-worker|--worker-dir' -and
-       $_.CommandLine -like ("*{0}*" -f $wt)
-     } |
-     Select-Object ProcessId, CommandLine
+   $wt = "<full worktree path>"   # .cursor\worktrees\<repo>\<issue#>-<slug>  OR  .claude\worktrees\<slug>
+   Get-CimInstance Win32_Process |
+     Where-Object { $_.CommandLine -like ("*{0}*" -f $wt) } |
+     Select-Object ProcessId, Name, CommandLine
    ```
 
    Confirm the cmdline actually names **this** worktree before offering a kill.
@@ -141,8 +153,8 @@ denied** even though the chip is closed / Archived:
 4. **Re-apply** — `/prune --apply` (scoped or full). `git worktree remove` /
    `Remove-Item` should succeed once that lock is gone.
 
-Closing the chip or Cursor Archive is **not** enough when this worker is still
-alive. Skip the row and continue others if the operator declines the kill.
+Closing the chip / Cursor Archive is **not** always enough (Cursor's worker outlives it).
+Skip the row and continue others if the operator declines the kill.
 
 ## 6. Honesty bar
 
