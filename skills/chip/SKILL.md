@@ -52,11 +52,15 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 - **Issue #<N>** with its full goal + acceptance — do not make the chip re-derive it.
 - **Owning vertical slice** to work in; don't invent layer-cake / dumping-ground folders.
 - **Verify gate**: the repo's **Test command** + the routing (`tests-only` / `local-smoke` /
-  `live-only`) read off the issue's verify plan.
+  `live-only`) read off the issue's verify plan. **No test surface** (docs/config-only chip)? Say
+  so, declare routing `tests-only`, and substitute a **doc verify gate** — links resolve, facts
+  cross-checked against source.
 - **Crucible gate**: run the repo's `crucible-<stack>` skill (looked up in `GITHUB-PROJECTS.md`,
   e.g. `crucible-blazor` / `crucible-nextjs`) and remediate until the signal reads **Ready** —
   **not optional**.
-- **Close-out**: open a PR **titled `#<N> <name>`** with **`Closes #<N>`** in the body.
+- **Close-out**: **`/finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
+  **Ready**, it opens the PR **titled `#<N> <name>`** with **`Closes #<N>`**, plus the `changelog.d/`
+  fragment + spec status.
 - **Hard rules for the chip**: **never merge**; **never push to the default branch**; at a real
   design fork, **stop, comment 2–3 options on the issue, and wait** — do not guess.
 
