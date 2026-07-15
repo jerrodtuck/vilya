@@ -2,3 +2,6 @@ node_modules/
 .next/
 /package-lock.json
 .DS_Store
+
+# Claude Code agent-view worktrees
+.claude/worktrees/
