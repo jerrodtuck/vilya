@@ -119,15 +119,16 @@ on the feature branch), then re-triage here.
 ## 4. Merge
 
 ```bash
-gh pr merge <n> --repo <owner>/<repo> --squash --delete-branch
+gh pr merge <n> --repo <owner>/<repo> --squash
 ```
 
 - Squash commit title = PR title `(#n)`; body = PR body, so `Closes #issue` auto-closes on merge.
 - Merge only with checks green — or say explicitly which check you're waiving and why.
-- Running /merge-pr from the PR branch's **own worktree**? `--delete-branch` conflicts with the
-  active checkout — merge with `--squash` alone and delete the remote branch separately
-  (`git push origin --delete <branch>`); local worktree/branch cleanup is the `/prune` handoff
-  once you are on the main clone.
+- **Do not pass `--delete-branch`.** Branch deletion is `/prune`'s job, never merge-pr's. The
+  remote branch is removed automatically on merge by `delete_branch_on_merge` (§0); the local
+  branch **and** worktree are the `/prune` handoff (§5). This keeps merge-pr from ever trying to
+  delete a branch that's still checked out in a chip's worktree — the failure mode that leaves a
+  "Permission denied" leftover and looks like merge-pr is pruning.
 
 ## 5. Board + prune handoff
 
