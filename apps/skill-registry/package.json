@@ -5,9 +5,10 @@
   "description": "Git-native registry for the Vilya skills — reads SKILL.md files as the source of truth, surfaces version history from git.",
   "scripts": {
     "sync:github-projects-template": "node scripts/sync-github-projects-template.mjs",
-    "predev": "npm run sync:github-projects-template",
-    "prebuild": "npm run sync:github-projects-template",
-    "pretest": "npm run sync:github-projects-template",
+    "sync:skills": "node scripts/sync-skills.mjs",
+    "predev": "npm run sync:github-projects-template && npm run sync:skills",
+    "prebuild": "npm run sync:github-projects-template && npm run sync:skills",
+    "pretest": "npm run sync:github-projects-template && npm run sync:skills",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
