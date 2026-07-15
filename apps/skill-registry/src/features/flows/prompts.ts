@@ -34,11 +34,11 @@ export const PROMPTS: PromptGroup[] = [
         label: "Claude Code — orchestrator · spawn_task chips",
         text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips.
 
-Every implementation, test, and remediation unit is dispatched as a chip via the spawn_task tool:
+Every implementation, test, and remediation unit is dispatched as a chip by invoking the /chip skill — never call spawn_task directly; /chip owns the brief template so nothing gets freehanded. It produces a spawn_task call with:
 - title leads with the issue id — #<N> <concise-name> — so it's spottable in the UI.
 - tldr: one plain-English line.
 - cwd: the repo root (main clone).
-- prompt: a fully self-contained brief — the chip starts fresh in its own worktree with none of our conversation — carrying the task, acceptance criteria, owning slice, and its verify + crucible gate, and instructing it to open a PR titled #<N> <name> with Closes #<N> (no merge, no push to the default branch).
+- prompt: a fully self-contained brief — the chip starts fresh in its own worktree with none of our conversation — carrying the task, acceptance criteria, owning slice, the verify gate (or, for a docs/config chip with no test surface, a doc verify gate: links resolve, facts cross-checked against source), and the close path: /crucible-<stack> until Ready → /finish-feature (PR titled #<N> <name>, Closes #<N>; no merge, no push to the default branch).
 
 One chip = one branch = one worktree = one session. Chips run on their own claude/* branch and PR against the default branch — expected; don't fight it.
 
