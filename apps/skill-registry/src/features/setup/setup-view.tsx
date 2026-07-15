@@ -167,6 +167,38 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         Night-shift / Actions stay on one model for the whole unattended run
         (planning already locked via the issue + <code>auto:ready</code>).
       </p>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        <b>
+          Claude Code — automate the switch with <code>opusplan</code>.
+        </b>{" "}
+        Instead of hand-switching, set the model in{" "}
+        <code>.claude/settings.local.json</code> (gitignored, per-operator):
+        plan mode runs the <code>opus</code> alias, execution runs the{" "}
+        <code>sonnet</code> alias. Repoint either alias with env overrides — the
+        pairing below gives <b>Fable plan → Sonnet execute</b>:
+      </p>
+      <pre>{`{
+  "model": "opusplan",
+  "env": {
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-fable-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5"
+  }
+}`}</pre>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        The <code>/model</code> label still reads Opus/Sonnet — routing is by
+        alias, not name — and config is read at <b>session startup</b>, so it
+        applies to the next session, not the running one.{" "}
+        <b>
+          Chips inherit it via <code>.worktreeinclude</code>.
+        </b>{" "}
+        Chip sessions run in fresh worktrees and{" "}
+        <code>settings.local.json</code> is gitignored, so a repo-root{" "}
+        <code>.worktreeinclude</code> listing{" "}
+        <code>.claude/settings.local.json</code> copies your pairing into every
+        chip worktree at creation. Model names stay in your personal file; only
+        the pointer is tracked — skills and{" "}
+        <code>GITHUB-PROJECTS.md</code> stay model-agnostic.
+      </p>
 
       <h2>Shared files across worktrees</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
