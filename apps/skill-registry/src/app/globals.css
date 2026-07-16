@@ -235,6 +235,20 @@ code {
 .note b { color: #ffcf7a; }
 .note.teal { border-color: hsl(var(--primary) / 0.35); background: hsl(var(--card) / 0.5); color: var(--muted); }
 .note.teal b { color: var(--text); }
+
+.difftable { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.diffrow { border: 1px solid var(--border); border-radius: 11px; padding: 14px 16px; background: hsl(var(--card) / 0.4); }
+.diffhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.diffhead h3 { margin: 0; font-size: 14.5px; }
+.diffcols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.diffcol-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.diffcol p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.5; }
+.diffnote { margin-top: 10px; font-size: 12.5px; font-style: italic; }
+.diffsources { margin-top: 8px; font-size: 12px; }
+.diffsources a { color: var(--primary); }
+@media (max-width: 640px) {
+  .diffcols { grid-template-columns: 1fr; }
+}
 pre {
   background: hsl(222 47% 5%);
   border: 1px solid var(--border);
