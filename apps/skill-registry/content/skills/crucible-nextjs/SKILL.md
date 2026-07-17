@@ -1,7 +1,6 @@
 ---
 name: crucible-nextjs
 description: Unusually strict, refactor-oriented code-quality review for Next.js / React / TypeScript projects — vertical-slice (feature-folder) architecture, outcome-oriented SOLID, structural simplification, server/client-boundary and RSC guidance. Use for PR review, "crucible", or when enforcing feature-slice structure on a Next.js repo. Install one crucible variant per repo, matched to its stack (sibling: crucible-blazor).
-disable-model-invocation: true
 ---
 
 # Crucible Code Quality Review — Next.js / React
