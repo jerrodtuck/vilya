@@ -61,8 +61,13 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 - **Close-out**: **`/finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
   **Ready**, it opens the PR **titled `#<N> <name>`** with **`Closes #<N>`**, plus the `changelog.d/`
   fragment + spec status.
-- **Hard rules for the chip**: **never merge**; **never push to the default branch**; at a real
-  design fork, **stop, comment 2–3 options on the issue, and wait** — do not guess.
+- **No chip-spawned sessions**: chips **never call `spawn_task`** (or any other session-spawning
+  tool). A deferred idea, follow-up, or out-of-scope finding goes **on the issue as a comment** or
+  as a **new labeled GitHub issue** — only the orchestrator decides whether and how to chip it.
+- **Hard rules for the chip**: **never merge**; **never push to the default branch**; **never call
+  `spawn_task`** or any session-spawning tool — deferred work goes on the issue, not into a new
+  session; at a real design fork, **stop, comment 2–3 options on the issue, and wait** — do not
+  guess.
 
 ## 3. After dispatch — poll, don't wait on the ping
 
@@ -85,5 +90,8 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 
 - Never chip untracked work. Never chip past a real design fork without giving the operator options.
 - Chips **never self-merge**; the orchestrator reviews every chip before `/merge-pr`.
+- Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
+  `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on
+  the issue or a new labeled issue for the orchestrator to triage.
 - Report which chips are dispatched, which PRs are up, and what's still owed — from the **board and
   `gh`**, not from a ping you assume arrived.
