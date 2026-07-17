@@ -44,6 +44,10 @@ everything ships through chips.
 | `cwd` | the repo root (main clone) |
 | `prompt` | a **fully self-contained brief** (see §2) |
 
+The orchestrator **includes its own session id in every brief** — it knows it at dispatch time
+(`mcp__ccd_session_mgmt__list_sessions` / `get_session`), and it's the address the chip reports
+back to (§2).
+
 ## 2. The self-contained brief (the `prompt`)
 
 The chip has **zero** shared context, so the brief must stand alone. Include:
@@ -61,6 +65,9 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 - **Close-out**: **`/finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
   **Ready**, it opens the PR **titled `#<N> <name>`** with **`Closes #<N>`**, plus the `changelog.d/`
   fragment + spec status.
+- **Completion report**: on completion (PR opened) **or** when stopping at a fork/blocker, send a
+  concise report to the **dispatching session id from the brief** via
+  `mcp__ccd_session_mgmt__send_message` — lead with issue #, PR #, and gate results.
 - **No chip-spawned sessions**: chips **never call `spawn_task`** (or any other session-spawning
   tool). A deferred idea, follow-up, or out-of-scope finding goes **on the issue as a comment** or
   as a **new labeled GitHub issue** — only the orchestrator decides whether and how to chip it.
@@ -69,9 +76,19 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   session; at a real design fork, **stop, comment 2–3 options on the issue, and wait** — do not
   guess.
 
-## 3. After dispatch — poll, don't wait on the ping
+## 3. After dispatch — report is primary, polling is the backup
 
-The completion ping back to the orchestrator is **unreliable** — do **not** block on it. Poll:
+The chip's `send_message` report (§2) is the **primary** completion signal. Two mechanisms made
+the old "unreliable ping" doctrine, both now understood:
+
+- **Model-initiated reports are permission-gated** — `mcp__ccd_session_mgmt__send_message`
+  prompts for approval in the *chip's* unattended session and silently never sends. Fixed by
+  allowing it in **user-level** `~/.claude/settings.json`.
+- **Harness end-pings don't fire** — a finished chip *idles* (`isRunning: false`) waiting for
+  input; the session never ends, so no end-notification is emitted.
+
+Polling is the **verification backup** — use it whenever a report hasn't arrived, and always
+before merge:
 
 - `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or
 - `gh pr list` for the chip's PR.
@@ -93,5 +110,6 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
   `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on
   the issue or a new labeled issue for the orchestrator to triage.
-- Report which chips are dispatched, which PRs are up, and what's still owed — from the **board and
-  `gh`**, not from a ping you assume arrived.
+- Report which chips are dispatched, which PRs are up, and what's still owed. A chip's
+  `send_message` report is a claim, not proof — **verify it against the board and `gh` before any
+  merge**.
