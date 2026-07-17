@@ -1,7 +1,6 @@
 ---
 name: crucible-blazor
 description: Unusually strict, refactor-oriented code-quality review for .NET / Blazor projects — vertical-slice architecture, outcome-oriented SOLID, structural simplification, Blazor component-layer guidance. Use for PR review, "crucible", or when enforcing VSA on a Blazor/.NET repo. Install one crucible variant per repo, matched to its stack (sibling: crucible-nextjs).
-disable-model-invocation: true
 ---
 
 # Crucible Code Quality Review — Blazor / .NET
