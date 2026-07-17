@@ -120,7 +120,8 @@ export function SkillsReference() {
         files (<code>reference.md</code>, <code>examples.md</code>,{" "}
         <code>scripts/</code>) in the skill folder and link them from{" "}
         <code>SKILL.md</code>; the agent loads them on demand. Claude Code adds{" "}
-        <code>{"${CLAUDE_SKILL_DIR}"}</code> so bundled scripts resolve wherever
+        <code>{"${CLAUDE_SKILL_DIR}"}</code>
+        {" "}so bundled scripts resolve wherever
         the skill is installed. Our skills don&apos;t need references yet — but
         this is how you&apos;d bundle, say, a shared VSA cheat-sheet with the
         Crucible reviews.

@@ -103,7 +103,8 @@ export function FlowsView() {
         <h3>Orchestrator prompt library</h3>
         <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
           The words you actually say to drive each skill. Fill the{" "}
-          <code>&lt;placeholders&gt;</code> and paste. Every prompt also shows
+          <code>&lt;placeholders&gt;</code>
+          {" "}and paste. Every prompt also shows
           up in its node&apos;s detail panel above — click <b>Copy</b> on any
           of them.
         </p>
@@ -165,9 +166,11 @@ export function FlowsView() {
 
       <div className="pagefoot">
         Skills read every repo-specific value (owner · project # · ids ·{" "}
-        <b>stack</b> · <b>test command</b> · <code>area:*</code> labels) from
+        <b>stack</b> · <b>test command</b> · <code>area:*</code>
+        {" "}labels) from
         that repo&apos;s <code>GITHUB-PROJECTS.md</code>. Drop the process
-        skills + the matching <code>crucible-&lt;stack&gt;</code> into any repo
+        skills + the matching <code>crucible-&lt;stack&gt;</code>
+        {" "}into any repo
         and the whole loop works. &nbsp;·&nbsp; Instruments:{" "}
         <b>
           /start-feature · crucible-{"{blazor,nextjs}"} · /finish-feature ·

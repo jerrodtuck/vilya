@@ -53,7 +53,8 @@ export function DifferencesView() {
       <div className="note" style={{ marginTop: 24 }}>
         <b>Adding a row:</b> only from a primary source (official docs) or a
         directly-tested result — not a blog summary or a guess. Mark{" "}
-        <code>unverified</code> until it&apos;s actually checked.
+        <code>unverified</code>
+        {" "}until it&apos;s actually checked.
       </div>
     </>
   );
