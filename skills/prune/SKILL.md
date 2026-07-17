@@ -75,9 +75,10 @@ Optional scope (when the operator names it):
 |---|------|--------|
 | 1 | Worktree is one of ours: a Cursor tree (`.cursor/worktrees/<repo>/` with a `<digits>-…` folder, `/start-feature` layout) **or** a Claude chip (`.claude/worktrees/` on a `claude/*` branch) | skip |
 | 2 | Path is not cwd (nor a parent of cwd) | skip + warn |
-| 3 | No **open** PR for the worktree's branch head (`feat\|fix\|docs/<issue#>-*` **or** `claude/*`) | skip |
-| 4 | Closed out: merged/closed PR for that head, **or** remote branch gone (`git ls-remote --heads origin <branch>` empty), **or** `git merge-base --is-ancestor <branch> origin/<default-branch>` | skip (unmerged) |
-| 5 | Worktree clean (`git status --porcelain` empty) on `--apply` | skip (no default `--force`) |
+| 3 | **Session liveness — required for every `.claude/worktrees/*` row**: query `mcp__ccd_session_mgmt__list_sessions` and confirm **no non-archived session** has this worktree's path or branch. A match means live, **regardless of `isRunning`** — sessions report `isRunning: false` between turns while still holding their worktree; only archived/deleted sessions release it | skip (live session) |
+| 4 | No **open** PR for the worktree's branch head (`feat\|fix\|docs/<issue#>-*` **or** `claude/*`) | skip |
+| 5 | Closed out: merged/closed PR for that head, **or** remote branch gone (`git ls-remote --heads origin <branch>` empty), **or** `git merge-base --is-ancestor <branch> origin/<default-branch>` | skip (unmerged) |
+| 6 | Worktree clean (`git status --porcelain` empty) on `--apply` | skip (no default `--force`) |
 
 Never delete locals outside that pairing. Never delete the default branch.
 
@@ -90,6 +91,7 @@ PATH | BRANCH | PR | REMOTE | VERDICT
 ...  | feat/36-… | MERGED #58 | gone | eligible
 ...  | (orphan) | — | — | eligible (orphan folder)
 ...  | feat/59-… | OPEN #59 | present | skip (open PR)
+...  | claude/… | — | — | skip (live session)
 ```
 
 End with counts: `N eligible · M skipped · apply with /prune --apply`.
@@ -128,6 +130,10 @@ background sessions) and the lock releases; then re-apply. This is the common ca
 `spawn_task` chips and needs **no** process kill. Only if closing the session isn't possible,
 fall back to the PID hunt below.
 
+> **"Device or resource busy" on a chip tree** usually means a **not-yet-archived session**
+> still holds it (even with `isRunning: false` — see gate 3). The fix is archiving/deleting
+> that session, **not** force-deletes.
+
 **Cursor (`.cursor/worktrees/<repo>/<issue#>-*`)** — a leftover `cursor-agent-worker`
 `node.exe` keeps the worktree open even after the chip is closed / Archived.
 
@@ -159,8 +165,11 @@ Skip the row and continue others if the operator declines the kill.
 ## 6. Honesty bar
 
 - Dry-run is the default; `--apply` is explicit.
-- Say when you skipped dirty / open-PR / cwd-inside / still-locked rows.
+- Say when you skipped dirty / open-PR / cwd-inside / live-session / still-locked rows.
 - Do not claim Cursor Archive or Claude delete cleaned these paths.
+- Never treat "no PR + no commits + clean" as death evidence for a chip tree — that is
+  exactly what a freshly started chip looks like; only the session-liveness gate (gate 3)
+  can clear a `.claude/worktrees/*` row.
 - Do not kill `cursor-agent-worker` (or any process) without an explicit operator ask.
 - After `/merge-pr`, one `/prune --apply` (or a dry-run the operator reviews) is the
   normal hygiene step — not an in-place delete from the feature worktree chat.
