@@ -7,7 +7,11 @@ config values differ.
 
 Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / …) read owner, project,
 labels, stack, test command, and crucible variant from here. Planning vs execution **models** are
-operator UI choices (Cursor or Claude Code) — not stored in this file; see `/start-feature`.
+per-operator, never stored in this file, and set per tool: **Claude Code** — `model` in
+`.claude/settings.local.json` (gitignored; chips inherit it via `.worktreeinclude`) is the execution
+model, `/model` in the orchestrator session is the planning model; **Cursor** — per-conversation
+model dropdown, both phases; **night-shift** — the model is fixed by the launcher (workflow file),
+one model for the whole run. Single-session daytime work still hand-switches per `/start-feature`.
 
 ## Repo config — fill this in per repo
 

@@ -169,35 +169,51 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
       </p>
       <p className="muted" style={{ lineHeight: 1.55 }}>
         <b>
-          Claude Code — automate the switch with <code>opusplan</code>.
+          Claude Code — <code>opusplan</code> does not automate this.
         </b>{" "}
-        Instead of hand-switching, set the model in{" "}
-        <code>.claude/settings.local.json</code> (gitignored, per-operator):
-        plan mode runs the <code>opus</code> alias, execution runs the{" "}
-        <code>sonnet</code> alias. Repoint either alias with env overrides — the
-        pairing below gives <b>Fable plan → Sonnet execute</b>:
+        We tried pairing it with env overrides (
+        <code>ANTHROPIC_DEFAULT_OPUS_MODEL</code> /{" "}
+        <code>ANTHROPIC_DEFAULT_SONNET_MODEL</code> in{" "}
+        <code>.claude/settings.local.json</code>) to get a Fable plan → Sonnet
+        execute split inside one session. It did not reliably drive plan→execute
+        in our chip flow, so treat it as unproven — don&apos;t rely on it.
+      </p>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        <b>You don&apos;t need it — the chip flow already is the split.</b>{" "}
+        Model is read at <b>session startup</b> and fixed for that session, and
+        the chip flow puts plan and execute in <b>different sessions</b>:
+        planning happens orchestrator-side (<code>/start-feature</code> in the
+        main clone, on whatever the operator picked via <code>/model</code> —
+        e.g. Fable), and the chip is a fresh session that inherits its model
+        from the <code>.claude/settings.local.json</code> copied into its
+        worktree via <code>.worktreeinclude</code>. Set that file&apos;s{" "}
+        <code>model</code> to your <b>execution model</b>:
       </p>
       <pre>{`{
-  "model": "opusplan",
-  "env": {
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-fable-5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5"
-  }
+  "model": "claude-sonnet-5"
 }`}</pre>
       <p className="muted" style={{ lineHeight: 1.55 }}>
-        The <code>/model</code> label still reads Opus/Sonnet — routing is by
-        alias, not name — and config is read at <b>session startup</b>, so it
-        applies to the next session, not the running one.{" "}
-        <b>
-          Chips inherit it via <code>.worktreeinclude</code>.
-        </b>{" "}
-        Chip sessions run in fresh worktrees and{" "}
-        <code>settings.local.json</code> is gitignored, so a repo-root{" "}
-        <code>.worktreeinclude</code> listing{" "}
-        <code>.claude/settings.local.json</code> copies your pairing into every
-        chip worktree at creation. Model names stay in your personal file; only
-        the pointer is tracked — skills and{" "}
-        <code>GITHUB-PROJECTS.md</code> stay model-agnostic.
+        Result: <b>Fable plans → Sonnet executes</b>, with no mid-session
+        switch and no pause — the model boundary is the dispatch boundary. One
+        manual step remains: the orchestrator&apos;s own session also starts on
+        that file&apos;s model, so run <code>/model claude-fable-5</code> once
+        per orchestrator session. The <code>/start-feature</code>{" "}
+        stop-for-model-switch only applies to single-session work where one
+        session both plans and implements.
+      </p>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        <b>All of the above is Claude Code only.</b>{" "}
+        <code>.claude/settings.local.json</code>, <code>/model</code>, and{" "}
+        <code>.worktreeinclude</code> are Claude Code mechanisms — Cursor reads
+        none of them. In <b>Cursor</b>, the IDE model is chosen per
+        conversation in the chat&apos;s model dropdown (planning and execution
+        alike), so the plan→execute switch there is the manual hand-switch{" "}
+        <code>/start-feature</code> describes. Cursor has no repo-file-based
+        model config — Cloud Agents take a <code>model.id</code> per dispatch
+        in <code>POST /v1/agents</code>, falling back to your user default →
+        team default → system default, all account-level. If you run both
+        tools on one repo, set the model in each tool separately; neither
+        inherits from the other.
       </p>
 
       <h2>Shared files across worktrees</h2>
