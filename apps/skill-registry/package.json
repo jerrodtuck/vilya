@@ -11,6 +11,7 @@
     "pretest": "npm run sync:github-projects-template && npm run sync:skills",
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/scan-code-spacing.mjs",
     "start": "next start",
     "test": "vitest run"
   },
