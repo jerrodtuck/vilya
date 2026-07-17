@@ -104,7 +104,7 @@ server/client or data boundary (then it's a blocker *on those grounds*, not on R
 - Missing effect cleanup (subscriptions, timers, listeners) → leaks.
 - `useMemo` / `useCallback` cargo-culted without a measured re-render problem (the identity-abstraction
   analog); or unstable inline objects/functions causing real re-render churn.
-- Missing/`index`-based `key`s on lists; uncontrolled→controlled input flips.
+- Missing/`index`-based `key` props on lists; uncontrolled→controlled input flips.
 - Validation placed ad hoc in components rather than a schema (e.g. a shared Zod model) at the boundary.
 
 ---

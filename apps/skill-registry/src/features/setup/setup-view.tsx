@@ -107,8 +107,8 @@ export function SetupView() {
         matters is shared, and Cursor scans <code>~/.claude/skills</code>{" "}
         itself — so <code>scripts/install-skills.(sh|ps1)</code> syncs{" "}
         <code>skills/</code> (the source of truth) to that single directory and
-        both tools pick it up. Installing to <code>~/.cursor/skills</code> as
-        well would double-list every skill in Cursor&apos;s slash menu.
+        both tools pick it up. Installing to <code>~/.cursor/skills</code>{" "}
+        as well would double-list every skill in Cursor&apos;s slash menu.
       </div>
 
       <h2>Per-repo setup (one-time)</h2>
