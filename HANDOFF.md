@@ -1,5 +1,14 @@
 # Handoff → Claude Code
 
+**Created:** 2026-07-11  
+**Last updated:** 2026-07-17  
+
+> **Historical snapshot.** This is the frozen 2026-07-11 handoff from the
+> original Cowork session that produced the system — kept for history, not
+> maintained. Counts and details below reflect that date. Current truth lives
+> in `docs/project-tracking/GITHUB-PROJECTS.md` and the skill-registry app
+> (`apps/skill-registry/`).
+
 Everything to pick this up on your machine and drive it from Claude Code. A
 fresh Claude Code session has no memory of the Cowork chat, so this file (plus
 the kickoff prompt at the bottom) is the context bridge.
@@ -8,8 +17,10 @@ the kickoff prompt at the bottom) is the context bridge.
 
 - **7 skills** (`skills/`) — generalized, stack-neutral where possible, reading
   all repo-specific values from `GITHUB-PROJECTS.md`. Crucible reviews carry
-  `disable-model-invocation: true` (invoke-only); `night-shift` intentionally
-  does not (a scheduled task must be able to fire it).
+  `disable-model-invocation: true` (invoke-only) *[no longer true — flag
+  removed 2026-07-17, #91, so background sessions can invoke the crucible
+  gate]*; `night-shift` intentionally does not (a scheduled task must be able
+  to fire it).
 - **skill-registry app** (`apps/skill-registry/`) — Next.js, vertical-slice
   structure, git-native versioning. Builds clean. Reads `../../skills`.
 - **Reference site** (`site/`) — 4 static pages, GitHub-Pages-ready.
