@@ -38,10 +38,10 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Completion notification reliability",
-    claudeCode: "Push-style completion ping to the spawning session — observed unreliable in practice; poll `list_sessions`/`gh pr list` instead",
+    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` reports are permission-gated in the unattended chip session — allow `mcp__ccd_session_mgmt__send_message` in user-level settings and they send; harness end-pings never fire because chip sessions idle rather than end. Poll `list_sessions`/`gh pr list` as backup.",
     cursor: "Poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1)",
     certainty: "confirmed",
-    note: "Same underlying lesson on both tools: don't trust a push notification for orchestration — poll.",
+    note: "Same underlying lesson on both tools: a push notification is a claim, not proof — verify against `gh` before acting on it.",
     sources: [
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
     ],
