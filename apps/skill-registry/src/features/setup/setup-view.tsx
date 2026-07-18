@@ -1,9 +1,11 @@
 // Feature slice: setup — install + per-repo guide (server component).
+import { BoardGuide } from "./board-guide";
 import { GithubProjectsTool } from "./github-projects-tool";
 import { loadGithubProjectsTemplate } from "./load-github-projects-template";
 import { PlatformToggle } from "./platform-toggle";
+import { Steps, type SetupStep } from "./setup-steps";
 
-const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
+const STEPS: SetupStep[] = [
   {
     text: (
       <>
@@ -69,7 +71,7 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   },
 ];
 
-const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
+const CHIP_STEPS: SetupStep[] = [
   {
     text: (
       <>
@@ -128,26 +130,6 @@ const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   },
 ];
 
-function Steps({
-  steps,
-}: {
-  steps: { text: React.ReactNode; sub?: React.ReactNode }[];
-}) {
-  return (
-    <div className="setupsteps">
-      {steps.map((s, i) => (
-        <div className="step" key={i}>
-          <span className="n">{i + 1}</span>
-          <span className="t">
-            {s.text}
-            {s.sub ? <small>{s.sub}</small> : null}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function SetupView() {
   const canonMarkdown = loadGithubProjectsTemplate();
 
@@ -199,6 +181,8 @@ export function SetupView() {
         <code>~/.cursor/skills</code>{" "}
         as well would double-list every skill in Cursor&apos;s slash menu.
       </div>
+
+      <BoardGuide />
 
       <h2>Per-repo setup (one-time)</h2>
       <Steps steps={STEPS} />
