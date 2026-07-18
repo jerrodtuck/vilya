@@ -10,7 +10,7 @@ import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
   return (
-    <>
+    <div className="overview">
       <div className="eyebrow">{SITE_TAGLINE}</div>
       <h1>The Dev Loop</h1>
       <p className="mono-kicker">01 · system</p>
@@ -179,6 +179,6 @@ export function OverviewView() {
         </b>
         .
       </div>
-    </>
+    </div>
   );
 }
