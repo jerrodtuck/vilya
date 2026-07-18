@@ -122,6 +122,26 @@ const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   },
 ];
 
+function Steps({
+  steps,
+}: {
+  steps: { text: React.ReactNode; sub?: React.ReactNode }[];
+}) {
+  return (
+    <div className="setupsteps">
+      {steps.map((s, i) => (
+        <div className="step" key={i}>
+          <span className="n">{i + 1}</span>
+          <span className="t">
+            {s.text}
+            {s.sub ? <small>{s.sub}</small> : null}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SetupView() {
   const templateMarkdown = loadGithubProjectsTemplate();
 
@@ -168,17 +188,7 @@ export function SetupView() {
       </div>
 
       <h2>Per-repo setup (one-time)</h2>
-      <div className="setupsteps">
-        {STEPS.map((s, i) => (
-          <div className="step" key={i}>
-            <span className="n">{i + 1}</span>
-            <span className="t">
-              {s.text}
-              {s.sub ? <small>{s.sub}</small> : null}
-            </span>
-          </div>
-        ))}
-      </div>
+      <Steps steps={STEPS} />
 
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
       <GithubProjectsTool templateMarkdown={templateMarkdown} />
@@ -278,17 +288,7 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         (Claude Code Desktop only): completion reports flow, worktrees release
         on merge, and cleanup collapses to a quick periodic prune.
       </p>
-      <div className="setupsteps">
-        {CHIP_STEPS.map((s, i) => (
-          <div className="step" key={i}>
-            <span className="n">{i + 1}</span>
-            <span className="t">
-              {s.text}
-              {s.sub ? <small>{s.sub}</small> : null}
-            </span>
-          </div>
-        ))}
-      </div>
+      <Steps steps={CHIP_STEPS} />
 
       <h2>Shared files across worktrees</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
