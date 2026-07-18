@@ -72,11 +72,19 @@ and isolates what varies; fake SOLID just adds indirection.
 
 Blockers unless the author justifies clearly:
 
-1. **Feature logic outside its slice** — a feature owns its own folder (e.g. `features/<slice>/`
-   or a co-located route group) holding its UI, server actions / route handlers, and data access.
-   Do not grow app-wide `components/` / `services/` / `utils/` dumping grounds for feature logic.
-2. **Cross-feature imports** — one feature reaching into another feature's *internals* is forbidden.
-   Depend on a feature's public entry (its `index.ts`) or lift the shared piece into `shared`/`lib`.
+1. **Feature logic outside its slice, or import flow against the grain** — imports run one way:
+   `shared → features → app`. A feature owns `features/<slice>/` (UI, server actions / route
+   handlers, data access). `app/` stays **thin** — routing concerns only (`page` / `layout` /
+   `loading` / `error`) composing from features; features never import from `app/`. Do not grow
+   app-wide `components/` / `services/` / `utils/` dumping grounds for feature logic.
+   (Existing route-group colocation in a brownfield repo: 🟡 migration candidate, not 🔴.)
+   A generic **design-system layer** (`components/ui`, shadcn-style primitives) is legitimate
+   app-wide code — the dumping-ground rule applies to *feature-specific* components only.
+2. **Cross-feature imports** — one feature reaching into another's internals is forbidden. First
+   resolution: **compose the two features at the app/route level**; lift into `shared`/`lib` only
+   when the piece is genuinely feature-agnostic — premature lifting is its own smell. Prefer
+   **direct file imports policed by lint boundaries** over barrel `index.ts` files (barrels cost
+   tree-shaking, especially in Next.js).
 3. **Feature logic in the shared kernel** — `shared/` / `lib/` holds framework-agnostic primitives,
    contracts, and pure utilities only. No feature business rules, no data fetching for a feature there.
 4. **Server/client boundary break** — server-only code (secrets, DB clients, `server-only` modules,
@@ -84,6 +92,9 @@ Blockers unless the author justifies clearly:
 5. **Cross-cutting concern welded into a component** — auth, logging, rate-limiting, external IO
    belongs in middleware / a server action / a dedicated module, not inlined into JSX or a handler.
 6. **Ad-hoc branching** bolted onto an unrelated flow instead of a dedicated policy / handler / slice.
+7. **Boundary rules unenforced** — the no-cross-feature and unidirectional rules are lintable
+   (`import/no-restricted-paths`; `enforce-module-boundaries` in Nx). A violation a lint rule
+   would have caught is two findings: the violation, and 🟠 "add the boundary rules to the repo".
 
 ---
 
@@ -106,6 +117,16 @@ server/client or data boundary (then it's a blocker *on those grounds*, not on R
   analog); or unstable inline objects/functions causing real re-render churn.
 - Missing/`index`-based `key` props on lists; uncontrolled→controlled input flips.
 - Validation placed ad hoc in components rather than a schema (e.g. a shared Zod model) at the boundary.
+- **State in the wrong bucket** — classify: component / app (Context, Zustand) / server-cache
+  (React Query, SWR) / form / URL. Legitimately-client-side data belongs in a query library —
+  never a manual `useEffect`+`useState` cache; filters, tabs, and pagination belong in **URL
+  state**, not component state.
+- **Ad-hoc API calls** — one configured client in `lib/`, per-feature `api/` modules declaring
+  typed requests. Raw `fetch` scattered in components is a finding; where the repo ships a
+  generated typed client (e.g. OpenAPI→TS), raw `fetch` against its endpoints is 🟠.
+- **Missing error/loading boundaries** — routes lacking `error.tsx` / `loading.tsx` / Suspense
+  at reasonable granularity; API layer lacking a shared error interceptor.
+- Tests live in the feature (colocated with what they test), not a parallel `__tests__/` tree mirror.
 
 ---
 
@@ -164,7 +185,8 @@ Correct behavior is not enough. Withhold `Ready` while any of these stand:
 Good phrases:
 
 - `this belongs in the <feature> slice, not app-wide components/`
-- `don't import <feature>'s internals — go through its public entry or lift it into shared/`
+- `don't import <feature>'s internals — compose the two features at the route level (or lift a truly shared piece into shared/)`
+- `these boundary rules belong in lint (import/no-restricted-paths) — add them so review stops catching this`
 - `server-only: this leaks <secret/DB> into a client component — move it to a server action`
 - `"use client" is too high — push it to the leaf that needs it and keep the rest RSC`
 - `this useEffect fetch should be a server component — it's creating a waterfall`

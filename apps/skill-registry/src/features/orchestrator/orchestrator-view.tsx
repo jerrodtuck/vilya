@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowMap } from "@/shared/ui/flow-map";
 import { PromptList } from "@/shared/ui/prompt-list";
+import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
 import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
 import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
 import { PROMPTS } from "./prompts";
@@ -12,9 +13,7 @@ export function OrchestratorView() {
   return (
     <>
       <header>
-        <div className="eyebrow">
-          VSA + SOLID · .NET/Blazor · Next.js · Claude Code + Cursor
-        </div>
+        <div className="eyebrow">{SITE_TAGLINE}</div>
         <h1>
           <span className="you">You</span> are the orchestrator
         </h1>

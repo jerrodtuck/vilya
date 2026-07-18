@@ -2,15 +2,14 @@
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { PromptList } from "@/shared/ui/prompt-list";
+import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
 import { ASK_VILYA } from "./ask-vilya";
 import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
   return (
     <>
-      <div className="eyebrow">
-        VSA + SOLID · .NET/Blazor · Next.js · Claude Code + Cursor
-      </div>
+      <div className="eyebrow">{SITE_TAGLINE}</div>
       <h1>The Dev Loop</h1>
       <p className="mono-kicker">01 · system</p>
       <p className="lead">
@@ -144,6 +143,21 @@ export function OverviewView() {
         Claude Code&apos;s extra fields are additive and harmlessly ignored by
         Cursor. The only per-project variation lives in each repo&apos;s{" "}
         <code>GITHUB-PROJECTS.md</code>.
+      </div>
+
+      <div className="callout">
+        <b>One method, per-stack dialects.</b> SOLID and vertical-slice
+        architecture apply to <i>every</i>{" "}
+        stack — they&apos;re the method, and
+        the crucible review carries them everywhere. What differs per stack is
+        the <b>dialect</b> the review speaks: Next.js is reviewed against{" "}
+        <b>Bulletproof React</b> (feature folders, one-way{" "}
+        <code>shared → features → app</code>{" "}
+        imports, lint-enforced boundaries
+        — VSA in React&apos;s vocabulary); .NET/Blazor is reviewed against{" "}
+        <b>plain VSA</b> (feature slices, shared kernel as contracts only). One
+        crucible variant per repo, matched to its stack — same bar, native
+        accent.
       </div>
 
       <div className="pagefoot">
