@@ -5,6 +5,7 @@ import { PromptList } from "@/shared/ui/prompt-list";
 import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
 import { ASK_VILYA } from "./ask-vilya";
 import { BoardMoverMap } from "./board-mover-map";
+import { BoardScreenshot } from "./board-screenshot";
 import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
@@ -58,7 +59,9 @@ export function OverviewView() {
       </div>
 
       <BoardStrip
+        moversHref="#movers"
         orchestratorHref="/orchestrator"
+        figure={<BoardScreenshot />}
         hint={
           <>
             Status is the only native field that moves work:{" "}
