@@ -475,7 +475,12 @@ h1 .you { color: var(--orch); }
 .pill.ver { color: var(--verify); border-color: #2e4f54; }
 .pill.dn { color: var(--finish); border-color: #2b4f3c; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 6px; }
-.chip { cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 600; padding: 8px 13px; border-radius: 10px; transition: .15s; display: flex; align-items: center; gap: 7px; font-family: inherit; }
+/* No transitions on the flow-map state surfaces (.chip/.edge/.nbox): a CSS
+   transition pins the computed value — above even !important — until the
+   animation-frame pipeline ticks, so in frame-throttled rendering contexts
+   (occluded window, embedded preview pane) active/lit/faded styling never
+   lands and the highlight appears dead (#155). */
+.chip { cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 600; padding: 8px 13px; border-radius: 10px; display: flex; align-items: center; gap: 7px; font-family: inherit; }
 .chip:hover { border-color: #3d4756; color: var(--text); }
 .chip .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
 .chip.active { background: #222836; color: var(--text) !important; border-color: #48546a; box-shadow: 0 0 0 1px #48546a inset; }
@@ -489,7 +494,7 @@ h1 .you { color: var(--orch); }
 @media (max-width: 880px) {
   .stage svg { min-width: 54rem; }
 }
-.edge { fill: none; stroke: var(--edge); stroke-width: 2.4; transition: .2s; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 2.4; }
 .edge.dash { stroke-dasharray: 5 5; }
 .edge.faded { opacity: .10; }
 .edge.lit { stroke-width: 3.4; stroke-dasharray: 7 6; animation: march 1s linear infinite; }
@@ -512,7 +517,7 @@ h1 .you { color: var(--orch); }
 .edge.lit.c-spec { stroke: var(--spec); }
 @keyframes march { to { stroke-dashoffset: -26; } }
 .node { cursor: pointer; }
-.nbox { fill: var(--surface2); stroke: var(--c); stroke-width: 1.8; transition: .2s; }
+.nbox { fill: var(--surface2); stroke: var(--c); stroke-width: 1.8; }
 .node:hover .nbox { fill: #232a36; }
 .node.faded { opacity: .24; }
 .node.lit .nbox { stroke-width: 2.6; filter: drop-shadow(0 0 7px var(--c)); }
