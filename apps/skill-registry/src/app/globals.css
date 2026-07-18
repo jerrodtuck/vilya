@@ -747,3 +747,24 @@ h1 .you { color: var(--orch); }
 @media (min-width: 900px) {
   .mv-hop { flex-basis: 17rem; }
 }
+
+/* ---------- board: real-board screenshot figure (#185) ----------
+   Scoped to `.board-shot` (the Overview board card's figure slot) plus the
+   `#movers` anchor offset for the card's "see who moves each column" link. */
+.board-shot { margin: 0; width: 100%; }
+.board-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.board-shot figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.5;
+}
+/* Keep the anchored mover-map headline clear of the sticky site nav
+   (~3.5rem tall on desktop, ~5.2rem when the nav wraps on mobile). */
+#movers { scroll-margin-top: 6rem; }
