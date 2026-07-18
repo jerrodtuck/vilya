@@ -76,4 +76,17 @@ export const DIFFERENCES: DifferenceRow[] = [
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
     ],
   },
+  {
+    area: "Cross-session communication / session management",
+    claudeCode:
+      "`ccd_session_mgmt` MCP server — any session can manage the others: `list_sessions` enumerates sessions with cwd/branch/PR state, `send_message` pushes a report into another session's chat (permission-gated — allow `mcp__ccd_session_mgmt__send_message`, typically at user level), `archive_session` stops a session's process and releases its worktree hold (also exposed as an \"Auto-archive on PR close\" preference). This is what lets a chip push its completion report to the dispatching orchestrator and lets the orchestrator archive finished chips. All three tools directly exercised 2026-07-17.",
+    cursor:
+      "No documented equivalent — the Cloud Agents API is pull-only from the outside: poll the run-status endpoint or hold an SSE stream open (webhooks \"coming soon\"). The API reference surfaces no agent-initiated push into another conversation, and no session-enumeration or archive API surfaced to conversations. Side channels (PR/issue comments via `gh`) are the nearest workaround, and still require polling.",
+    certainty: "confirmed",
+    note: "Pairs with the model-selection asymmetry row: Cursor gives the dispatcher more control going in (per-dispatch `model.id`); Claude Code gives the worker more voice coming out (`send_message` reports).",
+    sources: [
+      { label: "Claude Code — Agent view", href: "https://code.claude.com/docs/en/agent-view" },
+      { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
+    ],
+  },
 ];
