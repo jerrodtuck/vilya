@@ -28,7 +28,7 @@ return to the current branch.
 | Roadmap enhancement / idea | Feature issue (sub-issue if under an epic) | keep going |
 | Multi-stream initiative | Epic + sub-issues | start one sub-issue |
 | Small chore | Task issue | keep going |
-| Design decision | `docs/DECISIONS.md` — reference from issue | note it |
+| Design decision | `docs/DECISIONS.md` — reference from issue | run [/adr](../adr/SKILL.md) — it captures + mirrors |
 | Non-trivial design | `docs/specs/` or `docs/design/` — link from issue | write the doc |
 | Current work finished | PR `Closes #<issue>` + `changelog.d/` fragment | merge → Done |
 
