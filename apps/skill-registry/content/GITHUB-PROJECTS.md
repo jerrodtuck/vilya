@@ -139,13 +139,14 @@ inline by `/start-feature` and `/finish-feature`.
 
 ```text
 /start-feature (plan, orchestrator) → chip dispatch (spawn_task, brief carries the issue, verify
-routing, crucible gate, session id) → chip implements → /crucible-<stack> → /finish-feature (PR)
-→ send_message completion report to the orchestrator → operator /merge-pr → auto-archive on PR
-close → periodic /prune --apply
+routing, crucible gate; orchestrator arms a monitor same turn) → chip implements →
+/crucible-<stack> → /finish-feature (PR) → completion comment on the issue (gh); orchestrator
+monitor picks it up → operator /merge-pr → auto-archive on PR close → periodic /prune --apply
 ```
 
-Chips never merge, never spawn sessions, and report via `mcp__ccd_session_mgmt__send_message`
-(permission + one-time setup documented on the site's Setup page and in `/chip`).
+Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
+(`gh` — no prompt, attended or not); the orchestrator's dispatch monitor picks it up (loop
+documented on the site's Setup page and in `/chip`).
 
 ### Shared files / worktrees
 

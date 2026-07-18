@@ -38,7 +38,7 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Completion notification reliability",
-    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` reports are permission-gated in the unattended chip session — allow `mcp__ccd_session_mgmt__send_message` in user-level settings and they send; harness end-pings never fire because chip sessions idle rather than end. Poll `list_sessions`/`gh pr list` as backup.",
+    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` always prompts the user for confirmation by product contract — no permission rule silences it (directly tested twice, 2026-07-17) — so it cannot carry an unattended report; harness end-pings never fire because chip sessions idle rather than end. Unattended signal = `gh` side channels (completion comment on the issue, `gh pr list`) + an orchestrator monitor armed at dispatch.",
     cursor: "Poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1)",
     certainty: "confirmed",
     note: "Same underlying lesson on both tools: a push notification is a claim, not proof — verify against `gh` before acting on it.",
@@ -79,11 +79,11 @@ export const DIFFERENCES: DifferenceRow[] = [
   {
     area: "Cross-session communication / session management",
     claudeCode:
-      "`ccd_session_mgmt` MCP server — any session can manage the others: `list_sessions` enumerates sessions with cwd/branch/PR state, `send_message` pushes a report into another session's chat (permission-gated — allow `mcp__ccd_session_mgmt__send_message`, typically at user level), `archive_session` stops a session's process and releases its worktree hold (also exposed as an \"Auto-archive on PR close\" preference). This is what lets a chip push its completion report to the dispatching orchestrator and lets the orchestrator archive finished chips. All three tools directly exercised 2026-07-17.",
+      "`ccd_session_mgmt` MCP server — any session can manage the others: `list_sessions` enumerates sessions with cwd/branch/PR state, `send_message` pushes a message into another session's chat but always prompts the user for confirmation by product contract (not permission-gated — an allow rule does not silence it), `archive_session` stops a session's process and releases its worktree hold (also exposed as an \"Auto-archive on PR close\" preference). Unattended chip→orchestrator reporting therefore rides the same workaround as Cursor: `gh` side channels (completion comment on the issue) plus an orchestrator monitor. All three tools directly exercised 2026-07-17.",
     cursor:
       "No documented equivalent — the Cloud Agents API is pull-only from the outside: poll the run-status endpoint or hold an SSE stream open (webhooks \"coming soon\"). The API reference surfaces no agent-initiated push into another conversation, and no session-enumeration or archive API surfaced to conversations. Side channels (PR/issue comments via `gh`) are the nearest workaround, and still require polling.",
     certainty: "confirmed",
-    note: "Pairs with the model-selection asymmetry row: Cursor gives the dispatcher more control going in (per-dispatch `model.id`); Claude Code gives the worker more voice coming out (`send_message` reports).",
+    note: "Pairs with the model-selection asymmetry row: Cursor gives the dispatcher more control going in (per-dispatch `model.id`); Claude Code gives the orchestrator more session control (`list_sessions` / `archive_session`). For unattended reporting the tools converge — `gh` side channels + polling on both — which is the honest symmetry.",
     sources: [
       { label: "Claude Code — Agent view", href: "https://code.claude.com/docs/en/agent-view" },
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
