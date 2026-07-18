@@ -36,7 +36,7 @@ export function OverviewView() {
       </div>
 
       <BoardStrip
-        flowsHref="/flows"
+        orchestratorHref="/orchestrator"
         hint={
           <>
             Status is the only native field that moves work:{" "}
@@ -49,8 +49,8 @@ export function OverviewView() {
       />
 
       <div className="cards">
-        <Link className="card" href="/flows">
-          <h3>Flows</h3>
+        <Link className="card" href="/orchestrator">
+          <h3>Orchestrator</h3>
           <p className="desc">
             The interactive map. Light up any path — happy path,
             review↔refactor loop, PR merge, consult forks, bug-mid-work,

@@ -1,4 +1,4 @@
-// Feature slice: flows — the interactive orchestration map (client component).
+// Feature slice: orchestrator — the interactive orchestration map (client component).
 // State: which flow is lit, which node is selected. Content comes from
 // data.ts / prompts.ts; geometry from map-geometry.ts.
 "use client";

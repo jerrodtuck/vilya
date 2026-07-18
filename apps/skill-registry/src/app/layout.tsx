@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "The Dev Loop",
   description:
-    "VSA + SOLID skill orchestration for Claude Code + Cursor — the methodology, the flows, the skills, and the git-native registry.",
+    "VSA + SOLID skill orchestration for Claude Code + Cursor — the methodology, the orchestrator map, the skills, and the git-native registry.",
 };
 
 export default function RootLayout({

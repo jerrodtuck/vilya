@@ -33,11 +33,11 @@ const STATUSES = [
 type BoardStripProps = {
   /** Quieter hint under the strip (config / GITHUB-PROJECTS.md). */
   hint?: ReactNode;
-  /** Link the header into Flows when shown on Overview. */
-  flowsHref?: string;
+  /** Link the header into Orchestrator when shown on Overview. */
+  orchestratorHref?: string;
 };
 
-export function BoardStrip({ hint, flowsHref }: BoardStripProps) {
+export function BoardStrip({ hint, orchestratorHref }: BoardStripProps) {
   return (
     <section className="board" aria-label="GitHub Projects Status flow">
       <div className="board-head">
@@ -46,10 +46,10 @@ export function BoardStrip({ hint, flowsHref }: BoardStripProps) {
           <b>GitHub Projects</b>
           <span className="board-sep">·</span>
           <span>the one shared state every skill reports into</span>
-          {flowsHref ? (
+          {orchestratorHref ? (
             <>
               <span className="board-sep">·</span>
-              <Link href={flowsHref}>see it light up on Flows</Link>
+              <Link href={orchestratorHref}>see it light up on Orchestrator</Link>
             </>
           ) : null}
         </div>

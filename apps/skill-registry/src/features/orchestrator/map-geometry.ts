@@ -1,4 +1,4 @@
-// Feature slice: flows — SVG geometry for the orchestration map.
+// Feature slice: orchestrator — SVG geometry for the orchestration map.
 // Pure view data: edge paths, node boxes, labels. Interaction lives in
 // flows-map.tsx; flow/node semantics live in data.ts.
 

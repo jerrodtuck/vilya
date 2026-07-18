@@ -1,4 +1,4 @@
-// Feature slice: flows — the orchestrator prompt library as structured data.
+// Feature slice: orchestrator — the orchestrator prompt library as structured data.
 // Methodology content, defined once; rendered in the library grid and in each
 // node's detail drawer.
 

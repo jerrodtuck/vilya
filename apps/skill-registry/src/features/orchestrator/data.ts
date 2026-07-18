@@ -1,4 +1,4 @@
-// Feature slice: flows — node and flow definitions for the orchestration map.
+// Feature slice: orchestrator — node and flow definitions for the orchestration map.
 // Node bodies are trusted, hand-authored HTML (same posture as the markdown
 // pipeline in skill-detail).
 
