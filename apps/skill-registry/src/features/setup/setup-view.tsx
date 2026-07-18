@@ -66,6 +66,82 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   },
 ];
 
+const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
+  {
+    text: (
+      <>
+        <b>Allow chip completion reports</b> — add the permission rule (the
+        exact string matters):
+        <pre style={{ margin: "6px 0 0" }}>
+          {`"permissions": { "allow": ["mcp__ccd_session_mgmt__send_message"] }`}
+        </pre>
+      </>
+    ),
+    sub: (
+      <>
+        Recommended at the <b>user level</b> (
+        <code>~/.claude/settings.json</code>) — one edit covers every repo and
+        every chip. Alternative: repo{" "}
+        <code>.claude/settings.local.json</code>, which chips inherit only via
+        a <code>.worktreeinclude</code> entry. Without this rule, unattended
+        chips <b>silently cannot report</b> — the <code>send_message</code>{" "}
+        call prompts for approval with nobody there to approve it.
+      </>
+    ),
+  },
+  {
+    text: (
+      <>
+        Enable <b>&quot;Auto-archive on PR close&quot;</b> (Claude Code
+        Desktop settings) — the session archives when its PR merges, stopping
+        the process and releasing its worktree hold.
+      </>
+    ),
+    sub: (
+      <>
+        Timing property: archive fires at <b>PR close</b>, so pre-merge smoke
+        run from the chip&apos;s worktree or session card is unaffected.
+      </>
+    ),
+  },
+  {
+    text: (
+      <>
+        <b>Prune periodically</b> — auto-archive does not remove the worktree
+        folder or the local branch. Run <code>/prune</code>{" "}
+        (dry-run) → <code>/prune --apply</code>{" "}
+        after a merge batch, not per merge.
+      </>
+    ),
+    sub: (
+      <>
+        The session-liveness gate makes this safe: live / non-archived
+        sessions are skipped automatically.
+      </>
+    ),
+  },
+];
+
+function Steps({
+  steps,
+}: {
+  steps: { text: React.ReactNode; sub?: React.ReactNode }[];
+}) {
+  return (
+    <div className="setupsteps">
+      {steps.map((s, i) => (
+        <div className="step" key={i}>
+          <span className="n">{i + 1}</span>
+          <span className="t">
+            {s.text}
+            {s.sub ? <small>{s.sub}</small> : null}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SetupView() {
   const templateMarkdown = loadGithubProjectsTemplate();
 
@@ -112,17 +188,7 @@ export function SetupView() {
       </div>
 
       <h2>Per-repo setup (one-time)</h2>
-      <div className="setupsteps">
-        {STEPS.map((s, i) => (
-          <div className="step" key={i}>
-            <span className="n">{i + 1}</span>
-            <span className="t">
-              {s.text}
-              {s.sub ? <small>{s.sub}</small> : null}
-            </span>
-          </div>
-        ))}
-      </div>
+      <Steps steps={STEPS} />
 
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
       <GithubProjectsTool templateMarkdown={templateMarkdown} />
@@ -215,6 +281,14 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         tools on one repo, set the model in each tool separately; neither
         inherits from the other.
       </p>
+
+      <h2>Background sessions (chips) — one-time setup</h2>
+      <p className="muted">
+        Three switches, set once, make the chip lifecycle run unattended
+        (Claude Code Desktop only): completion reports flow, worktrees release
+        on merge, and cleanup collapses to a quick periodic prune.
+      </p>
+      <Steps steps={CHIP_STEPS} />
 
       <h2>Shared files across worktrees</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
