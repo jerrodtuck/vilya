@@ -1,9 +1,9 @@
 # Night-agent visualization
 
 **Created:** 2026-07-12  
-**Last updated:** 2026-07-12  
+**Last updated:** 2026-07-18  
 **Issue:** [#36](https://github.com/jerrodtuck/vilya/issues/36)  
-**Status:** Shipped on branch — awaiting PR merge + local-smoke
+**Status:** Shipped — PR #58 merged 2026-07-12, #36 closed; page live at `/night-shift`
 
 ## Intent
 
