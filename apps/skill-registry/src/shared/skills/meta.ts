@@ -18,7 +18,7 @@ export const CATEGORY_LABELS: Record<SkillCategory, string> = {
 export function categorize(slug: string): SkillCategory {
   if (slug.startsWith("crucible")) return "review";
   if (slug === "night-shift") return "autonomous";
-  if (slug === "history") return "recall";
+  if (slug === "history" || slug === "product-map") return "recall";
   return "process";
 }
 

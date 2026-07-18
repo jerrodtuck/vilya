@@ -49,7 +49,7 @@ Guardrails: at every real design fork, 2–3 options with costs and a stated rec
     items: [
       {
         label: "Ground truth check",
-        text: "Read-only code survey of <area>: what's actually built, vs what docs/VISION.md and the specs say is intended. Flag every gap as a finding.",
+        text: "Run the /product-map skill — read-only survey of as-built (code layout, shipped history, board) vs as-intended (docs/VISION.md, specs, open epics). Every gap is a finding citing both sides with its evidence class.",
       },
     ],
   },
