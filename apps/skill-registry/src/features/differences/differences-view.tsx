@@ -7,9 +7,10 @@ export function DifferencesView() {
       <div className="eyebrow">Living reference · grows as we verify more</div>
       <h1>Cursor vs Claude Code</h1>
       <p className="lead">
-        Settings, mechanisms, and behavior that <b>diverge</b> between the two
-        tools this loop runs on. A row only lands here once it&apos;s been
-        checked against primary docs or tested directly — anything not yet
+        Settings, mechanisms, and behavior that <b>diverge</b>{" "}
+        between the two tools this loop runs on. A row only lands here once
+        it&apos;s been checked against primary docs or tested directly —
+        anything not yet
         confirmed is labeled <b>unverified</b> rather than asserted.
       </p>
 

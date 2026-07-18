@@ -156,9 +156,10 @@ export function SetupView() {
       <div className="eyebrow">Install once, add a config per repo</div>
       <h1>Setup</h1>
       <p className="lead">
-        The model: skills live at the <b>user level</b> (installed once, shared
-        across every project); the only thing each repo carries is one config
-        file. That&apos;s what all the generalization work bought — skills with
+        The model: skills live at the <b>user level</b>{" "}
+        (installed once, shared across every project); the only thing each repo
+        carries is one config file. That&apos;s what all the generalization
+        work bought — skills with
         no hardcoded repo details can live anywhere and adapt at runtime.
       </p>
 
