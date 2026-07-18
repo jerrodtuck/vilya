@@ -93,8 +93,13 @@ const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
     text: (
       <>
         Enable <b>&quot;Auto-archive on PR close&quot;</b> (Claude Code
-        Desktop settings) — the session archives when its PR merges, stopping
-        the process and releasing its worktree hold.
+        Desktop settings) — when a session notices its PR closed, it archives,
+        stopping the process and releasing its worktree hold. This is{" "}
+        <b>best-effort</b>: it usually fires at PR close, but an idle session
+        that never refreshes its PR state can be missed entirely. Archive
+        stale finished sessions manually (or via{" "}
+        <code>archive_session</code>); periodic <code>/prune --apply</code>{" "}
+        remains the backstop that reconciles everything regardless.
       </>
     ),
     sub: (
