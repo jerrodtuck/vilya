@@ -691,19 +691,10 @@ h1 .you { color: var(--orch); }
 .legend i.ns-legend-fail { border-top-color: var(--bug); }
 
 /* ---------- site: home — the board moves itself (#171) ----------
-   Static annotated strip: reuses the .board-cols/.board-col-* pattern; the
+   Static annotated strip: the section composes `.board .movers` so the
+   container + .board-cols/.board-col-* pattern is reused, not restated; the
    mover ledger below it labels all seven transitions. .mv-human is the one
    gold badge on the page (human touch: Verifying → Done). */
-.movers {
-  margin: 26px 0 8px;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: hsl(var(--card) / 0.5);
-  padding: 16px 18px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 .mv-headline { margin: 0; font-size: 19px; letter-spacing: -0.01em; }
 .mv-sub { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
 .mv-sub b { color: var(--verify); font-weight: 600; }
@@ -756,4 +747,3 @@ h1 .you { color: var(--orch); }
 @media (min-width: 900px) {
   .mv-hop { flex-basis: 17rem; }
 }
-.movers .hint { width: 100%; font-size: 12px; color: var(--faint); margin-top: 0; line-height: 1.5; }

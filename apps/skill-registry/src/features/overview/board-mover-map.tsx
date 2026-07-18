@@ -7,7 +7,7 @@ import { BOARD_COLUMNS, BOARD_TRANSITIONS } from "./board-movers";
 
 export function BoardMoverMap() {
   return (
-    <section className="movers" aria-label="Who moves the board">
+    <section className="board movers" aria-label="Who moves the board">
       <div className="board-head">
         <p className="mono-kicker board-kicker">03 · movers</p>
         <h2 className="mv-headline">
