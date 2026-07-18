@@ -1,11 +1,6 @@
-// Feature slice: setup — pure generate: fill Vilya template with extracted config.
+// Feature slice: setup — pure generate: slim config-only product file + canon pointer.
 
 import type { GithubProjectsConfig } from "./github-projects-config";
-
-const VILYA_META_HEADING =
-  /^##\s+Implementation checklist\s*→\s*board issues\s*\(Vilya meta\)\s*$/im;
-
-const PROCESS_HEADING = /^## Model \(same everywhere\)\s*$/m;
 
 const PLACEHOLDER = {
   owner: "<owner>",
@@ -37,6 +32,22 @@ gh project field-list <n> --owner <owner> --format json \\
   --jq '.fields[] | select(.name=="Status") | {id, options: [.options[] | {name, id}]}'
 \`\`\``;
 
+const POINTER_HEADER = `# GitHub Projects — repo config
+
+> **Config only.** Process — the daytime/chip chains, labels model, PR + merge
+> conventions, night-shift — is canonical in Vilya:
+> \`docs/project-tracking/GITHUB-PROJECTS.md\` in the \`jerrodtuck/vilya\` repo,
+> described at https://vilya.jerrodtuck.com/setup. Skills read **config** from this
+> file and process from their own \`SKILL.md\`. Do not add process prose here — it
+> goes stale.`;
+
+const NIGHT_SHIFT_NOTE = `### Night-shift (per-repo)
+
+Only if this repo runs the overnight loop: \`.github/workflows/night-shift.yml\` lives
+in this repo, a self-hosted runner is registered on this repo, and the repo secret
+\`CLAUDE_CODE_OAUTH_TOKEN\` (\`claude setup-token\`) is set. Eligibility labels,
+guardrails, and the loop itself are process — see the canon above.`;
+
 function orPlaceholder(value: string, placeholder: string): string {
   const t = value.trim();
   return t === "" ? placeholder : t;
@@ -50,29 +61,6 @@ function backtick(value: string): string {
 function codeValue(value: string, placeholder: string): string {
   const v = orPlaceholder(value, placeholder);
   return v.includes("`") ? v : backtick(v);
-}
-
-/** Drop the Vilya-only meta checklist section (product-safe template body). */
-export function stripVilyaMetaSection(templateMarkdown: string): string {
-  const match = templateMarkdown.match(VILYA_META_HEADING);
-  if (!match || match.index === undefined) {
-    return templateMarkdown.replace(/\s+$/, "\n");
-  }
-  return templateMarkdown.slice(0, match.index).replace(/\s+$/, "\n");
-}
-
-function templateIntro(cleaned: string): string {
-  const repoIdx = cleaned.search(/^## Repo config\b/m);
-  if (repoIdx === -1) {
-    return cleaned.trimEnd();
-  }
-  return cleaned.slice(0, repoIdx).trimEnd();
-}
-
-function templateProcessBody(cleaned: string): string {
-  const idx = cleaned.search(PROCESS_HEADING);
-  if (idx === -1) return "";
-  return cleaned.slice(idx).trimEnd();
 }
 
 function buildConfigSections(config: GithubProjectsConfig): string {
@@ -185,18 +173,17 @@ function buildConfigSections(config: GithubProjectsConfig): string {
 }
 
 /**
- * Fill the latest Vilya template with extracted config. Strips the Vilya-meta
- * checklist. Keeps the template intro + shared process body; rebuilds only the
- * per-repo config sections. Missing fields become product-safe placeholders.
+ * Emit the slim product-repo GITHUB-PROJECTS.md: canon pointer + per-repo config
+ * sections only. Process prose lives once, in Vilya's canonical file. Missing
+ * fields become product-safe placeholders.
  */
-export function generateFromTemplate(
-  config: GithubProjectsConfig,
-  templateMarkdown: string
-): string {
-  const cleaned = stripVilyaMetaSection(templateMarkdown);
-  const intro = templateIntro(cleaned);
-  const processBody = templateProcessBody(cleaned);
-  const parts = [intro, "", buildConfigSections(config)];
-  if (processBody) parts.push("", processBody);
+export function generateSlim(config: GithubProjectsConfig): string {
+  const parts = [
+    POINTER_HEADER,
+    "",
+    buildConfigSections(config),
+    "",
+    NIGHT_SHIFT_NOTE,
+  ];
   return `${parts.join("\n").trimEnd()}\n`;
 }

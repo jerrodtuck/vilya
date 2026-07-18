@@ -7,16 +7,19 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   {
     text: (
       <>
-        Add <code>docs/project-tracking/GITHUB-PROJECTS.md</code> to the repo
-        and fill the <b>Repo config</b> block.
+        Add <code>docs/project-tracking/GITHUB-PROJECTS.md</code> to the repo —{" "}
+        <b>config only</b>, plus a pointer to the process canon.
       </>
     ),
     sub: (
       <>
         owner · repo · project # · project id · status field + option ids ·
         stack · crucible variant · test command · default branch · your{" "}
-        <code>area:*</code> labels — or use <b>Regenerate GITHUB-PROJECTS.md</b>{" "}
-        below to fill the latest template from a paste / short form
+        <code>area:*</code> labels — use <b>Regenerate GITHUB-PROJECTS.md</b>{" "}
+        below (paste the old full copy or fill the short form; the output is
+        the slim format). Process — chains, labels model, PR conventions,
+        night-shift — is <b>not</b>{" "}
+        copied per repo: it lives once, in Vilya&apos;s canonical file.
       </>
     ),
   },
@@ -146,7 +149,7 @@ function Steps({
 }
 
 export function SetupView() {
-  const templateMarkdown = loadGithubProjectsTemplate();
+  const canonMarkdown = loadGithubProjectsTemplate();
 
   return (
     <>
@@ -172,8 +175,8 @@ export function SetupView() {
           <p>
             Each repo carries only{" "}
             <code>docs/project-tracking/GITHUB-PROJECTS.md</code> — owner,
-            project #, ids, stack, labels, test command, crucible variant. The
-            single seam.
+            project #, ids, stack, labels, test command, crucible variant.
+            Config only; process is canonical in Vilya. The single seam.
           </p>
         </div>
       </div>
@@ -200,7 +203,7 @@ export function SetupView() {
       <Steps steps={STEPS} />
 
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
-      <GithubProjectsTool templateMarkdown={templateMarkdown} />
+      <GithubProjectsTool canonMarkdown={canonMarkdown} />
 
       <h2>Grab skills straight from this site</h2>
       <p className="muted">
@@ -308,8 +311,10 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         Product <code>GITHUB-PROJECTS.md</code> is <b>read-only on feature
         branches</b> unless the issue is about changing config. Specs carry{" "}
         <code>Created</code> / <code>Last updated</code> dates.{" "}
-        <code>DECISIONS.md</code> is append-newest-at-top — grep to read, do not
-        load end-to-end. Full table lives in that config file.
+        <code>DECISIONS.md</code>{" "}
+        is append-newest-at-top — grep to read, do not load end-to-end. Full
+        table lives in the process canon (Vilya&apos;s{" "}
+        <code>GITHUB-PROJECTS.md</code>), not in product config files.
       </p>
 
       <div className="note" style={{ marginTop: 16 }}>

@@ -13,7 +13,7 @@ import {
   suggestionFor,
   usualFill,
 } from "./github-projects-defaults";
-import { generateFromTemplate } from "./github-projects-generate";
+import { generateSlim } from "./github-projects-generate";
 import { parseConfig } from "./github-projects-parse";
 
 /** Checklist key → config override. Empty string means "no override". */
@@ -106,30 +106,28 @@ function CopyGenerated({ text }: { text: string }) {
   );
 }
 
+function downloadMarkdown(text: string, filename: string) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function GithubProjectsTool({
-  templateMarkdown,
+  canonMarkdown,
 }: {
-  templateMarkdown: string | null;
+  canonMarkdown: string | null;
 }) {
   const [paste, setPaste] = useState("");
   const [overrides, setOverrides] = useState<FieldOverrides>({});
 
-  if (!templateMarkdown) {
-    return (
-      <div className="note">
-        <b>Template unavailable.</b> Could not read the bundled{" "}
-        <code>content/GITHUB-PROJECTS.md</code> (or{" "}
-        <code>docs/project-tracking/GITHUB-PROJECTS.md</code>) from this
-        runtime. Set <code>GITHUB_PROJECTS_TEMPLATE</code>, or rebuild so the
-        sync script copies the canonical template into the app.
-      </div>
-    );
-  }
-
   const parsed = parseConfig(paste);
   const withOverrides = mergeConfig(parsed, overridesToPartial(overrides));
   const merged = mergeConfig(withOverrides, usualFill(withOverrides));
-  const generated = generateFromTemplate(merged, templateMarkdown);
+  const generated = generateSlim(merged);
   const checklist = configChecklist(merged);
   const kept = checklist.filter((i) => i.status === "kept").length;
   const missing = checklist.filter((i) => i.status === "missing").length;
@@ -156,25 +154,16 @@ export function GithubProjectsTool({
       setOverrideValue(key, e.target.value);
     };
 
-  const download = () => {
-    if (!generated) return;
-    const blob = new Blob([generated], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "GITHUB-PROJECTS.md";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="gptool">
       <p className="muted" style={{ lineHeight: 1.55, marginTop: 0 }}>
-        Paste a product repo&apos;s current file (or leave blank for a new
-        repo). Missing checklist rows get a text box; Status option ids and
-        crucible (from stack) use the usual shared board defaults. Suggestions
-        on other gaps are one click. Generated updates live — nothing is pushed
-        to GitHub.
+        Paste a product repo&apos;s current file — an old full copy or an
+        already-slim one — or leave blank for a new repo. The output is always
+        the <b>config-only</b> format: your Repo config plus a pointer to the
+        process canon, no process prose to go stale. Missing checklist rows get
+        a text box; Status option ids and crucible (from stack) use the usual
+        shared board defaults. Generated updates live — nothing is pushed to
+        GitHub.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -290,11 +279,33 @@ export function GithubProjectsTool({
           Generated file
         </h3>
         <CopyGenerated text={generated} />
-        <button type="button" className="setupbtn" onClick={download}>
+        <button
+          type="button"
+          className="setupbtn"
+          onClick={() => downloadMarkdown(generated, "GITHUB-PROJECTS.md")}
+        >
           Download
         </button>
       </div>
       <pre className="gpout">{generated}</pre>
+
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        The generated file is the whole per-repo contract — process (chains,
+        labels model, PR conventions, night-shift) lives once, in Vilya&apos;s{" "}
+        <code>docs/project-tracking/GITHUB-PROJECTS.md</code>, which the
+        pointer header cites.{" "}
+        {canonMarkdown ? (
+          <button
+            type="button"
+            className="setupbtn"
+            onClick={() =>
+              downloadMarkdown(canonMarkdown, "GITHUB-PROJECTS-canon.md")
+            }
+          >
+            Download the process canon
+          </button>
+        ) : null}
+      </p>
     </div>
   );
 }

@@ -86,6 +86,8 @@ issue cleanly over starting three messily.
 ## One-time setup this skill assumes
 
 - Labels: `auto:ready`, `needs:decision`.
-- GitHub Actions workflow on the **product** repo (see `GITHUB-PROJECTS.md` Night-shift section and
-  Vilya's workflow templates). Manual `workflow_dispatch` until schedule is proven.
+- GitHub Actions workflow on the **product** repo — the per-repo bits (workflow file, runner,
+  `CLAUDE_CODE_OAUTH_TOKEN` secret) are noted in that repo's config-only `GITHUB-PROJECTS.md`;
+  the process itself is canonical in Vilya's `docs/project-tracking/GITHUB-PROJECTS.md` and its
+  workflow templates. Manual `workflow_dispatch` until schedule is proven.
 - Repo access + `gh` auth available to the Actions job (`CLAUDE_CODE_OAUTH_TOKEN` + `GH_TOKEN`).

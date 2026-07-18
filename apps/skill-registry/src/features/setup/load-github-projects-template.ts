@@ -1,4 +1,6 @@
-// Feature slice: setup — load canonical GITHUB-PROJECTS.md template (server I/O).
+// Feature slice: setup — load the canonical GITHUB-PROJECTS.md (server I/O).
+// The generator no longer fills this file; the tool offers it for download as
+// the process canon that slim product configs point at.
 import fs from "node:fs";
 import path from "node:path";
 
