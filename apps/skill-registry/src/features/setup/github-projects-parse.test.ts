@@ -50,6 +50,69 @@ Areas name *this* product's vertical slices. This repo's areas:
 - Shared process.
 `;
 
+const SLIM_SAMPLE = `# GitHub Projects — repo config
+
+> **Config only.** Process — the daytime/chip chains, labels model, PR + merge
+> conventions, night-shift — is canonical in Vilya:
+> \`docs/project-tracking/GITHUB-PROJECTS.md\` in the \`jerrodtuck/vilya\` repo,
+> described at https://vilya.jerrodtuck.com/setup. Skills read **config** from this
+> file and process from their own \`SKILL.md\`. Do not add process prose here — it
+> goes stale.
+
+## Repo config — fill this in per repo
+
+| Key | Value | How to get it |
+|-----|-------|---------------|
+| Owner | \`acme\` | your GitHub account/org |
+| Repo | \`acme/widgets\` | the repo issues live in |
+| Project number | \`3\` | \`gh project list\` |
+| Project id | \`PVT_abc\` | \`gh project view\` |
+| Status field id | \`PVTSSF_xyz\` | see Field ids |
+| **Stack** | \`nextjs\` | the repo's framework |
+| **Crucible variant** | \`crucible-nextjs\` | the review skill |
+| **Test command** | \`npm test\` | what finish runs |
+| **Manual smoke** | \`npm run dev\` → http://localhost:3000 | launch for smoke |
+| Default branch | \`main\` | \`git remote show origin\` |
+
+Status option ids (fill after first setup):
+
+\`\`\`text
+Todo:         aaa
+In Progress:  bbb
+Blocked:      ccc
+Verifying:    ddd
+Done:         eee
+\`\`\`
+
+Native single-select fields on this board (beyond Status; labels remain what the
+skills read):
+
+\`\`\`text
+Type  (PVTSSF_type): Feature bca65912 · Bug 066550da
+Priority (PVTSSF_pri): High 5aa1bc85 · Low 7522a137
+\`\`\`
+
+Get the Status field id + option ids in one shot:
+
+\`\`\`bash
+gh project field-list <n> --owner <owner> --format json \\
+  --jq '.fields[] | select(.name=="Status") | {id, options: [.options[] | {name, id}]}'
+\`\`\`
+
+### Area labels — define per repo
+
+Areas name *this* product's vertical slices. This repo's areas:
+
+\`area:api\` · \`area:ui\`
+
+### Night-shift (per-repo)
+
+Only if this repo runs the overnight loop: \`.github/workflows/night-shift.yml\` lives
+in this repo, a self-hosted runner is registered on this repo, and the repo secret
+\`CLAUDE_CODE_OAUTH_TOKEN\` (\`claude setup-token\`) is set. Eligibility labels,
+guardrails, and the loop itself are process — see the canon above.
+`;
+
 describe("normalizeValue", () => {
   it("unwraps a single outer code span", () => {
     expect(normalizeValue("`jerrodtuck`")).toBe("jerrodtuck");
@@ -94,6 +157,31 @@ describe("parseConfig", () => {
     expect(cfg.typeFieldLine).toContain("Type  (PVTSSF_type)");
     expect(cfg.priorityFieldLine).toContain("Priority (PVTSSF_pri)");
     expect(cfg.areaLabels).toEqual(["area:api", "area:ui", "area:docs"]);
+  });
+
+  it("extracts full config from the slim config-only format", () => {
+    const cfg = parseConfig(SLIM_SAMPLE);
+    expect(cfg.owner).toBe("acme");
+    expect(cfg.repo).toBe("acme/widgets");
+    expect(cfg.projectNumber).toBe("3");
+    expect(cfg.projectId).toBe("PVT_abc");
+    expect(cfg.statusFieldId).toBe("PVTSSF_xyz");
+    expect(cfg.stack).toBe("nextjs");
+    expect(cfg.crucibleVariant).toBe("crucible-nextjs");
+    expect(cfg.testCommand).toBe("npm test");
+    expect(cfg.manualSmoke).toBe("`npm run dev` → http://localhost:3000");
+    expect(cfg.defaultBranch).toBe("main");
+    expect(cfg.statusOptions).toEqual({
+      todo: "aaa",
+      inProgress: "bbb",
+      blocked: "ccc",
+      verifying: "ddd",
+      done: "eee",
+    });
+    expect(cfg.typeFieldLine).toContain("Type  (PVTSSF_type)");
+    expect(cfg.priorityFieldLine).toContain("Priority (PVTSSF_pri)");
+    // The night-shift note after Area labels must not leak into the labels.
+    expect(cfg.areaLabels).toEqual(["area:api", "area:ui"]);
   });
 
   it("ignores a legacy Models section in paste", () => {

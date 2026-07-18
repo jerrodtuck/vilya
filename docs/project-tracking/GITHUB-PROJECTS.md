@@ -1,9 +1,11 @@
-# GitHub Projects — tracking model (template)
+# GitHub Projects — tracking model (canon)
 
-**Vilya is the Dev Loop system** (skills, prompts/flows, registry site, this template) — not a
-product target. **Copy this file into each product repo** at `docs/project-tracking/GITHUB-PROJECTS.md`
-and fill in the **Repo config** block. Process sections below are shared across every product; only
-config values differ.
+**Vilya is the Dev Loop system** (skills, prompts/flows, registry site, this canon) — not a
+product target. **This file is the single process canon.** Product repos do **not** copy it:
+each carries a **config-only** `docs/project-tracking/GITHUB-PROJECTS.md` — its Repo config
+block plus a pointer back here — generated with the site's Setup → Regenerate tool. Process
+sections below live only in this file; skills read config from each repo's file and process
+from their own SKILL.md.
 
 Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / …) read owner, project,
 labels, stack, test command, and crucible variant from here. Planning vs execution **models** are
