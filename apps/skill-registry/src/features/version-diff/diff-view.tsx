@@ -31,7 +31,7 @@ export function DiffView({
         {rows.length} aligned line{rows.length === 1 ? "" : "s"}.
       </p>
 
-      <div className="diffhead">
+      <div className="diffcommits">
         <CommitCard label="from" v={diff.from} missing={diff.fromMissing} />
         <CommitCard label="to" v={diff.to} missing={diff.toMissing} />
       </div>
