@@ -12,6 +12,11 @@ description: Survey the product's as-built architecture against its as-intended 
 > Owner / repo / project number / area labels come from this repo's
 > `docs/project-tracking/GITHUB-PROJECTS.md` config block — that is all this skill reads from
 > it. The procedure is stack-neutral.
+>
+> The survey unit is the **product board**. A product spanning several repos runs steps 2–4
+> once per repo (each from its own config block) and merges the pair tables into one map — the
+> architect seat is per board, not per repo (today all products are single-repo; this is the
+> contract, not new machinery).
 
 The valuable output is **not a diagram** — it is gap findings with receipts: each divergence
 citing the as-built evidence (commit shas, issue #s, file paths) *and* the as-intended section
@@ -44,6 +49,9 @@ a PR merged. So first, pin what you surveyed:
   that is itself a finding. If its content has been authored on an issue but not yet merged,
   read it from that issue's authored comment and **say so in the output's sources line**.
 - **`docs/specs/*`** — per-feature design intent.
+- **`docs/DECISIONS.md`** — grep by surveyed area/topic (never load end-to-end); a decided ADR
+  is intent with receipts. A shipped artifact that contradicts a decided entry (and no later
+  entry supersedes it) is a divergence.
 - **Open epics / roadmap items** — `gh issue list --repo <owner>/<repo> --label type:epic
   --state open` (plus any `Roadmap`-typed items on the board).
 - **`README.md` promises** and any canon cross-references (files the canon or the docs say
@@ -63,8 +71,8 @@ divergence" an honest checked claim instead of silence:
 
 Unmatched or contradicting entries in either direction are divergences. The classic shapes:
 a slice with no spec, a spec with no slice, an epic touching an area that does not exist, a
-dead slice (built, but nothing on the board or in the docs owns it), and a doc claim the
-artifact contradicts.
+dead slice (built, but nothing on the board or in the docs owns it), a doc claim the
+artifact contradicts, and an artifact contradicting a decided ADR.
 
 ## 5. Emit — map + divergence list
 
