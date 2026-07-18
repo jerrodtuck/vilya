@@ -1,37 +1,66 @@
-// Feature slice: orchestrator — the interactive orchestration map (client component).
-// State: which flow is lit, which node is selected. Content comes from
-// data.ts / prompts.ts; geometry from map-geometry.ts.
+// Shared UI: the interactive flow map (client component). State: which flow
+// is lit, which node is selected. All content — nodes, flows, geometry,
+// prompts, the default drawer — comes in as props from the feature slice's
+// own data modules (orchestrator/data.ts + map-geometry.ts, architect's
+// equivalents, …), so this component owns no domain knowledge of its own.
 "use client";
 
-import { useState } from "react";
-import { FLOWS, FLOW_COLORS, NODES } from "./data";
-import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
-import { promptsForNode } from "./prompts";
+import { Fragment, useState } from "react";
+import type {
+  EdgeGeom,
+  EdgeLabel,
+  FlowDef,
+  FlowNode,
+  LensGeom,
+  NodeGeom,
+  PromptGroup,
+} from "./flow-map-types";
 import { PromptList } from "./prompt-list";
 
-const DEFAULT_DRAWER = {
-  kicker: "The orchestrator",
-  title: "You point, the skills execute",
-  c: "--orch",
-  bodyHtml: `
-    <p>Pick any node in the map to see what that skill does, when you invoke it, and what it reads from the repo config. The whole ecosystem is designed so that <b>you make the decisions and the skills carry the mechanics.</b></p>
-    <h4><span class="swatch" style="background:var(--start)"></span>The linear spine</h4>
-    <ul>
-      <li><code>/start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/finish-feature</code> → <code>/merge-pr</code> → Done.</li>
-      <li>Everything writes status to the <b>board</b> — that's your single source of truth.</li>
-    </ul>
-    <h4><span class="swatch" style="background:var(--review)"></span>The engine: review ↔ refactor</h4>
-    <ul>
-      <li>The review no longer passes/fails — it returns ranked refactors + a readiness signal.</li>
-      <li>You loop review → apply top refactors → re-review until it reads <b>Ready</b>, then hand to finish.</li>
-    </ul>`,
-};
+export interface FlowMapProps {
+  nodes: Record<string, FlowNode>;
+  flows: Record<string, FlowDef>;
+  flowColors: Record<string, string>;
+  edges: EdgeGeom[];
+  edgeLabels: EdgeLabel[];
+  nodeGeoms: NodeGeom[];
+  /** Optional decorative lens chips (orchestrator's VSA/SOLID/Stack/Simplify over REVIEW). */
+  lenses?: LensGeom[];
+  /** Stem path connecting the lens chips down to their node — required if `lenses` is set. */
+  lensConnector?: string;
+  /** Drawer content shown before any node is selected. */
+  defaultDrawer: FlowNode;
+  /**
+   * The full prompt library, keyed by group.node. Passed as data (not a
+   * lookup function) because this is a client component fed by a server
+   * component — functions can't cross that boundary.
+   */
+  prompts: PromptGroup[];
+  /** SVG viewBox; defaults to the orchestrator map's 1280x520 canvas. */
+  viewBox?: string;
+  ariaLabel: string;
+  aside?: React.ReactNode;
+}
 
-export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
+export function FlowMap({
+  nodes,
+  flows,
+  flowColors,
+  edges,
+  edgeLabels,
+  nodeGeoms,
+  lenses,
+  lensConnector,
+  defaultDrawer,
+  prompts,
+  viewBox = "0 0 1280 520",
+  ariaLabel,
+  aside,
+}: FlowMapProps) {
   const [flow, setFlow] = useState<string>("everything");
   const [selected, setSelected] = useState<string | null>(null);
 
-  const active = FLOWS[flow];
+  const active = flows[flow];
   const litNodes = active.nodes ? new Set(active.nodes) : null;
   const litEdges = active.edges ? new Set(active.edges) : null;
 
@@ -48,13 +77,15 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
     return parts.join(" ");
   };
 
-  const drawer = selected ? NODES[selected] : DEFAULT_DRAWER;
-  const drawerPrompts = selected ? promptsForNode(selected) : undefined;
+  const drawer = selected ? nodes[selected] : defaultDrawer;
+  const drawerPrompts = selected
+    ? prompts.find((g) => g.node === selected)
+    : undefined;
 
   return (
     <>
       <div className="chips">
-        {Object.entries(FLOWS).map(([id, f]) => (
+        {Object.entries(flows).map(([id, f]) => (
           <button
             type="button"
             key={id}
@@ -62,7 +93,7 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
             style={
               id === "everything"
                 ? undefined
-                : { color: `var(${FLOW_COLORS[id]})` }
+                : { color: `var(${flowColors[id]})` }
             }
             onClick={() => setFlow(id)}
           >
@@ -77,7 +108,7 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
       />
 
       <div className="stage">
-        <svg viewBox="0 0 1280 520" role="img" aria-label="Skill orchestration map">
+        <svg viewBox={viewBox} role="img" aria-label={ariaLabel}>
           <defs>
             <marker
               id="arrow"
@@ -92,7 +123,7 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
             </marker>
           </defs>
 
-          {EDGES.map((e) => (
+          {edges.map((e) => (
             <path
               key={e.id}
               className={edgeClass(e.id, e.colorClass, e.dashed)}
@@ -100,30 +131,34 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
               markerEnd="url(#arrow)"
             />
           ))}
-          {EDGE_LABELS.map((l) => (
+          {edgeLabels.map((l) => (
             <text key={l.text} className="elabel" x={l.x} y={l.y}>
               {l.text}
             </text>
           ))}
 
-          <g opacity="0.95">
-            {LENSES.map((ln) => (
-              <g key={ln.text}>
-                <rect className="lens" x={ln.x} y={ln.y} width={ln.w} height={17} rx={5} />
-                <text className="lenstxt" x={ln.tx} y={ln.ty} textAnchor="middle">
-                  {ln.text}
-                </text>
-              </g>
-            ))}
-            <path className="edge" d={LENS_CONNECTOR} stroke="var(--review)" opacity=".5" />
-          </g>
+          {lenses && lenses.length > 0 ? (
+            <g opacity="0.95">
+              {lenses.map((ln) => (
+                <g key={ln.text}>
+                  <rect className="lens" x={ln.x} y={ln.y} width={ln.w} height={17} rx={5} />
+                  <text className="lenstxt" x={ln.tx} y={ln.ty} textAnchor="middle">
+                    {ln.text}
+                  </text>
+                </g>
+              ))}
+              {lensConnector ? (
+                <path className="edge" d={lensConnector} stroke="var(--review)" opacity=".5" />
+              ) : null}
+            </g>
+          ) : null}
 
-          {NODE_GEOMS.map((n) => (
+          {nodeGeoms.map((n) => (
             <g
               key={n.id}
               className={nodeClass(n.id)}
               tabIndex={0}
-              style={{ ["--c" as string]: `var(${NODES[n.id].c})` }}
+              style={{ ["--c" as string]: `var(${nodes[n.id].c})` }}
               onClick={() => setSelected(n.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -182,7 +217,12 @@ export function FlowsMap({ aside }: { aside?: React.ReactNode }) {
             </div>
           ) : null}
         </div>
-        {aside}
+        {/* `aside` is JSX authored by a server component (OrchestratorView /
+            ArchitectView) and handed across the RSC boundary as a prop. In
+            dev, React can't verify a server-created element placed into a
+            multi-child slot was keyed correctly, so it warns unless we key
+            it here explicitly — even though there's no real list. */}
+        {aside ? <Fragment key="aside">{aside}</Fragment> : null}
       </div>
     </>
   );

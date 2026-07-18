@@ -26,6 +26,12 @@
   --bug: #ff6b8a; --consult: #c792ea; --blocked: #ff8a5c; --verify: #57c7d4;
   --merge: #a371f7;
   --todo: #8b95a6; --inprog: #7c8cff;
+  /* architect page (#133) — arch/fork/handoff reuse the orchestrator's "You" /
+     decision-fork / terminal colors since they're the same concept in a
+     different role. */
+  --arch: var(--orch); --recall: #5b9bd5; --survey: #8bc34a;
+  --research: #e0777a; --fork: var(--consult); --adr: #e0b34d;
+  --spec: #52c4b0; --handoff: var(--done);
   --page-px: 1.5rem;
   --wrap-max: 64rem;
 }
@@ -464,6 +470,14 @@ h1 .you { color: var(--orch); }
 .edge.lit.c-verify { stroke: var(--verify); }
 .edge.lit.c-epic { stroke: var(--epic); }
 .edge.lit.c-orch { stroke: var(--orch); }
+/* architect page (#133) */
+.edge.lit.c-arch { stroke: var(--arch); }
+.edge.lit.c-recall { stroke: var(--recall); }
+.edge.lit.c-survey { stroke: var(--survey); }
+.edge.lit.c-research { stroke: var(--research); }
+.edge.lit.c-fork { stroke: var(--fork); }
+.edge.lit.c-adr { stroke: var(--adr); }
+.edge.lit.c-spec { stroke: var(--spec); }
 @keyframes march { to { stroke-dashoffset: -26; } }
 .node { cursor: pointer; }
 .nbox { fill: var(--surface2); stroke: var(--c); stroke-width: 1.8; transition: .2s; }

@@ -1,8 +1,8 @@
-// Feature slice: orchestrator — renders a prompt group's body: intro line, prompt
-// items with copy buttons, caveat note. Server-safe: only the CopyButton leaf
-// is client.
+// Shared UI: renders a prompt group's body: intro line, prompt items with
+// copy buttons, caveat note. Server-safe: only the CopyButton leaf is
+// client. Used by every page with a prompt library (orchestrator, architect).
 import { CopyButton } from "./copy-button";
-import type { PromptGroup } from "./prompts";
+import type { PromptGroup } from "./flow-map-types";
 
 export function PromptList({ group }: { group: PromptGroup }) {
   return (

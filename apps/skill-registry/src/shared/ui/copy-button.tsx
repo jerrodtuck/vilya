@@ -1,4 +1,5 @@
-// Feature slice: orchestrator — copy-to-clipboard button (client leaf).
+// Shared UI: copy-to-clipboard button (client leaf). Used by prompt-list.tsx
+// on every page with a prompt library (orchestrator, architect).
 "use client";
 
 import { useRef, useState } from "react";

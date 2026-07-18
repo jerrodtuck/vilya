@@ -2,8 +2,10 @@
 // interactive map is the client island; everything else renders on the server.
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
-import { FlowsMap } from "./flows-map";
-import { PromptList } from "./prompt-list";
+import { FlowMap } from "@/shared/ui/flow-map";
+import { PromptList } from "@/shared/ui/prompt-list";
+import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
+import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
 import { PROMPTS } from "./prompts";
 
 export function OrchestratorView() {
@@ -42,7 +44,18 @@ export function OrchestratorView() {
         }
       />
 
-      <FlowsMap
+      <FlowMap
+        nodes={NODES}
+        flows={FLOWS}
+        flowColors={FLOW_COLORS}
+        edges={EDGES}
+        edgeLabels={EDGE_LABELS}
+        nodeGeoms={NODE_GEOMS}
+        lenses={LENSES}
+        lensConnector={LENS_CONNECTOR}
+        defaultDrawer={DEFAULT_DRAWER}
+        prompts={PROMPTS}
+        ariaLabel="Skill orchestration map"
         aside={
           <div className="panel">
             <div className="kicker">How you multitask</div>
