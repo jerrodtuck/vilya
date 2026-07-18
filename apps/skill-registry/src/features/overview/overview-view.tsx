@@ -4,6 +4,7 @@ import { BoardStrip } from "@/shared/ui/board-strip";
 import { PromptList } from "@/shared/ui/prompt-list";
 import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
 import { ASK_VILYA } from "./ask-vilya";
+import { BoardMoverMap } from "./board-mover-map";
 import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
@@ -70,6 +71,8 @@ export function OverviewView() {
       />
 
       <CardinalityDiagram />
+
+      <BoardMoverMap />
 
       <div className="panel" style={{ marginTop: 16 }}>
         <div className="kicker">Front door</div>
