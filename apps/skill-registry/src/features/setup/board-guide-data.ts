@@ -10,15 +10,14 @@ export const PROJECT_CREATE_COMMAND = "gh project create --owner <user>";
 export const PROJECT_SCOPE_COMMAND = "gh auth refresh -s project";
 
 export type BoardLevel = {
-  id: "user" | "org";
   name: string;
   recommended: boolean;
   costs: string[];
 };
 
-export const BOARD_LEVELS: BoardLevel[] = [
-  {
-    id: "user",
+// Keyed by owner kind — the only two owners Projects v2 supports.
+export const BOARD_LEVELS: Record<"user" | "org", BoardLevel> = {
+  user: {
     name: "User level",
     recommended: true,
     costs: [
@@ -26,8 +25,7 @@ export const BOARD_LEVELS: BoardLevel[] = [
       "Moving to an org later means recreating the project — field and option ids change, so every repo config block regenerates.",
     ],
   },
-  {
-    id: "org",
+  org: {
     name: "Organization level",
     recommended: false,
     costs: [
@@ -35,7 +33,7 @@ export const BOARD_LEVELS: BoardLevel[] = [
       "Getting here from a user-level board is that one-time id migration, in every product repo's config block.",
     ],
   },
-];
+};
 
 export type BoardAutomation = {
   workflow: string; // name as it appears in the project's Workflows pane

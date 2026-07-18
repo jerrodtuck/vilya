@@ -9,32 +9,34 @@ import {
 
 describe("board guide — level fork", () => {
   it("presents exactly the two ownership levels Projects v2 supports", () => {
-    expect(BOARD_LEVELS.map((l) => l.id).sort()).toEqual(["org", "user"]);
+    expect(Object.keys(BOARD_LEVELS).sort()).toEqual(["org", "user"]);
   });
 
   it("recommends exactly one level, and it is user (current default)", () => {
-    const recommended = BOARD_LEVELS.filter((l) => l.recommended);
+    const recommended = Object.entries(BOARD_LEVELS).filter(
+      ([, l]) => l.recommended
+    );
     expect(recommended).toHaveLength(1);
-    expect(recommended[0].id).toBe("user");
+    expect(recommended[0][0]).toBe("user");
   });
 
   it("both levels carry non-empty costs — the fork is documented, not decided", () => {
-    for (const level of BOARD_LEVELS) {
+    for (const level of Object.values(BOARD_LEVELS)) {
       expect(level.costs.length).toBeGreaterThan(0);
       for (const cost of level.costs) expect(cost.trim().length).toBeGreaterThan(20);
     }
   });
 
   it("user-level costs name the migration price: ids change, config blocks regenerate", () => {
-    const user = BOARD_LEVELS.find((l) => l.id === "user")!;
-    const joined = user.costs.join(" ");
+    const joined = BOARD_LEVELS.user.costs.join(" ");
     expect(joined).toContain("option ids change");
     expect(joined).toContain("config block regenerates");
   });
 
   it("org-level costs name the Actions-entitlement caveat", () => {
-    const org = BOARD_LEVELS.find((l) => l.id === "org")!;
-    expect(org.costs.join(" ")).toContain("Actions entitlements follow the org's plan");
+    expect(BOARD_LEVELS.org.costs.join(" ")).toContain(
+      "Actions entitlements follow the org's plan"
+    );
   });
 });
 

@@ -47,8 +47,7 @@ const DEPENDENCY_STEPS: SetupStep[] = [
 ];
 
 export function BoardGuide() {
-  const user = BOARD_LEVELS.find((l) => l.id === "user")!;
-  const org = BOARD_LEVELS.find((l) => l.id === "org")!;
+  const { user, org } = BOARD_LEVELS;
 
   return (
     <>
