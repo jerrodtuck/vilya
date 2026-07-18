@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const htmlRoot = path.join(appRoot, ".next", "server", "app");
 
-// /, /setup, /flows, /differences, /night-shift, /skills, 10× /skills/<name>.
+// /, /setup, /orchestrator, /differences, /night-shift, /skills, 10× /skills/<name>.
 // Fewer scanned files than this means routes silently stopped prerendering —
 // fail rather than shrink coverage.
 const MIN_PAGES = 16;

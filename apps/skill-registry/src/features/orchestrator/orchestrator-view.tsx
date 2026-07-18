@@ -1,12 +1,12 @@
-// Feature slice: flows — page composition (server component). The interactive
-// map is the client island; everything else renders on the server.
+// Feature slice: orchestrator — page composition (server component). The
+// interactive map is the client island; everything else renders on the server.
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowsMap } from "./flows-map";
 import { PromptList } from "./prompt-list";
 import { PROMPTS } from "./prompts";
 
-export function FlowsView() {
+export function OrchestratorView() {
   return (
     <>
       <header>

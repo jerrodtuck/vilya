@@ -16,7 +16,7 @@ export function NightShiftView() {
         Night-shift is <b>not</b> a second methodology. It runs the daytime Dev
         Loop unattended on a <b>product</b> repo. This page maps the{" "}
         <b>agent machinery</b> — dispatch through morning report. The
-        methodology map stays on <Link href="/flows">Flows</Link>.
+        methodology map stays on <Link href="/orchestrator">Orchestrator</Link>.
       </p>
 
       <NightAgentMap
@@ -137,7 +137,7 @@ export function NightShiftView() {
 
       <div className="pagefoot">
         Instrument: <b>/night-shift</b> · opens PRs only · never merges ·{" "}
-        <Link href="/flows">Flows</Link> for the daytime map.
+        <Link href="/orchestrator">Orchestrator</Link> for the daytime map.
       </div>
     </>
   );

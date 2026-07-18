@@ -1,4 +1,4 @@
-// Feature slice: flows — renders a prompt group's body: intro line, prompt
+// Feature slice: orchestrator — renders a prompt group's body: intro line, prompt
 // items with copy buttons, caveat note. Server-safe: only the CopyButton leaf
 // is client.
 import { CopyButton } from "./copy-button";

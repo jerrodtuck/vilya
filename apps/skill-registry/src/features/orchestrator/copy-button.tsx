@@ -1,4 +1,4 @@
-// Feature slice: flows — copy-to-clipboard button (client leaf).
+// Feature slice: orchestrator — copy-to-clipboard button (client leaf).
 "use client";
 
 import { useRef, useState } from "react";
