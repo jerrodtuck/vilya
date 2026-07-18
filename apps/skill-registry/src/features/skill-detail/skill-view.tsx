@@ -37,9 +37,10 @@ export function SkillView({ slug }: { slug: string }) {
           <span className="v">
             {levelOf(skill) === "user" ? (
               <>
-                user — once via <code>scripts/install-skills</code> into{" "}
+                user — linked once per machine via{" "}
+                <code>scripts/install-skills</code> into{" "}
                 <code>~/.claude/skills</code> (Cursor reads the same directory;
-                all projects); a repo can override it at{" "}
+                all projects; merges live on pull); a repo can override it at{" "}
                 <code>.claude/skills/{skill.slug}/</code>
               </>
             ) : (

@@ -1,0 +1,2 @@
+# Shell scripts must check out LF everywhere — CRLF breaks bash (incl. Git Bash).
+*.sh text eol=lf

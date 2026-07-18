@@ -182,11 +182,17 @@ export function SetupView() {
       <PlatformToggle />
 
       <div className="note">
-        <b>One body, both tools, one install root.</b> The frontmatter that
-        matters is shared, and Cursor scans <code>~/.claude/skills</code>{" "}
-        itself — so <code>scripts/install-skills.(sh|ps1)</code> syncs{" "}
-        <code>skills/</code> (the source of truth) to that single directory and
-        both tools pick it up. Installing to <code>~/.cursor/skills</code>{" "}
+        <b>One body, both tools, one install root — linked, not copied.</b>{" "}
+        The frontmatter that matters is shared, and Cursor scans{" "}
+        <code>~/.claude/skills</code> itself — so{" "}
+        <code>scripts/install-skills.(sh|ps1)</code> links each{" "}
+        <code>skills/&lt;name&gt;</code> (the source of truth) into that single
+        directory as a junction/symlink, and both tools pick it up. Run it{" "}
+        <b>once per machine</b> (again only if the repo moves on disk): the
+        installed skill <i>is</i> the repo file, so skill merges are live on{" "}
+        <code>git pull</code> — nothing to re-run. Existing copies from the old
+        copy mode are migrated automatically. Installing to{" "}
+        <code>~/.cursor/skills</code>{" "}
         as well would double-list every skill in Cursor&apos;s slash menu.
       </div>
 
@@ -206,7 +212,10 @@ export function SetupView() {
       <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
       <p className="muted">
         One destination is enough — Cursor scans <code>~/.claude/skills</code>{" "}
-        as a compatibility root, so both tools see it.
+        as a compatibility root, so both tools see it. This is the one{" "}
+        <b>copy-mode exception</b>: a curl&apos;d file is a plain copy, not a
+        link, so it only updates when you re-curl it (or clone the repo and run
+        the install script, which migrates the copy to a link).
       </p>
 
       <h2>How skills find the config at runtime</h2>
