@@ -116,14 +116,7 @@ export function FlowsView() {
               style={{ ["--lc" as string]: `var(${g.c})` }}
             >
               <h4>{g.group}</h4>
-              <PromptList items={g.items} />
-              {g.noteHtml ? (
-                <div
-                  className="note"
-                  style={{ marginTop: 10, fontSize: 12 }}
-                  dangerouslySetInnerHTML={{ __html: g.noteHtml }}
-                />
-              ) : null}
+              <PromptList group={g} />
             </div>
           ))}
         </div>
