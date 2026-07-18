@@ -234,8 +234,10 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         <b>Pick your stack.</b> Blazor/.NET repo → install{" "}
         <code>crucible-blazor</code>, test command <code>dotnet test</code>.
         Next.js repo → <code>crucible-nextjs</code>, test command{" "}
-        <code>npm test &amp;&amp; npm run build</code>. Both go in the
-        repo&apos;s config block.
+        <code>npm test &amp;&amp; npm run build</code>. Python repo →{" "}
+        <code>crucible-fastapi</code> / <code>crucible-django</code> /{" "}
+        <code>crucible-ml</code>, test command <code>pytest</code>. Variant and
+        test command both go in the repo&apos;s config block.
       </div>
 
       <h2>Plan → execute (models)</h2>
