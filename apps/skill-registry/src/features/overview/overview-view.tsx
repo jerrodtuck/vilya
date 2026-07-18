@@ -157,14 +157,17 @@ export function OverviewView() {
         — VSA in React&apos;s vocabulary); .NET/Blazor is reviewed against{" "}
         <b>plain VSA</b> (feature slices, shared kernel as contracts only). One
         crucible variant per repo, matched to its stack — same bar, native
-        accent.
+        accent. Today that spans the frontend dialects (<b>Bulletproof React</b>{" "}
+        · <b>VSA/Blazor</b>) and the backend/Python dialects (<b>FastAPI</b> ·{" "}
+        <b>Django</b> · <b>ML</b>) — all enumerated live on the{" "}
+        <Link href="/skills">Skills page</Link>.
       </div>
 
       <div className="pagefoot">
         Instruments:{" "}
         <b>
-          /start-feature · crucible-blazor · crucible-nextjs · /finish-feature
-          · /merge-pr · /update-docs · /history · night-shift
+          /start-feature · per-stack crucibles · /finish-feature · /merge-pr
+          · /update-docs · /history · night-shift
         </b>
         .
       </div>

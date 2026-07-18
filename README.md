@@ -4,7 +4,8 @@
 
 **Vilya is the Dev Loop system** — not a product like Anduin or NaryaCommand. It holds the
 canonical skills, the registry/flows site, the prompts, and the tracking template that every
-product repo copies. Built for **Claude Code + Cursor**, across **.NET/Blazor and Next.js**.
+product repo copies. Built for **Claude Code + Cursor**, with **per-stack crucible dialects**
+across frontend (Next.js, .NET/Blazor) and backend/Python (FastAPI, Django, ML) repos.
 
 **Daytime is primary.** You orchestrate with skills; the board is the shared state. Night-shift
 runs that **same** chain unattended via GitHub Actions on each product repo.
@@ -22,6 +23,9 @@ vilya/
 │   ├── history/                # recall: reconstruct what we tried
 │   ├── crucible-blazor/        # review: strict VSA+SOLID+Blazor (manual-only)
 │   ├── crucible-nextjs/        # review: same for feature-slice + server/client
+│   ├── crucible-fastapi/       # review: same, FastAPI dialect
+│   ├── crucible-django/        # review: same, Django dialect
+│   ├── crucible-ml/            # review: same, Python ML/data dialect
 │   └── night-shift/            # autonomous: daytime chain → opens PRs
 ├── apps/
 │   └── skill-registry/         # Next.js (VSA) app — The Dev Loop site + registry
