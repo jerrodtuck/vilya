@@ -27,12 +27,19 @@
   --merge: #a371f7;
   --todo: #8b95a6; --inprog: #7c8cff;
   --page-px: 1.5rem;
+  --wrap-max: 64rem;
 }
 @media (min-width: 768px) {
   :root { --page-px: 3rem; }
 }
 @media (min-width: 1024px) {
   :root { --page-px: 6rem; }
+}
+/* Wide screens: the shell grows fluidly past 1440px (64rem → 80rem by ~2030px)
+   so grids, cards, tables, and the maps breathe on big monitors. Prose blocks
+   are capped separately below so line lengths never exceed today's measure. */
+@media (min-width: 1440px) {
+  :root { --wrap-max: clamp(64rem, 44vw + 24.4rem, 80rem); }
 }
 * { box-sizing: border-box; }
 html, body {
@@ -54,9 +61,16 @@ body {
 }
 a { color: var(--orch); text-decoration: none; }
 .wrap {
-  max-width: 64rem; /* max-w-5xl */
+  width: 100%; /* body is a column flex container — without this the item is floored at its content's min-content width */
+  max-width: var(--wrap-max); /* 64rem baseline, fluid past 1440px */
   margin: 0 auto;
   padding: 1.5rem var(--page-px) 5rem;
+}
+/* Prose keeps today's max measure (52rem content at the 64rem shell) even when
+   the shell widens — only grids/cards/tables/maps use the extra room. */
+@media (min-width: 1440px) {
+  .md p, .md ul, .md ol, .md blockquote,
+  p.muted, .pane p, .setupsteps { max-width: 52rem; }
 }
 
 .sitenav-bar {
@@ -76,10 +90,10 @@ a { color: var(--orch); text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 16px;
-  max-width: 64rem;
+  max-width: var(--wrap-max);
   margin: 0 auto;
-  height: 3.5rem;
-  padding: 0 var(--page-px);
+  min-height: 3.5rem;
+  padding: 6px var(--page-px);
 }
 .sitenav .brand {
   color: var(--text);
@@ -99,6 +113,28 @@ a { color: var(--orch); text-decoration: none; }
 }
 .sitenav .nlinks a:hover { color: var(--text); }
 .sitenav .nlinks a.on { color: var(--text); background: var(--surface2); }
+/* Phone widths: brand on its own line, links as a swipeable strip (no wrap,
+   scrolls in its own container) so the sticky bar stays compact. */
+@media (max-width: 700px) {
+  .sitenav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    min-height: 0;
+    padding: 0;
+  }
+  .sitenav .brand { padding: 11px var(--page-px) 2px; }
+  .sitenav .nlinks {
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px calc(var(--page-px) - 10px) 9px;
+    scrollbar-width: none;
+  }
+  .sitenav .nlinks::-webkit-scrollbar { display: none; }
+  .sitenav .nlinks a { white-space: nowrap; flex: none; }
+}
 
 .eyebrow {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
@@ -128,6 +164,7 @@ code {
   font-size: 12px;
   color: hsl(210 30% 88%);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
+  overflow-wrap: anywhere; /* long unbroken tokens (paths, commands) wrap instead of overflowing narrow viewports */
 }
 
 /* registry cards — quiet jerrodtuck.com language */
@@ -165,7 +202,11 @@ code {
 .fmrow { display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px solid #20262f; font-size: 13px; }
 .fmrow:last-child { border-bottom: 0; }
 .fmrow .k { color: var(--faint); font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 12px; width: 210px; flex: none; }
-.fmrow .v { color: var(--text); }
+.fmrow .v { color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .fmrow { flex-direction: column; gap: 3px; }
+  .fmrow .k { width: auto; }
+}
 .fmrow .v.chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface2); color: #cdd4df; font-family: var(--font-geist-mono), ui-monospace, monospace; }
 
@@ -182,7 +223,9 @@ code {
 .md pre { background: #0f1319; border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; overflow: auto; }
 .md pre code { border: 0; padding: 0; background: transparent; }
 .md blockquote { border-left: 3px solid var(--border); margin: 12px 0; padding: 2px 0 2px 14px; color: var(--muted); }
-.md table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+/* display:block + max-width lets a wide table scroll inside its own box
+   instead of stretching the page body. */
+.md table { border-collapse: collapse; display: block; width: max-content; max-width: 100%; overflow-x: auto; margin: 12px 0; font-size: 13px; }
 .md th, .md td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; }
 .md th { color: var(--faint); background: var(--surface2); }
 .md a { color: var(--orch); }
@@ -196,7 +239,7 @@ code {
   margin-top: auto;
 }
 .sitefoot-inner {
-  max-width: 64rem;
+  max-width: var(--wrap-max);
   margin: 0 auto;
   padding: 1.25rem var(--page-px) 1.75rem;
   display: flex;
@@ -399,8 +442,13 @@ h1 .you { color: var(--orch); }
 .chip.all { color: var(--orch); }
 .flowdesc { min-height: 20px; color: var(--muted); font-size: 13.5px; margin: 8px 2px 4px; line-height: 1.5; }
 .flowdesc b { color: var(--text); }
-.stage { border: 1px solid var(--border); border-radius: 16px; background: radial-gradient(1200px 400px at 20% -10%, #1a2030, #0f131b); overflow: hidden; margin-top: 6px; }
+.stage { border: 1px solid var(--border); border-radius: 16px; background: radial-gradient(1200px 400px at 20% -10%, #1a2030, #0f131b); overflow: hidden; overflow-x: auto; margin-top: 6px; }
 .stage svg { width: 100%; height: auto; display: block; }
+/* Below tablet width the map stops shrinking (labels would be illegible) and
+   scrolls inside the stage instead. */
+@media (max-width: 880px) {
+  .stage svg { min-width: 54rem; }
+}
 .edge { fill: none; stroke: var(--edge); stroke-width: 2.4; transition: .2s; }
 .edge.dash { stroke-dasharray: 5 5; }
 .edge.faded { opacity: .10; }
@@ -452,7 +500,7 @@ h1 .you { color: var(--orch); }
 .plabel { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 700; margin-bottom: 2px; }
 .prompt { position: relative; border: 1px solid var(--border); background: #0f1319; border-radius: 9px; padding: 9px 60px 9px 12px; margin: 8px 0; }
 .prompt .plead { display: block; font-size: 10.5px; color: var(--faint); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
-.prompt .ptext { display: block; font-size: 12.5px; line-height: 1.5; color: #cdd4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-line; }
+.prompt .ptext { display: block; font-size: 12.5px; line-height: 1.5; color: #cdd4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-line; overflow-wrap: anywhere; }
 .copybtn { position: absolute; top: 8px; right: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); border-radius: 6px; font-size: 11px; font-weight: 600; padding: 3px 8px; cursor: pointer; transition: .15s; font-family: inherit; }
 .copybtn:hover { color: var(--text); border-color: #48546a; }
 .copybtn.done { color: var(--finish); border-color: #2b4f3c; }
@@ -479,7 +527,7 @@ h1 .you { color: var(--orch); }
 .setupsteps { margin-top: 6px; }
 .setupsteps .step { display: flex; gap: 11px; padding: 9px 2px; border-bottom: 1px solid #20262f; align-items: flex-start; }
 .setupsteps .n { color: var(--orch); font-weight: 700; font-size: 12.5px; flex: none; width: 18px; }
-.setupsteps .t { font-size: 13.5px; line-height: 1.5; color: var(--text); }
+.setupsteps .t { font-size: 13.5px; line-height: 1.5; color: var(--text); min-width: 0; }
 .setupsteps .t small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
 
 /* ---------- site: setup — GITHUB-PROJECTS tool ---------- */
@@ -505,6 +553,10 @@ h1 .you { color: var(--orch); }
   padding: 8px 12px; border-bottom: 1px solid #20262f; font-size: 12.5px;
 }
 .gpcheck li:last-child { border-bottom: 0; }
+@media (max-width: 560px) {
+  .gpcheck li { grid-template-columns: 18px 1fr; }
+  .gpcheck .gpval { grid-column: 2; }
+}
 .gpcheck .gpmark { color: var(--faint); font-weight: 700; }
 .gpcheck li.kept .gpmark { color: var(--finish); }
 .gpcheck .gplab { color: var(--muted); font-weight: 600; }
@@ -537,6 +589,10 @@ h1 .you { color: var(--orch); }
 /* history */
 .history { list-style: none; padding: 0; margin: 12px 0 0; }
 .history li { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid #20262f; font-size: 13px; }
+@media (max-width: 640px) {
+  .history li { flex-wrap: wrap; row-gap: 2px; }
+  .history .subj { flex: 1 1 100%; order: 1; }
+}
 .history .hash { flex: none; color: var(--start); }
 .history .subj { color: var(--text); flex: 1; }
 .history .meta { color: var(--faint); font-size: 12px; white-space: nowrap; }
@@ -545,7 +601,12 @@ h1 .you { color: var(--orch); }
 /* version diff */
 .added { color: var(--finish); font-weight: 700; }
 .removed { color: var(--docs); font-weight: 700; }
-.diffhead { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+/* Named distinctly from the Differences page's .diffhead (flex row above) so
+   the two layouts can't override each other. */
+.diffcommits { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+@media (max-width: 640px) {
+  .diffcommits { grid-template-columns: 1fr; }
+}
 .commitcard { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
 .commitcard .k { color: var(--faint); font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
 .commitcard .hash { align-self: flex-start; color: var(--start); }
