@@ -9,13 +9,16 @@ Strict, **refactor-oriented** review of the current branch's changes. **Not a pa
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves
 that preserve behavior while making the implementation dramatically simpler.
 
-This is the **FastAPI / Python instance** of the crucible method. The method (below) is identical
-across stacks; only the two **stack-specific** sections — *VSA for FastAPI* and *FastAPI layer* —
-differ. Siblings `crucible-nextjs` and `crucible-blazor` swap just those two.
+This is the **FastAPI / Python instance** of the crucible method. Across all variants the
+**byte-identical core** is the core prompt and the severity/reporting contract. Four pieces are
+**stack-tuned**: the two stack sections — *VSA for FastAPI* and *FastAPI layer* — the examples in
+the SOLID and structural-non-negotiables rules, and the brownfield clause's examples (the rules
+are shared everywhere; the examples speak this stack's language). Siblings: `crucible-blazor`,
+`crucible-nextjs`, `crucible-django`, `crucible-ml`.
 
 ---
 
-## The crucible method (identical in every stack variant)
+## The crucible method (shared across every stack variant)
 
 ### Core prompt
 
@@ -45,26 +48,28 @@ Judge SOLID by outcomes, not ceremony. Do **not** reward wrappers or one-impleme
 for their own sake — that collides with the anti-wrapper rule. Real SOLID reduces reasons-to-change
 and isolates what varies; fake SOLID just adds indirection.
 
-- **SRP** — one reason to change. A module doing data-fetching *and* rendering *and* mapping is the
-  smell; split along the seam, keep the pieces in the feature slice.
-- **OCP** — new cases arrive as new slices / handlers / strategies, not new `switch` arms grafted
-  onto a shared function.
-- **LSP** — a component/function must honor its contract; a variant that throws on valid props or
+- **SRP** — one reason to change. A route doing validation *and* business logic *and* response
+  shaping is the smell; split along the seam (schema, service, response model), keep the pieces in
+  the domain package.
+- **OCP** — new cases arrive as new services / dependencies / policies, not new `if/elif` arms
+  grafted onto a shared function.
+- **LSP** — a function/class must honor its contract; an override that raises on valid input or
   narrows an accepted type is the flag.
 - **ISP / DIP** — depend on abstractions **at the boundaries that actually vary** (data source,
-  external APIs, transport), not everywhere. A hook or interface with one implementation and no seam
-  of change is not DIP — it's indirection. Abstract the boundary; call concrete code inside the slice.
+  external APIs, transport), not everywhere. A class or Protocol with one implementation and no seam
+  of change is not DIP — it's indirection. Abstract the boundary; call concrete code inside the domain.
 
-### Structural non-negotiables (stack-neutral)
+### Structural non-negotiables (shared rules, stack-tuned examples)
 
 0. Prefer the solution that makes the code feel inevitable — delete whole branches/helpers/modes.
 1. Don't push a file from under ~400 to over ~400 lines without a strong reason — decompose first.
-   (React files bloat faster; the line is lower than a C# file's ~1k.)
+   (When a domain's `service.py` or `router.py` grows, split it into a package by sub-domain.)
 2. No random spaghetti growth — special cases earn their own abstraction.
 3. Bias toward cleaning the design, not accepting "it works."
 4. Prefer direct, boring code over magic.
-5. **Thin wrappers / one-implementation hooks** that add indirection without clarity are a smell.
-6. **`as any` / `as unknown as` / silent `catch`-and-default** papering over an unclear boundary is a smell.
+5. **Thin wrappers / one-implementation classes** that add indirection without clarity are a smell.
+6. **`cast()` / `type: ignore` / `Any` / silent `except`-and-default** papering over an unclear
+   boundary is a smell.
 
 ---
 
@@ -147,20 +152,21 @@ config/security or type boundary (then it's a blocker *on those grounds*, not on
 
 ---
 
-## Brownfield clause — repos mid-migration to feature slices
+## Brownfield clause — repos mid-migration to domain packages
 
-In a repo that did **not** start sliced (flat `components/`+`pages/`, or Pages Router being moved to
-App Router) and is being migrated incrementally:
+In a repo that did **not** start with domain packages (a flat `routers/` + `services/` + `crud/`
+layer-cake, or everything hanging off one `main.py`) and is being migrated incrementally:
 
 - The VSA blockers above apply to **new and modified features only**. Judge the diff, not the repo.
-- **Pre-existing flat/legacy code is legacy, not a regression** — flag it 🟡 as a *migration
-  candidate* ("this touched `components/OrderTable.tsx`; when you next own this, pull it into an
-  `orders` feature"), never 🔴.
-- The one hard rule that still bites: if the PR **grows** the legacy dumping ground for a *new*
-  feature (adds a new file to app-wide `components/` / `services/` for new work), that's a 🔴 —
-  new work goes in a slice even while the old core is still flat.
-- The server/client boundary blocker (secrets to the client) is **never** downgraded, brownfield or not.
-- Migration itself should be tracked as an Epic + per-slice sub-issues, not smuggled into feature PRs.
+- **Pre-existing layer-cake code is legacy, not a regression** — flag it 🟡 as a *migration
+  candidate* ("this touched `services/orders.py`; when you next own this, pull it into a
+  `src/orders/` domain package"), never 🔴.
+- The one hard rule that still bites: if the PR **grows** the legacy layer-cake for a *new*
+  feature (adds a new file to app-wide `routers/` / `services/` / `crud/` for new work), that's a
+  🔴 — new work goes in a domain package even while the old core is still layered.
+- The config/secret boundary blocker (import-time construction, secrets outside `BaseSettings`) is
+  **never** downgraded, brownfield or not.
+- Migration itself should be tracked as an Epic + per-domain sub-issues, not smuggled into feature PRs.
 
 ---
 

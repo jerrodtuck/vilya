@@ -9,13 +9,16 @@ Strict, **refactor-oriented** review of the current branch's changes. **Not a pa
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves
 that preserve behavior while making the implementation dramatically simpler.
 
-This is the **Blazor / .NET instance** of the crucible method. The method (below) is identical
-across stacks; only the two **stack-specific** sections — *VSA for .NET* and *Blazor UI layer* —
-differ. A sibling `crucible-nextjs` swaps just those two.
+This is the **Blazor / .NET instance** of the crucible method. Across all variants the
+**byte-identical core** is the core prompt and the severity/reporting contract. Four pieces are
+**stack-tuned**: the two stack sections — *VSA for .NET* and *Blazor UI layer* — the examples in
+the SOLID and structural-non-negotiables rules, and the brownfield clause's examples (the rules
+are shared everywhere; the examples speak this stack's language). Siblings: `crucible-nextjs`,
+`crucible-fastapi`, `crucible-django`, `crucible-ml`.
 
 ---
 
-## The crucible method (identical in every stack variant)
+## The crucible method (shared across every stack variant)
 
 ### Core prompt
 
@@ -55,7 +58,7 @@ isolates what varies; fake SOLID just adds indirection.
   external systems, transport), not everywhere. An interface with one implementation and no seam of
   change is not DIP — it's indirection. Abstract the boundary; call concrete types inside the slice.
 
-### Structural non-negotiables (stack-neutral)
+### Structural non-negotiables (shared rules, stack-tuned examples)
 
 0. Prefer the solution that makes the code feel inevitable — delete whole branches/helpers/modes.
 1. Don't push a file from under ~1k to over ~1k lines without a strong reason — decompose first.

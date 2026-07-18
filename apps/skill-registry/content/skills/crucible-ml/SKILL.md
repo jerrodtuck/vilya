@@ -9,13 +9,16 @@ Strict, **refactor-oriented** review of the current branch's changes. **Not a pa
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves
 that preserve behavior while making the implementation dramatically simpler.
 
-This is the **Python ML / data instance** of the crucible method. The method (below) is identical
-across stacks; only the two **stack-specific** sections — *VSA for Python/ML* and *ML/data layer* —
-differ. Siblings `crucible-nextjs` and `crucible-blazor` swap just those two.
+This is the **Python ML / data instance** of the crucible method. Across all variants the
+**byte-identical core** is the core prompt and the severity/reporting contract. Four pieces are
+**stack-tuned**: the two stack sections — *VSA for Python/ML* and *ML/data layer* — the examples
+in the SOLID and structural-non-negotiables rules, and the brownfield clause's examples (the rules
+are shared everywhere; the examples speak this stack's language). Siblings: `crucible-blazor`,
+`crucible-nextjs`, `crucible-fastapi`, `crucible-django`.
 
 ---
 
-## The crucible method (identical in every stack variant)
+## The crucible method (shared across every stack variant)
 
 ### Core prompt
 
@@ -45,26 +48,29 @@ Judge SOLID by outcomes, not ceremony. Do **not** reward wrappers or one-impleme
 for their own sake — that collides with the anti-wrapper rule. Real SOLID reduces reasons-to-change
 and isolates what varies; fake SOLID just adds indirection.
 
-- **SRP** — one reason to change. A module doing data-fetching *and* rendering *and* mapping is the
-  smell; split along the seam, keep the pieces in the feature slice.
-- **OCP** — new cases arrive as new slices / handlers / strategies, not new `switch` arms grafted
-  onto a shared function.
-- **LSP** — a component/function must honor its contract; a variant that throws on valid props or
+- **SRP** — one reason to change. A module doing data loading *and* feature transformation *and*
+  model IO is the smell; split along the seam, keep the pieces in the slice.
+- **OCP** — new cases arrive as new slices / pipeline steps / strategies, not new `if/elif` arms
+  grafted onto a shared function.
+- **LSP** — a function/class must honor its contract; an override that raises on valid input or
   narrows an accepted type is the flag.
 - **ISP / DIP** — depend on abstractions **at the boundaries that actually vary** (data source,
-  external APIs, transport), not everywhere. A hook or interface with one implementation and no seam
-  of change is not DIP — it's indirection. Abstract the boundary; call concrete code inside the slice.
+  model backend, external services), not everywhere. A class or Protocol with one implementation and
+  no seam of change is not DIP — it's indirection. Abstract the boundary; call concrete code inside
+  the slice.
 
-### Structural non-negotiables (stack-neutral)
+### Structural non-negotiables (shared rules, stack-tuned examples)
 
 0. Prefer the solution that makes the code feel inevitable — delete whole branches/helpers/modes.
 1. Don't push a file from under ~400 to over ~400 lines without a strong reason — decompose first.
-   (React files bloat faster; the line is lower than a C# file's ~1k.)
+   (When a slice module grows, split it into a subpackage by pipeline step — never into a god
+   `utils.py`.)
 2. No random spaghetti growth — special cases earn their own abstraction.
 3. Bias toward cleaning the design, not accepting "it works."
 4. Prefer direct, boring code over magic.
-5. **Thin wrappers / one-implementation hooks** that add indirection without clarity are a smell.
-6. **`as any` / `as unknown as` / silent `catch`-and-default** papering over an unclear boundary is a smell.
+5. **Thin wrappers / one-implementation classes** that add indirection without clarity are a smell.
+6. **`cast()` / `type: ignore` / `Any` / silent `except`-and-default** papering over an unclear
+   boundary is a smell.
 
 ---
 
