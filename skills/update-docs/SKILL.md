@@ -48,7 +48,7 @@ Owner, project number, and `area:*` labels: `docs/project-tracking/GITHUB-PROJEC
 | Velocity | Files | Dates |
 |---|---|---|
 | Slow-moving | `docs/specs/*.md`, `docs/design/*.md`, `docs/VISION.md` | On create: `Created: YYYY-MM-DD` + owning issue. On material revise: bump `Last updated: YYYY-MM-DD`. |
-| Append-only | `changelog.d/YYYY-MM-DD-<slug>.md`, `DECISIONS.md` | Changelog: dated filename. Decisions: newest-at-top `## YYYY-MM-DD — Title` (Choice / Why / Rejected / Follow-on). |
+| Append-only | `changelog.d/YYYY-MM-DD-<slug>.md`, `DECISIONS.md` | Changelog: dated filename. Decisions: newest-at-top `## YYYY-MM-DD — Title`; entry shape owned by [/adr](../adr/SKILL.md). |
 
 ### Reading `DECISIONS.md`
 
