@@ -36,7 +36,7 @@ vilya/
 ```
 
 See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live site:
-**https://vilya.jerrodtuck.com** (Overview · Flows · Skills · Setup · Night shift).
+**https://vilya.jerrodtuck.com** (Overview · Architect · Orchestrator · Skills · Setup · Night shift · Cursor vs Claude Code).
 
 ## The model
 
