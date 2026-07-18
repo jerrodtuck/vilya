@@ -1,5 +1,5 @@
 // Shared UI: copy-to-clipboard button (client leaf). Used by prompt-list.tsx
-// on every page with a prompt library (orchestrator, architect).
+// on every page with a prompt library (orchestrator, architect, overview).
 "use client";
 
 import { useRef, useState } from "react";
