@@ -18,8 +18,8 @@ const STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
         <code>area:*</code> labels — use <b>Regenerate GITHUB-PROJECTS.md</b>{" "}
         below (paste the old full copy or fill the short form; the output is
         the slim format). Process — chains, labels model, PR conventions,
-        night-shift — is <b>not</b> copied per repo: it lives once, in
-        Vilya&apos;s canonical file.
+        night-shift — is <b>not</b>{" "}
+        copied per repo: it lives once, in Vilya&apos;s canonical file.
       </>
     ),
   },
