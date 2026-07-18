@@ -50,21 +50,20 @@ foreach ($t in $targets) {
         }
         # Reparse point aimed elsewhere — Delete() removes only the link itself.
         $item.Delete()
-        New-Item -ItemType Junction -Path $dest -Target $srcPath | Out-Null
-        Write-Host "linked   $($s.Name) (replaced link, was -> $current)"
+        $status = "linked   $($s.Name) (replaced link, was -> $current)"
         $linked++
       } else {
         # Plain directory: a copy from the old copy mode. Remove it and link.
         Remove-Item -LiteralPath $dest -Recurse -Force
-        New-Item -ItemType Junction -Path $dest -Target $srcPath | Out-Null
-        Write-Host "migrated $($s.Name) (copy -> junction)"
+        $status = "migrated $($s.Name) (copy -> junction)"
         $migrated++
       }
     } else {
-      New-Item -ItemType Junction -Path $dest -Target $srcPath | Out-Null
-      Write-Host "linked   $($s.Name) -> $srcPath"
+      $status = "linked   $($s.Name) -> $srcPath"
       $linked++
     }
+    New-Item -ItemType Junction -Path $dest -Target $srcPath | Out-Null
+    Write-Host $status
   }
   Write-Host "entries in $t without a matching skills/<name> were left untouched."
 }

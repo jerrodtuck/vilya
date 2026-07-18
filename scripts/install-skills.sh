@@ -63,23 +63,22 @@ for t in "${targets[@]}"; do
         continue
       fi
       rm "$dest"
-      ln -s "$src_path" "$dest"
-      echo "linked   $name (replaced link, was -> $current)"
+      status="linked   $name (replaced link, was -> $current)"
       linked=$((linked + 1))
     elif [[ -e "$dest" ]]; then
       rm -rf "$dest"
-      ln -s "$src_path" "$dest"
-      echo "migrated $name (copy -> symlink)"
+      status="migrated $name (copy -> symlink)"
       migrated=$((migrated + 1))
     else
-      ln -s "$src_path" "$dest"
-      echo "linked   $name -> $src_path"
+      status="linked   $name -> $src_path"
       linked=$((linked + 1))
     fi
+    ln -s "$src_path" "$dest"
     if [[ ! -L "$dest" ]]; then
       echo "error: $dest is not a symlink — ln copied instead of linking (on Windows use scripts/install-skills.ps1)" >&2
       exit 1
     fi
+    echo "$status"
   done
   echo "entries in $t without a matching skills/<name> were left untouched."
 done
