@@ -17,6 +17,8 @@ are shared everywhere; the examples speak this stack's language). Siblings: `cru
 `crucible-nextjs`, `crucible-fastapi`, `crucible-ml`. The dialect canon here is the **HackSoft
 Django Styleguide** (apps as slices; services/selectors as the business-logic layers).
 
+**Method lineage:** the crucible method is inspired by Cursor's "thermonuclear code review" prompt.
+
 ---
 
 ## The crucible method (shared across every stack variant)

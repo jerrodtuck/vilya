@@ -16,6 +16,8 @@ examples in the SOLID and structural-non-negotiables rules, and the brownfield c
 (the rules are shared everywhere; the examples speak this stack's language). Siblings:
 `crucible-blazor`, `crucible-fastapi`, `crucible-django`, `crucible-ml`.
 
+**Method lineage:** the crucible method is inspired by Cursor's "thermonuclear code review" prompt.
+
 ---
 
 ## The crucible method (shared across every stack variant)

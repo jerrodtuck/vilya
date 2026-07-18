@@ -16,6 +16,8 @@ the SOLID and structural-non-negotiables rules, and the brownfield clause's exam
 are shared everywhere; the examples speak this stack's language). Siblings: `crucible-blazor`,
 `crucible-nextjs`, `crucible-django`, `crucible-ml`.
 
+**Method lineage:** the crucible method is inspired by Cursor's "thermonuclear code review" prompt.
+
 ---
 
 ## The crucible method (shared across every stack variant)
