@@ -166,7 +166,9 @@ export function OverviewView() {
         accent. Today that spans the frontend dialects (<b>Bulletproof React</b>{" "}
         · <b>VSA/Blazor</b>) and the backend/Python dialects (<b>FastAPI</b> ·{" "}
         <b>Django</b> · <b>ML</b>) — all enumerated live on the{" "}
-        <Link href="/skills">Skills page</Link>.
+        <Link href="/skills">Skills page</Link>. The method itself is inspired
+        by Cursor&apos;s &quot;thermonuclear code review&quot; prompt — credit
+        where the lineage runs.
       </div>
 
       <div className="pagefoot">
