@@ -70,22 +70,20 @@ const CHIP_STEPS: { text: React.ReactNode; sub?: React.ReactNode }[] = [
   {
     text: (
       <>
-        <b>Allow chip completion reports</b> — add the permission rule (the
-        exact string matters):
-        <pre style={{ margin: "6px 0 0" }}>
-          {`"permissions": { "allow": ["mcp__ccd_session_mgmt__send_message"] }`}
-        </pre>
+        <b>Know the report loop</b> — chip completion reports arrive as{" "}
+        <b>issue comments</b> via <code>gh</code> (already allowed in chips —
+        no prompt, attended or not), and the orchestrator picks them up with a{" "}
+        <b>monitor armed in the same turn as the dispatch</b>.
       </>
     ),
     sub: (
       <>
-        Recommended at the <b>user level</b> (
-        <code>~/.claude/settings.json</code>) — one edit covers every repo and
-        every chip. Alternative: repo{" "}
-        <code>.claude/settings.local.json</code>, which chips inherit only via
-        a <code>.worktreeinclude</code> entry. Without this rule, unattended
-        chips <b>silently cannot report</b> — the <code>send_message</code>{" "}
-        call prompts for approval with nobody there to approve it.
+        There is no permission rule to add:{" "}
+        <code>mcp__ccd_session_mgmt__send_message</code>{" "}
+        <b>always prompts for confirmation by product contract</b> — an allow
+        rule does not silence it (directly tested twice). It exists for
+        attended cross-session handoffs, one approval click each — never an
+        unattended report channel.
       </>
     ),
   },
@@ -289,9 +287,10 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
 
       <h2>Background sessions (chips) — one-time setup</h2>
       <p className="muted">
-        Three switches, set once, make the chip lifecycle run unattended
-        (Claude Code Desktop only): completion reports flow, worktrees release
-        on merge, and cleanup collapses to a quick periodic prune.
+        One contract to know and two switches, set once, make the chip
+        lifecycle run unattended (Claude Code Desktop only): completion
+        reports land as issue comments, worktrees release on merge, and
+        cleanup collapses to a quick periodic prune.
       </p>
       <Steps steps={CHIP_STEPS} />
 
