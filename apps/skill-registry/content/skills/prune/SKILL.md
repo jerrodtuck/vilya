@@ -32,6 +32,12 @@ Parallel / Best-of-N pools. **Cursor Archive** and **Claude "delete session"** d
 reliably remove chip folders — after squash-merge, the worktrees plus their local
 `feat|fix|docs/<issue#>-*` or `claude/*` branches pile up until you prune.
 
+**Cadence:** with **Auto-archive on PR close** enabled (Claude Code Desktop), a merged
+chip's session archives itself — the process stops and the checkout detaches without you.
+What remains is only folders + local branches, so the intended rhythm is a **periodic
+`--apply` after a merge batch**, not per-merge ceremony. The session-liveness gate (gate 3)
+keeps this safe regardless of timing.
+
 ## 0. Where to run
 
 - **Always from the main clone** (or any checkout that is *not* the worktree you are
