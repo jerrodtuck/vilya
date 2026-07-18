@@ -1,5 +1,5 @@
-// Shared UI: the interactive flow map (client component). State: which flow
-// is lit, which node is selected. All content — nodes, flows, geometry,
+// Shared UI: the interactive flow map (client component). State: which
+// flow(s) are lit, which node is selected. All content — nodes, flows, geometry,
 // prompts, the default drawer — comes in as props from the feature slice's
 // own data modules (orchestrator/data.ts + map-geometry.ts, architect's
 // equivalents, …), so this component owns no domain knowledge of its own.
@@ -57,12 +57,28 @@ export function FlowMap({
   ariaLabel,
   aside,
 }: FlowMapProps) {
-  const [flow, setFlow] = useState<string>("everything");
+  // Chip clicks select one flow; node clicks select every flow passing
+  // through that node (#183) — so the active selection is a list. When it
+  // contains "everything" (null nodes/edges), nothing is lit or faded.
+  const [activeFlowIds, setActiveFlowIds] = useState<string[]>(["everything"]);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const active = flows[flow];
-  const litNodes = active.nodes ? new Set(active.nodes) : null;
-  const litEdges = active.edges ? new Set(active.edges) : null;
+  const activeDefs = activeFlowIds.map((id) => flows[id]);
+  const showAll = activeDefs.some((f) => !f.nodes);
+  const litNodes = showAll
+    ? null
+    : new Set(activeDefs.flatMap((f) => f.nodes ?? []));
+  const litEdges = showAll
+    ? null
+    : new Set(activeDefs.flatMap((f) => f.edges ?? []));
+
+  const selectNode = (id: string) => {
+    setSelected(id);
+    const containing = Object.keys(flows).filter((fid) =>
+      flows[fid].nodes?.includes(id),
+    );
+    if (containing.length > 0) setActiveFlowIds(containing);
+  };
 
   const edgeClass = (id: string, colorClass: string, dashed?: boolean) => {
     const parts = ["edge", colorClass];
@@ -89,23 +105,32 @@ export function FlowMap({
           <button
             type="button"
             key={id}
-            className={`chip${id === "everything" ? " all" : ""}${flow === id ? " active" : ""}`}
+            className={`chip${id === "everything" ? " all" : ""}${activeFlowIds.includes(id) ? " active" : ""}`}
             style={
               id === "everything"
                 ? undefined
                 : { color: `var(${flowColors[id]})` }
             }
-            onClick={() => setFlow(id)}
+            onClick={() => setActiveFlowIds([id])}
           >
             <span className="dot" />
             {f.label}
           </button>
         ))}
       </div>
-      <div
-        className="flowdesc"
-        dangerouslySetInnerHTML={{ __html: active.descHtml }}
-      />
+      {activeDefs.length === 1 ? (
+        <div
+          className="flowdesc"
+          dangerouslySetInnerHTML={{ __html: activeDefs[0].descHtml }}
+        />
+      ) : (
+        <div className="flowdesc">
+          <b>{nodeGeoms.find((n) => n.id === selected)?.title ?? "This step"}</b>{" "}
+          sits in {activeDefs.length} flows —{" "}
+          {activeDefs.map((f) => f.label).join(", ")}. Each flow&apos;s arrows
+          are lit in its own color.
+        </div>
+      )}
 
       <div className="stage">
         <svg viewBox={viewBox} role="img" aria-label={ariaLabel}>
@@ -159,11 +184,11 @@ export function FlowMap({
               className={nodeClass(n.id)}
               tabIndex={0}
               style={{ ["--c" as string]: `var(${nodes[n.id].c})` }}
-              onClick={() => setSelected(n.id)}
+              onClick={() => selectNode(n.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  setSelected(n.id);
+                  selectNode(n.id);
                 }
               }}
             >
