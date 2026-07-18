@@ -1,6 +1,7 @@
 // Feature slice: overview — the methodology's front door (server component).
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
+import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
   return (
@@ -12,12 +13,30 @@ export function OverviewView() {
       <p className="mono-kicker">01 · system</p>
       <p className="lead">
         <b>Vilya is the Dev Loop</b> — the skills, board, and night-shift that
-        turn you into the orchestrator across every product repo. You point them
-        by day, decide at the forks, and keep the board honest. Night-shift runs
-        that <b>same</b> chain unattended. One{" "}
+        turn you into the <b>architect</b> who sets direction and the{" "}
+        <b>orchestrator</b> who dispatches it, across every product repo. You
+        point them by day, decide at the forks, and keep the board honest.
+        Night-shift runs that <b>same</b> chain unattended. One{" "}
         <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
         speak the same skills.
       </p>
+
+      <div className="rolestrip" aria-label="Role order">
+        <span className="rolechip" style={{ ["--rc" as string]: "var(--arch)" }}>
+          <b>Architect</b>
+          <span>direction: issues · ADRs · specs</span>
+        </span>
+        <span className="arrow">→</span>
+        <span className="rolechip" style={{ ["--rc" as string]: "var(--orch)" }}>
+          <b>Orchestrator</b>
+          <span>dispatch: chips · board · merges</span>
+        </span>
+        <span className="arrow">→</span>
+        <span className="rolechip" style={{ ["--rc" as string]: "var(--start)" }}>
+          <b>The chain</b>
+          <span>daytime loop, below</span>
+        </span>
+      </div>
 
       <div className="chipstrip" aria-label="Daytime chain">
         <span className="lchip s">/start-feature</span>
@@ -48,7 +67,18 @@ export function OverviewView() {
         }
       />
 
+      <CardinalityDiagram />
+
       <div className="cards">
+        <Link className="card" href="/architect">
+          <h3>Architect</h3>
+          <p className="desc">
+            Decides and documents — direction, ADRs, specs. Recalls
+            what&apos;s been tried, grounds every claim, and stops at every
+            fork with a stated recommendation.
+          </p>
+          <span className="more">Open the architect map →</span>
+        </Link>
         <Link className="card" href="/orchestrator">
           <h3>Orchestrator</h3>
           <p className="desc">

@@ -65,18 +65,27 @@ export function ArchitectView() {
                 <b>One architect, N repos</b>
                 <span>
                   State is documents and boards — VISION, ADRs, specs, issues.
-                  Read-only toward code, write-only toward docs/board, so
-                  nothing collides across repos. Direction only works if
-                  it&apos;s coherent across products.
+                  No branches, no worktrees, no merge state: read-only toward
+                  code, write-only toward docs/board, so nothing collides
+                  across repos. And direction only works if it&apos;s
+                  coherent <i>across</i>{" "}
+                  products — splitting the role
+                  per-repo would fragment the one thing it exists to keep
+                  whole, so it stays one seat spanning every repo.
                 </span>
               </div>
               <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
                 <b>One orchestrator, one repo</b>
                 <span>
-                  The orchestrator is the repo&apos;s dispatch lock —
-                  worktrees, monitors, the merge queue, all repo-local. Two
-                  orchestrators on one repo means two writers to the same
-                  main clone.
+                  The orchestrator <i>is</i>{" "}
+                  the repo&apos;s dispatch lock —
+                  it sits on the main clone&apos;s default branch and owns
+                  worktree lifecycle, monitors, and the merge queue, all
+                  repo-local. Two orchestrators on one repo means two writers
+                  to the same main clone and board state (the cross-edit
+                  collision this canon already guards against). And it
+                  doesn&apos;t span repos, for the same reason it can&apos;t
+                  fork within one: all of that state is repo-local.
                 </span>
               </div>
             </div>
