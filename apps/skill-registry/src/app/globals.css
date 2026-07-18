@@ -66,11 +66,13 @@ a { color: var(--orch); text-decoration: none; }
   margin: 0 auto;
   padding: 1.5rem var(--page-px) 5rem;
 }
-/* Prose keeps today's max measure (52rem content at the 64rem shell) even when
-   the shell widens — only grids/cards/tables/maps use the extra room. */
+/* Prose stays capped when the shell widens so line lengths stay readable —
+   60rem: a touch wider than the 52rem content width of the 64rem shell, so
+   text-heavy sections don't leave a large empty right margin next to the
+   full-width grids/cards/tables/maps. */
 @media (min-width: 1440px) {
   .md p, .md ul, .md ol, .md blockquote,
-  p.muted, .pane p, .setupsteps { max-width: 52rem; }
+  p.muted, .pane p, .setupsteps { max-width: 60rem; }
 }
 
 .sitenav-bar {

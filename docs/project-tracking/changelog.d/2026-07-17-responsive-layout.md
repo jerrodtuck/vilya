@@ -8,7 +8,7 @@ maps stop shrinking below tablet width and scroll inside their own stage;
 markdown tables scroll in their own container; long inline-code tokens
 wrap. The page body never scrolls horizontally at any checked width
 (375/768/1280/2000px on every page). Wide screens: the content shell
-grows fluidly past 1440px (64rem → 80rem by ~2030px) while prose stays
-capped at today's measure — only grids, cards, tables, and the maps use
-the extra room. The nav label is standardized on the page's own name:
+grows fluidly past 1440px (64rem → 80rem by ~2030px) while prose is
+capped at a readable 60rem — grids, cards, tables, and the maps use the
+full extra room. The nav label is standardized on the page's own name:
 "Cursor vs Claude Code" in nav, h1, and tab title.
