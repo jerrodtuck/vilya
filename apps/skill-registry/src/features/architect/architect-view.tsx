@@ -62,16 +62,18 @@ export function ArchitectView() {
             <h3>Cardinality</h3>
             <div className="modes" style={{ marginTop: 12 }}>
               <div className="mode" style={{ ["--m" as string]: "var(--arch)" }}>
-                <b>One architect, N repos</b>
+                <b>One architect, one product board</b>
                 <span>
-                  State is documents and boards — VISION, ADRs, specs, issues.
-                  No branches, no worktrees, no merge state: read-only toward
-                  code, write-only toward docs/board, so nothing collides
-                  across repos. And direction only works if it&apos;s
-                  coherent <i>across</i>{" "}
-                  products — splitting the role
-                  per-repo would fragment the one thing it exists to keep
-                  whole, so it stays one seat spanning every repo.
+                  State is the product&apos;s board and its direction
+                  documents — VISION, ADRs, specs, issues. No branches, no
+                  worktrees, no merge state — and a product may span several
+                  repos, so the one seat spans <i>that product&apos;s</i>{" "}
+                  repos with nothing to collide. It does not span products:
+                  direction context is deep and product-local, and what{" "}
+                  <i>is</i>{" "}
+                  shared across products — the process itself — is the Dev
+                  Loop system&apos;s job, not any seat&apos;s. Another product
+                  board means another architect.
                 </span>
               </div>
               <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>

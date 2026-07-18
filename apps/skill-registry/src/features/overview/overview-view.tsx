@@ -16,8 +16,9 @@ export function OverviewView() {
       <p className="lead">
         <b>Vilya is the Dev Loop</b> — the skills, board, and night-shift that
         turn you into the <b>architect</b> who sets direction and the{" "}
-        <b>orchestrator</b> who dispatches it, across every product repo. You
-        point them by day, decide at the forks, and keep the board honest.
+        <b>orchestrator</b> who dispatches it: one architect seat per product
+        board, one orchestrator per repo. You point them by day, decide at the
+        forks, and keep the board honest.
         Night-shift runs that <b>same</b> chain unattended. One{" "}
         <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
         speak the same skills.
