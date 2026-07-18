@@ -145,14 +145,19 @@ inline by `/start-feature` and `/finish-feature`.
 
 ```text
 /start-feature (plan, orchestrator) → chip dispatch (spawn_task, brief carries the issue, verify
-routing, crucible gate; orchestrator arms a monitor same turn) → chip implements →
-/crucible-<stack> → /finish-feature (PR) → completion comment on the issue (gh); orchestrator
-monitor picks it up → operator /merge-pr → auto-archive on PR close → periodic /prune --apply
+routing, crucible gate; orchestrator same turn: arms a Monitor-tool monitor + moves the issue to
+In Progress) → chip implements → /crucible-<stack> → /finish-feature (PR) → completion comment
+on the issue (gh); orchestrator monitor picks it up → operator /merge-pr → auto-archive on PR
+close → periodic /prune --apply
 ```
 
 Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
 (`gh` — no prompt, attended or not); the orchestrator's dispatch monitor picks it up (loop
-documented on the site's Setup page and in `/chip`).
+documented on the site's Setup page and in `/chip`). Dispatch carries **two same-turn
+obligations**: arm the monitor — the **Monitor tool**, never a background shell loop, which
+detects but cannot notify — and move the issue to **In Progress** on the board, since GitHub's
+built-in workflows only cover added→Todo and closed/merged→Done. The orchestrator cards carry
+the full wording.
 
 ### Shared files / worktrees
 
