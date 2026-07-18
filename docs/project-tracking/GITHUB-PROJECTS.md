@@ -116,14 +116,16 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 - Done-done at merge (`tests-only` / `local-smoke`): `Closes #<issue>`
 - Live retest owed (`live-only`): `Refs #<issue>` → move to Verifying after merge
 - **Merge method: squash, always** — one issue = one commit on the default branch;
-  `gh pr merge <n> --squash --delete-branch`. The operator merges via `/merge-pr`; agents never do.
+  `gh pr merge <n> --squash`. Remote branch removal is the repo's `delete_branch_on_merge`
+  setting; local branch + worktree cleanup is `/prune`'s job, never merge-time. The operator
+  merges via `/merge-pr`; agents never do.
 
 ## Process
 
 ### Daytime chain (primary)
 
 New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
-(`feat|fix|docs/<issue#>-slug`).
+(`feat|fix|docs/<issue#>-slug` for single-session daytime work; `claude/*` for chips).
 
 ```text
 /start-feature → implement → /crucible-<stack> → remediate → /finish-feature → /merge-pr → Done
@@ -132,6 +134,18 @@ New work = GitHub issue, never a new markdown tracker file. One issue = one bran
 `/update-docs` is a **routing** skill (manual / mid-work: “where does this go?”, log a decision,
 capture a bug). It is **not** stepped by the happy path. Specs and changelog fragments are written
 inline by `/start-feature` and `/finish-feature`.
+
+### Chip chain (dispatched)
+
+```text
+/start-feature (plan, orchestrator) → chip dispatch (spawn_task, brief carries the issue, verify
+routing, crucible gate, session id) → chip implements → /crucible-<stack> → /finish-feature (PR)
+→ send_message completion report to the orchestrator → operator /merge-pr → auto-archive on PR
+close → periodic /prune --apply
+```
+
+Chips never merge, never spawn sessions, and report via `mcp__ccd_session_mgmt__send_message`
+(permission + one-time setup documented on the site's Setup page and in `/chip`).
 
 ### Shared files / worktrees
 
