@@ -347,6 +347,38 @@ pre {
 .card h3 { margin: 0 0 5px; font-size: 15px; color: var(--text); font-weight: 600; letter-spacing: -0.01em; }
 .card .more { display: inline-block; margin-top: 9px; font-size: 12.5px; font-weight: 600; color: var(--orch); }
 
+/* role strip (#135) — same pill+arrow idiom as .chipstrip/.lchip, two-line
+   pills so each role carries a short blurb. */
+.rolestrip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 20px 0 4px; }
+.rolechip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--rc, var(--orch));
+  background: hsl(var(--card) / 0.5);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+}
+.rolechip b { font-size: 12.5px; font-weight: 700; color: var(--text); font-family: var(--font-geist-mono), ui-monospace, monospace; }
+.rolechip span { font-size: 11px; color: var(--muted); }
+
+/* cardinality diagram (#135) — small static SVG illustration, same node/edge
+   idiom as the interactive flow map (.nbox/.ntitle/.nrole/.elabel/.edge) but
+   non-interactive. Own scroll container so it never forces body h-scroll on
+   narrow viewports. */
+.card-diagram {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: radial-gradient(1200px 400px at 20% -10%, #1a2030, #0f131b);
+  overflow-x: auto;
+  padding: 4px;
+}
+.card-diagram svg { width: 100%; height: auto; display: block; }
+@media (max-width: 640px) {
+  .card-diagram svg { min-width: 30rem; }
+}
+
 /* ---------- site: orchestrator ---------- */
 h1 .you { color: var(--orch); }
 .setupbtn { border: 1px solid var(--border); background: hsl(var(--card) / 0.5); color: var(--text); font-weight: 600; font-size: 13px; padding: 9px 15px; border-radius: var(--radius); cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
