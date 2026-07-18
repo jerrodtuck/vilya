@@ -85,6 +85,10 @@ Sync the standard Type/Priority/Status labels into a new repo:
 bash docs/project-tracking/scripts/sync-labels.sh <owner>/<repo>
 ```
 
+The script syncs the **standard set only** (`type:*`, `priority:*`, `auto:ready`,
+`needs:decision`); `area:*` labels are repo-specific — create them from the repo's config
+file's Area labels section.
+
 ### Creating an issue (two commands)
 
 ```bash
