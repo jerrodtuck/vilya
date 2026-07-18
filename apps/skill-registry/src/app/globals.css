@@ -554,7 +554,10 @@ h1 .you { color: var(--orch); }
 .prompt { position: relative; border: 1px solid var(--border); background: #0f1319; border-radius: 9px; padding: 9px 60px 9px 12px; margin: 8px 0; }
 .prompt .plead { display: block; font-size: 10.5px; color: var(--faint); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
 .prompt .ptext { display: block; font-size: 12.5px; line-height: 1.5; color: #cdd4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-line; overflow-wrap: anywhere; }
-.copybtn { position: absolute; top: 8px; right: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); border-radius: 6px; font-size: 11px; font-weight: 600; padding: 3px 8px; cursor: pointer; transition: .15s; font-family: inherit; }
+/* No transition on .copybtn: the shorthand (property: all) pins the .done
+   color feedback in frame-throttled panes — same mechanism as the flow-map
+   fix (#155); the "Copied" text swap is DOM-driven and unaffected (#165). */
+.copybtn { position: absolute; top: 8px; right: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); border-radius: 6px; font-size: 11px; font-weight: 600; padding: 3px 8px; cursor: pointer; font-family: inherit; }
 .copybtn:hover { color: var(--text); border-color: #48546a; }
 .copybtn.done { color: var(--finish); border-color: #2b4f3c; }
 .lib { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
@@ -574,7 +577,9 @@ h1 .you { color: var(--orch); }
 .lvl h3 { margin: 0 0 6px; font-size: 14px; color: var(--text); }
 .lvl p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
 .toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 8px 0 6px; }
-.toggle button { background: var(--surface); color: var(--muted); border: 0; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; transition: .15s; font-family: inherit; }
+/* No transition on .toggle button: .on state colors would pin in
+   frame-throttled panes — same mechanism as #155 (#165). */
+.toggle button { background: var(--surface); color: var(--muted); border: 0; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .toggle button.on { background: var(--surface2); color: var(--text); }
 .pane p { color: var(--muted); font-size: 14px; line-height: 1.6; }
 .setupsteps { margin-top: 6px; }
