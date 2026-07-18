@@ -9,15 +9,17 @@ Strict, **refactor-oriented** review of the current branch's changes. **Not a pa
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves
 that preserve behavior while making the implementation dramatically simpler.
 
-This is the **Django / Python instance** of the crucible method. The method (below) is
-identical across stacks; only the two **stack-specific** sections — *VSA for Django* and *Django
-layer* — differ. Siblings `crucible-nextjs` and `crucible-blazor` swap just those two. The dialect
-canon here is the **HackSoft Django Styleguide** (apps as slices; services/selectors as the
-business-logic layers).
+This is the **Django / Python instance** of the crucible method. Across all variants the
+**byte-identical core** is the core prompt and the severity/reporting contract. Four pieces are
+**stack-tuned**: the two stack sections — *VSA for Django* and *Django layer* — the examples in
+the SOLID and structural-non-negotiables rules, and the brownfield clause's examples (the rules
+are shared everywhere; the examples speak this stack's language). Siblings: `crucible-blazor`,
+`crucible-nextjs`, `crucible-fastapi`, `crucible-ml`. The dialect canon here is the **HackSoft
+Django Styleguide** (apps as slices; services/selectors as the business-logic layers).
 
 ---
 
-## The crucible method (identical in every stack variant)
+## The crucible method (shared across every stack variant)
 
 ### Core prompt
 
@@ -58,7 +60,7 @@ and isolates what varies; fake SOLID just adds indirection.
   external APIs, transport), not everywhere. A class or Protocol with one implementation and no seam
   of change is not DIP — it's indirection. Abstract the boundary; call concrete code inside the app.
 
-### Structural non-negotiables (stack-neutral)
+### Structural non-negotiables (shared rules, stack-tuned examples)
 
 0. Prefer the solution that makes the code feel inevitable — delete whole branches/helpers/modes.
 1. Don't push a file from under ~400 to over ~400 lines without a strong reason — decompose first.
