@@ -442,7 +442,7 @@ h1 .you { color: var(--orch); }
 .chip.all { color: var(--orch); }
 .flowdesc { min-height: 20px; color: var(--muted); font-size: 13.5px; margin: 8px 2px 4px; line-height: 1.5; }
 .flowdesc b { color: var(--text); }
-.stage { border: 1px solid var(--border); border-radius: 16px; background: radial-gradient(1200px 400px at 20% -10%, #1a2030, #0f131b); overflow: hidden; overflow-x: auto; margin-top: 6px; }
+.stage { border: 1px solid var(--border); border-radius: 16px; background: radial-gradient(1200px 400px at 20% -10%, #1a2030, #0f131b); overflow: auto hidden; margin-top: 6px; }
 .stage svg { width: 100%; height: auto; display: block; }
 /* Below tablet width the map stops shrinking (labels would be illegible) and
    scrolls inside the stage instead. */
