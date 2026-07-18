@@ -149,7 +149,7 @@ function Steps({
 }
 
 export function SetupView() {
-  const templateMarkdown = loadGithubProjectsTemplate();
+  const canonMarkdown = loadGithubProjectsTemplate();
 
   return (
     <>
@@ -203,7 +203,7 @@ export function SetupView() {
       <Steps steps={STEPS} />
 
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
-      <GithubProjectsTool canonMarkdown={templateMarkdown} />
+      <GithubProjectsTool canonMarkdown={canonMarkdown} />
 
       <h2>Grab skills straight from this site</h2>
       <p className="muted">

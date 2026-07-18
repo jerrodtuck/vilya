@@ -154,11 +154,6 @@ export function GithubProjectsTool({
       setOverrideValue(key, e.target.value);
     };
 
-  const download = () => {
-    if (!generated) return;
-    downloadMarkdown(generated, "GITHUB-PROJECTS.md");
-  };
-
   return (
     <div className="gptool">
       <p className="muted" style={{ lineHeight: 1.55, marginTop: 0 }}>
@@ -284,7 +279,11 @@ export function GithubProjectsTool({
           Generated file
         </h3>
         <CopyGenerated text={generated} />
-        <button type="button" className="setupbtn" onClick={download}>
+        <button
+          type="button"
+          className="setupbtn"
+          onClick={() => downloadMarkdown(generated, "GITHUB-PROJECTS.md")}
+        >
           Download
         </button>
       </div>
