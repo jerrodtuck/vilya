@@ -17,8 +17,10 @@ export function SkillsReference() {
           <h3>◆ User level (every canonical skill)</h3>
           <ul>
             <li>
-              Installed <b>once</b> by <code>scripts/install-skills</code> into{" "}
+              Linked <b>once per machine</b> by{" "}
+              <code>scripts/install-skills</code> into{" "}
               <code>~/.claude/skills/</code> — the single install root
+              (junction/symlink per skill, not a copy)
             </li>
             <li>
               Cursor discovers the same directory through its compatibility
@@ -28,7 +30,8 @@ export function SkillsReference() {
             <li>Shared by every project on the machine</li>
             <li>
               Update in one place — the repo&apos;s <code>skills/</code> is the
-              source of truth; re-run the script to sync
+              source of truth; merged changes are live on <code>git pull</code>,
+              nothing to re-run
             </li>
           </ul>
         </div>

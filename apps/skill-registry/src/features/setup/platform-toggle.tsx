@@ -28,13 +28,18 @@ export function PlatformToggle() {
       {tool === "cc" ? (
         <div className="pane on">
           <p>
-            Run the sync script from the repo root — it installs every skill to
-            your user-level directory:
+            Run the install script <b>once per machine</b> — it links every
+            skill into your user-level directory (junctions on Windows,
+            symlinks elsewhere), so skill merges are live on{" "}
+            <code>git pull</code> with nothing to re-run. Re-run only if the
+            repo moves on disk.
           </p>
           <pre>{`pwsh scripts/install-skills.ps1        # Windows (or plain PowerShell)
 bash scripts/install-skills.sh         # macOS / Linux / Git Bash`}</pre>
           <p>
-            Skills land in <code>~/.claude/skills/&lt;skill-name&gt;/SKILL.md</code>{" "}
+            Skills appear as{" "}
+            <code>~/.claude/skills/&lt;skill-name&gt;</code> →{" "}
+            <code>&lt;repo&gt;/skills/&lt;skill-name&gt;</code>{" "}
             (user level, all projects). A repo that needs its own variant can
             override at <code>.claude/skills/</code> — project-level skills win
             over user-level ones by name. Claude Code reads the shared

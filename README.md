@@ -24,8 +24,8 @@ vilya/
 │   └── skill-registry/         # Next.js (VSA) app — The Dev Loop site + registry
 ├── docs/project-tracking/      # GITHUB-PROJECTS.md — per-repo config + shared process
 └── scripts/
-    ├── install-skills.sh       # sync skills → ~/.claude/skills (Cursor reads it too)
-    └── install-skills.ps1      # (Windows)
+    ├── install-skills.sh       # link skills → ~/.claude/skills (Cursor reads it too)
+    └── install-skills.ps1      # (Windows: junctions, no admin)
 ```
 
 See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live site:
@@ -33,9 +33,11 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live si
 
 ## The model
 
-- **Skills are user-level** — install once (`scripts/install-skills.*`) to
-  `~/.claude/skills`; Cursor scans that directory as a compatibility root, so
-  the same `SKILL.md` runs in both tools from one install. (A second copy in
+- **Skills are user-level** — link once per machine (`scripts/install-skills.*`):
+  each `~/.claude/skills/<name>` is a junction/symlink to the repo's
+  `skills/<name>`, so skill merges are live on `git pull` with nothing to
+  re-run. Cursor scans that directory as a compatibility root, so the same
+  `SKILL.md` runs in both tools from one install. (A second install root in
   `~/.cursor/skills` would double-list skills in Cursor — `--include-cursor`
   exists only for old Cursor builds.)
 - **Per-repo config is the only thing that varies** — each product you run the
