@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
 
+## 2026-07-18 — Architect cardinality: one architect per product board; one orchestrator per repo (#148)
+
+**Decision:** One architect seat per **product board**, spanning that product's repos and no other product's; exactly one orchestrator per **repo**. The "one architect, all repos" rule shipped by the #132/#133/#135 copy is overruled (decided by the operator in the architect session, 2026-07-18).
+
+**Options considered:**
+1. One global architect across all products (the shipped copy) — cost: direction context is deep and product-local, and the architect's own working state (VISION, DECISIONS, specs, the board) is repo/board-local — the same state-locality argument that pins the orchestrator to one repo.
+2. **One architect per product board, spanning that product's repos** — cost: a copy fix across the site plus this entry; preserves #132's original "spans multiple repos" intent (a product may span repos) while fixing the overreach ← chosen
+3. Per-repo architect — cost: fragments direction within a product, the one thing the seat exists to keep whole.
+
+**Why:** The original rule conflated process coherence across products (Vilya-the-system's job — canon + skills) with direction coherence (product-local). Live evidence: `architect-anduin` runs correctly as a separate product's seat. Partially supersedes `2026-07-18 — Architect flow epic (#132)`: its Fork C deliverables (home cardinality panel + Architect-page aside) shipped the overreaching copy this decision corrects.
+
+**Consequences:** Site copy fix on the #148 branch (Architect aside, home cardinality diagram + lead, Product Architect card ¶1, cardinality sentence appended to both orchestrator role cards); VISION.md v2 (#142) already carries the corrected rule — v2 landed, not v1; this entry rides the fix branch per one-writer.
+
+**Evidence:** #148 issue body (the ADR mirror, issue-first — recorded there by the operator before this append, so no re-mirror comment) and its two authored-copy comments; VISION v2 via PR #149 (`e609489`); overruled copy via PRs #138 (`ebc34f8`) / #139 (`ec4b10f`).
+
 ## 2026-07-18 — Architect flow epic (#132): orchestrator route, shared FlowMap, cardinality story, serial dispatch
 
 **Decision:** All three fork recommendations approved as stated, plus a sequencing amendment: rename `/flows` → `/orchestrator` with a permanent redirect (Fork A → 2), generalize `FlowsMap` into a props-driven shared component (Fork B → 2), cardinality statement + diagram on home with the full why on the Architect page's aside (Fork C → 2), and dispatch the sub-issues serially **#134 → #133 → #135** (decided by the operator, 2026-07-18).
