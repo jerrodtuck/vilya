@@ -1,32 +1,9 @@
 // Feature slice: orchestrator — SVG geometry for the orchestration map.
-// Pure view data: edge paths, node boxes, labels. Interaction lives in
-// flows-map.tsx; flow/node semantics live in data.ts.
+// Pure view data: edge paths, node boxes, labels. Interaction lives in the
+// shared map (src/shared/ui/flow-map.tsx); flow/node semantics live in
+// data.ts; types live in src/shared/ui/flow-map-types.ts.
 
-export interface EdgeGeom {
-  id: string;
-  d: string;
-  colorClass: string;
-  dashed?: boolean;
-}
-
-export interface EdgeLabel {
-  x: number;
-  y: number;
-  text: string;
-}
-
-export interface NodeGeom {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  rx: number;
-  title: string;
-  role: string;
-  dot?: boolean;
-  smallTitle?: boolean;
-}
+import type { EdgeGeom, EdgeLabel, LensGeom, NodeGeom } from "@/shared/ui/flow-map-types";
 
 export const EDGES: EdgeGeom[] = [
   // main pipeline
@@ -84,7 +61,7 @@ export const NODE_GEOMS: NodeGeom[] = [
 ];
 
 /** Review-lens decoration over the REVIEW node. */
-export const LENSES = [
+export const LENSES: LensGeom[] = [
   { x: 584, y: 86, w: 52, tx: 610, ty: 98, text: "VSA" },
   { x: 640, y: 86, w: 56, tx: 668, ty: 98, text: "SOLID" },
   { x: 584, y: 66, w: 52, tx: 610, ty: 78, text: "Stack" },

@@ -1,22 +1,10 @@
 // Feature slice: orchestrator — node and flow definitions for the orchestration map.
 // Node bodies are trusted, hand-authored HTML (same posture as the markdown
-// pipeline in skill-detail).
+// pipeline in skill-detail). Types live in the shared flow-map component
+// (src/shared/ui/flow-map-types.ts) since architect's data module conforms
+// to the same shapes.
 
-export interface FlowNode {
-  kicker: string;
-  title: string;
-  /** CSS custom property for the node's accent color. */
-  c: string;
-  bodyHtml: string;
-}
-
-export interface FlowDef {
-  label: string;
-  descHtml: string;
-  /** null = "everything": nothing faded, nothing lit. */
-  nodes: string[] | null;
-  edges: string[] | null;
-}
+import type { FlowDef, FlowNode } from "@/shared/ui/flow-map-types";
 
 export const NODES: Record<string, FlowNode> = {
   ORCH: {
@@ -244,4 +232,23 @@ export const FLOW_COLORS: Record<string, string> = {
   verify: "--verify",
   epic: "--epic",
   nightshift: "--orch",
+};
+
+/** Drawer content shown before any node is selected. */
+export const DEFAULT_DRAWER: FlowNode = {
+  kicker: "The orchestrator",
+  title: "You point, the skills execute",
+  c: "--orch",
+  bodyHtml: `
+    <p>Pick any node in the map to see what that skill does, when you invoke it, and what it reads from the repo config. The whole ecosystem is designed so that <b>you make the decisions and the skills carry the mechanics.</b></p>
+    <h4><span class="swatch" style="background:var(--start)"></span>The linear spine</h4>
+    <ul>
+      <li><code>/start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/finish-feature</code> → <code>/merge-pr</code> → Done.</li>
+      <li>Everything writes status to the <b>board</b> — that's your single source of truth.</li>
+    </ul>
+    <h4><span class="swatch" style="background:var(--review)"></span>The engine: review ↔ refactor</h4>
+    <ul>
+      <li>The review no longer passes/fails — it returns ranked refactors + a readiness signal.</li>
+      <li>You loop review → apply top refactors → re-review until it reads <b>Ready</b>, then hand to finish.</li>
+    </ul>`,
 };
