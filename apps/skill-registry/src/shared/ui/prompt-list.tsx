@@ -1,6 +1,7 @@
 // Shared UI: renders a prompt group's body: intro line, prompt items with
 // copy buttons, caveat note. Server-safe: only the CopyButton leaf is
-// client. Used by every page with a prompt library (orchestrator, architect).
+// client. Used by every page with a prompt library (orchestrator, architect,
+// overview's Ask Vilya card).
 import { CopyButton } from "./copy-button";
 import type { PromptGroup } from "./flow-map-types";
 

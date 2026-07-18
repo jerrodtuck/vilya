@@ -1,6 +1,8 @@
 // Feature slice: overview — the methodology's front door (server component).
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
+import { PromptList } from "@/shared/ui/prompt-list";
+import { ASK_VILYA } from "./ask-vilya";
 import { CardinalityDiagram } from "./cardinality-diagram";
 
 export function OverviewView() {
@@ -68,6 +70,24 @@ export function OverviewView() {
       />
 
       <CardinalityDiagram />
+
+      <div className="panel" style={{ marginTop: 16 }}>
+        <div className="kicker">Front door</div>
+        <h3>Ask Vilya</h3>
+        <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
+          Who handles this — architect, orchestrator, or you? Paste the card
+          below with your question; the answer comes back in a fixed shape:{" "}
+          <b>lane · exact next prompt · one-line why</b> with its canon
+          citation. It routes — it never creates issues or dispatches.
+        </p>
+        <div
+          className="libcard"
+          style={{ ["--lc" as string]: `var(${ASK_VILYA.c})`, marginTop: 14 }}
+        >
+          <h4>{ASK_VILYA.group}</h4>
+          <PromptList group={ASK_VILYA} />
+        </div>
+      </div>
 
       <div className="cards">
         <Link className="card" href="/architect">
