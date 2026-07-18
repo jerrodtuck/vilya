@@ -15,7 +15,10 @@ vilya/
 │   ├── start-feature/          # process: issue → worktree → plan → consult
 │   ├── finish-feature/         # process: tests → crucible → PR → changelog
 │   ├── merge-pr/               # process: triage → test → squash-merge
+│   ├── chip/                   # dispatch: issue → background worker session → PR
+│   ├── prune/                  # cleanup: merged worktrees + leftover branches
 │   ├── update-docs/            # routing: where does this go? (not on the happy path)
+│   ├── adr/                    # decisions: issue-first ADR → DECISIONS.md mirror
 │   ├── history/                # recall: reconstruct what we tried
 │   ├── crucible-blazor/        # review: strict VSA+SOLID+Blazor (manual-only)
 │   ├── crucible-nextjs/        # review: same for feature-slice + server/client
