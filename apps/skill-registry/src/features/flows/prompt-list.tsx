@@ -1,18 +1,33 @@
-// Feature slice: flows — renders prompt items with copy buttons.
-// Server-safe: only the CopyButton leaf is client.
+// Feature slice: flows — renders a prompt group's body: intro line, prompt
+// items with copy buttons, caveat note. Server-safe: only the CopyButton leaf
+// is client.
 import { CopyButton } from "./copy-button";
-import type { PromptItem } from "./prompts";
+import type { PromptGroup } from "./prompts";
 
-export function PromptList({ items }: { items: PromptItem[] }) {
+export function PromptList({ group }: { group: PromptGroup }) {
   return (
     <>
-      {items.map((it) => (
+      {group.introHtml ? (
+        <p
+          className="muted"
+          style={{ margin: "2px 0 4px", fontSize: 12.5, lineHeight: 1.5 }}
+          dangerouslySetInnerHTML={{ __html: group.introHtml }}
+        />
+      ) : null}
+      {group.items.map((it) => (
         <div className="prompt" key={it.label}>
           <span className="plead">{it.label}</span>
           <span className="ptext">{it.text}</span>
           <CopyButton text={it.text} />
         </div>
       ))}
+      {group.noteHtml ? (
+        <div
+          className="note"
+          style={{ marginTop: 10, fontSize: 12 }}
+          dangerouslySetInnerHTML={{ __html: group.noteHtml }}
+        />
+      ) : null}
     </>
   );
 }
