@@ -17,6 +17,21 @@ Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic 
 
 **Evidence:** #175 (fork comment with hash table, 2026-07-18 18:14; operator decision comment, 2026-07-18); orchestrator scope-sync comment on #175 widening item 1 to all five variants; parent epic #160; shipped variants at `83ec04f` (#166 crucible-nextjs, #170 crucible-ml, #173 crucible-django, #174 crucible-fastapi).
 
+## 2026-07-18 — Tagline final form: generalized eyebrow, enumerate elsewhere (#164)
+
+**Decision:** Option A — generalize the eyebrow to `SOLID · VSA · per-stack crucible reviews · Claude Code + Cursor` and move dialect enumeration to surfaces that scale: the Overview callout's tier sentence and the live /skills page (decided by the operator, 2026-07-18).
+
+**Options considered:**
+1. **Option A — generalized eyebrow, enumerate elsewhere** — cost: the eyebrow stops name-dropping Bulletproof React ← chosen
+2. Option B — tiered enumeration in the eyebrow (`SOLID · Frontend: Next.js · Blazor · Backend: FastAPI · Django · ML · Claude Code + Cursor`) — cost: long now, longer with dialect six; drops the dialect names (Bulletproof, VSA) that #158 just added, or becomes two lines; every new crucible reopens the issue.
+3. Option C — hybrid, one flagship pairing (`SOLID · VSA · crucible reviews from Bulletproof React to ML · Claude Code + Cursor`) — cost: "from X to Y" reads as marketing; picks favorites among dialects.
+
+**Why:** At five dialects across two tiers (frontend: Next.js, Blazor · backend/Python: FastAPI, Django, ML) enumeration outgrew an eyebrow (#164 body). The Skills page already enumerates every crucible variant live from `skills/` — the truthful, zero-maintenance list — so the header doesn't have to. The #158 `site-tagline` shared-constant hoist is the enabling seam: one edit propagated the new eyebrow to both pages (proven in PR #178).
+
+**Consequences:** The header is dialect-count-invariant — future crucible variants ship with **zero header edits**; enumeration lives only on surfaces that scale (the Overview callout's tier sentence linking /skills, and the live /skills page). Option B remains a one-line swap in `site-tagline.ts` if ever overruled. This entry is a backfill via #180: PR #178 merged before the /adr brief addition on #164 landed (same timing class as the #162/#163 amendments).
+
+**Evidence:** #164 body (options + costs) and its decision comment (operator, 2026-07-18); shipped via PR #178 (`0b4c3b6`); enabling seam: #158 shared-constant hoist.
+
 ## 2026-07-18 — Architect cardinality: one architect per product board; one orchestrator per repo (#148)
 
 **Decision:** One architect seat per **product board**, spanning that product's repos and no other product's; exactly one orchestrator per **repo**. The "one architect, all repos" rule shipped by the #132/#133/#135 copy is overruled (decided by the operator in the architect session, 2026-07-18).
