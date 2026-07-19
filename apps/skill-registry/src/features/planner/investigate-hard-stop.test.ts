@@ -7,7 +7,7 @@ import { PROMPTS } from "./prompts";
 
 function plannerSkill(): string {
   return readFileSync(
-    path.resolve(__dirname, "../../../../../skills/planner/SKILL.md"),
+    path.resolve(__dirname, "../../../../../skills/vilya-planner/SKILL.md"),
     "utf8",
   );
 }

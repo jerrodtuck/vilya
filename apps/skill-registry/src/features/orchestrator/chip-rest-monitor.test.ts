@@ -6,9 +6,9 @@ import { describe, expect, it } from "vitest";
 function readChipSkill(): string {
   const bundled = path.resolve(
     process.cwd(),
-    "content/skills/chip/SKILL.md",
+    "content/skills/vilya-chip/SKILL.md",
   );
-  const monorepo = path.resolve(process.cwd(), "../../skills/chip/SKILL.md");
+  const monorepo = path.resolve(process.cwd(), "../../skills/vilya-chip/SKILL.md");
   const skillPath = fs.existsSync(bundled) ? bundled : monorepo;
   return fs.readFileSync(skillPath, "utf8");
 }

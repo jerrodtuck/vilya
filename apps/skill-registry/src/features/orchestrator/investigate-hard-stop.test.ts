@@ -18,7 +18,7 @@ function promptCorpus(): string {
 
 describe("investigate-first hard-stop — orchestrator (#239)", () => {
   it("chip + start-feature + night-shift teach the marking split", () => {
-    const chip = skill("chip");
+    const chip = skill("vilya-chip");
     expect(chip).toContain("## 2a. Investigate-first / hard-stop");
     expect(chip).toContain("non-negotiable");
     expect(chip).toContain("needs:decision");
@@ -26,11 +26,11 @@ describe("investigate-first hard-stop — orchestrator (#239)", () => {
     expect(chip).toContain("findings clearly favor X");
     expect(chip).toContain("Soft optional-wait wording is a defect");
 
-    const start = skill("start-feature");
+    const start = skill("vilya-start-feature");
     expect(start).toContain("Investigate-first / hard-stop");
     expect(start).toContain("non-negotiable");
 
-    const night = skill("night-shift");
+    const night = skill("vilya-night-shift");
     expect(night).toContain("Investigate-first / hard-stop");
     expect(night).toContain("needs:decision");
   });
