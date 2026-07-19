@@ -222,14 +222,17 @@ fork: comment options + recommendation, label `needs:decision`, Blocked, next is
 **Chain promote (Option 3):** night-shift never merges, so a successor labeled only
 `night-shift:chain` stays ineligible until something promotes it. Product repos copy
 `docs/project-tracking/templates/chain-promote.yml` → `.github/workflows/chain-promote.yml`.
-On `issues: closed`, that workflow finds dependents via GitHub native **blocked-by**
-(`blocking` on the closed issue). When **all** of a dependent's blockers are closed, and
-the dependent has `night-shift:chain` ∧ `plan:ready`, not `needs:decision`, not
-`type:epic`, it applies `night-shift:ready` (and drops `night-shift:chain`). The
+On `issues: closed`, that workflow finds dependents via the **REST issue-dependencies
+API** (`GET …/dependencies/blocking` on the closed issue; each dependent's blockers via
+`…/dependencies/blocked_by`) — **no GraphQL**. When **all** of a dependent's blockers are
+closed, and the dependent has `night-shift:chain` ∧ `plan:ready`, not `needs:decision`,
+not `type:epic`, it applies `night-shift:ready` (and drops `night-shift:chain`). The
 night-shift skill stays **dumb** — eligibility read only; promotion is this workflow, not
 agent-side. Expectation: **one chain link per merge cycle**, not a full path per overnight
 run. Prep a chain: native blocked-by edges + `night-shift:chain` (+ `plan:ready`) on
-successors; do not invent body-text `Blocked-by:` conventions.
+successors; do not invent body-text `Blocked-by:` conventions. REST issue-dependencies
+are on github.com (and GHE Cloud where available); not on GHES until those endpoints
+exist there.
 
 **Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
 Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each
