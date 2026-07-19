@@ -25,9 +25,10 @@ export function CardinalityDiagram() {
         The architect&apos;s state is the product&apos;s board and its
         direction docs — nothing to collide across that product&apos;s repos,
         so one seat spans them; another product board means another architect.
-        Each repo runs its own orchestrator, the dispatch lock on that
-        repo&apos;s main clone. Full rationale on the{" "}
-        <Link href="/architect">Architect page</Link>.
+        Each repo runs its own{" "}
+        <Link href="/planner">Planner</Link> (Fable plan loop) and{" "}
+        orchestrator (dispatch lock on that repo&apos;s main clone). Full
+        rationale on the <Link href="/architect">Architect page</Link>.
       </p>
       <div className="card-diagram" style={{ marginTop: 14 }}>
         <svg
