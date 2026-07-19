@@ -1,7 +1,8 @@
-// #219 / #247: Cursor three-step path + /cursor-handoff invoke target.
+// #219 / #247 / #253: Cursor three-step path; Step 3 = /cursor-handoff in worktree.
 import { describe, expect, it } from "vitest";
 import {
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_DISPATCH_STEP3_LEAD,
   CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
   CURSOR_ORCH_PROMPT_LABEL,
@@ -16,7 +17,7 @@ function orchGroup() {
   return orch!;
 }
 
-describe("Cursor three-step dispatch (#219 / #247)", () => {
+describe("Cursor three-step dispatch (#219 / #247 / #253)", () => {
   it("anchors orchestrator + Worker A paste cards for the path panel", () => {
     const orch = orchGroup();
     const orchKickoff = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL);
@@ -30,6 +31,12 @@ describe("Cursor three-step dispatch (#219 / #247)", () => {
     expect(orch.introHtml).toContain(`#${CURSOR_DISPATCH_PANEL_ID}`);
     expect(orch.introHtml).toContain("three-step");
     expect(orch.introHtml).toContain(`/${CURSOR_HANDOFF_SKILL}`);
+    expect(orch.introHtml).toMatch(/Step 3/i);
+  });
+
+  it("Step 3 is run /cursor-handoff in the worktree, not paste Worker A", () => {
+    expect(CURSOR_DISPATCH_STEP3_LEAD).toBe("In the worktree, run");
+    expect(CURSOR_HANDOFF_SKILL).toBe("cursor-handoff");
   });
 
   it("keeps Worker A/B exclusivity on the standing-orders note", () => {

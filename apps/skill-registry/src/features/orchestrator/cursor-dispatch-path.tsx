@@ -1,8 +1,9 @@
-// Feature slice: orchestrator — numbered Cursor dispatch ritual (#219 / #247).
+// Feature slice: orchestrator — numbered Cursor dispatch ritual (#219 / #253).
 // Local steps markup (same setupsteps pattern as Setup / Night shift);
 // VSA forbids importing those features' step components.
 import {
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_DISPATCH_STEP3_LEAD,
   CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
   CURSOR_ORCH_PROMPT_LABEL,
@@ -17,10 +18,10 @@ export function CursorDispatchPath() {
       <h3>Three-step Cursor path</h3>
       <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.55 }}>
         Claude Code chips self-start via <code>spawn_task</code> (
-        <code>/chip</code>). Cursor has no session-to-session comms — invoke{" "}
-        <code>/{CURSOR_HANDOFF_SKILL}</code> for the paste → open-folder →{" "}
-        <b>Worker A</b> ritual (same three steps below). There is no
-        auto-handoff yet.
+        <code>/chip</code>). Cursor has no session-to-session comms — seat the
+        orchestrator, open the worktree, then run{" "}
+        <code>/{CURSOR_HANDOFF_SKILL}</code> in that worker session (Worker A
+        seat). There is no auto-handoff yet.
       </p>
       <div className="setupsteps" style={{ marginTop: 12 }}>
         <div className="step">
@@ -51,15 +52,16 @@ export function CursorDispatchPath() {
         <div className="step">
           <span className="n">3</span>
           <span className="t">
-            <b>Paste</b>{" "}
-            <a href={`#${CURSOR_WORKER_A_PROMPT_ID}`}>
-              {CURSOR_WORKER_A_PROMPT_LABEL}
-            </a>{" "}
-            in that worker session.
+            <b>{CURSOR_DISPATCH_STEP3_LEAD}</b>{" "}
+            <code>/{CURSOR_HANDOFF_SKILL}</code>.
             <small>
-              <b>A and B are mutually exclusive.</b> Use A when the orchestrator
-              already ran <code>/start-feature</code>. B is solo / no-orchestrator
-              only — pasting it here would double-create the worktree.
+              Worker A seat — already in the worktree; do not re-run{" "}
+              <code>/start-feature</code>.{" "}
+              <b>A and B are mutually exclusive.</b> Paste fallback:{" "}
+              <a href={`#${CURSOR_WORKER_A_PROMPT_ID}`}>
+                {CURSOR_WORKER_A_PROMPT_LABEL}
+              </a>
+              .
             </small>
           </span>
         </div>
