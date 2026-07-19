@@ -136,10 +136,11 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
       <li><b>Eligibility</b> — only <code>auto:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
-      <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code>.</li>
+      <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
+      <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/prune</code> owns that pairing.</li>
       <li><b>Fork stop</b> — comment + recommendation, label <code>needs:decision</code>, Blocked, next issue. Never guess.</li>
       <li><b>PR never merge</b> — open only; operator merges via <code>/merge-pr</code> in the morning.</li>
-      <li><b>Morning report</b> — PR opened / needs call / stuck / skipped.</li>
+      <li><b>Morning report</b> — unreviewed triage queue (unlike chips reviewed as they open): PR opened / needs call / stuck / skipped.</li>
       <li>Budget: up to 3 issues per run.</li>
     </ul>
     <p class="ns-safety-note">Safety gates are the product — visually distinct from the happy-path spine on purpose.</p>`,
@@ -156,8 +157,8 @@ export const STAGES: Record<StageId, NightStage> = {
     bodyHtml: `
     <p>Proven on the first green overnight run (#29 → PR #34):</p>
     <ul>
-      <li>Feature branch authored as <b><code>claude[bot]</code></b>.</li>
-      <li>Pull request opened (<code>Closes #</code> or <code>Refs #</code> per merge routing) — <b>never merged</b> by the agent.</li>
+      <li>Feature branch authored as <b><code>claude[bot]</code></b> on <code>feat|fix|docs/&lt;issue#&gt;-*</code> (not <code>claude/*</code>).</li>
+      <li>Pull request opened (<code>Closes #</code> or <code>Refs #</code> per merge routing) — <b>never merged</b> by the agent; <b>unreviewed overnight</b> (chip PRs are reviewed as they open).</li>
       <li>Board Status moved (In Progress → Done / Blocked / Verifying as appropriate).</li>
       <li>Morning report posted so triage is a review queue, not archaeology.</li>
     </ul>
@@ -165,6 +166,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li>Triage the report; merge Ready PRs with <code>/merge-pr</code>.</li>
       <li>Answer forks and drop <code>needs:decision</code> when you decide.</li>
+      <li>Run <code>/prune</code> from the daytime clone (and Actions <code>_work</code> if trees remain).</li>
     </ul>`,
   },
   FAILURE: {

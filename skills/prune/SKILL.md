@@ -1,36 +1,46 @@
 ---
 name: prune
 description: >-
-  Orchestrator cleanup for feature worktrees + leftover local branches — both Cursor
-  (%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*) and Claude chip
-  (.claude/worktrees/<slug> on claude/* branches) trees. Dry-run by default; --apply
-  removes eligible worktrees after squash-merge. Use when the user says "prune", "prune
-  worktrees", "/prune", or after /merge-pr hands off cleanup. Run from the main clone —
-  never from inside a worktree being removed.
+  Orchestrator cleanup for feature worktrees + leftover local branches — Cursor daytime
+  (%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*), Claude chips (.claude/worktrees on
+  claude/*), and night-shift / Claude daytime (.claude/worktrees on feat|fix|docs/<issue#>-*).
+  Dry-run by default; --apply removes eligible worktrees after squash-merge. Use when the user
+  says "prune", "prune worktrees", "/prune", or after /merge-pr hands off cleanup. Run from the
+  main clone — never from inside a worktree being removed.
 ---
 
 # Prune (any stack)
 
 > Companion: [/merge-pr](../merge-pr/SKILL.md) squash-merges and **hands off** here;
-> [/start-feature](../start-feature/SKILL.md) creates the worktrees this skill removes.
-> Repo name / default branch come from `docs/project-tracking/GITHUB-PROJECTS.md`
-> (or `gh repo view`).
+> [/start-feature](../start-feature/SKILL.md) creates the worktrees this skill removes;
+> [/night-shift](../night-shift/SKILL.md) uses the same `feat|fix|docs/*` branch names under
+> `.claude/worktrees/` (not `claude/*`). Repo name / default branch come from
+> `docs/project-tracking/GITHUB-PROJECTS.md` (or `gh repo view`).
 
 ## Why this exists
 
-Feature worktrees live under two roots:
+Feature worktrees live under these roots:
 
 ```text
 %USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>   # Cursor daytime (/start-feature)
-<main-clone>\.claude\worktrees\<slug>                    # Claude chips (spawn_task / agent-view), claude/* branch
+<main-clone>\.claude\worktrees\<slug>                    # Claude — chips OR night-shift / daytime
+…/_work/<repo>/<repo>\.claude\worktrees\<slug>           # Actions self-hosted checkout (night-shift)
 ```
 
-**Prune owns both** — Cursor trees from `/start-feature`, and Claude **chip** trees
-(`spawn_task` / agent-view background sessions, on `claude/*` branches). It does **not**
-touch manual Claude Code `--worktree` pools (those are on `worktree-*` branches) or Cursor
-Parallel / Best-of-N pools. **Cursor Archive** and **Claude "delete session"** do **not**
-reliably remove chip folders — after squash-merge, the worktrees plus their local
-`feat|fix|docs/<issue#>-*` or `claude/*` branches pile up until you prune.
+**Branch naming is not the same as the folder root:**
+
+| Who created it | Worktree root | Branch |
+|----------------|---------------|--------|
+| Cursor daytime | `.cursor/worktrees/<repo>/` | `feat\|fix\|docs/<issue#>-*` |
+| Claude **chip** (`spawn_task` / agent-view) | `.claude/worktrees/` | `claude/*` |
+| **Night-shift** (and Claude daytime `/start-feature`) | `.claude/worktrees/` (incl. Actions `_work`) | `feat\|fix\|docs/<issue#>-*` |
+
+**Prune owns all three.** It does **not** touch manual Claude Code `--worktree` pools (those are
+on `worktree-*` branches) or Cursor Parallel / Best-of-N pools. **Cursor Archive** and **Claude
+"delete session"** do **not** reliably remove chip folders — after squash-merge, the worktrees
+plus their local `feat|fix|docs/<issue#>-*` or `claude/*` branches pile up until you prune.
+Night-shift should detach its own worktree after each PR (§ night-shift skill); leftovers under
+Actions `_work` still go through this skill when you prune on the runner box.
 
 **Cadence:** with **Auto-archive on PR close** enabled (Claude Code Desktop), a merged
 chip's session archives itself — the process stops and the checkout detaches without you.
@@ -64,28 +74,36 @@ Optional scope (when the operator names it):
 
 1. Resolve `<repo>` short name (`gh repo view --json name -q .name`, or the leaf of
    `nameWithOwner`).
-2. **`git worktree list --porcelain` from the main clone is the source of truth** — it
-   registers every worktree with its path and branch, across **both** worktree models:
+2. **`git worktree list --porcelain` from each relevant checkout is the source of truth** —
+   register every worktree with its path and branch:
    - **Cursor daytime** (`/start-feature`):
      `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>` on `feat|fix|docs/<issue#>-*`
-     branches (bash: `$HOME/.cursor/worktrees/<repo>/`).
+     (bash: `$HOME/.cursor/worktrees/<repo>/`).
    - **Claude chips** (`spawn_task` / agent-view):
-     `<main-clone>\.claude\worktrees\<slug>` on `claude/*` branches.
-3. Also scan **both** roots on disk for **orphan folders** (on disk but absent from
-   `worktree list` — leftover after a failed/locked remove): `$HOME/.cursor/worktrees/<repo>/`
-   and `<main-clone>/.claude/worktrees/`. Orphans still count.
+     `<main-clone>\.claude\worktrees\<slug>` on `claude/*`.
+   - **Night-shift / Claude daytime** (`/start-feature` under Claude):
+     `<main-clone>\.claude\worktrees\<slug>` **or** Actions
+     `…/_work/<repo>/<repo>/.claude/worktrees/<slug>` on `feat|fix|docs/<issue#>-*`.
+3. When this machine hosts a self-hosted Actions runner, also run `git worktree list` from
+   each product checkout under `**/_work/<repo>/<repo>/` (night-shift's cwd). Do not assume
+   those trees appear in the daytime clone's list.
+4. Also scan those roots on disk for **orphan folders** (on disk but absent from
+   `worktree list` — leftover after a failed/locked remove): `$HOME/.cursor/worktrees/<repo>/`,
+   `<main-clone>/.claude/worktrees/`, and `…/_work/<repo>/<repo>/.claude/worktrees/`. Orphans
+   still count.
 
 ## 3. Eligibility (all must hold)
 
 | # | Gate | Fail → |
 |---|------|--------|
-| 1 | Worktree is one of ours: a Cursor tree (`.cursor/worktrees/<repo>/` with a `<digits>-…` folder, `/start-feature` layout) **or** a Claude chip (`.claude/worktrees/` on a `claude/*` branch) | skip |
+| 1 | Worktree is one of ours: (a) Cursor tree (`.cursor/worktrees/<repo>/` with a `<digits>-…` folder) on `feat\|fix\|docs/<issue#>-*`, **or** (b) Claude chip (`.claude/worktrees/` on `claude/*`), **or** (c) night-shift / Claude daytime (`.claude/worktrees/` — including Actions `_work` — on `feat\|fix\|docs/<issue#>-*`) | skip |
 | 2 | Path is not cwd (nor a parent of cwd) | skip + warn |
 | 3 | **Session liveness — required for every `.claude/worktrees/*` row**: query `mcp__ccd_session_mgmt__list_sessions` and confirm **no non-archived session** has this worktree's path or branch. A match means live, **regardless of `isRunning`** — sessions report `isRunning: false` between turns while still holding their worktree; only archived/deleted sessions release it | skip (live session) |
 | 4 | No **open** PR for the worktree's branch head (`feat\|fix\|docs/<issue#>-*` **or** `claude/*`) | skip |
 | 5 | Closed out: merged/closed PR for that head, **or** remote branch gone (`git ls-remote --heads origin <branch>` empty), **or** `git merge-base --is-ancestor <branch> origin/<default-branch>` | skip (unmerged) |
 | 6 | Worktree clean (`git status --porcelain` empty) on `--apply` | skip (no default `--force`) |
 
+**Do not require `claude/*` for `.claude/worktrees/`** — that would skip every night-shift tree.
 Never delete locals outside that pairing. Never delete the default branch.
 
 ## 4. Dry-run output
@@ -97,6 +115,7 @@ PATH | BRANCH | PR | REMOTE | VERDICT
 ...  | feat/36-… | MERGED #58 | gone | eligible
 ...  | (orphan) | — | — | eligible (orphan folder)
 ...  | feat/59-… | OPEN #59 | present | skip (open PR)
+...  | feat/224-… (_work) | MERGED #239 | gone | eligible   # night-shift leftover
 ...  | claude/… | — | — | skip (live session)
 ```
 

@@ -131,7 +131,9 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 ### Daytime chain (primary)
 
 New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
-(`feat|fix|docs/<issue#>-slug` for single-session daytime work; `claude/*` for chips).
+(`feat|fix|docs/<issue#>-slug` for daytime **and** night-shift; `claude/*` only for chips).
+Night-shift reuses daytime branch names under `.claude/worktrees/` (often Actions `_work`) —
+`/prune` owns that pairing; do not expect `claude/*` for overnight trees.
 
 ```text
 /start-feature → implement → /crucible-<stack> → remediate → /finish-feature → /merge-pr → Done
@@ -178,6 +180,11 @@ the skill reads them from that product’s config-only `GITHUB-PROJECTS.md`.
 Eligibility: labeled `auto:ready`, not `needs:decision`, not `type:epic`. Opens PRs; **never
 merges**. At a real design fork: comment options + recommendation, label `needs:decision`, Blocked,
 next issue.
+
+**Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
+Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each
+PR, night-shift detaches its worktree so self-hosted `_work` does not accumulate — leftovers
+still go through `/prune` (including `_work` checkouts on the runner box).
 
 | Topology | What you configure |
 |----------|-------------------|

@@ -70,6 +70,14 @@ describe("night-agent stage model", () => {
     expect(html).toContain("GITHUB_PATH");
   });
 
+  it("Steering and Outputs distinguish night-shift branches from chips", () => {
+    expect(STAGES.STEERING.bodyHtml).toContain("feat|fix|docs/");
+    expect(STAGES.STEERING.bodyHtml).toContain("claude/*");
+    expect(STAGES.STEERING.bodyHtml).toContain("/prune");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("unreviewed overnight");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("/prune");
+  });
+
   it("geometry covers every stage once and edges use typed endpoints", () => {
     expect(STAGE_GEOMS.map((g) => g.id).sort()).toEqual([...STAGE_ORDER].sort());
     for (const edge of EDGES) {
