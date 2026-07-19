@@ -64,17 +64,19 @@ export const STAGES: Record<StageId, NightStage> = {
     kind: "happy",
     chipLabel: "Runner",
     bodyHtml: `
-    <p>Job runs on <code>runs-on: [self-hosted, windows]</code>. The GitHub Actions service
-    (<b>Runner.Listener</b>) long-polls GitHub, then spawns a worker for the job.</p>
+    <p>Job runs on <code>runs-on: [self-hosted, windows]</code> for every product repo
+    (Next.js or CygNet). The listener long-polls GitHub, then spawns a worker for the job.</p>
     <ul>
       <li>Fresh <b>full-history</b> clone (<code>actions/checkout@v4</code>, <code>fetch-depth: 0</code>) under the runner&apos;s <code>_work</code> directory.</li>
       <li>That checkout is <b>distinct</b> from the operator&apos;s daytime clone — night-shift never shares your dirty working tree.</li>
-      <li>Node, Git for Windows, and <code>gh</code> must be on the <b>service account</b> PATH.</li>
+      <li>Node, Git for Windows, and <code>gh</code> must be on the listener process PATH.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--orch)"></span>Setup (once per repo)</h4>
     <ul>
-      <li>Register a self-hosted runner on the product repo; install as a Windows service; labels <code>self-hosted</code>, <code>windows</code>.</li>
-      <li>Private repos only — fork PRs on a public repo could execute on your machine.</li>
+      <li>Register a self-hosted runner on the <b>private</b> product repo; separate folder per repo; labels <code>self-hosted</code>, <code>windows</code>. Per-repo registration scopes the box — no stack label required.</li>
+      <li><b>Bring-up:</b> <code>.\\run.cmd</code> (foreground; keep the terminal open). <b>Always-on:</b> <code>.\\svc.cmd install</code> + <code>start</code> when that script exists (admin).</li>
+      <li>Change labels later in Settings → Runners → edit Labels (or remove + re-register). Missing labels = job queued forever.</li>
+      <li>Bash: workflow pins Git Bash via <code>GITHUB_PATH</code> — host PATH tweaks unnecessary when that pin is present. See Failure layer.</li>
     </ul>`,
   },
   IDENTITY: {
@@ -177,13 +179,14 @@ export const STAGES: Record<StageId, NightStage> = {
     <p>Real walls from wiring the runner (#23, PRs #31–#33) — keep them visible so the next
     machine does not rediscover them silently:</p>
     <ol>
-      <li><b>WSL bash stub</b> — Actions expected a real Bash; Git Bash on the service PATH fixed it.</li>
+      <li><b>WSL bash stub</b> — <code>bash</code> often resolves to <code>System32\\bash.exe</code>. With only <code>docker-desktop</code>, steps die with <code>execvpe(/bin/bash) failed</code>. Fix: workflow Git Bash pin (<code>GITHUB_PATH</code> + <code>CLAUDE_CODE_GIT_BASH_PATH</code>) — shipped in the generic template.</li>
+      <li><b>Label mismatch</b> — job <code>runs-on</code> must be a subset of the runner&apos;s labels (extra labels on the runner are fine; a missing required label → queued forever).</li>
       <li><b><code>id-token: write</code></b> — required for OIDC → Claude GitHub App token exchange.</li>
       <li><b>Claude GitHub App install</b> — App must be installed on the repo or org.</li>
       <li><b>Windows CLI installer</b> — unsupported; point at a <b>pre-installed</b> <code>claude.exe</code>.</li>
       <li><b>Expired OAuth session</b> — refresh with <code>claude setup-token</code> and update the repo secret.</li>
     </ol>
-    <p class="ns-safety-note"><b>Shared-profile caveat:</b> the runner service uses the operator&apos;s
+    <p class="ns-safety-note"><b>Shared-profile caveat:</b> a service or long-lived <code>run.cmd</code> listener uses the operator&apos;s
     <code>~/.claude</code> profile on this machine. An expired desktop session can break overnight runs
     even when the repo secret looks fine.</p>`,
   },

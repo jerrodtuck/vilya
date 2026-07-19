@@ -43,10 +43,13 @@ const POINTER_HEADER = `# GitHub Projects — repo config
 
 const NIGHT_SHIFT_NOTE = `### Night-shift (per-repo)
 
-Only if this repo runs the overnight loop: \`.github/workflows/night-shift.yml\` lives
-in this repo, a self-hosted runner is registered on this repo, and the repo secret
-\`CLAUDE_CODE_OAUTH_TOKEN\` (\`claude setup-token\`) is set. Eligibility labels,
-guardrails, and the loop itself are process — see the canon above.`;
+Only if this repo runs the overnight loop: generate \`.github/workflows/night-shift.yml\`
+at https://vilya.jerrodtuck.com/night-shift#generate-workflow (repo + \`claude.exe\`
+path), or copy Vilya's \`docs/project-tracking/templates/night-shift.yml\`. Register a
+self-hosted runner on this repo (labels \`self-hosted\`, \`windows\`) and set secret
+\`CLAUDE_CODE_OAUTH_TOKEN\` (\`claude setup-token\`). **Stack**, **Crucible variant**,
+and **Test command** in this file are what the skill uses — no per-stack workflow
+fork. Eligibility and guardrails are process — see the canon above.`;
 
 function orPlaceholder(value: string, placeholder: string): string {
   const t = value.trim();

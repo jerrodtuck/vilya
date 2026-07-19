@@ -147,25 +147,18 @@ export function OrchestratorView() {
           Settings, set that routine to Bypass (not a user-global default).
         </p>
         <div className="note" style={{ marginTop: 8 }}>
-          Templates:{" "}
+          Template:{" "}
           <a
-            href="https://github.com/jerrodtuck/vilya/blob/main/.github/workflows/night-shift.yml"
+            href="https://github.com/jerrodtuck/vilya/blob/main/docs/project-tracking/templates/night-shift.yml"
             target="_blank"
             rel="noreferrer"
           >
-            <code>.github/workflows/night-shift.yml</code>
-          </a>{" "}
-          and{" "}
-          <a
-            href="https://github.com/jerrodtuck/vilya/blob/main/docs/project-tracking/templates/night-shift-dotnet-cygnet.yml"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <code>
-              docs/project-tracking/templates/night-shift-dotnet-cygnet.yml
-            </code>
+            <code>docs/project-tracking/templates/night-shift.yml</code>
           </a>
-          . Cron <code>0 8 * * *</code> is active on this repo.
+          {" "}
+          (one file for every stack — Stack / Crucible / Test command stay in
+          each product&apos;s <code>GITHUB-PROJECTS.md</code>). Manual{" "}
+          <code>workflow_dispatch</code> until a green run; then optional cron.
         </div>
       </div>
 

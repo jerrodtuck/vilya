@@ -54,10 +54,19 @@ describe("night-agent stage model", () => {
   it("Failure layer lists the bring-up walls and shared-profile caveat", () => {
     const html = STAGES.FAILURE.bodyHtml;
     expect(html).toContain("WSL bash stub");
+    expect(html).toContain("CLAUDE_CODE_GIT_BASH_PATH");
+    expect(html).toContain("Label mismatch");
     expect(html).toContain("id-token: write");
     expect(html).toContain("pre-installed");
     expect(html).toContain("Shared-profile caveat");
     expect(html).toContain("~/.claude");
+  });
+
+  it("Runner stage documents run.cmd bring-up and label matching", () => {
+    const html = STAGES.RUNNER.bodyHtml;
+    expect(html).toContain(".\\run.cmd");
+    expect(html).toContain("runs-on");
+    expect(html).toContain("GITHUB_PATH");
   });
 
   it("geometry covers every stage once and edges use typed endpoints", () => {

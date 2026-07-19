@@ -1,13 +1,17 @@
 // Feature slice: night-shift — unattended Dev Loop (server component).
 import Link from "next/link";
+import { loadNightShiftTemplate } from "./load-night-shift-template";
 import { NightAgentMap } from "./night-agent-map";
+import { NightShiftWorkflowTool } from "./night-shift-workflow-tool";
 
 const REPO = "https://github.com/jerrodtuck/vilya";
 const WORKFLOW_HREF = `${REPO}/blob/main/.github/workflows/night-shift.yml`;
-const CYGNET_HREF = `${REPO}/blob/main/docs/project-tracking/templates/night-shift-dotnet-cygnet.yml`;
+const TEMPLATE_HREF = `${REPO}/blob/main/docs/project-tracking/templates/night-shift.yml`;
 const SKILL_SRC_HREF = `${REPO}/blob/main/skills/night-shift/SKILL.md`;
 
 export function NightShiftView() {
+  const workflowTemplate = loadNightShiftTemplate();
+
   return (
     <>
       <div className="eyebrow">Autonomous · same chain as daytime</div>
@@ -55,20 +59,34 @@ export function NightShiftView() {
         }
       />
 
-      <div className="panel" style={{ marginTop: 20 }}>
+      <div className="panel" style={{ marginTop: 20 }} id="generate-workflow">
         <div className="kicker">Per-repo overnight setup</div>
-        <h3>Wire the launcher once</h3>
+        <h3>Generate workflow YAML</h3>
         <p className="muted" style={{ lineHeight: 1.55, marginTop: 8 }}>
-          Shared prerequisites on every product repo:{" "}
-          <code>GITHUB-PROJECTS.md</code> filled, labels{" "}
-          <code>auto:ready</code> / <code>needs:decision</code>, skills
-          installed. The skill itself does <b>not</b> set permission mode —
-          the <b>launcher</b> must pass Bypass (or you approve every tool).
-          Do <b>not</b> put <code>defaultMode: bypassPermissions</code> in
-          user settings if you want daytime worktrees to keep prompting.
+          One generic workflow for every stack. Type the product repo and your
+          machine&apos;s <code>claude.exe</code> path — download{" "}
+          <code>night-shift.yml</code> into{" "}
+          <code>.github/workflows/</code>.{" "}
+          <b>Stack</b>, <b>Crucible variant</b>, and <b>Test command</b> stay in
+          that repo&apos;s <code>GITHUB-PROJECTS.md</code> (use{" "}
+          <Link href="/setup">Setup → Regenerate</Link>). Prerequisites: private
+          repo, skills + autonomy labels, Bypass only in the launcher (not user
+          defaults).
         </p>
 
-        <p className="muted" style={{ lineHeight: 1.55, marginTop: 12 }}>
+        {workflowTemplate ? (
+          <NightShiftWorkflowTool template={workflowTemplate} />
+        ) : (
+          <p className="note" style={{ marginTop: 12 }}>
+            Template unavailable at runtime — copy{" "}
+            <a href={TEMPLATE_HREF} target="_blank" rel="noreferrer">
+              <code>docs/project-tracking/templates/night-shift.yml</code>
+            </a>{" "}
+            and set <code>path_to_claude_code_executable</code> by hand.
+          </p>
+        )}
+
+        <p className="muted" style={{ lineHeight: 1.55, marginTop: 16 }}>
           <b style={{ color: "var(--text)" }}>Artifacts</b>
           {" · "}
           <Link href="/skills/night-shift">skill (site)</Link>
@@ -77,39 +95,18 @@ export function NightShiftView() {
             skill source
           </a>
           {" · "}
-          <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
-            night-shift.yml
+          <a href={TEMPLATE_HREF} target="_blank" rel="noreferrer">
+            portable template
           </a>
           {" · "}
-          <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
-            CygNet template
+          <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+            live workflow
           </a>
         </p>
 
         <div className="modes" style={{ marginTop: 14 }}>
-          <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
-            <b>A · GitHub Actions (canonical)</b>
-            <span>
-              Copy{" "}
-              <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
-                <code>.github/workflows/night-shift.yml</code>
-              </a>{" "}
-              (or the{" "}
-              <a href={CYGNET_HREF} target="_blank" rel="noreferrer">
-                CygNet template
-              </a>
-              ). Register a self-hosted runner on that <b>private</b> repo (
-              <code>self-hosted</code>, <code>windows</code>). Add secret{" "}
-              <code>CLAUDE_CODE_OAUTH_TOKEN</code> from{" "}
-              <code>claude setup-token</code>. Bypass is already in the
-              workflow&apos;s <code>claude_args</code> (
-              <code>--permission-mode bypassPermissions</code>). Fire with{" "}
-              <code>gh workflow run night-shift</code> or wait for cron{" "}
-              <code>0 8 * * *</code>.
-            </span>
-          </div>
           <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
-            <b>B · Claude Code Desktop routines</b>
+            <b>Alternative · Claude Code Desktop routines</b>
             <span>
               Schedule a routine that opens the product repo (or its worktree)
               and runs the standing prompt: follow{" "}
@@ -118,10 +115,8 @@ export function NightShiftView() {
               </Link>{" "}
               exactly. Enable <b>Allow bypass permissions mode</b> in Desktop
               Settings → Claude Code, then set that routine/session to{" "}
-              <b>Bypass permissions</b>. Without that, overnight tool calls stop
-              for approval. Prefer Actions when you need a hard non-interactive
-              guarantee — Desktop scheduled tasks have been flaky about
-              honoring Bypass.
+              <b>Bypass permissions</b>. Prefer Actions when you need a hard
+              non-interactive guarantee — Desktop has been flaky about Bypass.
             </span>
           </div>
         </div>
