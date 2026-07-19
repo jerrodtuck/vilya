@@ -8,7 +8,7 @@ import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
 import { CursorDispatchPath } from "./cursor-dispatch-path";
 import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
 import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
-import { PROMPTS } from "./prompts";
+import { LAB_RUNS_ARE_CHIPS_ASIDE, PROMPTS } from "./prompts";
 
 export function OrchestratorView() {
   return (
@@ -60,6 +60,9 @@ export function OrchestratorView() {
           <div className="panel">
             <div className="kicker">How you multitask</div>
             <h3>Orchestrator modes</h3>
+            <p className="muted" style={{ margin: "8px 0 0", lineHeight: 1.5 }}>
+              {LAB_RUNS_ARE_CHIPS_ASIDE}
+            </p>
             <div className="modes" style={{ marginTop: 12 }}>
               <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
                 <b>Serial</b>

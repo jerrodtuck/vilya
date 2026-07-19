@@ -35,6 +35,18 @@ export const GRAPHQL_QUOTA_DOCTRINE =
   "GraphQL quota hygiene (Anduin + Vilya orchestrators share one user GraphQL bucket): board Status moves are rate-gated / best-effort — check gh api rate_limit; when graphql.remaining == 0, skip project item-edit/item-list and comment on the issue instead; never poll gh project item-list or retry GraphQL in a tight loop. Chip completion monitors are REST-first (gh api …/pulls?head=<owner>:<branch> + issue comments) — gh pr list is GraphQL, not REST. Mid-window: if GraphQL drains fast again, measure drain rate before blaming either orchestrator (ambient ~2/min vs a hot loop). Never kill the main-clone cursor-agent-worker as a leftover board-watch script — that PID is the live orchestrator worker.";
 
 /**
+ * Lab/live runs + master-commit ban — Claude + Cursor orchestrator standing
+ * orders compose this so lab probes and post-merge docs cannot burn the
+ * orchestrator window or land commits on the default branch.
+ */
+export const LAB_RUNS_ARE_CHIPS_DOCTRINE =
+  "Lab runs are chips. Live verification (e2e smokes, lab rollout steps, probe runs) is dispatched as a chip like any other unit of work: the brief states the target system, the isolation strategy (env overrides vs config edits), any processes it may stop/restart (named explicitly — approving the brief is the consent), and the evidence the completion comment must carry (log lines + data-store proof). Your role stays dispatch → monitor → verify-the-claim. Exception: single-command state checks (health curl, key existence) stay orchestrator-side. Corollary: post-merge docs appends (DECISIONS.md) ride a chip or the next feature branch — you never commit to the default branch (master/main).";
+
+/** One-line /orchestrator aside — keep page teaching glued to the standing-order doctrine. */
+export const LAB_RUNS_ARE_CHIPS_ASIDE =
+  "What never runs here: lab/live probes and commits to master — those are chips (dispatch → monitor → verify-the-claim).";
+
+/**
  * Host-specific chip/board monitor mechanisms — shared by Planner enqueue
  * doctrine and (for Cursor) the dispatch standing-orders bullet so the two
  * cards cannot drift on "how to arm."
@@ -82,6 +94,8 @@ ${PLANNER_ORCH_DOCTRINE}
 
 ${GRAPHQL_QUOTA_DOCTRINE}
 
+${LAB_RUNS_ARE_CHIPS_DOCTRINE}
+
 Every implementation, test, and remediation unit is dispatched as a chip by invoking the /chip skill — never call spawn_task directly; /chip owns the brief template so nothing gets freehanded. It produces a spawn_task call with:
 - title leads with the issue id — #<N> <concise-name> — so it's spottable in the UI.
 - tldr: one plain-English line.
@@ -103,6 +117,8 @@ Your jobs: board/issue ops; enqueue Planner when needed (needs:plan + board Moni
 ${PLANNER_ORCH_DOCTRINE}
 
 ${GRAPHQL_QUOTA_DOCTRINE}
+
+${LAB_RUNS_ARE_CHIPS_DOCTRINE}
 
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
