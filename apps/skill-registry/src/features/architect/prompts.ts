@@ -12,6 +12,7 @@
 // standing-orders card this page carries.
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
+import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
 export const PROMPTS: PromptGroup[] = [
   {
@@ -21,6 +22,7 @@ export const PROMPTS: PromptGroup[] = [
     wide: true,
     items: [
       {
+        // Ungraduated seat (#224) — paste-only until /vilya-architect ships.
         label: "Claude Code + Cursor — Product Architect",
         text: `You're the Product Architect for this product board — you decide and document product direction and architecture. One architect seat per product board: this session spans every repo on this product's board and no other product's — direction is product-local; what's shared across products is the process itself, and that belongs to the Dev Loop system, not to any seat (the orchestrator, by contrast, is one per repo). You never implement, never dispatch chips, never merge. Your output is issues on the board, ADRs (logged in DECISIONS.md and on the owning issue), and specs — the orchestrator picks up what you produce; nothing you write turns into running code in this session.
 
@@ -37,6 +39,7 @@ Guardrails: at every real design fork, 2–3 options with costs and a stated rec
     items: [
       {
         label: "Catch up on an issue",
+        skill: SKILL_SLUGS.history,
         text: "History of #<N> — what have we tried, in order, and what happened each time.",
       },
       {
@@ -52,6 +55,7 @@ Guardrails: at every real design fork, 2–3 options with costs and a stated rec
     items: [
       {
         label: "Ground truth check",
+        skill: SKILL_SLUGS.productMap,
         text: "Run the /vilya-product-map skill — read-only survey of as-built (code layout, shipped history, board) vs as-intended (docs/VISION.md, specs, open epics). Every gap is a finding citing both sides with its evidence class.",
       },
     ],
@@ -85,6 +89,7 @@ Guardrails: at every real design fork, 2–3 options with costs and a stated rec
     items: [
       {
         label: "Record it",
+        skill: SKILL_SLUGS.adr,
         text: "Log this decision in DECISIONS.md and mirror it as a comment on issue #<N>: <decision + reasoning>.",
       },
     ],

@@ -61,6 +61,12 @@ export interface PromptItem {
   text: string;
   /** Optional DOM id for in-page anchors; also accents the card as a path target. */
   id?: string;
+  /**
+   * Graduated skill slug (no leading slash), e.g. `vilya-cursor-handoff`.
+   * When set, PromptList surfaces run `/<skill>` as the primary affordance;
+   * Copy stays as fallback. Omit for paste-only / ungraduated seats.
+   */
+  skill?: string;
 }
 
 export interface PromptGroup {

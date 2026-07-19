@@ -1,7 +1,11 @@
 // Shared UI: renders a prompt group's body: intro line, prompt items with
-// copy buttons, caveat note. Server-safe: only the CopyButton leaf is
-// client. Used by every page with a prompt library (orchestrator, architect,
-// overview's Ask Vilya card).
+// skill-invoke affordance + copy buttons, caveat note. Server-safe: only the
+// CopyButton leaf is client. Used by every page with a prompt library
+// (orchestrator, architect, overview's Ask Vilya card).
+import {
+  SKILL_AFFORDANCE_LEAD,
+  skillInvoke,
+} from "../skills/skill-affordance";
 import { CopyButton } from "./copy-button";
 import type { PromptGroup } from "./flow-map-types";
 
@@ -22,6 +26,11 @@ export function PromptList({ group }: { group: PromptGroup }) {
           id={it.id}
         >
           <span className="plead">{it.label}</span>
+          {it.skill ? (
+            <p className="pskill">
+              {SKILL_AFFORDANCE_LEAD} <code>{skillInvoke(it.skill)}</code>.
+            </p>
+          ) : null}
           <span className="ptext">{it.text}</span>
           <CopyButton text={it.text} />
         </div>
