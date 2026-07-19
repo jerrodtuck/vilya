@@ -2,8 +2,8 @@
 
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
-**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (this landing)  
-**Status:** Docs landed (#204); labels (#205); orchestrator/chip/night-shift eligibility (#207) — `/planner` skill (#206) and site (#208/#209) follow
+**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (`/planner` + start-feature)  
+**Status:** Docs + labels landed (#204/#205); `/planner` + start-feature retarget in #206; site/eligibility follow in #207–#209
 
 ## Intent
 
