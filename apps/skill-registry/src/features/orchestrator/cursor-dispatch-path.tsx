@@ -1,8 +1,9 @@
-// Feature slice: orchestrator — numbered Cursor dispatch ritual (#219).
+// Feature slice: orchestrator — numbered Cursor dispatch ritual (#219 / #247).
 // Local steps markup (same setupsteps pattern as Setup / Night shift);
 // VSA forbids importing those features' step components.
 import {
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
   CURSOR_ORCH_PROMPT_LABEL,
   CURSOR_WORKER_A_PROMPT_ID,
@@ -15,9 +16,11 @@ export function CursorDispatchPath() {
       <div className="kicker">Cursor · manual dispatch</div>
       <h3>Three-step Cursor path</h3>
       <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.55 }}>
-        Claude Code chips self-start via <code>spawn_task</code>. Cursor has no
-        session-to-session comms — you open the worktree folder and paste{" "}
-        <b>Worker A</b>. There is no auto-handoff yet.
+        Claude Code chips self-start via <code>spawn_task</code> (
+        <code>/chip</code>). Cursor has no session-to-session comms — invoke{" "}
+        <code>/{CURSOR_HANDOFF_SKILL}</code> for the paste → open-folder →{" "}
+        <b>Worker A</b> ritual (same three steps below). There is no
+        auto-handoff yet.
       </p>
       <div className="setupsteps" style={{ marginTop: 12 }}>
         <div className="step">

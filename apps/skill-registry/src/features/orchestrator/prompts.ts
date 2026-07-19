@@ -9,6 +9,7 @@
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
 import {
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
   CURSOR_ORCH_PROMPT_LABEL,
   CURSOR_WORKER_A_PROMPT_ID,
@@ -80,7 +81,7 @@ export const PROMPTS: PromptGroup[] = [
     group: "Standing orders — paste once per session",
     c: "--orch",
     wide: true,
-    introHtml: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orchestrator</b>, the dispatch ritual is the <a href="#${CURSOR_DISPATCH_PANEL_ID}">numbered three-step path</a> above — not this menu.`,
+    introHtml: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orchestrator</b>, dispatch via <code>/${CURSOR_HANDOFF_SKILL}</code> — the <a href="#${CURSOR_DISPATCH_PANEL_ID}">numbered three-step path</a> above — not this menu.`,
     items: [
       {
         label: "Claude Code — session kickoff",

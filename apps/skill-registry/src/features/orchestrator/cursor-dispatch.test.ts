@@ -1,7 +1,8 @@
-// #219: Cursor three-step dispatch path links the two paste cards.
+// #219 / #247: Cursor three-step path + /cursor-handoff invoke target.
 import { describe, expect, it } from "vitest";
 import {
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
   CURSOR_ORCH_PROMPT_LABEL,
   CURSOR_WORKER_A_PROMPT_ID,
@@ -15,7 +16,7 @@ function orchGroup() {
   return orch!;
 }
 
-describe("Cursor three-step dispatch (#219)", () => {
+describe("Cursor three-step dispatch (#219 / #247)", () => {
   it("anchors orchestrator + Worker A paste cards for the path panel", () => {
     const orch = orchGroup();
     const orchKickoff = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL);
@@ -24,10 +25,11 @@ describe("Cursor three-step dispatch (#219)", () => {
     expect(workerA?.id).toBe(CURSOR_WORKER_A_PROMPT_ID);
   });
 
-  it("standing-orders intro points at the numbered Cursor path", () => {
+  it("standing-orders intro points at the numbered Cursor path and /cursor-handoff", () => {
     const orch = orchGroup();
     expect(orch.introHtml).toContain(`#${CURSOR_DISPATCH_PANEL_ID}`);
     expect(orch.introHtml).toContain("three-step");
+    expect(orch.introHtml).toContain(`/${CURSOR_HANDOFF_SKILL}`);
   });
 
   it("keeps Worker A/B exclusivity on the standing-orders note", () => {
