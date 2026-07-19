@@ -32,6 +32,9 @@
   --arch: var(--orch); --recall: #5b9bd5; --survey: #8bc34a;
   --research: #e0777a; --fork: var(--consult); --adr: #e0b34d;
   --spec: #52c4b0; --handoff: var(--done);
+  /* planner page (#208) — gold seat accent; queue/planitem/ready are steps */
+  --planner: #e0a84a; --queue: #8b95a6; --planitem: #7eb8da;
+  --ready: var(--finish);
   --page-px: 1.5rem;
   --wrap-max: 64rem;
 }
@@ -521,6 +524,12 @@ h1 .you { color: var(--orch); }
 .edge.lit.c-fork { stroke: var(--fork); }
 .edge.lit.c-adr { stroke: var(--adr); }
 .edge.lit.c-spec { stroke: var(--spec); }
+/* planner page (#208) */
+.edge.lit.c-planner { stroke: var(--planner); }
+.edge.lit.c-queue { stroke: var(--queue); }
+.edge.lit.c-planitem { stroke: var(--planitem); }
+.edge.lit.c-ready { stroke: var(--ready); }
+.edge.lit.c-handoff { stroke: var(--handoff); }
 @keyframes march { to { stroke-dashoffset: -26; } }
 .node { cursor: pointer; }
 .nbox { fill: var(--surface2); stroke: var(--c); stroke-width: 1.8; }

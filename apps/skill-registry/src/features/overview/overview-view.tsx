@@ -16,11 +16,12 @@ export function OverviewView() {
       <p className="mono-kicker">01 · system</p>
       <p className="lead">
         <b>Vilya is the Dev Loop</b> — the skills, board, and night-shift that
-        turn you into the <b>architect</b> who sets direction and the{" "}
+        turn you into the <b>architect</b> who sets direction, the{" "}
+        <b>planner</b> who plans onto the board, and the{" "}
         <b>orchestrator</b> who dispatches it: one architect seat per product
-        board, one orchestrator per repo. You point them by day, decide at the
-        forks, and keep the board honest.
-        Night-shift runs that <b>same</b> chain unattended. One{" "}
+        board, one Planner and one orchestrator per repo. You point them by
+        day, decide at the forks, and keep the board honest. Night-shift runs
+        that <b>same</b> chain unattended. One{" "}
         <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
         speak the same skills.
       </p>
@@ -29,6 +30,14 @@ export function OverviewView() {
         <span className="rolechip" style={{ ["--rc" as string]: "var(--arch)" }}>
           <b>Architect</b>
           <span>direction: issues · ADRs · specs</span>
+        </span>
+        <span className="arrow">→</span>
+        <span
+          className="rolechip"
+          style={{ ["--rc" as string]: "var(--planner)" }}
+        >
+          <b>Planner</b>
+          <span>plan loop: needs:plan → plan:ready</span>
         </span>
         <span className="arrow">→</span>
         <span className="rolechip" style={{ ["--rc" as string]: "var(--orch)" }}>
@@ -81,9 +90,9 @@ export function OverviewView() {
         <div className="kicker">Front door</div>
         <h3>Ask Vilya</h3>
         <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
-          Who handles this — architect, orchestrator, or you? Paste the card
-          below with your question; the answer comes back in a fixed shape:{" "}
-          <b>lane · exact next prompt · one-line why</b> with its canon
+          Who handles this — architect, planner, orchestrator, or you? Paste
+          the card below with your question; the answer comes back in a fixed
+          shape: <b>lane · exact next prompt · one-line why</b> with its canon
           citation. It routes — it never creates issues or dispatches.
         </p>
         <div
@@ -104,6 +113,15 @@ export function OverviewView() {
             fork with a stated recommendation.
           </p>
           <span className="more">Open the architect map →</span>
+        </Link>
+        <Link className="card" href="/planner">
+          <h3>Planner</h3>
+          <p className="desc">
+            Standing Fable plan loop — drains <code>needs:plan</code>, writes
+            kickoff + verify plan, marks <code>plan:ready</code>. Never
+            implements, dispatches, or merges.
+          </p>
+          <span className="more">Open the planner map →</span>
         </Link>
         <Link className="card" href="/orchestrator">
           <h3>Orchestrator</h3>
