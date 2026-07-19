@@ -13,6 +13,13 @@ export const NIGHT_SHIFT_ELIGIBILITY =
   "night-shift:ready ∧ plan:ready ∧ ¬needs:decision ∧ ¬epic";
 
 /**
+ * Daisy-chain prep (Option 3) — standing orders + NIGHT cards share this so
+ * "skill stays dumb / workflow promotes" cannot drift across the library.
+ */
+export const NIGHT_SHIFT_CHAIN_PREP =
+  "When queuing a daisy-chain path: set native blocked-by on each successor, label successors night-shift:chain (not night-shift:ready), and ensure plan:ready on each before you expect chain-promote.yml to promote chain→ready after a blocker closes. Night-shift never promotes — promotion is the workflow. Expectation: one chain link per merge cycle.";
+
+/**
  * Host-specific chip/board monitor mechanisms — shared by Planner enqueue
  * doctrine and (for Cursor) the dispatch standing-orders bullet so the two
  * cards cannot drift on "how to arm."
@@ -37,7 +44,7 @@ export const PLANNER_ORCH_DOCTRINE = [
   "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
   `When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session.`,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
-  `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}).`,
+  `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
 ].join(" ");
 
 export const PROMPTS: PromptGroup[] = [
@@ -281,7 +288,11 @@ Your job:
     items: [
       {
         label: "1 · Prep an issue for unattended work",
-        text: `Prep issue #<N> for night-shift: ensure plan:ready (Planner kickoff + verify plan on the issue — enqueue needs:plan if still owed), then label night-shift:ready. Eligibility is ${NIGHT_SHIFT_ELIGIBILITY}.`,
+        text: `Prep issue #<N> for night-shift: ensure plan:ready (Planner kickoff + verify plan on the issue — enqueue needs:plan if still owed), then label night-shift:ready. Eligibility is ${NIGHT_SHIFT_ELIGIBILITY}. Do not label successors night-shift:ready — use card 1b for a chain path.`,
+      },
+      {
+        label: "1b · Queue a daisy-chain path",
+        text: `Queue a night-shift chain. ${NIGHT_SHIFT_CHAIN_PREP} Label only tonight's head night-shift:ready. Product repo must have chain-promote.yml (from docs/project-tracking/templates/chain-promote.yml). No body-text Blocked-by: convention.`,
       },
       {
         label: "2 · Fire tonight's run (shell command, not a prompt)",
@@ -289,11 +300,11 @@ Your job:
       },
       {
         label: "3 · Morning triage",
-        text: "Show me last night's night-shift report: which PRs are open and Ready, what needs my decision, and what got stuck.",
+        text: "Show me last night's night-shift report: which PRs are open and Ready, what needs my decision, and what got stuck. After I merge/close a blocker, confirm chain-promote flipped the next night-shift:chain (+ plan:ready) issue to night-shift:ready for the following night.",
       },
       {
         label: "Reference — the standing prompt baked into the workflow",
-        text: `Follow skills/night-shift/SKILL.md exactly on this product repo. For each eligible issue (${NIGHT_SHIFT_ELIGIBILITY}) run the daytime chain: /start-feature → implement → /crucible-<stack> → remediate → /finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Post the morning report.`,
+        text: `Follow skills/night-shift/SKILL.md exactly on this product repo. For each eligible issue (${NIGHT_SHIFT_ELIGIBILITY}) run the daytime chain: /start-feature → implement → /crucible-<stack> → remediate → /finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Never promote night-shift:chain successors — chain-promote.yml owns that. Post the morning report.`,
       },
     ],
   },
