@@ -170,8 +170,8 @@ Daytime may chip without `plan:ready` when the issue is already clear (attended 
 
 ```text
 [optional] needs:plan → Planner (Fable) → plan:ready
-  → chip dispatch (spawn_task, brief carries the issue, verify routing, crucible gate;
-    orchestrator same turn: arms a Monitor-tool monitor + moves the issue to In Progress)
+  → chip dispatch (spawn_task / Cursor worker, brief carries the issue, verify routing,
+    crucible gate; orchestrator same turn: arms a host monitor + moves In Progress)
   → chip implements → /crucible-<stack> → /finish-feature (PR) → completion comment
     on the issue (gh); orchestrator monitor picks it up → operator /merge-pr → auto-archive
     on PR close → periodic /prune --apply
@@ -180,10 +180,12 @@ Daytime may chip without `plan:ready` when the issue is already clear (attended 
 Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
 (`gh` — no prompt, attended or not); the orchestrator's dispatch monitor picks it up (loop
 documented on the site's Setup page and in `/chip`). Dispatch carries **two same-turn
-obligations**: arm the monitor — the **Monitor tool**, never a background shell loop, which
-detects but cannot notify — and move the issue to **In Progress** on the board, since GitHub's
-built-in workflows only cover added→Todo and closed/merged→Done. The orchestrator cards carry
-the full wording.
+obligations**: arm the monitor and move the issue to **In Progress** on the board, since
+GitHub's built-in workflows only cover added→Todo and closed/merged→Done. **Claude Code**
+arms the **Monitor tool** — never an **exit-only** background shell watch loop (detects but
+cannot notify while running). **Cursor** has no Monitor tool; the equivalent is a background
+shell with **`notify_on_output`** on **REST** (`gh pr list` + issue comments ~90s) — never
+`gh project item-list` / GraphQL on the hot path. The orchestrator cards carry the full wording.
 
 ### Shared files / worktrees
 
