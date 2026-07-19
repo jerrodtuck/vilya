@@ -51,10 +51,12 @@ everything ships through chips.
 | `prompt` | a **fully self-contained brief** (see §2) |
 
 **In the same turn as every dispatch — no exceptions — the orchestrator arms a monitor** watching
-`gh pr list` for the chip's PR and the issue for new comments/state (§3). **Claude Code:** the
-**Monitor tool**. **Cursor:** a background shell with `notify_on_output` on **REST** (not
-`gh project item-list` / GraphQL) — Cursor has no Monitor tool; that watcher *is* the equivalent.
-The monitor *is* the completion signal; a dispatch without one is a chip nobody is listening for.
+the chip's PR and the issue for new comments/state (§3), and moves Status to **In Progress**
+when GraphQL budget allows (best-effort — skip the board edit when `graphql.remaining == 0`).
+**Claude Code:** the **Monitor tool**. **Cursor:** a background shell with `notify_on_output` on
+**REST** (`pulls?head=` + issue comments — not `gh pr list` / `gh project item-list` / GraphQL)
+— Cursor has no Monitor tool; that watcher *is* the equivalent. The monitor *is* the completion
+signal; a dispatch without one is a chip nobody is listening for. Full cadence/dedup recipe: #237.
 
 ## 2. The self-contained brief (the `prompt`)
 
@@ -91,15 +93,15 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 ## 3. After dispatch — the monitor is the signal
 
 The orchestrator's **monitor — armed in the same turn as the dispatch, no exceptions** — is the
-completion signal: watch `gh pr list` for the chip's PR and the issue for new comments/state. The
-chip's `gh issue comment` (§2) is what the monitor picks up; no push channel is relied on.
+completion signal: watch the chip's PR (REST `pulls?head=`) and the issue for new comments/state.
+The chip's `gh issue comment` (§2) is what the monitor picks up; no push channel is relied on.
 
 **Mechanism by host**
 
 | Host | How to arm | Do not |
 |------|------------|--------|
-| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) | An **exit-only** background shell watch loop — it detects in the output file but never notifies while the loop is still running |
-| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on **REST**: `gh pr list` + `gh api repos/<owner>/<repo>/issues/<N>/comments` ~every 90s; seed last-seen state; print a wake sentinel on change; stop after the merge batch | `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes). Cursor has **no** Monitor tool |
+| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on REST PR/comment side channels | An **exit-only** background shell watch loop — it detects in the output file but never notifies while the loop is still running; `gh project item-list` / GraphQL hot polls |
+| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on **REST**: `gh api …/pulls?head=<owner>:<branch>` + `gh api repos/<owner>/<repo>/issues/<N>/comments` ~every 90s; seed last-seen state; print a wake sentinel on change; stop after the merge batch | `gh pr list` (GraphQL), `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes). Cursor has **no** Monitor tool |
 
 Why not `send_message`: **`mcp__ccd_session_mgmt__send_message` always prompts the user for
 confirmation by product contract** — no permission rule silences it (twice-tested) — so it can
@@ -109,8 +111,8 @@ session never ends, so no end-notification is emitted.
 
 Backup checks when the monitor is quiet, and always before merge:
 
-- Claude Code: `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or `gh pr list`
-- Cursor: `gh pr list` / REST issue comments (same side channel the watcher uses)
+- Claude Code: `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or REST `pulls?head=` / issue comments
+- Cursor: REST `pulls?head=` / issue comments (same side channel the watcher uses)
 
 When the PR is up, **review the chip's commits** against the verify + crucible bar before merge.
 

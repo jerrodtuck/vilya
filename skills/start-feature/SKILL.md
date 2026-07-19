@@ -30,6 +30,9 @@ If the repo isn't already known, detect it:
 - Ambiguous which issue → ask (unless invoked by [/night-shift](../night-shift/SKILL.md) —
   then skip and take a clearly eligible issue only).
 - Move to **In Progress** (or **Blocked** if kickoff is stuck on an external dependency).
+  Board Status edits are **best-effort / rate-limit aware** — when `graphql.remaining == 0`,
+  skip the project edit and note status on the issue instead (see GraphQL quota note in
+  `GITHUB-PROJECTS.md`).
 
 ## 2. Set up the worktree
 

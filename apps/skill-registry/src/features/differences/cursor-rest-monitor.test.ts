@@ -15,8 +15,9 @@ describe("differences chip-completion monitor (#223)", () => {
     expect(monitor.claudeCode).toContain("Monitor tool");
     expect(monitor.claudeCode).toContain("exit-only");
     expect(monitor.cursor).toContain("notify_on_output");
-    expect(monitor.cursor).toContain("gh pr list");
-    expect(monitor.cursor).toContain("never `gh project item-list`");
+    expect(monitor.cursor).toContain("pulls?head=");
+    expect(monitor.cursor).toContain("never `gh pr list`");
+    expect(monitor.cursor).toContain("gh project item-list");
     expect(monitor.cursor).toContain("No Monitor tool");
     expect(monitor.note).toMatch(/Monitor equivalent/i);
   });

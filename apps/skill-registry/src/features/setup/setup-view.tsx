@@ -91,8 +91,9 @@ const CHIP_STEPS: SetupStep[] = [
         Mechanism differs by host: <b>Claude Code</b> arms the{" "}
         <b>Monitor tool</b>; <b>Cursor</b> arms a background shell with{" "}
         <code>notify_on_output</code> on <b>REST</b> (
-        <code>gh pr list</code> + issue comments ~90s — never{" "}
-        <code>gh project item-list</code> / GraphQL on the hot path). The
+        <code>pulls?head=</code> + issue comments ~90s — never{" "}
+        <code>gh pr list</code> / <code>gh project item-list</code> / GraphQL
+        on the hot path). The
         forbidden pattern is an <b>exit-only</b>
         {" "}
         background shell watch loop, not Cursor&apos;s notify watcher. There

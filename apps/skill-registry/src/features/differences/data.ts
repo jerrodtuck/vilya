@@ -38,8 +38,8 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Completion notification reliability",
-    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` always prompts the user for confirmation by product contract — no permission rule silences it (directly tested twice, 2026-07-17) — so it cannot carry an unattended report; harness end-pings never fire because chip sessions idle rather than end. Unattended signal = `gh` side channels (completion comment on the issue, `gh pr list`) + an orchestrator Monitor-tool monitor armed at dispatch.",
-    cursor: "Cloud Agents API: poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1). IDE orchestrator: unattended signal = the same `gh` side channels + a background shell with `notify_on_output` on REST (`gh pr list` + issue comments) — not Projects/GraphQL.",
+    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` always prompts the user for confirmation by product contract — no permission rule silences it (directly tested twice, 2026-07-17) — so it cannot carry an unattended report; harness end-pings never fire because chip sessions idle rather than end. Unattended signal = `gh` side channels (completion comment on the issue, REST `pulls?head=`) + an orchestrator Monitor-tool monitor armed at dispatch.",
+    cursor: "Cloud Agents API: poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1). IDE orchestrator: unattended signal = the same `gh` side channels + a background shell with `notify_on_output` on REST (`pulls?head=` + issue comments) — not Projects/GraphQL / `gh pr list`.",
     certainty: "confirmed",
     note: "Same underlying lesson on both tools: a push notification is a claim, not proof — verify against `gh` before acting on it.",
     sources: [
@@ -49,7 +49,7 @@ export const DIFFERENCES: DifferenceRow[] = [
   {
     area: "Chip-completion / board monitor mechanism",
     claudeCode: "Monitor tool — each stdout line streams to the session as a live event. Never an exit-only background shell watch loop (detects in the output file but never notifies while the loop is still running).",
-    cursor: "No Monitor tool. Equivalent: background shell + `notify_on_output` (stdout match wakes the session). Watch REST only — `gh pr list` + `gh api …/issues/<N>/comments` ~every 90s; never `gh project item-list` / GraphQL on the hot path (Projects GraphQL exhausted a 5k/hour budget in minutes in a 2026-07-19 experiment; lean REST stayed fine).",
+    cursor: "No Monitor tool. Equivalent: background shell + `notify_on_output` (stdout match wakes the session). Watch REST only — `gh api …/pulls?head=<owner>:<branch>` + `gh api …/issues/<N>/comments` ~every 90s; never `gh pr list` / `gh project item-list` / GraphQL on the hot path (Projects GraphQL exhausted a 5k/hour budget in minutes in a 2026-07-19 experiment; lean REST stayed fine).",
     certainty: "confirmed",
     note: "The old \"never a background shell loop\" rule means never an exit-only notifier. Cursor's `notify_on_output` watcher is the Monitor equivalent. Doctrine (side channel = issue/PR comments) is shared; mechanism differs by host.",
   },
