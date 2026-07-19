@@ -179,8 +179,9 @@ export const STAGES: Record<StageId, NightStage> = {
     kind: "failure",
     chipLabel: "Failure",
     bodyHtml: `
-    <p>Real walls from wiring the runner (#23, PRs #31–#33) — keep them visible so the next
-    machine does not rediscover them silently:</p>
+    <p>This stage is the <b>visual ledger</b> on the map. The operable symptom → fix table is the
+    page <b>Troubleshoot</b> band — use that when a run sticks. Real walls from wiring the runner
+    (#23, PRs #31–#33), kept visible so the next machine does not rediscover them silently:</p>
     <ol>
       <li><b>WSL bash stub</b> — <code>bash</code> often resolves to <code>System32\\bash.exe</code>. With only <code>docker-desktop</code>, steps die with <code>execvpe(/bin/bash) failed</code>. Fix: workflow Git Bash pin (<code>GITHUB_PATH</code> + <code>CLAUDE_CODE_GIT_BASH_PATH</code>) — shipped in the generic template.</li>
       <li><b>Session / branch “missing”</b> — Actions cwd is the runner <code>_work</code> checkout. Claude sessions land under <code>~/.claude/projects/C--…-_work-…</code>, not the daytime repo path. WIP branches may exist only under <code>_work/&lt;repo&gt;/</code> until push — <code>master</code> stays clean.</li>
