@@ -16,7 +16,11 @@ export function PromptList({ group }: { group: PromptGroup }) {
         />
       ) : null}
       {group.items.map((it) => (
-        <div className="prompt" key={it.label}>
+        <div
+          className={`prompt${it.id ? " path-card" : ""}`}
+          key={it.label}
+          id={it.id}
+        >
           <span className="plead">{it.label}</span>
           <span className="ptext">{it.text}</span>
           <CopyButton text={it.text} />

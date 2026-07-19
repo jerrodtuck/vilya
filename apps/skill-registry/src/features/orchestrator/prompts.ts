@@ -7,6 +7,13 @@
 // not copied, per #133.
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
+import {
+  CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_ORCH_PROMPT_ID,
+  CURSOR_ORCH_PROMPT_LABEL,
+  CURSOR_WORKER_A_PROMPT_ID,
+  CURSOR_WORKER_A_PROMPT_LABEL,
+} from "./cursor-dispatch";
 
 /** Night-shift pick gate — keep standing-order + NIGHT cards on one string. */
 export const NIGHT_SHIFT_ELIGIBILITY =
@@ -53,8 +60,7 @@ export const PROMPTS: PromptGroup[] = [
     group: "Standing orders — paste once per session",
     c: "--orch",
     wide: true,
-    introHtml:
-      "This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards.",
+    introHtml: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orchestrator</b>, the dispatch ritual is the <a href="#${CURSOR_DISPATCH_PANEL_ID}">numbered three-step path</a> above — not this menu.`,
     items: [
       {
         label: "Claude Code — session kickoff",
@@ -79,7 +85,8 @@ In the same turn as every chip dispatch — no exceptions — do two things: arm
 Your jobs: board/issue ops; enqueue Planner when needed (needs:plan + board Monitor for plan:ready); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /merge-pr (squash, never delete the branch); worktree cleanup via /prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
       },
       {
-        label: "Cursor — orchestrator kickoff (no comms layer)",
+        id: CURSOR_ORCH_PROMPT_ID,
+        label: CURSOR_ORCH_PROMPT_LABEL,
         text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (the architect, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
@@ -98,7 +105,8 @@ Your job:
 - After /merge-pr squash: you own /prune from the main clone (dry-run, then --apply). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean %USERPROFILE%\\.cursor\\worktrees\\<repo>.`,
       },
       {
-        label: "Cursor — worker kickoff A · orchestrator did setup",
+        id: CURSOR_WORKER_A_PROMPT_ID,
+        label: CURSOR_WORKER_A_PROMPT_LABEL,
         text: "You're the implementer for issue #<N> (if unfilled, derive it from this worktree's branch: feat|fix|docs/<issue#>-slug), working only in this worktree. /start-feature already ran in the orchestrator session — issue, branch, worktree, and board Status are set; don't re-run it. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR — the orchestrator only sees the board. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. When the build is done, run the repo's crucible review skill (the crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /finish-feature — PR that Closes #<N>.",
       },
       {
