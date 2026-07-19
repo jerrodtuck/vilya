@@ -180,6 +180,7 @@ export const STAGES: Record<StageId, NightStage> = {
     machine does not rediscover them silently:</p>
     <ol>
       <li><b>WSL bash stub</b> — <code>bash</code> often resolves to <code>System32\\bash.exe</code>. With only <code>docker-desktop</code>, steps die with <code>execvpe(/bin/bash) failed</code>. Fix: workflow Git Bash pin (<code>GITHUB_PATH</code> + <code>CLAUDE_CODE_GIT_BASH_PATH</code>) — shipped in the generic template.</li>
+      <li><b>Session / branch “missing”</b> — Actions cwd is the runner <code>_work</code> checkout. Claude sessions land under <code>~/.claude/projects/C--…-_work-…</code>, not the daytime repo path. WIP branches may exist only under <code>_work/&lt;repo&gt;/</code> until push — <code>master</code> stays clean.</li>
       <li><b>Label mismatch</b> — job <code>runs-on</code> must be a subset of the runner&apos;s labels (extra labels on the runner are fine; a missing required label → queued forever).</li>
       <li><b><code>id-token: write</code></b> — required for OIDC → Claude GitHub App token exchange.</li>
       <li><b>Claude GitHub App install</b> — App must be installed on the repo or org.</li>
