@@ -7,6 +7,7 @@ import { ASK_VILYA } from "./ask-vilya";
 import { BoardMoverMap } from "./board-mover-map";
 import { BoardScreenshot } from "./board-screenshot";
 import { CardinalityDiagram } from "./cardinality-diagram";
+import { FoundingWhy } from "./founding-why";
 
 export function OverviewView() {
   return (
@@ -66,6 +67,8 @@ export function OverviewView() {
         <span className="arrow">→</span>
         <span className="lchip f">Done</span>
       </div>
+
+      <FoundingWhy />
 
       <BoardStrip
         moversHref="#movers"

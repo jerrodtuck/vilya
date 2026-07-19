@@ -27,7 +27,11 @@ Three commitments define the system:
 - **The board is the only shared state.** Every role, session, and overnight run
   reports into the GitHub Projects board. Nothing coordinates through chat history
   or a session's memory; a fresh session with zero context can pick up any handoff
-  from the board alone.
+  from the board alone. That rule has a scar: status, changelogs, and roadmaps
+  once lived in text-file trackers. One stream was fine; parallel agent sessions
+  stomped the same files. Live coordination moved to the board so sessions stop
+  racing through markdown — docs stay append-only history and design intent
+  (`changelog.d/`, specs, `DECISIONS.md`), not a parallel status dashboard.
 - **Written once, run anywhere.** One `SKILL.md` standard runs in both Claude Code
   and Cursor from one user-level install; one canon holds the process; the only
   per-repo variation is a single config file.
