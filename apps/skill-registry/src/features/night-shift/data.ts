@@ -104,15 +104,16 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "4 · Headless loop",
     title: "Think → tool → result",
     mapTitle: "Loop",
-    mapRole: "max-turns 60",
+    mapRole: "timeout · daytime chain",
     c: "--review",
     kind: "happy",
     chipLabel: "Loop",
     bodyHtml: `
     <p>Single job step: <code>anthropics/claude-code-action@v1</code> with a prompt that points at
-    <code>skills/night-shift/SKILL.md</code>.</p>
+    <code>skills/night-shift/SKILL.md</code> — same daytime chain, leave a PR.</p>
     <ul>
-      <li><code>--max-turns 60</code> caps the think → tool → result cycles.</li>
+      <li><b>Runaway guard:</b> job <code>timeout-minutes: 180</code> (wall clock). A high
+        <code>--max-turns</code> (500) is last-ditch only — CLI defaults ~10 if omitted; do not use a tight turn budget as the feature size limit.</li>
       <li>Allowed tools: <code>Edit</code>, <code>Read</code>, <code>Write</code>, <code>Bash</code> —
         Bash is how it runs <code>git</code> / <code>gh</code> / <code>npm</code> with the same conventions you use daytime.</li>
       <li><code>--permission-mode bypassPermissions</code> — unattended; the skill&apos;s gates replace interactive consent.</li>
@@ -181,6 +182,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <ol>
       <li><b>WSL bash stub</b> — <code>bash</code> often resolves to <code>System32\\bash.exe</code>. With only <code>docker-desktop</code>, steps die with <code>execvpe(/bin/bash) failed</code>. Fix: workflow Git Bash pin (<code>GITHUB_PATH</code> + <code>CLAUDE_CODE_GIT_BASH_PATH</code>) — shipped in the generic template.</li>
       <li><b>Session / branch “missing”</b> — Actions cwd is the runner <code>_work</code> checkout. Claude sessions land under <code>~/.claude/projects/C--…-_work-…</code>, not the daytime repo path. WIP branches may exist only under <code>_work/&lt;repo&gt;/</code> until push — <code>master</code> stays clean.</li>
+      <li><b>Tight <code>--max-turns</code></b> — a 60-turn cap aborted mid-feature before push. Guard with job <code>timeout-minutes</code>; keep <code>--max-turns</code> high (or you inherit the CLI default ~10).</li>
       <li><b>Label mismatch</b> — job <code>runs-on</code> must be a subset of the runner&apos;s labels (extra labels on the runner are fine; a missing required label → queued forever).</li>
       <li><b><code>id-token: write</code></b> — required for OIDC → Claude GitHub App token exchange.</li>
       <li><b>Claude GitHub App install</b> — App must be installed on the repo or org.</li>

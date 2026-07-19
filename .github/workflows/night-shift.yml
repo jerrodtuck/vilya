@@ -23,6 +23,7 @@ concurrency:
 jobs:
   night-shift:
     runs-on: [self-hosted, windows]
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,6 +60,6 @@ jobs:
             At a real design fork: comment recommendation, label needs:decision,
             Blocked, next issue. Finish with the morning report per the skill.
           claude_args: |
-            --max-turns 60
+            --max-turns 500
             --allowedTools Edit,Read,Write,Bash
             --permission-mode bypassPermissions

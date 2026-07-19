@@ -194,7 +194,7 @@ https://vilya.jerrodtuck.com/night-shift#generate-workflow (repo name + `claude.
 
 | Concern | Where it lives |
 |---------|----------------|
-| Workflow shape (checkout, Git Bash pin, Claude action, Bypass, max-turns) | One YAML — copy the template |
+| Workflow shape (checkout, Git Bash pin, Claude action, Bypass, job `timeout-minutes`) | One YAML — copy the template |
 | **Stack**, **Crucible variant**, **Test command**, **Manual smoke** | Product `docs/project-tracking/GITHUB-PROJECTS.md` (skills already read these) |
 | `path_to_claude_code_executable` | Edit once in the copied workflow (per machine; `Get-Command claude`) |
 | Machine toolchains (Node, .NET, CygNet SDK, …) | Already installed on the self-hosted box — **not** a second workflow file |

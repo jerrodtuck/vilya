@@ -16,6 +16,11 @@ name: night-shift
 #   Secret: claude setup-token → CLAUDE_CODE_OAUTH_TOKEN
 #   Bash: this job pins Git Bash via GITHUB_PATH.
 #
+# ── Runaway guards ────────────────────────────────────────────────────────────
+#   Primary: job timeout-minutes (wall clock) — same daytime-sized work, leave a PR.
+#   Secondary: high --max-turns (CLI defaults ~10 if omitted — do not omit).
+#   Also: concurrency group night-shift (one run at a time).
+#
 # ── SECURITY ──────────────────────────────────────────────────────────────────
 #   Self-hosted runners: PRIVATE repos only.
 
@@ -38,6 +43,8 @@ concurrency:
 jobs:
   night-shift:
     runs-on: [self-hosted, windows]
+    # Wall-clock runaway brake — not a "finish a feature in N turns" budget.
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,6 +82,6 @@ jobs:
             At a real design fork: comment recommendation, label needs:decision,
             Blocked, next issue. Finish with the morning report per the skill.
           claude_args: |
-            --max-turns 60
+            --max-turns 500
             --allowedTools Edit,Read,Write,Bash
             --permission-mode bypassPermissions
