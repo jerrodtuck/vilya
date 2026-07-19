@@ -13,7 +13,8 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>You are the <b>standing plan loop</b> — peer of orchestrator and night-shift, not a direction seat. One Planner session <b>per repo</b>, launched on <b>Fable</b>.</p>
     <ul><li>Drain <code>needs:plan</code>; write kickoff + verify plan on the issue; mark <code>plan:ready</code>.</li>
-    <li>Never implement, never dispatch chips, never merge, never arm monitors.</li>
+    <li>Never implement, never dispatch chips, never merge, never arm process/completion self-watches.</li>
+    <li>When idle, arm a Planner-owned <b>intake Monitor</b> for <code>needs:plan</code> (REST + host wake).</li>
     <li>Enqueue is opt-in: the board queue is the brief list — the operator does not paste each issue into this chat.</li></ul>`,
   },
   QUEUE: {
@@ -23,7 +24,7 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>Poll open issues labeled <code>needs:plan</code> (highest priority, then oldest).</p>
     <ul><li>If the operator names an issue, plan that one — apply <code>needs:plan</code> if missing so the transition is visible.</li>
-    <li>Idle in session when the queue is empty; stay standing.</li></ul>`,
+    <li>When the queue is empty, arm the intake Monitor (≥120s, wake only when the open set <b>gains</b> an issue) and stay standing — do not wait for a ping.</li></ul>`,
   },
   RECALL: {
     kicker: "Ground the brief",
@@ -72,8 +73,8 @@ export const NODES: Record<string, FlowNode> = {
     title: "Board Monitor picks up",
     c: "--handoff",
     bodyHtml: `
-    <p>When the orchestrator (or operator) enqueued <code>needs:plan</code>, <b>they</b> armed a board Monitor watching <code>plan:ready</code> and/or this kickoff comment.</p>
-    <p>Planner does <b>not</b> arm monitors and does not spawn chips. Do not watch your own process — you are not a chip.</p>`,
+    <p>When the orchestrator (or operator) enqueued <code>needs:plan</code>, <b>they</b> armed a <b>completion</b> board Monitor watching <code>plan:ready</code> and/or this kickoff comment.</p>
+    <p>Planner arms <b>intake</b> for <code>needs:plan</code> only — never process/completion self-watches, and never spawn chips. You are not a chip.</p>`,
   },
 };
 
@@ -145,6 +146,6 @@ export const DEFAULT_DRAWER: FlowNode = {
     <h4><span class="swatch" style="background:var(--ready)"></span>Signal is the board</h4>
     <ul>
       <li>Remove <code>needs:plan</code>, add <code>plan:ready</code>.</li>
-      <li>Orchestrator arms the Monitor — Planner does not.</li>
+      <li>Orchestrator arms the <b>completion</b> Monitor; Planner arms <b>intake</b> when idle.</li>
     </ul>`,
 };

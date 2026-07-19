@@ -79,7 +79,7 @@ export const CURSOR_DISPATCH_MONITOR =
  */
 export const PLANNER_ORCH_DOCTRINE = [
   "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
-  `When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session. Standing plan:ready pollers on Cursor absorb the same shell-teardown rule: ${CURSOR_SHELL_TEARDOWN_DOCTRINE}`,
+  `When you enqueue needs:plan, in the same turn arm a completion board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session. Intake polling for needs:plan is Planner-owned — you do not arm the Planner's queue wake. Standing plan:ready pollers on Cursor absorb the same shell-teardown rule: ${CURSOR_SHELL_TEARDOWN_DOCTRINE}`,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
 ].join(" ");

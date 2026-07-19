@@ -32,6 +32,12 @@ describe("Planner / night-shift eligibility labels (#207)", () => {
     expect(corpus).toContain("board Monitor");
   });
 
+  it("completion Monitor stays orch-owned; intake is Planner-owned (#255)", () => {
+    expect(PLANNER_ORCH_DOCTRINE).toContain("completion board Monitor");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("Never monitor the Planner process or session");
+    expect(PLANNER_ORCH_DOCTRINE).toMatch(/Intake polling for needs:plan is Planner-owned/i);
+  });
+
   it("keeps Claude and Cursor standing orders on the shared Planner doctrine", () => {
     const orchGroup = PROMPTS.find((g) => g.node === "ORCH");
     expect(orchGroup).toBeDefined();

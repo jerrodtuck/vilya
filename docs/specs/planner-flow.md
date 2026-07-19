@@ -2,8 +2,8 @@
 
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
-**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)  
-**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; Cursor monitor-shell teardown/re-arm taught in #270
+**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#255](https://github.com/jerrodtuck/vilya/issues/255) (Planner intake Monitor), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)  
+**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; intake Monitor (#255) amends idle/monitor clause from #203; Cursor monitor-shell teardown/re-arm taught in #270
 
 ## Intent
 
@@ -23,7 +23,8 @@ This spec is the durable story for the seat. Canon label tables (`#205`), skills
 | Cardinality | One Planner session **per repo** |
 | Model | Session launched on **Fable** (`claude --model fable` or equivalent). Orchestrator + chips stay on **Sonnet** via `settings.local.json` + `.worktreeinclude` |
 | Output | Kickoff comment + verify plan (+ fork options) on the issue; label transition to `plan:ready` |
-| Never | Implement, dispatch, merge, or run as a `spawn_task` chip (`spawn_task` has no model param) |
+| Never | Implement, dispatch, merge, arm **process/completion** self-watches, or run as a `spawn_task` chip (`spawn_task` has no model param) |
+| Required when idle | **Intake Monitor** for the open `needs:plan` set (Planner-owned; see below) |
 
 ## Labels
 
@@ -41,10 +42,42 @@ issue into Planner chat.
 1. Standing Planner session polls for `needs:plan` and drains the queue.
 2. For each issue: write kickoff + verify plan (and costed fork options when needed)
    onto the issue; apply `plan:ready`; drop `needs:plan`.
-3. Orchestrator, when enqueueing planning, arms a **board Monitor** for that issue —
-   watch for `plan:ready` and/or the plan kickoff comment. Same doctrine as chips
+3. When the queue is empty (or between drains), the Planner **arms an intake Monitor**
+   so a new `needs:plan` wakes the same session — do not wait for an operator ping.
+4. Orchestrator, when enqueueing planning, arms a **completion board Monitor** for that
+   issue — watch for `plan:ready` and/or the plan kickoff comment. Same doctrine as chips
    (side channel + Monitor), different signal (label/plan comment, not a PR).
-4. Do **not** monitor the Planner process or session. Planner is not a chip.
+5. Do **not** monitor the Planner process or session. Planner is not a chip. Completion
+   watches stay orchestrator-owned; intake is Planner-owned.
+
+## Intake Monitor (Planner-owned)
+
+Sessions do not message each other. Host wake only reaches the session that armed it.
+Without an intake alarm, an idle Planner is asleep until pinged — that contradicts
+“skills carry mechanics.”
+
+| Owner | Signal | When |
+|-------|--------|------|
+| **Planner** | Open `needs:plan` set **gains** an issue | Standing / idle |
+| **Orchestrator** | `plan:ready` and/or plan kickoff comment | Same turn as enqueue |
+
+**Forbidden for Planner:** process/session self-watch; completion watches on your own
+`plan:ready` / kickoff (orchestrator owns those); sibling-chat pings as the default wake.
+
+### Host recipe (both hosts — soft fork A)
+
+Cadence **≥120s** (not 60s / not ~90s). REST-first — never `gh project item-list` /
+GraphQL on the hot path (`gh pr list` is GraphQL; do not use it for this poller).
+
+1. Seed the last-seen set of open issue numbers labeled `needs:plan`
+   (`gh api` issues/search with `label:needs:plan state:open`, or equivalent REST).
+2. Each tick: re-fetch the open set. Print a **wake sentinel** only when the set
+   **gains** at least one issue number (not on every tick; not on shrinks alone).
+3. **Cursor:** background shell + `notify_on_output` matched to that sentinel
+   (stdout match wakes the session — not an exit-only watch loop).
+4. **Claude Code:** arm the **Monitor tool** on the equivalent background poll
+   (peer host mechanism; same gain-only wake).
+5. On wake: drain per loop behavior; when idle again, re-arm intake.
 
 ## Cursor shell teardown (standing monitors)
 
@@ -81,14 +114,19 @@ in practice; model boundary ≠ dispatch boundary for planning quality. New stor
 **Planner session = plan model; chip session = execute model.** Site rewrite is #209;
 this spec + VISION + the #203 ADR are the durable claim.
 
+#255 amends the #203 idle/monitor clause only: Planner **does** arm an intake Monitor
+for `needs:plan`; it still never arms process/completion self-watches. Standing Fable
+Planner, labels, and orchestrator completion Monitor are unchanged.
+
 ## Non-goals (this landing)
 
 - Planner inside Actions / the night-shift job (deferred).
 - Per-`spawn_task` model pin (blocked on Claude Code).
-- Canon label sync, skill text, or site pages (owned by #205–#209).
+- Planner as orchestrator subagent; cross-session notify between Cursor chats.
+- Canon label sync or Setup/Differences pages (owned by #205–#209).
 
 ## Verify
 
 - Merge routing: **tests-only** (docs)
-- Facts match #203 ADR + clarification comments (board Monitor, standing drain, prep ritual)
-- Links resolve to #203 / #204; no edits to `GITHUB-PROJECTS.md` Autonomy tables on this branch
+- Facts match #203 ADR + #255 intake amend (intake Planner-owned; completion orchestrator-owned)
+- Links resolve to #203 / #204 / #255; no edits to `GITHUB-PROJECTS.md` Autonomy tables on this branch

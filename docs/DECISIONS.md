@@ -32,6 +32,25 @@ fix Cursor itself; does not change ≥120s REST / no GraphQL hot path.
 (persist-across-drains complement); #261 (standing orch `plan:ready` poller); #255
 (Planner intake); prior `2026-07-19 — Cursor REST chip monitor` teaching (#223/#237).
 
+## 2026-07-19 — Planner intake Monitor for needs:plan wake (amends #203)
+
+**Decision:** The standing Planner session owns an **intake** board poller in its own session — REST + host wake (`notify_on_output` on Cursor; Monitor tool on Claude Code), cadence ≥120s, wake only when the open `needs:plan` set gains an issue. Soften “Planner never arms monitors” to: never arm **process/completion** monitors on yourself; **intake** for your own queue is required. Orchestrator still arms only the **completion** board Monitor (`plan:ready` / kickoff) when enqueueing. Reject sibling-chat ping and “Planner as orchestrator subagent” as the default. (decided by operator, 2026-07-19; Cursor intake loop **tested** in-session the same day).
+
+**Options considered:**
+1. Operator / orchestrator nudge when queue was empty — cost: operator babysits a role seat; contradicts founding “skills carry mechanics.”
+2. **Planner-owned intake Monitor (chosen)** — cost: second watcher per repo; REST/quota hygiene; amend #203 skill/prompt/spec wording ← chosen
+3. Planner as orchestrator subagent — cost: reopens #203 cardinality; Claude Code `spawn_task` still has no model pin; Planner liveness tied to orchestrator; Cursor-only asymmetry if adopted there first.
+
+**Why:** `notify_on_output` only wakes the session that armed the shell — sessions still do not message each other; the board remains the handoff. Without an intake alarm, “idle in session” is asleep until pinged. Cursor test confirmed the intake loop wakes on new `needs:plan` without operator typing. Completion watches stay orchestrator-owned so Planner is not treated as a chip.
+
+**Consequences:**
+- Amend `/vilya-planner` skill, `docs/specs/planner-flow.md`, Planner site standing-orders card, and any “never arm monitors” copy that forbids intake.
+- This ADR supersedes the #203 clause that implied Planner never arms any monitor / only idles until pinged; does **not** supersede standing Fable Planner, labels, or orchestrator completion Monitor.
+- Follow-on work ships via board issues (skill/spec/site + `DECISIONS.md` file append on the owning branch) — not from the architect session.
+- Claude Code: same doctrine via Monitor tool (host mechanism already in chip/orchestrator canon).
+
+**Evidence:** Operator lock in Product Architect session 2026-07-19; Cursor intake poller tested same day (wake on `needs:plan` without ping); prior entry `2026-07-19 — Planner loop for anytime plan≠execute (#203)`; `docs/specs/planner-flow.md`; VISION roles / “Humans decide; skills carry mechanics.”
+
 ## 2026-07-19 — Prefix all Dev Loop skills with `vilya-` (#257)
 
 **Decision:** Every skill that ships from `jerrodtuck/vilya/skills/` is renamed so its folder name, frontmatter `name`, and slash invoke are `vilya-<skill>` (e.g. `/vilya-chip`, `/vilya-planner`, `/vilya-cursor-handoff`, `/vilya-crucible-nextjs`). Site pages, prompts, canon, install scripts, and cross-skill links update in the same effort. No nested `/vilya ` + space submenu — hosts expose flat skill names; typing `/vilya` filters by prefix. (decided by operator, 2026-07-19).
