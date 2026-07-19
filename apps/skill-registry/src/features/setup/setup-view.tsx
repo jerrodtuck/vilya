@@ -2,8 +2,12 @@
 import { BoardGuide } from "./board-guide";
 import { GithubProjectsTool } from "./github-projects-tool";
 import { loadGithubProjectsTemplate } from "./load-github-projects-template";
+import { AUTONOMY_LABELS } from "./plan-execute-routing";
+import { PlanExecuteSection } from "./plan-execute-section";
 import { PlatformToggle } from "./platform-toggle";
 import { Steps, type SetupStep } from "./setup-steps";
+
+const [needsPlan, planReady, nightShiftReady, needsDecision] = AUTONOMY_LABELS;
 
 const STEPS: SetupStep[] = [
   {
@@ -63,9 +67,10 @@ const STEPS: SetupStep[] = [
   {
     text: (
       <>
-        Add the two autonomy labels: <code>auto:ready</code> (safe for
-        night-shift) and <code>needs:decision</code> (the loop sets this at a
-        fork).
+        Add the autonomy labels: <code>{needsPlan}</code> (enqueue for Planner),{" "}
+        <code>{planReady}</code> (kickoff + verify plan on the issue),{" "}
+        <code>{nightShiftReady}</code> (safe for unattended night-shift), and{" "}
+        <code>{needsDecision}</code> (the loop sets this at a fork).
       </>
     ),
   },
@@ -224,65 +229,7 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         test command both go in the repo&apos;s config block.
       </div>
 
-      <h2>Plan → execute (models)</h2>
-      <p className="muted" style={{ lineHeight: 1.55 }}>
-        Not stored in <code>GITHUB-PROJECTS.md</code> — pickers differ across
-        Cursor and Claude Code, and preferences change often.{" "}
-        <code>/start-feature</code> plans first on your <b>planning model</b>,
-        then asks you to switch to an <b>execution model</b> before coding
-        (daytime). Skills cannot flip the picker. Cursor Plan mode / CLI{" "}
-        <code>--mode=plan</code> are optional helpers, not the contract.
-        Night-shift / Actions stay on one model for the whole unattended run
-        (planning already locked via the issue + <code>auto:ready</code>).
-      </p>
-      <p className="muted" style={{ lineHeight: 1.55 }}>
-        <b>
-          Claude Code — <code>opusplan</code> does not automate this.
-        </b>{" "}
-        We tried pairing it with env overrides (
-        <code>ANTHROPIC_DEFAULT_OPUS_MODEL</code> /{" "}
-        <code>ANTHROPIC_DEFAULT_SONNET_MODEL</code> in{" "}
-        <code>.claude/settings.local.json</code>) to get a Fable plan → Sonnet
-        execute split inside one session. It did not reliably drive plan→execute
-        in our chip flow, so treat it as unproven — don&apos;t rely on it.
-      </p>
-      <p className="muted" style={{ lineHeight: 1.55 }}>
-        <b>You don&apos;t need it — the chip flow already is the split.</b>{" "}
-        Model is read at <b>session startup</b> and fixed for that session, and
-        the chip flow puts plan and execute in <b>different sessions</b>:
-        planning happens orchestrator-side (<code>/start-feature</code> in the
-        main clone, on whatever the operator picked via <code>/model</code> —
-        e.g. Fable), and the chip is a fresh session that inherits its model
-        from the <code>.claude/settings.local.json</code> copied into its
-        worktree via <code>.worktreeinclude</code>. Set that file&apos;s{" "}
-        <code>model</code> to your <b>execution model</b>:
-      </p>
-      <pre>{`{
-  "model": "claude-sonnet-5"
-}`}</pre>
-      <p className="muted" style={{ lineHeight: 1.55 }}>
-        Result: <b>Fable plans → Sonnet executes</b>, with no mid-session
-        switch and no pause — the model boundary is the dispatch boundary. One
-        manual step remains: the orchestrator&apos;s own session also starts on
-        that file&apos;s model, so run <code>/model claude-fable-5</code> once
-        per orchestrator session. The <code>/start-feature</code>{" "}
-        stop-for-model-switch only applies to single-session work where one
-        session both plans and implements.
-      </p>
-      <p className="muted" style={{ lineHeight: 1.55 }}>
-        <b>All of the above is Claude Code only.</b>{" "}
-        <code>.claude/settings.local.json</code>, <code>/model</code>, and{" "}
-        <code>.worktreeinclude</code> are Claude Code mechanisms — Cursor reads
-        none of them. In <b>Cursor</b>, the IDE model is chosen per
-        conversation in the chat&apos;s model dropdown (planning and execution
-        alike), so the plan→execute switch there is the manual hand-switch{" "}
-        <code>/start-feature</code> describes. Cursor has no repo-file-based
-        model config — Cloud Agents take a <code>model.id</code> per dispatch
-        in <code>POST /v1/agents</code>, falling back to your user default →
-        team default → system default, all account-level. If you run both
-        tools on one repo, set the model in each tool separately; neither
-        inherits from the other.
-      </p>
+      <PlanExecuteSection />
 
       <h2>Background sessions (chips) — one-time setup</h2>
       <p className="muted">
