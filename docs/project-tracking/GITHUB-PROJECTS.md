@@ -7,13 +7,15 @@ block plus a pointer back here — generated with the site's Setup → Regenerat
 sections below live only in this file; skills read config from each repo's file and process
 from their own SKILL.md.
 
-Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / …) read owner, project,
-labels, stack, test command, and crucible variant from here. Planning vs execution **models** are
-per-operator, never stored in this file, and set per tool: **Claude Code** — `model` in
-`.claude/settings.local.json` (gitignored; chips inherit it via `.worktreeinclude`) is the execution
-model, `/model` in the orchestrator session is the planning model; **Cursor** — per-conversation
-model dropdown, both phases; **night-shift** — the model is fixed by the launcher (workflow file),
-one model for the whole run. Single-session daytime work still hand-switches per `/start-feature`.
+Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / `/planner` / …) read
+owner, project, labels, stack, test command, and crucible variant from here. Planning vs execution
+**models** are per-operator, never stored in this file: **Planner session = Fable**
+(`claude --model fable`); **orchestrator + chips = Sonnet** via `model` in
+`.claude/settings.local.json` (gitignored; chips inherit it via `.worktreeinclude`) — **not**
+orchestrator `/model` as the planner. **Cursor** — per-conversation model dropdown, both phases;
+**night-shift** — the model is fixed by the launcher (workflow file), one model for the whole run.
+Single-session daytime work still hand-switches per `/start-feature` when not using a Planner
+session.
 
 ## Repo config — fill this in per repo
 
@@ -77,17 +79,32 @@ Areas name *this* product's vertical slices. This repo's areas:
 | **Priority** | `priority:critical` · `priority:high` · `priority:medium` · `priority:low` |
 | **Area** | repo-specific — see Repo config |
 | **Status** | Todo · In Progress · Blocked · Verifying · Done |
-| **Autonomy** | `auto:ready` (safe for night-shift) · `needs:decision` (loop stopped at a fork) |
+| **Autonomy** | `needs:plan` (enqueue for Planner) · `plan:ready` (kickoff + verify plan on issue) · `night-shift:ready` (safe for unattended night-shift) · `needs:decision` (loop stopped at a fork) |
 
-Sync the standard Type/Priority/Status labels into a new repo:
+Sync the standard Type/Priority/Autonomy labels into a new repo:
 
 ```bash
 bash docs/project-tracking/scripts/sync-labels.sh <owner>/<repo>
 ```
 
-The script syncs the **standard set only** (`type:*`, `priority:*`, `auto:ready`,
-`needs:decision`); `area:*` labels are repo-specific — create them from the repo's config
-file's Area labels section.
+The script syncs the **standard set only** (`type:*`, `priority:*`, `needs:plan`,
+`plan:ready`, `night-shift:ready`, `needs:decision`); `area:*` labels are repo-specific —
+create them from the repo's config file's Area labels section.
+
+#### Migrating `auto:ready` → `night-shift:ready`
+
+`auto:ready` is retired. Product repos that still have it should rename the label (GitHub
+keeps issue associations on rename):
+
+```bash
+gh label edit auto:ready --repo <owner>/<repo> --name night-shift:ready \
+  --description "Safe for night-shift to pick up autonomously"
+```
+
+Or run `sync-labels.sh` (creates `night-shift:ready`), then for each open issue still on the
+old name: `gh issue edit <n> --repo <owner>/<repo> --add-label night-shift:ready
+--remove-label auto:ready`, and delete `auto:ready`. Relabeling remotes (Anduin, etc.) is
+operator follow-through after this canon lands — not part of the label-contract PR.
 
 ### Creating an issue (two commands)
 
@@ -145,12 +162,19 @@ inline by `/start-feature` and `/finish-feature`.
 
 ### Chip chain (dispatched)
 
+**Planner** is an anytime standing loop (one Fable session per repo). Enqueue with opt-in
+`needs:plan`; Planner drains the queue → writes kickoff + verify plan on the issue →
+`plan:ready`. When you enqueue planning, the orchestrator arms a **board Monitor** for
+`plan:ready` (and/or the plan kickoff comment) — not a process monitor on the Planner session.
+Daytime may chip without `plan:ready` when the issue is already clear (attended judgment).
+
 ```text
-/start-feature (plan, orchestrator) → chip dispatch (spawn_task, brief carries the issue, verify
-routing, crucible gate; orchestrator same turn: arms a Monitor-tool monitor + moves the issue to
-In Progress) → chip implements → /crucible-<stack> → /finish-feature (PR) → completion comment
-on the issue (gh); orchestrator monitor picks it up → operator /merge-pr → auto-archive on PR
-close → periodic /prune --apply
+[optional] needs:plan → Planner (Fable) → plan:ready
+  → chip dispatch (spawn_task, brief carries the issue, verify routing, crucible gate;
+    orchestrator same turn: arms a Monitor-tool monitor + moves the issue to In Progress)
+  → chip implements → /crucible-<stack> → /finish-feature (PR) → completion comment
+    on the issue (gh); orchestrator monitor picks it up → operator /merge-pr → auto-archive
+    on PR close → periodic /prune --apply
 ```
 
 Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
@@ -177,9 +201,11 @@ Night-shift is **not** a second methodology. It runs the **same daytime chain** 
 template; each product repo copies it. Stack-specific commands are **not** forked into YAML —
 the skill reads them from that product’s config-only `GITHUB-PROJECTS.md`.
 
-Eligibility: labeled `auto:ready`, not `needs:decision`, not `type:epic`. Opens PRs; **never
-merges**. At a real design fork: comment options + recommendation, label `needs:decision`, Blocked,
-next issue.
+Eligibility: labeled `night-shift:ready` and `plan:ready`, not `needs:decision`, not
+`type:epic`. Opens PRs; **never merges**. Stricter than daytime — unattended does not skip
+planning. Prep (operator + orchestrator): scope issues → run Planner (`needs:plan` →
+`plan:ready`) → label `night-shift:ready` before the unattended window. At a real design
+fork: comment options + recommendation, label `needs:decision`, Blocked, next issue.
 
 **Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
 Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each

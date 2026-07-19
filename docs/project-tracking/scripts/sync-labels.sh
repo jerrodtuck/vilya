@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 # Sync the standard label set into a repo — the set every board shares:
 # type:* (bug/feature/epic/task), priority:* (critical/high/medium/low), and the
-# autonomy pair (auto:ready, needs:decision). Standard set ONLY — area:* labels
-# are repo-specific by definition; create them from the repo's config file
-# (docs/project-tracking/GITHUB-PROJECTS.md, "Area labels" section).
+# autonomy set (needs:plan, plan:ready, night-shift:ready, needs:decision).
+# Standard set ONLY — area:* labels are repo-specific by definition; create them
+# from the repo's config file (docs/project-tracking/GITHUB-PROJECTS.md,
+# "Area labels" section).
 #
 # Usage: bash docs/project-tracking/scripts/sync-labels.sh <owner>/<repo> [--dry-run]
 #
 # Idempotent: `gh label create --force` updates color/description when the label
 # already exists. --dry-run echoes what would be synced without calling gh.
 # Windows parity twin: sync-labels.ps1 (keep the two behaviorally identical).
+#
+# Migration: `auto:ready` was renamed to `night-shift:ready`. This script does
+# not delete or rename the old label — see GITHUB-PROJECTS.md "Migrating
+# auto:ready → night-shift:ready".
 set -euo pipefail
 
 repo=""
@@ -38,7 +43,9 @@ labels=(
   "priority:high|d93f0b|Next up"
   "priority:medium|fbca04|Normal queue"
   "priority:low|0e8a16|When idle"
-  "auto:ready|0e8a16|Safe for night-shift to pick up autonomously"
+  "needs:plan|1d76db|Enqueue for Planner (kickoff + verify plan)"
+  "plan:ready|0e8a16|Planner finished - kickoff + verify plan on issue"
+  "night-shift:ready|0e8a16|Safe for night-shift to pick up autonomously"
   "needs:decision|d93f0b|Loop stopped at a fork - operator decision needed"
 )
 
