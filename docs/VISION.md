@@ -90,9 +90,9 @@ thin orchestrator.
   routes to Architect before Orchestrator; each role gets a first-class page with an
   interactive map and its prompt library (Planner page lands with epic #203).
 - **Prompts are the proving ground.** Recipes stabilize as prompt cards first and
-  graduate into skills (/chip did; Ask Vilya is the next candidate).
+  graduate into skills (`/vilya-chip` did; Ask Vilya is the next candidate).
 - **Decisions leave receipts.** Decided forks become ADRs — issue-first, mirrored to
-  the append-only `DECISIONS.md` via /adr — options, costs, the call, consequences.
+  the append-only `DECISIONS.md` via `/vilya-adr` — options, costs, the call, consequences.
 - **Night-shift stays conservative.** Actions per product repo, manual-first until a
   run is proven green, PRs only — merge authority never leaves the operator. It runs
   the daytime chain's *output*, including plans the Planner already wrote.
