@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
 
+## 2026-07-19 — Night-shift chain promote via native blocked-by (#214)
+
+**Decision:** Product repos run an event-driven `chain-promote` workflow on `issues: closed` that reads GitHub **native blocked-by**. When all blockers of a dependent are closed and the dependent carries `night-shift:chain` and `plan:ready` (and is not `needs:decision` / epic), apply `night-shift:ready` and drop `night-shift:chain`. Night-shift skill stays eligibility-only. Vilya owns canon + template; each product repo owns the live workflow + backfill. (decided by operator in architect session, 2026-07-19).
+
+**Options considered:**
+1. Prompt-only: night-shift promotes `night-shift:chain` successors at preflight — cost: 2am-only, agent judgment, misses daytime merges.
+2. Promote workflow + body-text `Blocked-by:` convention — cost: deterministic but invented schema.
+3. **Promote workflow + native blocked-by** — cost: GraphQL + backfill; real graph, board-visible ← chosen
+
+**Why:** The stall is missing promotion after close/merge, not missing intelligence in the overnight agent. Native relationships beat prose; keeping night-shift dumb preserves "same daytime chain." `plan:ready` gate preserves Planner (#203).
+
+**Consequences:** Canon label `night-shift:chain`; template `docs/project-tracking/templates/chain-promote.yml`; skill/site teach prep (blocked-by + chain label) via #216. Anduin (and other product boards) chip the live workflow + backfill separately. Expectation: one chain link per merge cycle. Spec: `docs/specs/chain-promote.md` (#217).
+
+**Evidence:** #214 (ADR comment + locked rules, 2026-07-19); live stall (successor unlabeled after blocker merge); night-shift skill pick loop + never merges; #203 Planner eligibility (`night-shift:ready` ∧ `plan:ready`); #215 (canon + template); prior entry `2026-07-19 — Planner loop for anytime plan≠execute (#203)`.
+
 ## 2026-07-19 — `/prune --apply` implies scoped lock-holder kills (#227)
 
 **Decision:** `/prune --apply` **implies** kill of lock-holder processes for **eligible** rows only — `--apply` is the authorization; no second operator ask. Dry-run previews `would kill PID … for <path>` and never kills. (decided by operator in architect session, 2026-07-19).
