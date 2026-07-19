@@ -61,7 +61,7 @@ export const BOARD_TRANSITIONS: readonly BoardTransition[] = [
     from: "Todo",
     to: "In Progress",
     moverClass: "skill",
-    mover: "/start-feature",
+    mover: "/vilya-start-feature",
   },
   {
     from: "In Progress",
@@ -87,7 +87,7 @@ export const BOARD_TRANSITIONS: readonly BoardTransition[] = [
     from: "merge (Refs #, live-only)",
     to: "Verifying",
     moverClass: "skill",
-    mover: "/merge-pr",
+    mover: "/vilya-merge-pr",
   },
   {
     from: "Verifying",

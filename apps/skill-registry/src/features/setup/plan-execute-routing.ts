@@ -41,7 +41,7 @@ export const PLAN_EXECUTE_BLOCKS: PlanExecuteBlock[] = [
   },
   {
     title: "Single-session footnote.",
-    body: "When one session both plans and implements (no Planner / no chip), `/start-feature` still asks you to switch from a planning model to an execution model before coding. That stop is not the chip-flow story.",
+    body: "When one session both plans and implements (no Planner / no chip), `/vilya-start-feature` still asks you to switch from a planning model to an execution model before coding. That stop is not the chip-flow story.",
   },
   {
     title: "Cursor is a different mechanism.",

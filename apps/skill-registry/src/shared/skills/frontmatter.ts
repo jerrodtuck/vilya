@@ -1,5 +1,5 @@
 // Shared kernel: a lenient SKILL.md frontmatter parser.
-// Real-world skill descriptions contain ": " (e.g. "(sibling: crucible-blazor)"),
+// Real-world skill descriptions contain ": " (e.g. "(sibling: vilya-crucible-blazor)"),
 // which strict YAML rejects but Claude Code / Cursor accept. We parse each
 // top-level `key: value` as a string, support simple `- item` lists, folded
 // (`>`/`>-`) and literal (`|`/`|-`) block scalars, and coerce true/false —

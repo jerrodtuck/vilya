@@ -107,7 +107,7 @@ export const STAGES: Record<StageId, NightStage> = {
     chipLabel: "Loop",
     bodyHtml: `
     <p>Single <b>Job</b> step: <code>anthropics/claude-code-action@v1</code> with a prompt that points at
-    the night-shift <b>Skill</b> (<code>skills/night-shift/SKILL.md</code>) — same daytime chain, leave a PR.</p>
+    the night-shift <b>Skill</b> (<code>skills/vilya-night-shift/SKILL.md</code>) — same daytime chain, leave a PR.</p>
     <ul>
       <li><b>Runaway guard:</b> job <code>timeout-minutes: 180</code> (wall clock). A high
         <code>--max-turns</code> (500) is last-ditch only — CLI defaults ~10 if omitted; do not use a tight turn budget as the feature size limit.</li>
@@ -128,16 +128,16 @@ export const STAGES: Record<StageId, NightStage> = {
     kind: "safety",
     chipLabel: "Steering",
     bodyHtml: `
-    <p>The night-shift <b>Skill</b> (<code>skills/night-shift/SKILL.md</code>) is not a second methodology — it runs the
+    <p>The night-shift <b>Skill</b> (<code>skills/vilya-night-shift/SKILL.md</code>) is not a second methodology — it runs the
     <b>same daytime chain</b> with hard unattended rules.</p>
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
       <li><b>Eligibility</b> — <code>night-shift:ready</code> ∧ <code>plan:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
       <li><b>No promote</b> — <code>night-shift:chain</code> successors are left alone. Promotion is <code>chain-promote.yml</code> (native blocked-by + <code>plan:ready</code>), not this skill.</li>
-      <li><b>Daytime chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
-      <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/prune</code> owns that pairing.</li>
+      <li><b>Daytime chain</b> — <code>/vilya-start-feature</code> → implement → <code>/vilya-crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/vilya-finish-feature</code> → detach worktree.</li>
+      <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/vilya-prune</code> owns that pairing.</li>
       <li><b>Fork stop</b> — comment + recommendation, label <code>needs:decision</code>, Blocked, next issue. Never guess.</li>
-      <li><b>PR never merge</b> — open only; operator merges via <code>/merge-pr</code> in the morning.</li>
+      <li><b>PR never merge</b> — open only; operator merges via <code>/vilya-merge-pr</code> in the morning.</li>
       <li><b>Morning report</b> — unreviewed triage queue (unlike chips reviewed as they open): PR opened / needs call / stuck / skipped.</li>
       <li>Budget: up to 3 issues per run.</li>
     </ul>

@@ -27,7 +27,7 @@ describe("night-shift daisy-chain teach (#216)", () => {
     expect(blob).toContain("blocked-by");
     expect(blob).toContain("night-shift:chain");
     expect(blob).toContain("plan:ready");
-    expect(blob).toContain("/merge-pr");
+    expect(blob).toContain("/vilya-merge-pr");
     expect(blob).toContain("chain-promote");
     expect(blob).toContain("night-shift:ready");
     expect(blob).toMatch(/one link per merge cycle/i);

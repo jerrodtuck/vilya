@@ -33,19 +33,19 @@ export interface StackPreset {
 export const STACK_PRESETS: readonly StackPreset[] = [
   {
     stack: "nextjs",
-    crucibleVariant: "crucible-nextjs",
+    crucibleVariant: "vilya-crucible-nextjs",
     testCommand: "npm test && npm run build",
     defaultBranch: "master",
   },
   {
     stack: "blazor",
-    crucibleVariant: "crucible-blazor",
+    crucibleVariant: "vilya-crucible-blazor",
     testCommand: "dotnet test",
     defaultBranch: "master",
   },
   {
     stack: "wpf-blazor-hybrid",
-    crucibleVariant: "crucible-blazor",
+    crucibleVariant: "vilya-crucible-blazor",
     testCommand: "dotnet test",
     defaultBranch: "master",
   },

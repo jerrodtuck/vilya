@@ -115,7 +115,7 @@ const CHIP_STEPS: SetupStep[] = [
         <b>best-effort</b>: it usually fires at PR close, but an idle session
         that never refreshes its PR state can be missed entirely. Archive
         stale finished sessions manually (or via{" "}
-        <code>archive_session</code>); periodic <code>/prune --apply</code>{" "}
+        <code>archive_session</code>); periodic <code>/vilya-prune --apply</code>{" "}
         remains the backstop that reconciles everything regardless.
       </>
     ),
@@ -130,8 +130,8 @@ const CHIP_STEPS: SetupStep[] = [
     text: (
       <>
         <b>Prune periodically</b> — auto-archive does not remove the worktree
-        folder or the local branch. Run <code>/prune</code>{" "}
-        (dry-run) → <code>/prune --apply</code>{" "}
+        folder or the local branch. Run <code>/vilya-prune</code>{" "}
+        (dry-run) → <code>/vilya-prune --apply</code>{" "}
         after a merge batch, not per merge.
       </>
     ),
@@ -232,11 +232,11 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
 
       <div className="note teal">
         <b>Pick your stack.</b> Blazor/.NET repo → install{" "}
-        <code>crucible-blazor</code>, test command <code>dotnet test</code>.
-        Next.js repo → <code>crucible-nextjs</code>, test command{" "}
+        <code>vilya-crucible-blazor</code>, test command <code>dotnet test</code>.
+        Next.js repo → <code>vilya-crucible-nextjs</code>, test command{" "}
         <code>npm test &amp;&amp; npm run build</code>. Python repo →{" "}
-        <code>crucible-fastapi</code> / <code>crucible-django</code> /{" "}
-        <code>crucible-ml</code>, test command <code>pytest</code>. Variant and
+        <code>vilya-crucible-fastapi</code> / <code>vilya-crucible-django</code> /{" "}
+        <code>vilya-crucible-ml</code>, test command <code>pytest</code>. Variant and
         test command both go in the repo&apos;s config block.
       </div>
 

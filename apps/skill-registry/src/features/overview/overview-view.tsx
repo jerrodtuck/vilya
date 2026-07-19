@@ -53,7 +53,7 @@ export function OverviewView() {
       </div>
 
       <div className="chipstrip" aria-label="Daytime chain">
-        <span className="lchip s">/start-feature</span>
+        <span className="lchip s">/vilya-start-feature</span>
         <span className="arrow">→</span>
         <span className="lchip">implement in the slice</span>
         <span className="arrow">→</span>
@@ -61,9 +61,9 @@ export function OverviewView() {
         <span className="arrow">⟲</span>
         <span className="lchip r">refactor</span>
         <span className="arrow">→</span>
-        <span className="lchip f">/finish-feature</span>
+        <span className="lchip f">/vilya-finish-feature</span>
         <span className="arrow">→</span>
-        <span className="lchip f">/merge-pr</span>
+        <span className="lchip f">/vilya-merge-pr</span>
         <span className="arrow">→</span>
         <span className="lchip f">Done</span>
       </div>
@@ -195,8 +195,8 @@ export function OverviewView() {
       <div className="pagefoot">
         Instruments:{" "}
         <b>
-          /start-feature · per-stack crucibles · /finish-feature · /merge-pr
-          · /update-docs · /history · night-shift
+          /vilya-start-feature · per-stack crucibles · /vilya-finish-feature · /vilya-merge-pr
+          · /vilya-update-docs · /vilya-history · /vilya-night-shift
         </b>
         .
       </div>

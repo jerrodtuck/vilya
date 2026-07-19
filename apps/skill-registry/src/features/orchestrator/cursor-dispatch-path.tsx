@@ -18,7 +18,7 @@ export function CursorDispatchPath() {
       <h3>Three-step Cursor path</h3>
       <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.55 }}>
         Claude Code chips self-start via <code>spawn_task</code> (
-        <code>/chip</code>). Cursor has no session-to-session comms — seat the
+        <code>/vilya-chip</code>). Cursor has no session-to-session comms — seat the
         orchestrator, open the worktree, then run{" "}
         <code>/{CURSOR_HANDOFF_SKILL}</code> in that worker session (Worker A
         seat). There is no auto-handoff yet.
@@ -31,7 +31,7 @@ export function CursorDispatchPath() {
             <a href={`#${CURSOR_ORCH_PROMPT_ID}`}>{CURSOR_ORCH_PROMPT_LABEL}</a>{" "}
             in the main-clone session.
             <small>
-              Seats the orchestrator. It runs <code>/start-feature</code> and
+              Seats the orchestrator. It runs <code>/vilya-start-feature</code> and
               leaves the kickoff on the issue — it does not implement.
             </small>
           </span>
@@ -56,7 +56,7 @@ export function CursorDispatchPath() {
             <code>/{CURSOR_HANDOFF_SKILL}</code>.
             <small>
               Worker A seat — already in the worktree; do not re-run{" "}
-              <code>/start-feature</code>.{" "}
+              <code>/vilya-start-feature</code>.{" "}
               <b>A and B are mutually exclusive.</b> Paste fallback:{" "}
               <a href={`#${CURSOR_WORKER_A_PROMPT_ID}`}>
                 {CURSOR_WORKER_A_PROMPT_LABEL}

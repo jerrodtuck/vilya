@@ -1,5 +1,5 @@
 // Feature slice: planner — node and flow definitions for the planner flow
-// map. Content model mirrors docs/specs/planner-flow.md + the /planner skill:
+// map. Content model mirrors docs/specs/planner-flow.md + the /vilya-planner skill:
 // PLAN · QUEUE · RECALL · WRITE · FORK · READY · HANDOFF.
 // Types live in src/shared/ui/flow-map-types.ts.
 

@@ -1,6 +1,7 @@
 // Feature slice: night-shift — operator-first page (server component).
 // Bands: Header → Setup once → Run tonight → How it works → Troubleshoot.
 import Link from "next/link";
+import { SKILL_INVOKES, SKILL_SLUGS } from "../../shared/skills/invokes";
 import { loadNightShiftTemplate } from "./load-night-shift-template";
 import { NightAgentMap } from "./night-agent-map";
 import { NightShiftWorkflowTool } from "./night-shift-workflow-tool";
@@ -18,7 +19,8 @@ const REPO = "https://github.com/jerrodtuck/vilya";
 const WORKFLOW_HREF = `${REPO}/blob/master/.github/workflows/night-shift.yml`;
 const TEMPLATE_HREF = `${REPO}/blob/master/docs/project-tracking/templates/night-shift.yml`;
 const CHAIN_PROMOTE_HREF = `${REPO}/blob/master/docs/project-tracking/templates/chain-promote.yml`;
-const SKILL_SRC_HREF = `${REPO}/blob/master/skills/night-shift/SKILL.md`;
+const SKILL_SRC_HREF = `${REPO}/blob/master/skills/${SKILL_SLUGS.nightShift}/SKILL.md`;
+const SKILL_SITE_HREF = `/skills/${SKILL_SLUGS.nightShift}`;
 
 function MapAside() {
   return (
@@ -58,7 +60,7 @@ function ArtifactLinks() {
     <p className="muted" style={{ lineHeight: 1.55, marginTop: 16 }}>
       <b style={{ color: "var(--text)" }}>Artifacts</b>
       {" · "}
-      <Link href="/skills/night-shift">skill (site)</Link>
+      <Link href={SKILL_SITE_HREF}>skill (site)</Link>
       {" · "}
       <a href={SKILL_SRC_HREF} target="_blank" rel="noreferrer">
         skill source
@@ -160,8 +162,8 @@ export function NightShiftView() {
         </summary>
         <p className="muted" style={{ lineHeight: 1.55, marginTop: 10 }}>
           Schedule a routine that opens the product repo and follows{" "}
-          <Link href="/skills/night-shift">
-            <code>skills/night-shift/SKILL.md</code>
+          <Link href={SKILL_SITE_HREF}>
+            <code>skills/{SKILL_SLUGS.nightShift}/SKILL.md</code>
           </Link>
           . Prefer Actions when you need a hard non-interactive guarantee.
         </p>
@@ -227,7 +229,7 @@ export function NightShiftView() {
       <TroubleshootTable />
 
       <div className="pagefoot">
-        Instrument: <b>/night-shift</b> · opens PRs only · never merges ·{" "}
+        Instrument: <b>{SKILL_INVOKES.nightShift}</b> · opens PRs only · never merges ·{" "}
         <Link href="/orchestrator">Orchestrator</Link> for the daytime map.
       </div>
     </>

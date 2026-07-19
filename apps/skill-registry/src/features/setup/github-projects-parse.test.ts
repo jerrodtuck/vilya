@@ -16,7 +16,7 @@ const SAMPLE = `# GitHub Projects — tracking model (template)
 | Project id | \`PVT_abc\` | \`gh project view\` |
 | Status field id | \`PVTSSF_xyz\` | see Field ids |
 | **Stack** | \`blazor\` | the repo's framework |
-| **Crucible variant** | \`crucible-blazor\` | the review skill |
+| **Crucible variant** | \`vilya-crucible-blazor\` | the review skill |
 | **Test command** | \`dotnet test\` (in \`src/\`) | what finish runs |
 | **Manual smoke** | \`dotnet run\` → http://localhost:5000 | launch for smoke |
 | Default branch | \`master\` | \`git remote show origin\` |
@@ -69,7 +69,7 @@ const SLIM_SAMPLE = `# GitHub Projects — repo config
 | Project id | \`PVT_abc\` | \`gh project view\` |
 | Status field id | \`PVTSSF_xyz\` | see Field ids |
 | **Stack** | \`nextjs\` | the repo's framework |
-| **Crucible variant** | \`crucible-nextjs\` | the review skill |
+| **Crucible variant** | \`vilya-crucible-nextjs\` | the review skill |
 | **Test command** | \`npm test\` | what finish runs |
 | **Manual smoke** | \`npm run dev\` → http://localhost:3000 | launch for smoke |
 | Default branch | \`main\` | \`git remote show origin\` |
@@ -143,7 +143,7 @@ describe("parseConfig", () => {
     expect(cfg.projectId).toBe("PVT_abc");
     expect(cfg.statusFieldId).toBe("PVTSSF_xyz");
     expect(cfg.stack).toBe("blazor");
-    expect(cfg.crucibleVariant).toBe("crucible-blazor");
+    expect(cfg.crucibleVariant).toBe("vilya-crucible-blazor");
     expect(cfg.testCommand).toBe("`dotnet test` (in `src/`)");
     expect(cfg.manualSmoke).toBe("`dotnet run` → http://localhost:5000");
     expect(cfg.defaultBranch).toBe("master");
@@ -167,7 +167,7 @@ describe("parseConfig", () => {
     expect(cfg.projectId).toBe("PVT_abc");
     expect(cfg.statusFieldId).toBe("PVTSSF_xyz");
     expect(cfg.stack).toBe("nextjs");
-    expect(cfg.crucibleVariant).toBe("crucible-nextjs");
+    expect(cfg.crucibleVariant).toBe("vilya-crucible-nextjs");
     expect(cfg.testCommand).toBe("npm test");
     expect(cfg.manualSmoke).toBe("`npm run dev` → http://localhost:3000");
     expect(cfg.defaultBranch).toBe("main");

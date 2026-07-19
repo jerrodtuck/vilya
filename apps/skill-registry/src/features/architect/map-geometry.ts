@@ -40,7 +40,7 @@ export const EDGE_LABELS: EdgeLabel[] = [
 
 export const NODE_GEOMS: NodeGeom[] = [
   { id: "ARCH", x: 20, y: 122, w: 130, h: 56, rx: 13, title: "You", role: "architect", dot: true },
-  { id: "RECALL", x: 198, y: 122, w: 145, h: 56, rx: 13, title: "Recall", role: "/history + DECISIONS", dot: true },
+  { id: "RECALL", x: 198, y: 122, w: 145, h: 56, rx: 13, title: "Recall", role: "/vilya-history + DECISIONS", dot: true },
   { id: "SURVEY", x: 391, y: 122, w: 140, h: 56, rx: 13, title: "Survey", role: "as-built vs intended", dot: true },
   { id: "EPIC", x: 579, y: 122, w: 140, h: 56, rx: 13, title: "Epic", role: "fan-out stops here", dot: true },
   { id: "HANDOFF", x: 1146, y: 122, w: 114, h: 56, rx: 13, title: "Handoff", role: "orchestrator picks up", dot: true },
