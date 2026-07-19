@@ -50,7 +50,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <p>Concurrency group <code>night-shift</code> with <code>cancel-in-progress: false</code> — one overnight run finishes before another cancels it.</p>
     <h4><span class="swatch" style="background:var(--start)"></span>Operator strip</h4>
     <ul>
-      <li>Before bed: label eligible issues <code>auto:ready</code>.</li>
+      <li>Before bed: ensure <code>plan:ready</code>, then label <code>night-shift:ready</code>.</li>
       <li>Optional: fire manually if you do not want to wait for cron.</li>
     </ul>`,
   },
@@ -126,7 +126,7 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "5 · Skill steering",
     title: "Operator judgment, written down",
     mapTitle: "Steering",
-    mapRole: "auto:ready · gates",
+    mapRole: "night-shift:ready · gates",
     c: "--blocked",
     kind: "safety",
     chipLabel: "Steering",
@@ -135,7 +135,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <b>same daytime chain</b> with hard unattended rules.</p>
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
-      <li><b>Eligibility</b> — only <code>auto:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
+      <li><b>Eligibility</b> — <code>night-shift:ready</code> ∧ <code>plan:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
       <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
       <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/prune</code> owns that pairing.</li>
       <li><b>Fork stop</b> — comment + recommendation, label <code>needs:decision</code>, Blocked, next issue. Never guess.</li>

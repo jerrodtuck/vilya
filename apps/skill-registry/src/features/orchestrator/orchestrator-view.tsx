@@ -140,11 +140,12 @@ export function OrchestratorView() {
         <p className="muted" style={{ margin: "6px 0 12px", lineHeight: 1.55 }}>
           Full setup lives on the{" "}
           <Link href="/night-shift">Night shift</Link> page (Actions or Desktop
-          routines). Short version: label <code>auto:ready</code>, fire the
-          launcher, wake to PRs — never auto-merge. Actions path: self-hosted
-          runner + <code>CLAUDE_CODE_OAUTH_TOKEN</code>; Bypass rides in
-          workflow <code>claude_args</code>. Desktop: enable Allow bypass in
-          Settings, set that routine to Bypass (not a user-global default).
+          routines). Short version: prep with Planner to <code>plan:ready</code>,
+          label <code>night-shift:ready</code>, fire the launcher, wake to PRs —
+          never auto-merge. Actions path: self-hosted runner +{" "}
+          <code>CLAUDE_CODE_OAUTH_TOKEN</code>; Bypass rides in workflow{" "}
+          <code>claude_args</code>. Desktop: enable Allow bypass in Settings, set
+          that routine to Bypass (not a user-global default).
         </p>
         <div className="note" style={{ marginTop: 8 }}>
           Template:{" "}

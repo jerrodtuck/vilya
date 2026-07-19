@@ -34,6 +34,12 @@ everything ships through chips.
   `docs/project-tracking/GITHUB-PROJECTS.md`.
 - At a **real design fork**, stop and give the operator **2–3 options with costs** in plain chat —
   **before** any chip is dispatched.
+- **Planner labels (daytime):** when the issue carries `plan:ready`, treat the kickoff comment +
+  verify plan on the issue as the brief's authoritative plan artifacts — copy them into the
+  self-contained `prompt`, do not re-plan. Daytime may still chip **without** `plan:ready` when
+  the operator skipped Planner and the issue is already clear (attended judgment). Prefer
+  enqueueing Planner (`needs:plan`) when scope, verify routing, or forks still need a planning
+  pass — that path is orchestrator-owned; chips do not run `/planner`.
 
 ## 1. Dispatch — the `spawn_task` call
 
@@ -54,6 +60,9 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 
 - **Repo + path** and the default branch.
 - **Issue #<N>** with its full goal + acceptance — do not make the chip re-derive it.
+- **Plan artifacts** — if the issue is `plan:ready`, paste the kickoff + verify plan (and any
+  locked fork decisions) from the issue into the brief so the chip does not invent a second plan.
+  If the operator skipped Planner, the issue body + acceptance still stand; say so explicitly.
 - **Owning vertical slice** to work in; don't invent layer-cake / dumping-ground folders.
 - **Verify gate**: the repo's **Test command** + the routing (`tests-only` / `local-smoke` /
   `live-only`) read off the issue's verify plan. **No test surface** (docs/config-only chip)? Say
