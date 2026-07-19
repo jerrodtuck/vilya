@@ -700,6 +700,14 @@ h1 .you { color: var(--orch); }
 .ns-safety-note { margin-top: 12px; padding: 10px 12px; border: 1px dashed #5c3b2e; border-radius: 8px; background: #1c1410; color: #e7d6ac; font-size: 13px; line-height: 1.5; }
 .ns-safety-note b { color: #ffcf7a; }
 .legend i.ns-legend-fail { border-top-color: var(--bug); }
+.ns-trouble { overflow-x: auto; }
+.ns-trouble table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+.ns-trouble th { text-align: left; color: var(--faint); padding: 6px 12px 10px 0; border-bottom: 1px solid var(--border); font-weight: 700; }
+.ns-trouble th:first-child { width: 32%; }
+.ns-trouble th:last-child { padding-right: 0; }
+.ns-trouble td { padding: 10px 12px 10px 0; border-bottom: 1px solid #20262f; vertical-align: top; color: var(--muted); }
+.ns-trouble td:first-child { color: var(--text); font-weight: 600; }
+.ns-trouble td:last-child { padding-right: 0; }
 
 /* ---------- site: home — the board moves itself (#171) ----------
    Static annotated strip: the section composes `.board .movers` so the
