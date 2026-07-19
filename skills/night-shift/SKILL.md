@@ -56,10 +56,13 @@ routing are owned by `/start-feature`, not by this skill:
    **remote** branch + open PR alone. Self-hosted `_work` persists between runs; do not leave
    trees piled up for morning `/prune` unless remove fails (then report the path).
 
-**Unattended consult:** when a real design fork appears during start-feature or implementation, do
+**Unattended consult:** when a real design fork appears during start-feature or implementation —
+including an **Investigate-first / hard-stop** unknown (SDK surface, third-party behavior) — do
 **not** wait for the operator. Comment options + your recommendation on the issue, label
-`needs:decision`, move to **Blocked**, and take the next eligible issue. (Daytime interactive
-consult still waits; only this unattended path skips the wait.)
+`needs:decision`, move to **Blocked**, and take the next eligible issue. Do **not** auto-pick
+because findings look obvious. (Daytime interactive consult still waits on the kickoff's
+investigate-first section; only this unattended path uses `needs:decision` instead of waiting —
+see [/chip](../chip/SKILL.md) §2a.)
 
 ## 3. Never merge — always leave a PR
 

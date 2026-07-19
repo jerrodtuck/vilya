@@ -67,6 +67,13 @@ Post on the issue (not a private note). Cover:
 - **Verify plan** — test projects/suites or a doc/skill gate; **merge routing** one of
   `tests-only` · `local-smoke` · `live-only` (same contract as `/start-feature`).
 - Design forks (if any): 2–3 options, costs, silent breakages, recommendation.
+- **Investigate-first / hard-stop** (when step 1 is an unknown — SDK surface, third-party
+  behavior): a dedicated section stating the stop is **non-negotiable** — chip investigates,
+  posts findings + options on the issue, **hard stops**, waits for the operator pick (issue
+  comment or attended relay), then implements. Do **not** soften the wording; do **not** tell
+  the chip it may auto-pick. Unattended mid-run forks still use `needs:decision` + Blocked
+  ([/chip](../chip/SKILL.md) §2a) — that label path is not a substitute for this kickoff
+  section on daytime chips. This gate does **not** replace ordinary `plan:ready` planning.
 - Explicit: chips/workers implement; Planner does not.
 
 ## Completion signal (orchestrator-owned)

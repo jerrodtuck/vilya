@@ -101,7 +101,8 @@ export const NODES: Record<string, FlowNode> = {
     c: "--consult",
     bodyHtml: `
     <p>For scoped/complex work, the skill surfaces <b>2–3 viable mechanisms</b>, their costs, and the silent breakages of each — and recommends one.</p>
-    <p><b>You decide.</b> Trivial work skips this and goes straight to build.</p>`,
+    <p><b>You decide.</b> Trivial work skips this and goes straight to build.</p>
+    <p><b>Investigate-first / hard-stop</b> (step 1 is an unknown — SDK surface, third-party behavior): kickoff marks a <b>non-negotiable</b> stop — investigate → findings + options on the issue → hard stop → your pick → then implement. Daytime uses that kickoff section; unattended uses <code>needs:decision</code> + <b>Blocked</b>. Never auto-pick because findings look obvious. Does not replace Planner for ordinary <code>plan:ready</code> issues.</p>`,
   },
   BLOCKED: {
     kicker: "Board state",

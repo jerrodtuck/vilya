@@ -34,12 +34,16 @@ everything ships through chips.
   `docs/project-tracking/GITHUB-PROJECTS.md`.
 - At a **real design fork**, stop and give the operator **2–3 options with costs** in plain chat —
   **before** any chip is dispatched.
+- When the issue's step 1 is an **unknown** (SDK surface, third-party behavior), the kickoff must
+  carry an **Investigate-first / hard-stop** section (see §2a) — copy that section into the brief
+  verbatim so the chip cannot soften the stop.
 - **Planner labels (daytime):** when the issue carries `plan:ready`, treat the kickoff comment +
   verify plan on the issue as the brief's authoritative plan artifacts — copy them into the
   self-contained `prompt`, do not re-plan. Daytime may still chip **without** `plan:ready` when
   the operator skipped Planner and the issue is already clear (attended judgment). Prefer
   enqueueing Planner (`needs:plan`) when scope, verify routing, or forks still need a planning
-  pass — that path is orchestrator-owned; chips do not run `/planner`.
+  pass — that path is orchestrator-owned; chips do not run `/planner`. Investigate-first is **not**
+  a substitute for Planner on ordinary `plan:ready` work.
 
 ## 1. Dispatch — the `spawn_task` call
 
@@ -88,7 +92,34 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 - **Hard rules for the chip**: **never merge**; **never push to the default branch**; **never call
   `spawn_task`** or any session-spawning tool — deferred work goes on the issue, not into a new
   session; at a real design fork, **stop, comment 2–3 options on the issue, and wait** — do not
-  guess.
+  guess; when the brief marks **Investigate-first / hard-stop**, that stop is **non-negotiable**
+  (§2a) — never auto-pick because "the findings clearly favor X."
+
+## 2a. Investigate-first / hard-stop (fork-gate for unknowns)
+
+When step 1 is an **unknown** — SDK surface, third-party behavior, unverified runtime fact — the
+chip runs this sequence and **does not skip the stop**:
+
+**investigate → post findings + 2–3 options with costs + recommendation on the issue → hard stop →
+operator pick (issue comment or attended relay) → then implement.**
+
+### How the gate is marked (teach the split)
+
+| Mode | Marking | Duty after the options comment |
+|------|---------|--------------------------------|
+| **Daytime / attended** | Kickoff (and thus the chip brief) carries an explicit **Investigate-first / hard-stop** section naming the unknown and stating the stop is non-negotiable | **Stop.** Do **not** implement until the operator records the pick on the issue, or relays it attended (e.g. Cursor `send_message` / chat). Soft optional-wait wording is a defect in the brief — the section must say **hard stop**. |
+| **Unattended / night-shift** | Label **`needs:decision`**, Status **Blocked** | Same options comment + recommendation; do **not** wait — take the next eligible issue (`/night-shift`). |
+
+Do **not** use this gate to replace Planner for ordinary `plan:ready` issues. A plan that already
+locked the fork is execute work, not investigate-first. Mid-implementation design forks that are
+**not** investigate-first still stop with options on the issue (daytime wait / night-shift
+`needs:decision`) — same honesty bar, different marking.
+
+### Non-negotiable
+
+Recommendation on the issue is required; **auto-picking is forbidden**, including when findings
+seem obvious. The options comment **is** the completion report for that stop (§2). The
+orchestrator's REST monitor (§3) picks up that comment — do not invent a second channel.
 
 ## 3. After dispatch — the monitor is the signal
 
@@ -151,6 +182,8 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 ## Honesty bar
 
 - Never chip untracked work. Never chip past a real design fork without giving the operator options.
+- Never chip past an **Investigate-first / hard-stop** gate — findings + options, then stop; no
+  implement until the operator's pick is on the issue (or an attended relay).
 - Chips **never self-merge**; the orchestrator reviews every chip before `/merge-pr`.
 - Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
   `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on

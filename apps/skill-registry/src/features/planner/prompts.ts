@@ -18,9 +18,9 @@ export const PROMPTS: PromptGroup[] = [
 
 Enqueue is opt-in: drain open issues labeled needs:plan (highest priority, then oldest). If the operator names an issue, plan that one — apply needs:plan if missing so the transition is visible. The operator does not paste each brief into this chat; the board queue is the brief list.
 
-For each issue: read the body, linked specs/ADRs, and owning vertical slice — prefer real architecture there; do not invent layer-cake dumping grounds. Write one kickoff on the issue covering repo/default branch/owning slice/linked spec, goal + acceptance restated tightly, file ownership when parallel streams exist, verify plan, and merge routing (tests-only · local-smoke · live-only). Explicit: chips/workers implement; you do not.
+For each issue: read the body, linked specs/ADRs, and owning vertical slice — prefer real architecture there; do not invent layer-cake dumping grounds. Write one kickoff on the issue covering repo/default branch/owning slice/linked spec, goal + acceptance restated tightly, file ownership when parallel streams exist, verify plan, and merge routing (tests-only · local-smoke · live-only). When step 1 is an unknown (SDK surface, third-party behavior), include an Investigate-first / hard-stop section stating the stop is non-negotiable — chip investigates, posts findings + options, hard stops, waits for the operator pick, then implements (no auto-pick). That daytime kickoff section is distinct from needs:decision (unattended/night-shift). Explicit: chips/workers implement; you do not.
 
-Forks while planning: if the plan can finish with open forks for the implementer, still set plan:ready (consult notes included). If the plan cannot finish without an operator call, comment options + recommendation, label needs:decision, move Status to Blocked, keep needs:plan, do not set plan:ready — then take the next queued issue. Never apply night-shift:ready (night-shift ownership). Daytime may skip Planner when the issue is already clear; night-shift requires plan:ready ∧ night-shift:ready.
+Forks while planning: if the plan can finish with open forks for the implementer, still set plan:ready (consult notes included). If the plan cannot finish without an operator call, comment options + recommendation, label needs:decision, move Status to Blocked, keep needs:plan, do not set plan:ready — then take the next queued issue. Investigate-first does not replace ordinary plan:ready planning. Never apply night-shift:ready (night-shift ownership). Daytime may skip Planner when the issue is already clear; night-shift requires plan:ready ∧ night-shift:ready.
 
 Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a board Monitor for plan:ready and/or this kickoff. You do not arm monitors and you are not a chip — do not watch your own process. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
       },
@@ -44,7 +44,7 @@ Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a
     items: [
       {
         label: "Write the kickoff",
-        text: "Plan #<N>: post one kickoff comment with repo/default branch/owning slice, goal + acceptance, file ownership if parallel, verify plan, and merge routing (tests-only · local-smoke · live-only). Then remove needs:plan and add plan:ready. Chips implement — you do not.",
+        text: "Plan #<N>: post one kickoff comment with repo/default branch/owning slice, goal + acceptance, file ownership if parallel, verify plan, and merge routing (tests-only · local-smoke · live-only). If step 1 is an unknown, add an Investigate-first / hard-stop section — non-negotiable stop after findings + options; no auto-pick. Then remove needs:plan and add plan:ready. Chips implement — you do not.",
       },
     ],
   },
@@ -55,7 +55,7 @@ Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a
     items: [
       {
         label: "Cost the options",
-        text: "On #<N>, surface 2–3 viable options with costs and a stated recommendation. If the plan can still finish with those consult notes, set plan:ready. If the kickoff would be wrong without an operator call, label needs:decision, move to Blocked, keep needs:plan — do not set plan:ready.",
+        text: "On #<N>, surface 2–3 viable options with costs and a stated recommendation. If the plan can still finish with those consult notes, set plan:ready. If the kickoff would be wrong without an operator call, label needs:decision, move to Blocked, keep needs:plan — do not set plan:ready. When execute step 1 is an unknown, mark Investigate-first / hard-stop in the kickoff (daytime) rather than pretending the plan locked the choice — needs:decision remains the unattended stop.",
       },
     ],
   },
