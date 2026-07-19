@@ -45,12 +45,14 @@ gh api -X PATCH repos/<owner>/<repo> \
 Most PRs from this loop don't need a local checkout — the PR body already carries the evidence.
 
 ```bash
-gh pr view <n> --repo <owner>/<repo> --json title,body,isDraft,mergeable,statusCheckRollup,headRefName
+gh pr view <n> --repo <owner>/<repo> --json title,body,isDraft,mergeable,mergeStateStatus,statusCheckRollup,headRefName,headRefOid
 gh pr diff <n> --repo <owner>/<repo> --name-only     # full diff only if the file list warrants it
 ```
 
-Read the body's **Verification** (exact test counts + crucible merge-readiness signal) and
-**Operator actions** sections. Then pick the depth:
+Capture `headRefOid` (reviewed head). Pre-merge `mergeable` / `mergeStateStatus` (REST:
+`mergeable_state`) — including **clean** — are **advisory**; see §3. Read the body's
+**Verification** (exact test counts + crucible merge-readiness signal) and **Operator
+actions** sections. Then pick the depth:
 
 - **Merge on review alone** — CI green, crucible signal `Ready`, small or mechanical diff, no
   operator actions owed.
@@ -111,25 +113,85 @@ the clicking.** Hold the merge until they call it good.
 Throwaway `../pr-<n>` trees are removed in this step when you created them. The **feature**
 worktree from `/start-feature` is **not** deleted here — that is [/prune](../prune/SKILL.md).
 
-## 3. Conflicts / stale branch
+## 3. Conflicts / stale branch — mergeable is advisory
 
-If `mergeable` is `CONFLICTING` or the default branch moved under a PR whose tests matter: don't
-resolve inside the merge step. Send it back through `/finish-feature` step 2 (rebase + re-verify
-on the feature branch), then re-triage here.
+Pre-merge `mergeable` / `mergeable_state` (GraphQL `mergeStateStatus`) — including **clean** —
+are **advisory**. A neighbor PR can land after triage; GitHub may still show clean until the
+merge call returns **405** / "Pull Request is not mergeable" / has conflicts. The **merge API
+response** is the truthy check — do not trust a stale clean.
+
+Send back through `/finish-feature` step 2 (rebase + re-verify on the feature branch), then
+re-triage here, when:
+
+- triage shows `CONFLICTING` / dirty, **or**
+- the default branch moved under a PR whose tests matter, **or**
+- the merge attempt (CLI or REST) fails with conflicts / 405.
+
+Do not resolve conflicts inside the merge step.
 
 ## 4. Merge
+
+Squash-always (§0). Merge only with checks green — or say which check you're waiving and why.
+**Do not pass `--delete-branch`.** Remote tip removal is `delete_branch_on_merge` (§0); local
+branch **and** worktree are `/prune` (§5). That split stops merge-pr from deleting a branch
+still checked out in a chip worktree (the "Permission denied" leftover that looks like
+merge-pr is pruning).
+
+### 4a. When to use REST (§4c)
+
+```bash
+gh api rate_limit --jq '.resources.graphql.remaining'
+```
+
+Use §4c when **either**:
+
+- `graphql.remaining == 0` (or `gh pr merge` fails on a GraphQL / API rate error) — prefer REST
+  even if `gh pr merge` might still attempt GraphQL; or
+- you want the **`sha=` pin** (merges exactly the reviewed head) — REST is the preferred path
+  for that upgrade, quota healthy or not.
+
+Companion quota doctrine: board Status edits are best-effort when GraphQL is dead
+(`GITHUB-PROJECTS.md` / #233).
+
+### 4b. Default — `gh pr merge` (GraphQL available, pin not required)
 
 ```bash
 gh pr merge <n> --repo <owner>/<repo> --squash
 ```
 
-- Squash commit title = PR title `(#n)`; body = PR body, so `Closes #issue` auto-closes on merge.
-- Merge only with checks green — or say explicitly which check you're waiving and why.
-- **Do not pass `--delete-branch`.** Branch deletion is `/prune`'s job, never merge-pr's. The
-  remote branch is removed automatically on merge by `delete_branch_on_merge` (§0); the local
-  branch **and** worktree are the `/prune` handoff (§5). This keeps merge-pr from ever trying to
-  delete a branch that's still checked out in a chip's worktree — the failure mode that leaves a
-  "Permission denied" leftover and looks like merge-pr is pruning.
+Squash commit title = PR title `(#n)`; body = PR body, so `Closes #issue` auto-closes on merge.
+If this returns conflicts / 405 → §3 (not a force-merge).
+
+### 4c. REST squash path (quota outage or sha pin)
+
+Triage via REST, then `PUT .../merge` with **required** `sha=` of that reviewed head. If the
+tip moved after review, the API rejects instead of squash-merging an unreviewed SHA. (`gh api
+--jq` only — no extra `jq` binary.)
+
+**Triage (advisory fields + reviewed head):**
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<n> \
+  --jq '{title, mergeable, mergeable_state, sha: .head.sha, headRefName: .head.ref}'
+```
+
+**Merge (squash + sha pin):**
+
+```bash
+SHA=$(gh api repos/<owner>/<repo>/pulls/<n> --jq .head.sha)
+TITLE=$(gh api repos/<owner>/<repo>/pulls/<n> --jq .title)
+# commit_message = full PR body (Closes # rides with it); pass via --input when the body
+# has newlines that break -f on your shell
+gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge \
+  -f merge_method=squash \
+  -f "commit_title=${TITLE} (#<n>)" \
+  -f "commit_message=$(gh api repos/<owner>/<repo>/pulls/<n> --jq .body)" \
+  -f "sha=${SHA}"
+```
+
+- `merge_method=squash` only — same policy as §0 / §4b.
+- **`sha=` is required** on this path (use the `SHA` captured from the tip you reviewed).
+- On 405 / conflicts → §3 (`/finish-feature` rebase), not a retry without rebase.
 
 ## 5. Board + prune handoff
 
