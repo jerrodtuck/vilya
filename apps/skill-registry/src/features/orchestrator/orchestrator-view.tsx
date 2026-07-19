@@ -83,7 +83,7 @@ export function OrchestratorView() {
                 <b>Looped</b>
                 <span>
                   review → refactor → re-review runs until <code>Ready</code>,
-                  then auto-hands to <code>/finish-feature</code>. The inner
+                  then auto-hands to <code>/vilya-finish-feature</code>. The inner
                   loop you can automate.
                 </span>
               </div>
@@ -174,12 +174,12 @@ export function OrchestratorView() {
         <b>stack</b> · <b>test command</b> · <code>area:*</code>{" "}
         labels) from
         that repo&apos;s <code>GITHUB-PROJECTS.md</code>. Drop the process
-        skills + the matching <code>crucible-&lt;stack&gt;</code>{" "}
+        skills + the matching <code>vilya-crucible-&lt;stack&gt;</code>{" "}
         into any repo
         and the whole loop works. &nbsp;·&nbsp; Instruments:{" "}
         <b>
-          /start-feature · crucible-{"{blazor,nextjs}"} · /finish-feature ·
-          /merge-pr · /update-docs · /history · /night-shift
+          /vilya-start-feature · /vilya-crucible-{"{blazor,nextjs}"} · /vilya-finish-feature ·
+          /vilya-merge-pr · /vilya-update-docs · /vilya-history · /vilya-night-shift
         </b>{" "}
         over the GitHub Projects board.
       </div>

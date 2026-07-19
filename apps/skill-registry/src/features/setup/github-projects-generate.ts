@@ -9,7 +9,7 @@ const PLACEHOLDER = {
   projectId: "PVT_...",
   statusFieldId: "PVTSSF_...",
   stack: "<stack>",
-  crucibleVariant: "crucible-<stack>",
+  crucibleVariant: "vilya-crucible-<stack>",
   testCommand: "<test command>",
   manualSmoke: "<manual smoke or live-only>",
   defaultBranch: "master",
@@ -114,12 +114,12 @@ function buildConfigSections(config: GithubProjectsConfig): string {
     [
       "**Test command**",
       codeValue(config.testCommand, PLACEHOLDER.testCommand),
-      "what `/finish-feature` runs in step 1",
+      "what `/vilya-finish-feature` runs in step 1",
     ],
     [
       "**Manual smoke**",
       orPlaceholder(config.manualSmoke, PLACEHOLDER.manualSmoke),
-      "how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead",
+      "how to launch the app for a hands-on pre-merge test (`/vilya-merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead",
     ],
     [
       "Default branch",

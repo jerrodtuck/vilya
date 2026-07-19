@@ -15,13 +15,13 @@ describe("parseFrontmatter", () => {
       "name: chip",
       "description: >-",
       "  Orchestrator dispatch — chip a self-contained unit of work off to a",
-      "  background session. Pairs with /start-feature, /merge-pr, /prune.",
+      "  background session. Pairs with /vilya-start-feature, /vilya-merge-pr, /vilya-prune.",
       "---",
       "body",
     ].join("\n");
     const { data } = parseFrontmatter(raw);
     expect(data.description).toBe(
-      "Orchestrator dispatch — chip a self-contained unit of work off to a background session. Pairs with /start-feature, /merge-pr, /prune."
+      "Orchestrator dispatch — chip a self-contained unit of work off to a background session. Pairs with /vilya-start-feature, /vilya-merge-pr, /vilya-prune."
     );
   });
 

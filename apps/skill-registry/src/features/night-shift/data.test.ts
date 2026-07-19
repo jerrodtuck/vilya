@@ -73,7 +73,7 @@ describe("night-agent stage model", () => {
   it("Steering and Outputs distinguish night-shift branches from chips", () => {
     expect(STAGES.STEERING.bodyHtml).toContain("feat|fix|docs/");
     expect(STAGES.STEERING.bodyHtml).toContain("claude/*");
-    expect(STAGES.STEERING.bodyHtml).toContain("/prune");
+    expect(STAGES.STEERING.bodyHtml).toContain("/vilya-prune");
     expect(STAGES.OUTPUTS.bodyHtml).toContain("unreviewed overnight");
     expect(STAGES.OUTPUTS.bodyHtml).toContain("claude[bot]");
   });
@@ -84,8 +84,8 @@ describe("night-agent stage model", () => {
     expect(STAGES.STEERING.bodyHtml).toMatch(/No promote/i);
     expect(STAGES.OUTPUTS.bodyHtml).toMatch(/Artifacts only/i);
     expect(STAGES.OUTPUTS.bodyHtml).toContain("Runbook");
-    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/merge-pr");
-    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/prune");
+    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/vilya-merge-pr");
+    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/vilya-prune");
   });
 
   it("uses Workflow · Runner · Job · Skill terms; drops listener/CygNet drift (#200)", () => {

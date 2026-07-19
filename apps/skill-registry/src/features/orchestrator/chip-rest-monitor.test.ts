@@ -1,4 +1,4 @@
-// #237: /chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list.
+// #237: /vilya-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list.
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -13,7 +13,7 @@ function readChipSkill(): string {
   return fs.readFileSync(skillPath, "utf8");
 }
 
-describe("/chip REST monitor (#237)", () => {
+describe("/vilya-chip REST monitor (#237)", () => {
   it("bans gh pr list and prescribes REST pulls + comments with ≥120s dedup", () => {
     const skill = readChipSkill();
     expect(skill).toContain("REST-only hot path");

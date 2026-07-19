@@ -1,4 +1,10 @@
 // Shared kernel: display metadata derived from a skill (category, stack, invocation).
+import {
+  AUTONOMOUS_SLUGS,
+  isCrucibleSlug,
+  RECALL_SLUGS,
+  SKILL_SLUGS,
+} from "./invokes";
 import type { Skill, SkillCategory } from "./types";
 
 export const CATEGORY_ORDER: SkillCategory[] = [
@@ -16,9 +22,9 @@ export const CATEGORY_LABELS: Record<SkillCategory, string> = {
 };
 
 export function categorize(slug: string): SkillCategory {
-  if (slug.startsWith("crucible")) return "review";
-  if (slug === "night-shift" || slug === "planner") return "autonomous";
-  if (slug === "history" || slug === "product-map") return "recall";
+  if (isCrucibleSlug(slug)) return "review";
+  if (AUTONOMOUS_SLUGS.has(slug)) return "autonomous";
+  if (RECALL_SLUGS.has(slug)) return "recall";
   return "process";
 }
 
@@ -33,8 +39,8 @@ export function stackOf(slug: string): string {
 
 export function invocationOf(skill: Skill): string {
   if (skill.frontmatter["disable-model-invocation"]) return "manual only";
-  if (skill.slug === "night-shift") return "scheduler-fired";
-  if (skill.slug === "planner") return "standing session";
+  if (skill.slug === SKILL_SLUGS.nightShift) return "scheduler-fired";
+  if (skill.slug === SKILL_SLUGS.planner) return "standing session";
   return "model + manual";
 }
 

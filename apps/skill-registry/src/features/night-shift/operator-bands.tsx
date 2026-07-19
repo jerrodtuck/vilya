@@ -110,7 +110,7 @@ export const RUN_TONIGHT_STEPS: OperatorStep[] = [
   {
     text: (
       <>
-        Morning: triage the report; merge Ready PRs with <code>/merge-pr</code>;
+        Morning: triage the report; merge Ready PRs with <code>/vilya-merge-pr</code>;
         answer forks and drop <code>needs:decision</code> when you decide. Closing
         a blocker lets <code>chain-promote</code> ready the next link for the
         following night.
@@ -148,7 +148,7 @@ export const DAISY_CHAIN_STEPS: OperatorStep[] = [
     text: (
       <>
         <b>Merge</b> — after the overnight PR is Ready, squash-merge via{" "}
-        <code>/merge-pr</code> (closes the issue). Night-shift never merges.
+        <code>/vilya-merge-pr</code> (closes the issue). Night-shift never merges.
       </>
     ),
     expect: (

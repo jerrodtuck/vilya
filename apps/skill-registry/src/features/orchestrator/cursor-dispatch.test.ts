@@ -1,4 +1,4 @@
-// #219 / #247 / #253: Cursor three-step path; Step 3 = /cursor-handoff in worktree.
+// #219 / #247 / #253: Cursor three-step path; Step 3 = /vilya-cursor-handoff in worktree.
 import { describe, expect, it } from "vitest";
 import {
   CURSOR_DISPATCH_PANEL_ID,
@@ -26,7 +26,7 @@ describe("Cursor three-step dispatch (#219 / #247 / #253)", () => {
     expect(workerA?.id).toBe(CURSOR_WORKER_A_PROMPT_ID);
   });
 
-  it("standing-orders intro points at the numbered Cursor path and /cursor-handoff", () => {
+  it("standing-orders intro points at the numbered Cursor path and /vilya-cursor-handoff", () => {
     const orch = orchGroup();
     expect(orch.introHtml).toContain(`#${CURSOR_DISPATCH_PANEL_ID}`);
     expect(orch.introHtml).toContain("three-step");
@@ -34,9 +34,9 @@ describe("Cursor three-step dispatch (#219 / #247 / #253)", () => {
     expect(orch.introHtml).toMatch(/Step 3/i);
   });
 
-  it("Step 3 is run /cursor-handoff in the worktree, not paste Worker A", () => {
+  it("Step 3 is run /vilya-cursor-handoff in the worktree, not paste Worker A", () => {
     expect(CURSOR_DISPATCH_STEP3_LEAD).toBe("In the worktree, run");
-    expect(CURSOR_HANDOFF_SKILL).toBe("cursor-handoff");
+    expect(CURSOR_HANDOFF_SKILL).toBe("vilya-cursor-handoff");
   });
 
   it("keeps Worker A/B exclusivity on the standing-orders note", () => {

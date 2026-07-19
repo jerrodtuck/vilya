@@ -21,12 +21,12 @@ export const NODES: Record<string, FlowNode> = {
     <p>Nothing you write turns into running code in this session — that hand-off belongs to the orchestrator.</p>`,
   },
   RECALL: {
-    kicker: "/history + DECISIONS grep",
+    kicker: "/vilya-history + DECISIONS grep",
     title: "Recall before you propose",
     c: "--recall",
     bodyHtml: `
     <p>Before any direction call, know what's already been tried.</p>
-    <ul><li><code>/history</code> for the what-we-tried-in-order on any issue or topic.</li>
+    <ul><li><code>/vilya-history</code> for the what-we-tried-in-order on any issue or topic.</li>
     <li>Grep <code>DECISIONS.md</code> for prior calls — never load the whole file.</li>
     <li>Board archaeology via <code>gh</code>: Done work by area, past epics, resolved <code>needs:decision</code> forks.</li></ul>`,
   },
@@ -160,7 +160,7 @@ export const DEFAULT_DRAWER: FlowNode = {
     <p>Pick any node in the map to see what that role does. The whole architect flow is designed so <b>decisions get made once, written down, and handed off</b> — never re-litigated, never silently implemented in this session.</p>
     <h4><span class="swatch" style="background:var(--recall)"></span>Recall before you propose</h4>
     <ul>
-      <li><code>/history</code> + a <code>DECISIONS.md</code> grep before any new call.</li>
+      <li><code>/vilya-history</code> + a <code>DECISIONS.md</code> grep before any new call.</li>
       <li>Ground every claim in as-built code or as-intended docs — say which.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--fork)"></span>Every fork gets a recommendation</h4>

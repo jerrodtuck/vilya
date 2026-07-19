@@ -51,7 +51,7 @@ export const DIFFERENCES: DifferenceRow[] = [
     claudeCode: "Monitor tool — each stdout line streams to the session as a live event. Never an exit-only background shell watch loop (detects in the output file but never notifies while the loop is still running).",
     cursor: "No Monitor tool. Equivalent: background shell + `notify_on_output` (stdout match wakes the session). Watch REST only — `gh api …/pulls?head=<owner>:<branch>&state=open` + `gh api …/issues/<N>/comments?since=<iso>` at **≥120s**; seed last-seen PR number + comment id and wake **only on change** (never re-announce a standing open PR). Never `gh pr list` / `gh project item-list` / GraphQL on the hot path (Projects GraphQL exhausted a 5k/hour budget in minutes in a 2026-07-19 experiment).",
     certainty: "confirmed",
-    note: "The old \"never a background shell loop\" rule means never an exit-only notifier. Cursor's `notify_on_output` watcher is the Monitor equivalent. Claude's Monitor tool, if it shells `gh`, uses the same REST endpoints — never `gh pr list`. Doctrine (side channel = issue/PR comments) is shared; mechanism differs by host. Full recipe: `/chip` §3.",
+    note: "The old \"never a background shell loop\" rule means never an exit-only notifier. Cursor's `notify_on_output` watcher is the Monitor equivalent. Claude's Monitor tool, if it shells `gh`, uses the same REST endpoints — never `gh pr list`. Doctrine (side channel = issue/PR comments) is shared; mechanism differs by host. Full recipe: `/vilya-chip` §3.",
   },
   {
     area: "Does a dispatched worker ever merge its own PR?",
