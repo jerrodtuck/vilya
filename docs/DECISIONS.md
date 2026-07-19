@@ -2,6 +2,24 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
 
+## 2026-07-19 — Planner loop for anytime plan≠execute (#203)
+
+**Decision:** Introduce an anytime **Planner** loop (one session per repo, launched on Fable) that turns `needs:plan` into `plan:ready` with kickoff + verify plan on the issue. Orchestrator + chips stay on Sonnet (`settings.local.json`). Daytime may chip without `plan:ready` when the issue is already clear. Night-shift requires `plan:ready` ∧ `night-shift:ready` (rename from `auto:ready`). Operator + orchestrator prep night-shift by running Planner before the unattended window. Orchestrator arms a **board Monitor** for `plan:ready` (and/or the plan kickoff comment) when enqueueing — not a process/session monitor on Planner. (decided by operator in architect session, 2026-07-19).
+
+**Options considered:**
+1. Keep #89 story (orchestrator `/model` Fable plans, chips Sonnet execute) — cost: orchestrator is not the real planner in practice; Fable spent on board ops; claim false on Claude Code chip flow.
+2. Invert pairing (Fable chips, Sonnet orchestrator) — cost: every chip burns Fable API after promo window.
+3. **Planner session + labels (`needs:plan` / `plan:ready`); rename `auto:ready` → `night-shift:ready`** — cost: major flow change (page, skills, canon, VISION) ← chosen
+4. `spawn_task` plan-chips for Fable — cost: **rejected** — `spawn_task` has no model param; both chips inherit the file model.
+5. Night-shift same soft skip as daytime — cost: unattended invents scope; rejected in favor of requiring `plan:ready` overnight.
+6. Planner inside the night-shift Actions job — cost: one-model Actions; deferred.
+
+**Why:** Plan≠execute needs a session whose model we can pin. On Claude Code that is a dedicated Planner session (`claude --model fable`), not `spawn_task` and not the thin orchestrator. Labels keep night-shift’s “safe unattended” signal separate from “has a plan.” Daytime keeps an attended escape hatch; night-shift does not. Board Monitor on the issue (not the Planner process) matches chip doctrine with a different completion signal.
+
+**Consequences:** Full correct-flow epic #203 (spec, VISION, canon, sync-labels, `/planner` skill + page, orchestrator/chip/night-shift updates, Setup/Differences). Supersedes the #89 “chip flow already is the split / orchestrator plans” teaching. Product repos must migrate `auto:ready` → `night-shift:ready`. Docs land via #204; labels/skills/site via #205–#209.
+
+**Evidence:** #203 (ADR comment + clarification on board Monitor / standing drain, 2026-07-19); #89 (prior claim); Differences/Setup copy (orchestrator-as-planner); chip skill (root-cause in chip, not orchestrator); Claude Code model-config / Differences note (`spawn_task` has no model param, tested 2026-07-17); VISION “no second methodology” (night-shift consumes daytime chain output); spec `docs/specs/planner-flow.md` via #204.
+
 ## 2026-07-18 — Crucible variants: narrow the shared-core claim to core prompt + severity contract; stack-adapt the straggler examples (#175)
 
 **Decision:** Option A — adapt crucible-fastapi's and crucible-ml's SOLID / structural-non-negotiables **examples** to their own stacks (rules unchanged — the same move crucible-blazor and crucible-django already embody), adapt crucible-fastapi's brownfield examples to FastAPI flavor, and write all five variant headers to state the precise, hash-verifiable claim: **byte-identical core = the core prompt + the severity/reporting contract**; four stack-tuned pieces = the two stack sections, the SOLID/non-negotiables examples, and the brownfield clause's examples (decided by the operator, 2026-07-18).
