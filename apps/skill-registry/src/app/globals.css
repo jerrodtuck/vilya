@@ -75,13 +75,13 @@ a { color: var(--orch); text-decoration: none; }
   margin: 0 auto;
   padding: 1.5rem var(--page-px) 5rem;
 }
-/* Prose stays capped when the shell widens so line lengths stay readable —
+/* Body prose stays capped when the shell widens so line lengths stay readable —
    60rem: a touch wider than the 52rem content width of the 64rem shell, so
    text-heavy sections don't leave a large empty right margin next to the
-   full-width grids/cards/tables/maps. */
+   full-width grids/cards/tables/maps. Lead + muted fill the wrap (#231). */
 @media (min-width: 1440px) {
   .md p, .md ul, .md ol, .md blockquote,
-  p.muted, .pane p, .setupsteps { max-width: 60rem; }
+  .pane p, .setupsteps { max-width: 60rem; }
 }
 
 .sitenav-bar {
@@ -165,7 +165,10 @@ a { color: var(--orch); text-decoration: none; }
 h1 { font-size: 27px; letter-spacing: -.02em; margin: 6px 0 8px; font-weight: 650; }
 h1.mono { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 24px; }
 h2 { font-size: 18px; margin: 32px 0 8px; }
-p.lead { color: var(--muted); font-size: 15px; line-height: 1.65; max-width: 42rem; }
+p.lead { color: var(--muted); font-size: 15px; line-height: 1.65; }
+/* Lead + muted prose fill the wrap (#231, extends #191 site-wide). Still
+   inside .wrap / --wrap-max — not viewport-edge. */
+p.lead, p.muted { max-width: none; }
 .muted { color: var(--muted); font-size: 13.5px; }
 code {
   background: hsl(222 47% 5%);
@@ -316,12 +319,6 @@ pre {
 }
 
 /* ---------- site: overview ---------- */
-/* Overview prose spans the page width (#191, operator decision) — the intro
-   lead and panel prose match the container the cards use, overriding the
-   shared 42rem lead measure and the ≥1440px 60rem prose cap on this page
-   only. .lead and that cap are shared with every other page, hence the
-   .overview scope. */
-.overview p.lead, .overview p.muted { max-width: none; }
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
