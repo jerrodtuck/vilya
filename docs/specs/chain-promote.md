@@ -2,8 +2,8 @@
 
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
-**Owning issues:** [#214](https://github.com/jerrodtuck/vilya/issues/214) (epic), [#217](https://github.com/jerrodtuck/vilya/issues/217) (this spec + ADR), [#215](https://github.com/jerrodtuck/vilya/issues/215) (canon + template), [#216](https://github.com/jerrodtuck/vilya/issues/216) (skills + site)  
-**Status:** ADR + this spec via #217; canon/template shipped in #215; skills/site teach prep remains #216
+**Owning issues:** [#214](https://github.com/jerrodtuck/vilya/issues/214) (epic), [#217](https://github.com/jerrodtuck/vilya/issues/217) (this spec + ADR), [#215](https://github.com/jerrodtuck/vilya/issues/215) (canon + template), [#216](https://github.com/jerrodtuck/vilya/issues/216) (skills + site), [#240](https://github.com/jerrodtuck/vilya/issues/240) (REST issue-dependencies)  
+**Status:** Template/spec use REST issue-dependencies (#240); ADR + canon via #217/#215; skills/site teach prep via #216
 
 ## Intent
 
@@ -13,16 +13,16 @@ on `issues: closed` that reads GitHub native **blocked-by** — not agent-side l
 not a body-text dependency convention.
 
 This spec is the durable story for the promote rule and prep ritual. Canon tables and
-the reusable YAML live in #215; skill/site teaching is #216.
+the reusable YAML live in #215 (REST rewrite #240); skill/site teaching is #216.
 
 ## Promote rule
 
 On `issues: closed` (issue close, not PR timeline noise):
 
-1. Find **dependents** — issues this closed issue is **blocking** (GraphQL `blocking` on
-   the closed issue; each dependent lists it under native `blockedBy`).
+1. Find **dependents** — issues this closed issue is **blocking** via REST
+   `GET /repos/{o}/{r}/issues/{n}/dependencies/blocking`.
 2. For each **open** dependent, promote when **all** of:
-   - every `blockedBy` blocker is `CLOSED`
+   - every REST `…/dependencies/blocked_by` blocker is `closed`
    - labels include `night-shift:chain` and `plan:ready`
    - labels do **not** include `needs:decision` or `type:epic`
    - not already `night-shift:ready`
@@ -49,9 +49,14 @@ Copy from Vilya:
 `docs/project-tracking/templates/chain-promote.yml`
 → product repo `.github/workflows/chain-promote.yml`
 
-Template notes (secrets/permissions, GraphQL shape, skip reasons) live in the YAML
+Template notes (secrets/permissions, REST endpoints, skip reasons) live in the YAML
 header comments. Default `GITHUB_TOKEN` with `permissions.issues: write` is enough —
-no Claude OAuth token, no checkout.
+no Claude OAuth token, no checkout. **No GraphQL** for blocked-by discovery (stays off
+the shared user GraphQL bucket).
+
+**Availability:** REST issue-dependencies are on **github.com** (and GitHub Enterprise
+Cloud where that API exists). **Not on GHES** until GitHub ships the endpoints there —
+same caveat the GraphQL path had.
 
 Process canon cross-link: `docs/project-tracking/GITHUB-PROJECTS.md` (Night-shift →
 Chain promote).
@@ -84,9 +89,10 @@ Operator + orchestrator (daytime):
 - Body-text `Blocked-by:` parsing.
 - Auto-applying `night-shift:ready` without `plan:ready`.
 - Planner-inside-Actions.
+- GraphQL for dependency discovery (retired in #240).
 
 ## Verify
 
 - Merge routing: **tests-only** (docs)
-- Facts match #214 ADR + #215 template / canon
-- Links resolve; no edits to `GITHUB-PROJECTS.md` Autonomy on this branch (#217)
+- Facts match #214 ADR + #215/#240 template / canon
+- Links resolve; Chain promote paragraph may note REST (#240) without rewriting Autonomy tables
