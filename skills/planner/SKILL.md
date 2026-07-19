@@ -73,7 +73,8 @@ Post on the issue (not a private note). Cover:
 
 When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **board
 Monitor** for that issue watching `plan:ready` and/or this kickoff comment. Same doctrine
-as chips (side channel + Monitor), different signal (label/plan comment, not a PR).
+as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
+`notify_on_output`), different signal (label/plan comment, not a PR).
 
 **This skill does not arm monitors and does not spawn chips.** Do not watch your own
 process. You are not a chip.

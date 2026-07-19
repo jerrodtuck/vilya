@@ -88,7 +88,15 @@ const CHIP_STEPS: SetupStep[] = [
     ),
     sub: (
       <>
-        There is no permission rule to add:{" "}
+        Mechanism differs by host: <b>Claude Code</b> arms the{" "}
+        <b>Monitor tool</b>; <b>Cursor</b> arms a background shell with{" "}
+        <code>notify_on_output</code> on <b>REST</b> (
+        <code>gh pr list</code> + issue comments ~90s — never{" "}
+        <code>gh project item-list</code> / GraphQL on the hot path). The
+        forbidden pattern is an <b>exit-only</b>
+        {" "}
+        background shell watch loop, not Cursor&apos;s notify watcher. There
+        is no permission rule to add:{" "}
         <code>mcp__ccd_session_mgmt__send_message</code>{" "}
         <b>always prompts for confirmation by product contract</b> — an allow
         rule does not silence it (directly tested twice). It exists for
@@ -233,10 +241,12 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
 
       <h2>Background sessions (chips) — one-time setup</h2>
       <p className="muted">
-        One contract to know and two switches, set once, make the chip
-        lifecycle run unattended (Claude Code Desktop only): completion
-        reports land as issue comments, worktrees release on merge, and
-        cleanup collapses to a quick periodic prune.
+        One contract to know (completion reports as issue comments + a
+        same-turn dispatch monitor) and two Claude Code Desktop switches
+        (auto-archive, prune). Cursor uses the same report contract with a
+        REST + <code>notify_on_output</code> watcher instead of the Monitor
+        tool — see the first step. Worktrees release on merge; cleanup
+        collapses to a quick periodic prune.
       </p>
       <Steps steps={CHIP_STEPS} />
 

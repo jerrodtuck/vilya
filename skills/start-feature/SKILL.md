@@ -54,8 +54,9 @@ not the orchestrator session pretending to `/model` plan.
    named issue). Do **not** write the kickoff + verify plan in the orchestrator as a
    substitute for Planner when chip-flow is in use.
 3. When you enqueue `needs:plan`, arm a **board Monitor** for that issue watching
-   `plan:ready` and/or the plan kickoff comment. Same doctrine as chips (Monitor tool +
-   side channel). Do **not** monitor the Planner process. Planner is not a chip.
+   `plan:ready` and/or the plan kickoff comment. Same doctrine as chips (side channel +
+   host monitor — Claude **Monitor tool**, or Cursor background shell with
+   `notify_on_output` on REST). Do **not** monitor the Planner process. Planner is not a chip.
 4. **Daytime skip:** when the issue is already clear (attended judgment), you may chip or
    hand a worker the build **without** waiting for `plan:ready`. Use Planner when scope,
    verify plan, or forks need a planning pass.

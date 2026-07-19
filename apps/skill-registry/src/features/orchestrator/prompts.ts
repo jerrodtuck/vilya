@@ -13,12 +13,29 @@ export const NIGHT_SHIFT_ELIGIBILITY =
   "night-shift:ready ∧ plan:ready ∧ ¬needs:decision ∧ ¬epic";
 
 /**
+ * Host-specific chip/board monitor mechanisms — shared by Planner enqueue
+ * doctrine and (for Cursor) the dispatch standing-orders bullet so the two
+ * cards cannot drift on "how to arm."
+ */
+export const HOST_MONITOR_MECHANISMS =
+  "Claude Code uses the Monitor tool; Cursor uses a background shell with notify_on_output on REST (issue comments / labels — never gh project item-list / GraphQL on the hot path)";
+
+/**
+ * Cursor same-turn dispatch monitor — REST + notify_on_output recipe.
+ * Cursor has no Monitor tool; this watcher is the equivalent.
+ */
+export const CURSOR_DISPATCH_MONITOR =
+  "In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh pr list for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path (Projects GraphQL can burn the hourly budget in minutes; lean REST at ~90s stays safe). Light recipe: seed last-seen PR state + comment ids; poll ~every 90s; on change print a wake sentinel that matches notify_on_output; stop the watcher after the merge batch. That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.";
+
+/**
  * Planner enqueue + board-Monitor doctrine shared by Claude Code and Cursor
  * orchestrator standing orders so the two cards cannot drift.
+ * Mechanism differs by host (see HOST_MONITOR_MECHANISMS); the side channel
+ * is always the issue/PR — never the Planner process.
  */
 export const PLANNER_ORCH_DOCTRINE = [
   "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
-  "When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same Monitor doctrine as chips; never monitor the Planner process or session.",
+  `When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session.`,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}).`,
 ].join(" ");
@@ -50,7 +67,7 @@ Every implementation, test, and remediation unit is dispatched as a chip by invo
 
 One chip = one branch = one worktree = one session. Chips run on their own claude/* branch and PR against the default branch — expected; don't fight it. Chips stay Sonnet via .claude/settings.local.json (gitignored; worktrees inherit via .worktreeinclude) — not orchestrator /model.
 
-In the same turn as every chip dispatch — no exceptions — do two things: arm a Monitor — the Monitor tool, each stdout line streaming to the session as a live event; never a plain background shell loop, which detects but can never notify, since a background task only signals on exit and a watch loop never exits — watching gh pr list for the chip's PR and the issue for new comments, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should read truthfully the moment work is in flight). That monitor is the completion signal, and the chip's issue comment is what it picks up. mcp__ccd_session_mgmt__send_message always prompts the user for confirmation by product contract — no permission rule silences it — so never rely on it unattended; attended handoffs only. Backup checks when the monitor is quiet: list_sessions (prState/isRunning) or gh pr list. Always verify before merge — a comment is a claim, not proof. Then review that chip's commits.
+In the same turn as every chip dispatch — no exceptions — do two things: arm a Monitor — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop (a background task that only signals on process exit detects events in its output file but never notifies while the loop is still running) — watching gh pr list for the chip's PR and the issue for new comments, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should read truthfully the moment work is in flight). That monitor is the completion signal, and the chip's issue comment is what it picks up. mcp__ccd_session_mgmt__send_message always prompts the user for confirmation by product contract — no permission rule silences it — so never rely on it unattended; attended handoffs only. Backup checks when the monitor is quiet: list_sessions (prState/isRunning) or gh pr list. Always verify before merge — a comment is a claim, not proof. Then review that chip's commits.
 
 Your jobs: board/issue ops; enqueue Planner when needed (needs:plan + board Monitor for plan:ready); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /merge-pr (squash, never delete the branch); worktree cleanup via /prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
       },
@@ -66,7 +83,7 @@ Your job:
 - Name every agent chat (chip) you kick off after its worktree folder — the title is exactly <issue#>-<slug> — so each chip maps 1:1 to its worktree at a glance.
 - Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
 - I start a separate agent session on each worktree for implementation.
-- At dispatch — the moment you leave the kickoff comment and I start the worker session — move the issue to In Progress on the project board. GitHub's built-in workflows only cover added→Todo and closed/merged→Done; nothing else will move it, and the board should never show Todo for work that's running.
+- ${CURSOR_DISPATCH_MONITOR}
 - Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
 - When a bug or question lands: at most one quick repro probe (to report "confirmed: X" instead of hearsay), then an issue on the board, then a worker chip whose kickoff comment carries the investigation — root-causing runs in that chip's fresh context window, never in this chat. This chat's window is the pipeline's shared resource; if your probes start multiplying, that is the signal to stop and dispatch.
 - Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.

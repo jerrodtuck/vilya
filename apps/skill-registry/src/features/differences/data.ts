@@ -38,13 +38,20 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Completion notification reliability",
-    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` always prompts the user for confirmation by product contract — no permission rule silences it (directly tested twice, 2026-07-17) — so it cannot carry an unattended report; harness end-pings never fire because chip sessions idle rather than end. Unattended signal = `gh` side channels (completion comment on the issue, `gh pr list`) + an orchestrator monitor armed at dispatch.",
-    cursor: "Poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1)",
+    claudeCode: "Two diagnosed mechanisms, not flakiness: model-initiated `send_message` always prompts the user for confirmation by product contract — no permission rule silences it (directly tested twice, 2026-07-17) — so it cannot carry an unattended report; harness end-pings never fire because chip sessions idle rather than end. Unattended signal = `gh` side channels (completion comment on the issue, `gh pr list`) + an orchestrator Monitor-tool monitor armed at dispatch.",
+    cursor: "Cloud Agents API: poll a run-status endpoint, or hold an SSE stream open — official docs state webhooks are \"coming soon\" (not yet available in v1). IDE orchestrator: unattended signal = the same `gh` side channels + a background shell with `notify_on_output` on REST (`gh pr list` + issue comments) — not Projects/GraphQL.",
     certainty: "confirmed",
     note: "Same underlying lesson on both tools: a push notification is a claim, not proof — verify against `gh` before acting on it.",
     sources: [
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
     ],
+  },
+  {
+    area: "Chip-completion / board monitor mechanism",
+    claudeCode: "Monitor tool — each stdout line streams to the session as a live event. Never an exit-only background shell watch loop (detects in the output file but never notifies while the loop is still running).",
+    cursor: "No Monitor tool. Equivalent: background shell + `notify_on_output` (stdout match wakes the session). Watch REST only — `gh pr list` + `gh api …/issues/<N>/comments` ~every 90s; never `gh project item-list` / GraphQL on the hot path (Projects GraphQL exhausted a 5k/hour budget in minutes in a 2026-07-19 experiment; lean REST stayed fine).",
+    certainty: "confirmed",
+    note: "The old \"never a background shell loop\" rule means never an exit-only notifier. Cursor's `notify_on_output` watcher is the Monitor equivalent. Doctrine (side channel = issue/PR comments) is shared; mechanism differs by host.",
   },
   {
     area: "Does a dispatched worker ever merge its own PR?",
@@ -82,9 +89,9 @@ export const DIFFERENCES: DifferenceRow[] = [
     claudeCode:
       "`ccd_session_mgmt` MCP server — any session can manage the others: `list_sessions` enumerates sessions with cwd/branch/PR state, `send_message` pushes a message into another session's chat but always prompts the user for confirmation by product contract (not permission-gated — an allow rule does not silence it), `archive_session` stops a session's process and releases its worktree hold (also exposed as an \"Auto-archive on PR close\" preference). Unattended chip→orchestrator reporting therefore rides the same workaround as Cursor: `gh` side channels (completion comment on the issue) plus an orchestrator monitor. All three tools directly exercised 2026-07-17.",
     cursor:
-      "No documented equivalent — the Cloud Agents API is pull-only from the outside: poll the run-status endpoint or hold an SSE stream open (webhooks \"coming soon\"). The API reference surfaces no agent-initiated push into another conversation, and no session-enumeration or archive API surfaced to conversations. Side channels (PR/issue comments via `gh`) are the nearest workaround, and still require polling.",
+      "No documented equivalent of `ccd_session_mgmt` — the Cloud Agents API is pull-only from the outside: poll the run-status endpoint or hold an SSE stream open (webhooks \"coming soon\"). The API reference surfaces no agent-initiated push into another conversation, and no session-enumeration or archive API surfaced to conversations. IDE orchestrator unattended reporting: `gh` side channels + background shell with `notify_on_output` on REST (see chip-completion monitor row).",
     certainty: "confirmed",
-    note: "Pairs with the model-selection asymmetry row: Cursor gives the dispatcher more control going in (per-dispatch `model.id`); Claude Code gives the orchestrator more session control (`list_sessions` / `archive_session`). For unattended reporting the tools converge — `gh` side channels + polling on both — which is the honest symmetry.",
+    note: "Pairs with the model-selection asymmetry row: Cursor gives the dispatcher more control going in (per-dispatch `model.id`); Claude Code gives the orchestrator more session control (`list_sessions` / `archive_session`). For unattended reporting the tools converge on `gh` side channels — Claude arms the Monitor tool, Cursor arms REST + `notify_on_output`.",
     sources: [
       { label: "Claude Code — Agent view", href: "https://code.claude.com/docs/en/agent-view" },
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
