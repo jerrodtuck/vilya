@@ -339,6 +339,20 @@ pre {
     animation: chip-pulse 1.1s ease 0.5s 1;
   }
 }
+
+/* founding why (#218) — plain prose scar before BoardStrip; no panel/card. */
+.founding-why { margin: 28px 0 8px; }
+.founding-why .mono-kicker { margin: 0 0 8px; }
+.founding-why h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.founding-why .muted { margin: 0; line-height: 1.6; }
+@media (prefers-reduced-motion: no-preference) {
+  .founding-why { animation: fade-in 0.5s ease 0.08s both; }
+}
 .lchip {
   border: 1px solid var(--border);
   background: hsl(var(--card) / 0.5);
