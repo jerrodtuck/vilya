@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
 
+## 2026-07-19 — `/prune --apply` implies scoped lock-holder kills (#227)
+
+**Decision:** `/prune --apply` **implies** kill of lock-holder processes for **eligible** rows only — `--apply` is the authorization; no second operator ask. Dry-run previews `would kill PID … for <path>` and never kills. (decided by operator in architect session, 2026-07-19).
+
+**Options considered:**
+1. Status quo (always ask before kill) — cost: friction after every sticky Cursor `cursor-agent-worker` leftover
+2. **`--apply` implies scoped kill on eligible rows** — cost: stronger consent semantics on one flag; must keep eligibility + path-scoped PID matching ← chosen
+3. Second flag `--kill-locks` — cost: easy to forget; reintroduces two-step consent
+
+**Why:** Operator already treated `/prune --accept` / apply intent as kill auth in practice; a sticky Cursor worker after merge is the motivating case. Eligibility gates + cmdline-must-name-this-worktree keep the blast radius narrow. A separate `--kill-locks` flag recreates the friction Option 2 removes.
+
+**Consequences:** Rewrite `/prune` §5a + honesty bar; sync registry skill mirror, orchestrator prune/MERGE prompt cards, `/merge-pr` handoff, Setup prune note. Still forbidden: dry-run kills, killing processes that do not name the target path, machine-wide kills, skipping eligibility to force-delete.
+
+**Evidence:** #227 (decision body + kickoff); prior doctrine in `2026-07-12-prune-agent-worker-lock` changelog (superseded for `--apply` only); Cursor sticky `cursor-agent-worker` after merge (motivating case).
+
 ## 2026-07-19 — Planner loop for anytime plan≠execute (#203)
 
 **Decision:** Introduce an anytime **Planner** loop (one session per repo, launched on Fable) that turns `needs:plan` into `plan:ready` with kickoff + verify plan on the issue. Orchestrator + chips stay on Sonnet (`settings.local.json`). Daytime may chip without `plan:ready` when the issue is already clear. Night-shift requires `plan:ready` ∧ `night-shift:ready` (rename from `auto:ready`). Operator + orchestrator prep night-shift by running Planner before the unattended window. Orchestrator arms a **board Monitor** for `plan:ready` (and/or the plan kickoff comment) when enqueueing — not a process/session monitor on Planner. (decided by operator in architect session, 2026-07-19).

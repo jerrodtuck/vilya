@@ -137,7 +137,9 @@ const CHIP_STEPS: SetupStep[] = [
     sub: (
       <>
         The session-liveness gate makes this safe: live / non-archived
-        sessions are skipped automatically.
+        sessions are skipped automatically. On eligible rows,{" "}
+        <code>--apply</code> also authorizes scoped kills of lock holders
+        whose cmdline names that worktree (dry-run only previews).
       </>
     ),
   },

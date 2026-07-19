@@ -4,8 +4,9 @@ description: >-
   Orchestrator cleanup for feature worktrees + leftover local branches — Cursor daytime
   (%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*), Claude chips (.claude/worktrees on
   claude/*), and night-shift / Claude daytime (.claude/worktrees on feat|fix|docs/<issue#>-*).
-  Dry-run by default; --apply removes eligible worktrees after squash-merge. Use when the user
-  says "prune", "prune worktrees", "/prune", or after /merge-pr hands off cleanup. Run from the
+  Dry-run by default; --apply removes eligible worktrees after squash-merge and authorizes
+  scoped kills of lock holders whose cmdline names that worktree. Use when the user says
+  "prune", "prune worktrees", "/prune", or after /merge-pr hands off cleanup. Run from the
   main clone — never from inside a worktree being removed.
 ---
 
@@ -59,8 +60,8 @@ keeps this safe regardless of timing.
 
 | Prompt | Effect |
 |--------|--------|
-| `/prune` · "prune worktrees" · "what can we prune?" | **Dry-run** — list eligible paths + branches, touch nothing |
-| `/prune --apply` · "prune worktrees, apply" | Remove what the dry-run would list |
+| `/prune` · "prune worktrees" · "what can we prune?" | **Dry-run** — list eligible paths + branches, touch nothing; preview `would kill PID …` when a lock holder is detected |
+| `/prune --apply` · "prune worktrees, apply" | Remove what the dry-run would list; **`--apply` authorizes scoped lock-holder kills** on eligible rows (see §5a) |
 
 Always show the dry-run table first. With `--apply`, re-check eligibility immediately
 before each delete (remote/PR state can change).
@@ -121,6 +122,13 @@ PATH | BRANCH | PR | REMOTE | VERDICT
 
 End with counts: `N eligible · M skipped · apply with /prune --apply`.
 
+When a dry-run detects a lock holder on an **eligible** row, add a preview line (do **not**
+kill):
+
+```text
+would kill PID <pid> (<name>) for <path>
+```
+
 ## 5. Apply
 
 For each **eligible** row, in the main clone:
@@ -140,30 +148,39 @@ git fetch --prune
 ```
 
 - Prefer `git worktree remove` before deleting the directory.
-- If remove fails because the path is locked: follow **§5a** — do not invent force
-  deletes, and do not kill processes unless the operator explicitly asks.
-- Re-run dry-run at the end and show what remains.
+- If remove fails because the path is locked: follow **§5a**. `--apply` already authorizes
+  scoped kills for that eligible row — no second operator ask. Do not invent force deletes
+  that skip eligibility.
+- Re-run dry-run at the end and show what remains (including any kills performed).
 
 ## 5a. Lock holder — Permission denied on a locked worktree
 
 After `/merge-pr`, folder delete can return **Permission denied** even though the PR is
-merged, because a live process still holds the worktree open. Two cases:
+merged, because a live process still holds the worktree open. **`--apply` implies kill** of
+lock-holder processes for **eligible** rows only — that flag is the authorization. No second
+ask.
+
+Two cases before/around the kill path:
 
 **Claude chip (`.claude/worktrees/<slug>`)** — the chip's own **session process** holds its
-worktree while that session is still alive. **Close the chip session in the UI** (agent view /
-background sessions) and the lock releases; then re-apply. This is the common case for
-`spawn_task` chips and needs **no** process kill. Only if closing the session isn't possible,
-fall back to the PID hunt below.
+worktree while that session is still alive. Gate 3 already skips live / non-archived sessions;
+**close the chip session in the UI** (agent view / background sessions) so the row can become
+eligible. Do **not** kill past a live-session skip. Only when the row is eligible and a
+hold remains (UI close wasn't enough), use the PID hunt below.
 
 > **"Device or resource busy" on a chip tree** usually means a **not-yet-archived session**
-> still holds it (even with `isRunning: false` — see gate 3). The fix is archiving/deleting
-> that session, **not** force-deletes.
+> still holds it (even with `isRunning: false` — see gate 3). Archive/delete that session so
+> eligibility can pass; do not force-delete past the gate.
 
 **Cursor (`.cursor/worktrees/<repo>/<issue#>-*`)** — a leftover `cursor-agent-worker`
-`node.exe` keeps the worktree open even after the chip is closed / Archived.
+`node.exe` keeps the worktree open even after the chip is closed / Archived. This is the
+common sticky case that motivated `--apply` ⇒ scoped kill.
 
-1. **Merge first** — PR MERGED, remote branch gone (already true for eligible rows).
-2. **Identify the holder** — find PIDs whose command line names the worktree path (for
+On `--apply`, when remove hits Permission denied / a known worker lock on an **eligible**
+row:
+
+1. **Eligibility already passed** — do not skip gates to force-delete live work.
+2. **Identify the holder** — find PIDs whose command line names **that** worktree path (for
    Cursor, also `cursor-agent-worker` / `--worker-dir`):
 
    ```powershell
@@ -173,28 +190,40 @@ fall back to the PID hunt below.
      Select-Object ProcessId, Name, CommandLine
    ```
 
-   Confirm the cmdline actually names **this** worktree before offering a kill.
-3. **Operator-authorized kill only** — never auto-kill. Report the PID + a short
-   cmdline excerpt, ask. When they say yes:
+   Confirm the cmdline actually names **this** worktree. Never kill a process that does not.
+3. **Kill those PIDs** — no second operator ask (`--apply` is the consent):
 
    ```powershell
    Stop-Process -Id <pid> -Force
    ```
 
-4. **Re-apply** — `/prune --apply` (scoped or full). `git worktree remove` /
-   `Remove-Item` should succeed once that lock is gone.
+   Report every kill in the prune output: `killed PID <pid> (<name>) for <path>`.
+4. **Re-remove** the worktree / folder (and paired local branch as usual).
+
+**Still forbidden**
+
+- Auto-kill on dry-run (preview only: `would kill PID … for <path>`)
+- Killing processes that do not name the target worktree
+- Broad "kill anything blocking" on the machine
+- Skipping eligibility gates to force-delete live work
 
 Closing the chip / Cursor Archive is **not** always enough (Cursor's worker outlives it).
-Skip the row and continue others if the operator declines the kill.
+If no matching PID is found and the path stays locked, skip the row, report that, and
+continue others.
 
 ## 6. Honesty bar
 
-- Dry-run is the default; `--apply` is explicit.
-- Say when you skipped dirty / open-PR / cwd-inside / live-session / still-locked rows.
+- Dry-run is the default; `--apply` is explicit — and on eligible rows it **authorizes
+  scoped lock-holder kills** (report every kill: PID + path).
+- Dry-run must preview `would kill PID … for <path>` when a lock holder is detected; never
+  kill on dry-run.
+- Say when you skipped dirty / open-PR / cwd-inside / live-session / still-locked (no
+  matching PID) rows.
 - Do not claim Cursor Archive or Claude delete cleaned these paths.
 - Never treat "no PR + no commits + clean" as death evidence for a chip tree — that is
   exactly what a freshly started chip looks like; only the session-liveness gate (gate 3)
   can clear a `.claude/worktrees/*` row.
-- Do not kill `cursor-agent-worker` (or any process) without an explicit operator ask.
+- Never kill processes that do not name the target worktree; never skip eligibility to
+  force-delete.
 - After `/merge-pr`, one `/prune --apply` (or a dry-run the operator reviews) is the
   normal hygiene step — not an in-place delete from the feature worktree chat.
