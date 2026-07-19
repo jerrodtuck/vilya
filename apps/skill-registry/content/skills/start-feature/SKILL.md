@@ -6,7 +6,8 @@ description: Kick off a new feature or work stream on any repo's GitHub Projects
 # Start Feature (any stack)
 
 > **Scope:** Internal dev-process skill for a VSA-structured product repo. Companion:
-> [/finish-feature](../finish-feature/SKILL.md). Tracking model + this repo's project ids/labels:
+> [/finish-feature](../finish-feature/SKILL.md). Plan loop for chip-flow:
+> [/planner](../planner/SKILL.md). Tracking model + this repo's project ids/labels:
 > `docs/project-tracking/GITHUB-PROJECTS.md`.
 
 All repo / project / label values come from this repo's `GITHUB-PROJECTS.md` **Repo config** block.
@@ -45,20 +46,41 @@ If the repo isn't already known, detect it:
 
 ## 3. Plan phase → then execute phase
 
-**Contract:** create the plan first, then build. Which model you use for each phase is an
-**operator UI choice** (Cursor or Claude Code picker) — not stored in `GITHUB-PROJECTS.md`. Skills
-cannot switch the picker; they only produce artifacts and soft-ask for a handoff.
+**Chip-flow / multi-session (default):** Plan phase belongs to **[/planner](../planner/SKILL.md)**,
+not the orchestrator session pretending to `/model` plan.
 
-1. **Plan phase** — on the **planning model** (whatever the operator selected): produce the verify
-   plan (step 5) and any design-fork consult; write the kickoff comment on the issue; **do not
-   implement yet.** Same artifacts whether you plan in Agent chat, Cursor Plan mode (optional IDE
-   helper — needs a human accept if you use it), Claude Code, or Cursor CLI (`--mode=plan`).
-2. **Stop for model switch** (daytime) — after the plan is written, ask the operator to switch to
-   the **execution model** before coding. Skip the stop when (a) night-shift / Actions / other
-   headless one-model runs — planning is locked via the issue body and `auto:ready`, stay on that
-   single model for the whole run; or (b) the operator already planned on the model they will build
-   with.
-3. **Execute phase** — on the **execution model**, implement only after the plan is settled.
+1. Sections 1–2 still run here: issue, board Status, worktree, branch.
+2. If the issue needs a planning pass, enqueue **`needs:plan`** (or invoke `/planner` on a
+   named issue). Do **not** write the kickoff + verify plan in the orchestrator as a
+   substitute for Planner when chip-flow is in use.
+3. When you enqueue `needs:plan`, arm a **board Monitor** for that issue watching
+   `plan:ready` and/or the plan kickoff comment. Same doctrine as chips (Monitor tool +
+   side channel). Do **not** monitor the Planner process. Planner is not a chip.
+4. **Daytime skip:** when the issue is already clear (attended judgment), you may chip or
+   hand a worker the build **without** waiting for `plan:ready`. Use Planner when scope,
+   verify plan, or forks need a planning pass.
+5. **Execute phase** runs in the chip/worker only after the plan is settled (or after the
+   daytime skip). Night-shift eligibility (`plan:ready` ∧ `night-shift:ready`) is owned by
+   `/night-shift`, not rewritten here.
+
+**Single-session footnote** (one session both plans and builds — solo daytime, no chip /
+Planner): keep a narrow plan→execute handoff inside this skill.
+
+1. **Plan first** — produce the verify plan (step 6) and any design-fork consult; write the
+   kickoff comment on the issue; **do not implement yet.** Same artifacts whether you plan
+   in Agent chat, Cursor Plan mode (optional IDE helper — needs a human accept if you use
+   it), Claude Code, or Cursor CLI (`--mode=plan`).
+2. **Stop for model switch** (daytime) — after the plan is written, ask the operator to
+   switch to the **execution model** before coding. Skip the stop when (a) night-shift /
+   Actions / other headless one-model runs — planning is already locked via the issue body
+   and `plan:ready` ∧ `night-shift:ready`, stay on that single model for the whole run; or
+   (b) the operator already planned on the model they will build with.
+3. **Execute** — implement only after the plan is settled.
+
+Planning vs execution **models** are an operator UI choice (Cursor or Claude Code picker),
+never stored in `GITHUB-PROJECTS.md`. Skills cannot switch the picker; they only produce
+artifacts and soft-ask for a handoff. Standing Planner sessions are expected on Fable;
+orchestrator + chips stay on Sonnet.
 
 ## 4. Consult at decision forks — before implementing
 
@@ -88,7 +110,8 @@ Trivial work → build.
 ## 6. Verify plan up front — including merge routing
 
 State how the feature will be verified, **on the issue** (kickoff comment), so finish and merge
-read it instead of re-deciding:
+read it instead of re-deciding. In chip-flow, that kickoff is written by [/planner](../planner/SKILL.md);
+in the single-session footnote, this skill writes it.
 
 - Which test projects / suites.
 - **Merge routing** — one of:
