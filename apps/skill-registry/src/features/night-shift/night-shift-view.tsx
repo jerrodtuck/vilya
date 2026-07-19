@@ -67,8 +67,9 @@ export function NightShiftView() {
           machine&apos;s <code>claude.exe</code> path — download{" "}
           <code>night-shift.yml</code> into{" "}
           <code>.github/workflows/</code>.{" "}
-          <b>Stack</b>, <b>Crucible variant</b>, and <b>Test command</b> stay in
-          that repo&apos;s <code>GITHUB-PROJECTS.md</code> (use{" "}
+          <b>Stack</b>, <b>Crucible variant</b>, and <b>Test command</b>
+          {" "}
+          live in each product{"'"}s <code>GITHUB-PROJECTS.md</code> (use{" "}
           <Link href="/setup">Setup → Regenerate</Link>). Prerequisites: private
           repo, skills + autonomy labels, Bypass only in the launcher (not user
           defaults).

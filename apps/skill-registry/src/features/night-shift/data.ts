@@ -45,7 +45,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <p>Two triggers on <code>.github/workflows/night-shift.yml</code>:</p>
     <ul>
       <li><b>Manual</b> — <code>workflow_dispatch</code> from Actions UI or <code>gh workflow run night-shift</code>.</li>
-      <li><b>Scheduled</b> — cron <code>0 8 * * *</code> (~2–3am America/Chicago, UTC). Active on this repo.</li>
+      <li><b>Scheduled</b> — cron <code>0 8 * * *</code> (~2–3am America/Chicago, UTC). Commented out in the template until you uncomment it on the product default branch.</li>
     </ul>
     <p>Concurrency group <code>night-shift</code> with <code>cancel-in-progress: false</code> — one overnight run finishes before another cancels it.</p>
     <h4><span class="swatch" style="background:var(--start)"></span>Operator strip</h4>

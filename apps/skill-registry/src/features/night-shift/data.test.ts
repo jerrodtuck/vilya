@@ -43,8 +43,9 @@ describe("night-agent stage model", () => {
     expect(stageList().map((s) => s.id)).toEqual([...STAGE_ORDER]);
   });
 
-  it("Dispatch documents active cron and Identity documents the two-token split", () => {
+  it("Dispatch documents optional cron and Identity documents the two-token split", () => {
     expect(STAGES.DISPATCH.bodyHtml).toContain("0 8 * * *");
+    expect(STAGES.DISPATCH.bodyHtml).toContain("Commented out");
     expect(STAGES.DISPATCH.bodyHtml).toContain("workflow_dispatch");
     expect(STAGES.IDENTITY.bodyHtml).toContain("claude[bot]");
     expect(STAGES.IDENTITY.bodyHtml).toContain("CLAUDE_CODE_OAUTH_TOKEN");

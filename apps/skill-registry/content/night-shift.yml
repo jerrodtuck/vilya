@@ -65,8 +65,8 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           path_to_claude_code_executable: __CLAUDE_EXE__
-          # Private repos only. Turn off after the next green bring-up run.
-          show_full_output: true
+          # Private repos only. Leave false once a product has a green overnight run.
+          show_full_output: false
           prompt: |
             You are running NIGHT SHIFT on ${{ github.repository }}. The operator is asleep.
 
