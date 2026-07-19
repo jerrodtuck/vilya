@@ -11,6 +11,7 @@ import {
 } from "./operator-bands";
 import { VERIFY_CHECKS } from "./operator-guide";
 import { OperatorSteps } from "./operator-steps";
+import { Runbook } from "./runbook";
 import { TroubleshootTable } from "./troubleshoot-table";
 
 const REPO = "https://github.com/jerrodtuck/vilya";
@@ -52,6 +53,32 @@ function MapAside() {
   );
 }
 
+function ArtifactLinks() {
+  return (
+    <p className="muted" style={{ lineHeight: 1.55, marginTop: 16 }}>
+      <b style={{ color: "var(--text)" }}>Artifacts</b>
+      {" · "}
+      <Link href="/skills/night-shift">skill (site)</Link>
+      {" · "}
+      <a href={SKILL_SRC_HREF} target="_blank" rel="noreferrer">
+        skill source
+      </a>
+      {" · "}
+      <a href={TEMPLATE_HREF} target="_blank" rel="noreferrer">
+        portable template
+      </a>
+      {" · "}
+      <a href={CHAIN_PROMOTE_HREF} target="_blank" rel="noreferrer">
+        chain-promote template
+      </a>
+      {" · "}
+      <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
+        live workflow
+      </a>
+    </p>
+  );
+}
+
 export function NightShiftView() {
   const workflowTemplate = loadNightShiftTemplate();
 
@@ -65,20 +92,47 @@ export function NightShiftView() {
         operate. Same daytime Dev Loop, unattended; methodology stays on{" "}
         <Link href="/orchestrator">Orchestrator</Link>.
       </p>
+      <div className="metarow" aria-label="Night-shift scope">
+        <span className="badge">once per product repo</span>
+        <span className="badge">private</span>
+        <span className="badge">Windows</span>
+        <span className="badge">PRs only</span>
+        <span className="badge">never merges</span>
+      </div>
 
       <h2 id="setup-once">Setup once</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
-        Mode A is <b>GitHub Actions</b> on a self-hosted Windows runner. One
+        <b>Actions</b> on a self-hosted Windows runner is the primary path. One
         action per step; each step names what you should see when it worked.
       </p>
+      <div
+        className="metarow"
+        aria-label="Optional setup milestones"
+        style={{ marginBottom: 8 }}
+      >
+        <span className="badge">Not started</span>
+        <span className="badge">Online</span>
+        <span className="badge">First green</span>
+      </div>
       <OperatorSteps steps={SETUP_ONCE_STEPS} />
+
+      <div className="note" style={{ marginTop: 16 }} id="unattended-permissions">
+        <b>Unattended permissions</b> — keep{" "}
+        <code>--permission-mode bypassPermissions</code> only on the overnight{" "}
+        <b>Job</b> (the workflow template already sets it). Do not make Bypass
+        your interactive user default — daytime sessions should still prompt.
+      </div>
+
+      <ArtifactLinks />
 
       <div className="panel" style={{ marginTop: 20 }} id="generate-workflow">
         <div className="kicker">Per-repo overnight setup</div>
         <h3>Generate workflow YAML</h3>
         <p className="muted" style={{ lineHeight: 1.55, marginTop: 8 }}>
-          One generic workflow for every stack. Type the product repo and your
-          machine&apos;s <code>claude.exe</code> path — download{" "}
+          One generic <b>Workflow</b>
+          {" "}
+          for every stack. Type the product repo and your machine&apos;s{" "}
+          <code>claude.exe</code> path — download{" "}
           <code>night-shift.yml</code> into <code>.github/workflows/</code>.{" "}
           <b>Stack</b>, <b>Crucible variant</b>, and <b>Test command</b>
           {" "}
@@ -97,48 +151,32 @@ export function NightShiftView() {
             and set <code>path_to_claude_code_executable</code> by hand.
           </p>
         )}
-
-        <p className="muted" style={{ lineHeight: 1.55, marginTop: 16 }}>
-          <b style={{ color: "var(--text)" }}>Artifacts</b>
-          {" · "}
-          <Link href="/skills/night-shift">skill (site)</Link>
-          {" · "}
-          <a href={SKILL_SRC_HREF} target="_blank" rel="noreferrer">
-            skill source
-          </a>
-          {" · "}
-          <a href={TEMPLATE_HREF} target="_blank" rel="noreferrer">
-            portable template
-          </a>
-          {" · "}
-          <a href={CHAIN_PROMOTE_HREF} target="_blank" rel="noreferrer">
-            chain-promote template
-          </a>
-          {" · "}
-          <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
-            live workflow
-          </a>
-        </p>
-
-        <div className="modes" style={{ marginTop: 14 }}>
-          <div className="mode" style={{ ["--m" as string]: "var(--orch)" }}>
-            <b>Alternative · Claude Code Desktop routines</b>
-            <span>
-              Schedule a routine that opens the product repo and follows{" "}
-              <Link href="/skills/night-shift">
-                <code>skills/night-shift/SKILL.md</code>
-              </Link>
-              . Prefer Actions when you need a hard non-interactive guarantee —
-              Desktop has been flaky about Bypass.
-            </span>
-          </div>
-        </div>
       </div>
+
+      <details className="ns-desktop" id="desktop-secondary">
+        <summary>
+          Alternative · Claude Code Desktop{" "}
+          <span className="muted">(collapsed · secondary)</span>
+        </summary>
+        <p className="muted" style={{ lineHeight: 1.55, marginTop: 10 }}>
+          Schedule a routine that opens the product repo and follows{" "}
+          <Link href="/skills/night-shift">
+            <code>skills/night-shift/SKILL.md</code>
+          </Link>
+          . Prefer Actions when you need a hard non-interactive guarantee.
+        </p>
+        <p className="ns-safety-note" style={{ marginTop: 10 }}>
+          <b>Bypass warning:</b> Desktop has been flaky about Bypass. If you use
+          this path, keep Bypass scoped to the overnight routine — never as your
+          interactive default.
+        </p>
+      </details>
 
       <h2 id="run-tonight">Run tonight</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
         Procedure only — label, dispatch, morning triage. Theory is under{" "}
-        <a href="#how-it-works">How it works</a>.
+        <a href="#how-it-works">How it works</a>. Before/after sleep summary:{" "}
+        <a href="#runbook">Runbook</a>.
       </p>
       <OperatorSteps steps={RUN_TONIGHT_STEPS} />
 
@@ -165,10 +203,13 @@ export function NightShiftView() {
         Any miss → <a href="#troubleshoot">Troubleshoot</a>.
       </div>
 
+      <Runbook />
+
       <h2 id="how-it-works">How it works</h2>
       <p className="muted" style={{ lineHeight: 1.55 }}>
         Understand the agent machinery — dispatch through morning report. Not
-        required to complete Setup or Run.
+        required to complete Setup or Run. Terms:{" "}
+        <b>Workflow · Runner · Job · Skill</b>.
       </p>
       <NightAgentMap aside={<MapAside />} />
       <div className="note teal" style={{ marginTop: 16 }}>

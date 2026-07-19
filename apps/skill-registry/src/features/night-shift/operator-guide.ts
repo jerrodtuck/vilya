@@ -43,7 +43,7 @@ export const TROUBLESHOOT_ROWS: TroubleshootRow[] = [
   },
   {
     symptom: "Expired OAuth / mysterious auth failures overnight",
-    fix: "Refresh with claude setup-token and update the repo secret. Shared-profile caveat: a long-lived run.cmd listener uses ~/.claude on the box — a dead desktop session can break overnight even when the secret looks fine.",
+    fix: "Refresh with claude setup-token and update the repo secret. Shared-profile caveat: a long-lived run.cmd runner process uses ~/.claude on the box — a dead interactive session can break overnight even when the secret looks fine.",
   },
   {
     symptom: 'Session or branch "missing" in the daytime clone',

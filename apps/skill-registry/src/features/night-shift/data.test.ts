@@ -75,15 +75,28 @@ describe("night-agent stage model", () => {
     expect(STAGES.STEERING.bodyHtml).toContain("claude/*");
     expect(STAGES.STEERING.bodyHtml).toContain("/prune");
     expect(STAGES.OUTPUTS.bodyHtml).toContain("unreviewed overnight");
-    expect(STAGES.OUTPUTS.bodyHtml).toContain("/prune");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("claude[bot]");
   });
 
-  it("Steering keeps the skill dumb; Outputs teach promote after merge (#216)", () => {
+  it("Steering keeps the skill dumb; Outputs stay artifacts-only (#200)", () => {
     expect(STAGES.STEERING.bodyHtml).toContain("night-shift:chain");
     expect(STAGES.STEERING.bodyHtml).toContain("chain-promote.yml");
     expect(STAGES.STEERING.bodyHtml).toMatch(/No promote/i);
-    expect(STAGES.OUTPUTS.bodyHtml).toContain("chain-promote");
-    expect(STAGES.OUTPUTS.bodyHtml).toContain("night-shift:ready");
+    expect(STAGES.OUTPUTS.bodyHtml).toMatch(/Artifacts only/i);
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("Runbook");
+    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/merge-pr");
+    expect(STAGES.OUTPUTS.bodyHtml).not.toContain("/prune");
+  });
+
+  it("uses Workflow · Runner · Job · Skill terms; drops listener/CygNet drift (#200)", () => {
+    expect(STAGES.RUNNER.mapRole).toContain("Job");
+    expect(STAGES.RUNNER.bodyHtml).toMatch(/Workflow/);
+    expect(STAGES.RUNNER.bodyHtml).toMatch(/Runner/);
+    expect(STAGES.RUNNER.bodyHtml).not.toMatch(/listener/i);
+    expect(STAGES.RUNNER.bodyHtml).not.toMatch(/CygNet/);
+    expect(STAGES.LOOP.bodyHtml).toMatch(/Skill/);
+    expect(STAGES.STEERING.mapRole).toMatch(/Skill/);
+    expect(STAGES.FAILURE.bodyHtml).not.toMatch(/listener/i);
   });
 
   it("geometry covers every stage once and edges use typed endpoints", () => {

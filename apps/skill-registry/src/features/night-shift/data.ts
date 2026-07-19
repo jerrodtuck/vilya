@@ -37,39 +37,36 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "1 · Dispatch",
     title: "How the run starts",
     mapTitle: "Dispatch",
-    mapRole: "trigger",
+    mapRole: "Workflow trigger",
     c: "--start",
     kind: "happy",
     chipLabel: "Dispatch",
     bodyHtml: `
-    <p>Two triggers on <code>.github/workflows/night-shift.yml</code>:</p>
+    <p>Two triggers on the <b>Workflow</b> <code>.github/workflows/night-shift.yml</code>:</p>
     <ul>
       <li><b>Manual</b> — <code>workflow_dispatch</code> from Actions UI or <code>gh workflow run night-shift</code>.</li>
       <li><b>Scheduled</b> — cron <code>0 8 * * *</code> (~2–3am America/Chicago, UTC). Commented out in the template until you uncomment it on the product default branch.</li>
     </ul>
     <p>Concurrency group <code>night-shift</code> with <code>cancel-in-progress: false</code> — one overnight run finishes before another cancels it.</p>
-    <h4><span class="swatch" style="background:var(--start)"></span>Operator strip</h4>
-    <ul>
-      <li>Before bed: ensure <code>plan:ready</code>, then label <code>night-shift:ready</code>.</li>
-      <li>Optional: fire manually if you do not want to wait for cron.</li>
-    </ul>`,
+    <p>Before/after sleep procedure lives in the page <b>Runbook</b> — this stage is the trigger only.</p>`,
   },
   RUNNER: {
     id: "RUNNER",
     kicker: "2 · Runner",
     title: "Self-hosted Windows box",
     mapTitle: "Runner",
-    mapRole: "Listener · _work",
+    mapRole: "Job · _work",
     c: "--orch",
     kind: "happy",
     chipLabel: "Runner",
     bodyHtml: `
-    <p>Job runs on <code>runs-on: [self-hosted, windows]</code> for every product repo
-    (Next.js or CygNet). The listener long-polls GitHub, then spawns a worker for the job.</p>
+    <p>The <b>Workflow</b> schedules a <b>Job</b> on <code>runs-on: [self-hosted, windows]</code>
+    for every product repo. The self-hosted <b>Runner</b> picks up the job and checks out under
+    <code>_work</code>.</p>
     <ul>
       <li>Fresh <b>full-history</b> clone (<code>actions/checkout@v4</code>, <code>fetch-depth: 0</code>) under the runner&apos;s <code>_work</code> directory.</li>
       <li>That checkout is <b>distinct</b> from the operator&apos;s daytime clone — night-shift never shares your dirty working tree.</li>
-      <li>Node, Git for Windows, and <code>gh</code> must be on the listener process PATH.</li>
+      <li>Node, Git for Windows, and <code>gh</code> must be on the runner process PATH.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--orch)"></span>Setup (once per repo)</h4>
     <ul>
@@ -104,13 +101,13 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "4 · Headless loop",
     title: "Think → tool → result",
     mapTitle: "Loop",
-    mapRole: "timeout · daytime chain",
+    mapRole: "Job · daytime chain",
     c: "--review",
     kind: "happy",
     chipLabel: "Loop",
     bodyHtml: `
-    <p>Single job step: <code>anthropics/claude-code-action@v1</code> with a prompt that points at
-    <code>skills/night-shift/SKILL.md</code> — same daytime chain, leave a PR.</p>
+    <p>Single <b>Job</b> step: <code>anthropics/claude-code-action@v1</code> with a prompt that points at
+    the night-shift <b>Skill</b> (<code>skills/night-shift/SKILL.md</code>) — same daytime chain, leave a PR.</p>
     <ul>
       <li><b>Runaway guard:</b> job <code>timeout-minutes: 180</code> (wall clock). A high
         <code>--max-turns</code> (500) is last-ditch only — CLI defaults ~10 if omitted; do not use a tight turn budget as the feature size limit.</li>
@@ -126,12 +123,12 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "5 · Skill steering",
     title: "Operator judgment, written down",
     mapTitle: "Steering",
-    mapRole: "night-shift:ready · gates",
+    mapRole: "Skill · gates",
     c: "--blocked",
     kind: "safety",
     chipLabel: "Steering",
     bodyHtml: `
-    <p><code>skills/night-shift/SKILL.md</code> is not a second methodology — it runs the
+    <p>The night-shift <b>Skill</b> (<code>skills/night-shift/SKILL.md</code>) is not a second methodology — it runs the
     <b>same daytime chain</b> with hard unattended rules.</p>
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
@@ -149,26 +146,19 @@ export const STAGES: Record<StageId, NightStage> = {
   OUTPUTS: {
     id: "OUTPUTS",
     kicker: "6 · Outputs",
-    title: "What you wake up to",
+    title: "Artifacts the run leaves",
     mapTitle: "Outputs",
     mapRole: "PR · board · report",
     c: "--finish",
     kind: "happy",
     chipLabel: "Outputs",
     bodyHtml: `
-    <p>Proven on the first green overnight run (#29 → PR #34):</p>
+    <p>Artifacts only — morning chores live in the page <b>Runbook</b>. Proven on the first green overnight run (#29 → PR #34):</p>
     <ul>
       <li>Feature branch authored as <b><code>claude[bot]</code></b> on <code>feat|fix|docs/&lt;issue#&gt;-*</code> (not <code>claude/*</code>).</li>
       <li>Pull request opened (<code>Closes #</code> or <code>Refs #</code> per merge routing) — <b>never merged</b> by the agent; <b>unreviewed overnight</b> (chip PRs are reviewed as they open).</li>
       <li>Board Status moved (In Progress → Done / Blocked / Verifying as appropriate).</li>
       <li>Morning report posted so triage is a review queue, not archaeology.</li>
-    </ul>
-    <h4><span class="swatch" style="background:var(--finish)"></span>Your morning</h4>
-    <ul>
-      <li>Triage the report; merge Ready PRs with <code>/merge-pr</code>.</li>
-      <li>Answer forks and drop <code>needs:decision</code> when you decide.</li>
-      <li>On a daisy chain: closing the blocker lets <code>chain-promote</code> flip the next <code>night-shift:chain</code> (+ <code>plan:ready</code>) issue to <code>night-shift:ready</code> for the following night.</li>
-      <li>Run <code>/prune</code> from the daytime clone (and Actions <code>_work</code> if trees remain).</li>
     </ul>`,
   },
   FAILURE: {
@@ -194,8 +184,8 @@ export const STAGES: Record<StageId, NightStage> = {
       <li><b>Windows CLI installer</b> — unsupported; point at a <b>pre-installed</b> <code>claude.exe</code>.</li>
       <li><b>Expired OAuth session</b> — refresh with <code>claude setup-token</code> and update the repo secret.</li>
     </ol>
-    <p class="ns-safety-note"><b>Shared-profile caveat:</b> a service or long-lived <code>run.cmd</code> listener uses the operator&apos;s
-    <code>~/.claude</code> profile on this machine. An expired desktop session can break overnight runs
+    <p class="ns-safety-note"><b>Shared-profile caveat:</b> a service or long-lived <code>run.cmd</code> runner process uses the operator&apos;s
+    <code>~/.claude</code> profile on this machine. An expired interactive session can break overnight runs
     even when the repo secret looks fine.</p>`,
   },
 };
