@@ -24,7 +24,8 @@ Before touching any issue, confirm you can actually do the work:
 
 Eligible = **all** of:
 
-- Labeled `auto:ready` (the operator's opt-in that this issue is safe to do unattended).
+- Labeled `night-shift:ready` (operator opt-in: safe to execute unattended).
+- Labeled `plan:ready` (kickoff + verify plan already on the issue — unattended does not skip planning).
 - Not labeled `needs:decision` and not an `type:epic`.
 - Has a clear brief and acceptance in the issue body — enough to build without guessing.
 - Priority set; take highest priority, then oldest.
@@ -67,7 +68,8 @@ consult still waits; only this unattended path skips the wait.)
 ## 4. Guardrails (hard limits)
 
 - Touch only application code inside the slice. **No** secrets, CI/CD, infra, deploy scripts, or
-  dependency-version bumps unless the issue is explicitly about that and labeled `auto:ready`.
+  dependency-version bumps unless the issue is explicitly about that and labeled
+  `night-shift:ready` (and still meets §1 eligibility, including `plan:ready`).
 - Do **not** edit `docs/project-tracking/GITHUB-PROJECTS.md` on a feature branch unless the issue is
   about that config.
 - Scope cap: if the change balloons past a reasonable single-PR size, or the tests won't go green
@@ -96,7 +98,10 @@ issue cleanly over starting three messily.
 
 ## One-time setup this skill assumes
 
-- Labels: `auto:ready`, `needs:decision`.
+- Labels: `night-shift:ready`, `plan:ready`, `needs:decision` (plus Planner enqueue `needs:plan`
+  used in daytime prep — not required on the issue at pick time if `plan:ready` is already on).
+- Prep ritual (operator + orchestrator, before the unattended window): scope issues → Planner
+  (`needs:plan` → `plan:ready`) → label `night-shift:ready`.
 - GitHub Actions workflow on the **product** repo — the per-repo bits (workflow file, runner,
   `CLAUDE_CODE_OAUTH_TOKEN` secret) are noted in that repo's config-only `GITHUB-PROJECTS.md`;
   the process itself is canonical in Vilya's `docs/project-tracking/GITHUB-PROJECTS.md` and its

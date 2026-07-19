@@ -30,8 +30,9 @@ function MapAside() {
         <div className="mode" style={{ ["--m" as string]: "var(--blocked)" }}>
           <b>Steering</b>
           <span>
-            Safety gates (<code>auto:ready</code>, fork stop, never merge) —
-            visually distinct on purpose.
+            Safety gates (<code>night-shift:ready</code> ∧{" "}
+            <code>plan:ready</code>, fork stop, never merge) — visually distinct
+            on purpose.
           </span>
         </div>
         <div className="mode" style={{ ["--m" as string]: "var(--bug)" }}>

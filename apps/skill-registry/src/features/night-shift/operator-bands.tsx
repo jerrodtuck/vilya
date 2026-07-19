@@ -7,7 +7,8 @@ export const SETUP_ONCE_STEPS: OperatorStep[] = [
     text: (
       <>
         Confirm the product repo is <b>private</b>, has skills installed, autonomy
-        labels (<code>auto:ready</code>, <code>needs:decision</code>), and a filled{" "}
+        labels (<code>night-shift:ready</code>, <code>plan:ready</code>,{" "}
+        <code>needs:decision</code>), and a filled{" "}
         <code>docs/project-tracking/GITHUB-PROJECTS.md</code>.
       </>
     ),
@@ -84,13 +85,15 @@ export const RUN_TONIGHT_STEPS: OperatorStep[] = [
   {
     text: (
       <>
-        Label well-specified issues <code>auto:ready</code>. No label, no work.
+        Prep eligible issues: <code>plan:ready</code> then{" "}
+        <code>night-shift:ready</code>. Both labels required — no labels, no work.
       </>
     ),
     expect: (
       <>
-        Expected: eligible issues only — skip <code>needs:decision</code> and{" "}
-        <code>type:epic</code>.
+        Expected: eligible issues only —{" "}
+        <code>night-shift:ready</code> ∧ <code>plan:ready</code>; skip{" "}
+        <code>needs:decision</code> and <code>type:epic</code>.
       </>
     ),
   },
