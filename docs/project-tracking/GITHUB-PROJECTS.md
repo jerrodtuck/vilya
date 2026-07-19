@@ -184,9 +184,10 @@ obligations**: arm the monitor and move the issue to **In Progress** on the boar
 GitHub's built-in workflows only cover added→Todo and closed/merged→Done. **Claude Code**
 arms the **Monitor tool** — never an **exit-only** background shell watch loop (detects but
 cannot notify while running). **Cursor** has no Monitor tool; the equivalent is a background
-shell with **`notify_on_output`** on **REST** (`gh api …/pulls?head=<owner>:<branch>` + issue
-comments ~90s) — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is
-GraphQL). The orchestrator cards carry the full wording.
+shell with **`notify_on_output`** on **REST** (`gh api …/pulls?head=<owner>:<branch>&state=open`
++ issue comments, cadence **≥120s**, wake only on change) — never `gh project item-list` /
+GraphQL on the hot path (`gh pr list` is GraphQL). Full recipe: `/chip` §3. The orchestrator
+cards carry the standing-order wording.
 
 **GraphQL quota / board edits:** product orchestrators on the same GitHub user share **one**
 GraphQL bucket. Board Status moves are **rate-gated / best-effort** — when
@@ -194,8 +195,7 @@ GraphQL bucket. Board Status moves are **rate-gated / best-effort** — when
 the issue instead; never retry GraphQL in a tight loop. Prefer REST for chip completion
 monitors. Mid-window drain: measure rate (ambient ~2/min vs hot loop) before blaming a
 specific orchestrator. Do **not** kill the main-clone `cursor-agent-worker` as a leftover
-board-watch script — that process is the live orchestrator worker. Cadence/dedup detail for
-chip monitors: #237.
+board-watch script — that process is the live orchestrator worker.
 
 ### Shared files / worktrees
 

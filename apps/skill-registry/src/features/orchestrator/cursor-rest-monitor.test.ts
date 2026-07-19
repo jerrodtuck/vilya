@@ -22,8 +22,10 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(CURSOR_DISPATCH_MONITOR).toContain("pulls?head=");
     expect(CURSOR_DISPATCH_MONITOR).toContain("gh api repos/");
     expect(CURSOR_DISPATCH_MONITOR).toContain("issues/<N>/comments");
-    expect(CURSOR_DISPATCH_MONITOR).toMatch(/~every 90s|~90s/);
+    expect(CURSOR_DISPATCH_MONITOR).toMatch(/≥120s|>=120s/);
+    expect(CURSOR_DISPATCH_MONITOR).toContain("not 60s / not ~90s");
     expect(CURSOR_DISPATCH_MONITOR).toContain("wake sentinel");
+    expect(CURSOR_DISPATCH_MONITOR).toContain("never re-announce a standing open PR");
     expect(CURSOR_DISPATCH_MONITOR).toContain("never gh project item-list");
     expect(CURSOR_DISPATCH_MONITOR).toContain("do not use gh pr list");
     expect(CURSOR_DISPATCH_MONITOR).toContain("no Claude Monitor tool");
@@ -31,6 +33,7 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(CURSOR_DISPATCH_MONITOR).toContain("In Progress");
     expect(CURSOR_DISPATCH_MONITOR).toContain("GraphQL quota hygiene above");
     expect(CURSOR_DISPATCH_MONITOR).not.toMatch(/Watch REST only: gh pr list/);
+    expect(CURSOR_DISPATCH_MONITOR).not.toMatch(/poll ~every 90s|lean REST at ~90s/);
   });
 
   it("Cursor standing orders compose the dispatch monitor constant", () => {
@@ -46,6 +49,10 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(dispatch).toContain("Monitor tool");
     expect(dispatch).toContain("exit-only background shell watch loop");
     expect(dispatch).toContain("pulls?head=");
+    expect(dispatch).toMatch(/≥120s|>=120s/);
+    expect(dispatch).toContain("wake only on change");
+    expect(dispatch).toContain("not gh pr list");
+    expect(dispatch).toContain("still never gh pr list");
     // Shared Planner doctrine may name Cursor's mechanism; the Claude dispatch
     // paragraph itself must stay on the Monitor tool.
     expect(dispatch).not.toContain("notify_on_output");
