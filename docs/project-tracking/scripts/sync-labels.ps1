@@ -1,6 +1,7 @@
 # Sync the standard label set into a repo — the set every board shares:
 # type:* (bug/feature/epic/task), priority:* (critical/high/medium/low), and the
-# autonomy set (needs:plan, plan:ready, night-shift:ready, needs:decision).
+# autonomy set (needs:plan, plan:ready, night-shift:chain, night-shift:ready,
+# needs:decision).
 # Standard set ONLY — area:* labels are repo-specific by definition; create them
 # from the repo's config file (docs/project-tracking/GITHUB-PROJECTS.md,
 # "Area labels" section).
@@ -37,6 +38,7 @@ $labels = @(
     @{ Name = 'priority:low';        Color = '0e8a16'; Desc = 'When idle' },
     @{ Name = 'needs:plan';          Color = '1d76db'; Desc = 'Enqueue for Planner (kickoff + verify plan)' },
     @{ Name = 'plan:ready';          Color = '0e8a16'; Desc = 'Planner finished - kickoff + verify plan on issue' },
+    @{ Name = 'night-shift:chain';   Color = 'c5def5'; Desc = 'Waiting in a night-shift chain - not yet eligible' },
     @{ Name = 'night-shift:ready';   Color = '0e8a16'; Desc = 'Safe for night-shift to pick up autonomously' },
     @{ Name = 'needs:decision';      Color = 'd93f0b'; Desc = 'Loop stopped at a fork - operator decision needed' }
 )

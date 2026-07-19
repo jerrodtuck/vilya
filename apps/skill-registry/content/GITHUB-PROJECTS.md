@@ -79,7 +79,7 @@ Areas name *this* product's vertical slices. This repo's areas:
 | **Priority** | `priority:critical` · `priority:high` · `priority:medium` · `priority:low` |
 | **Area** | repo-specific — see Repo config |
 | **Status** | Todo · In Progress · Blocked · Verifying · Done |
-| **Autonomy** | `needs:plan` (enqueue for Planner) · `plan:ready` (kickoff + verify plan on issue) · `night-shift:ready` (safe for unattended night-shift) · `needs:decision` (loop stopped at a fork) |
+| **Autonomy** | `needs:plan` (enqueue for Planner) · `plan:ready` (kickoff + verify plan on issue) · `night-shift:chain` (waiting in a chain; not yet eligible) · `night-shift:ready` (safe for unattended night-shift) · `needs:decision` (loop stopped at a fork) |
 
 Sync the standard Type/Priority/Autonomy labels into a new repo:
 
@@ -88,8 +88,8 @@ bash docs/project-tracking/scripts/sync-labels.sh <owner>/<repo>
 ```
 
 The script syncs the **standard set only** (`type:*`, `priority:*`, `needs:plan`,
-`plan:ready`, `night-shift:ready`, `needs:decision`); `area:*` labels are repo-specific —
-create them from the repo's config file's Area labels section.
+`plan:ready`, `night-shift:chain`, `night-shift:ready`, `needs:decision`); `area:*`
+labels are repo-specific — create them from the repo's config file's Area labels section.
 
 #### Migrating `auto:ready` → `night-shift:ready`
 
@@ -209,6 +209,18 @@ planning. Prep (operator + orchestrator): scope issues → run Planner (`needs:p
 `plan:ready`) → label `night-shift:ready` before the unattended window. At a real design
 fork: comment options + recommendation, label `needs:decision`, Blocked, next issue.
 
+**Chain promote (Option 3):** night-shift never merges, so a successor labeled only
+`night-shift:chain` stays ineligible until something promotes it. Product repos copy
+`docs/project-tracking/templates/chain-promote.yml` → `.github/workflows/chain-promote.yml`.
+On `issues: closed`, that workflow finds dependents via GitHub native **blocked-by**
+(`blocking` on the closed issue). When **all** of a dependent's blockers are closed, and
+the dependent has `night-shift:chain` ∧ `plan:ready`, not `needs:decision`, not
+`type:epic`, it applies `night-shift:ready` (and drops `night-shift:chain`). The
+night-shift skill stays **dumb** — eligibility read only; promotion is this workflow, not
+agent-side. Expectation: **one chain link per merge cycle**, not a full path per overnight
+run. Prep a chain: native blocked-by edges + `night-shift:chain` (+ `plan:ready`) on
+successors; do not invent body-text `Blocked-by:` conventions.
+
 **Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
 Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each
 PR, night-shift detaches its worktree so self-hosted `_work` does not accumulate — leftovers
@@ -220,9 +232,11 @@ still go through `/prune` (including `_work` checkouts on the runner box).
 | **Org later** (e.g. `jestrion`) | Org self-hosted runners + runner groups; workflows still per repo; optional org-level secret. **Claude Max/Pro stays personal** — the OAuth token still bills your subscription. **Personal GitHub Pro does not cover the org** — org Actions entitlements follow the org’s plan. |
 
 Manual-only by default (`workflow_dispatch`). Uncomment `schedule:` only after a product run is
-proven green. Portable template:
+proven green. Portable templates:
 `docs/project-tracking/templates/night-shift.yml` (live copy on this repo:
-`.github/workflows/night-shift.yml`). Generate a filled YAML for a product repo at
+`.github/workflows/night-shift.yml`) and `docs/project-tracking/templates/chain-promote.yml`
+(product repos copy for daisy-chain promotion; see Chain promote above). Generate a filled
+night-shift YAML for a product repo at
 https://vilya.jerrodtuck.com/night-shift#generate-workflow (repo name + `claude.exe` path).
 
 #### What is generic vs what you fill in
@@ -267,7 +281,8 @@ Per **private** product repo, on the always-on box:
    PR merged → Done, Auto-add sub-issues, Item reopened → In Progress.
 5. Recreate views: Current Work, Roadmap, Bugs, By area.
 6. (Optional) Night-shift: add workflow + runner + `CLAUDE_CODE_OAUTH_TOKEN`; see Night-shift via
-   GitHub Actions above.
+   GitHub Actions above. For daisy chains, also copy `chain-promote.yml` (`issues: write` on the
+   default `GITHUB_TOKEN` is enough — no Claude secret).
 
 ## Frozen
 

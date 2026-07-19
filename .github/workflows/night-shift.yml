@@ -3,6 +3,7 @@ name: night-shift
 # https://vilya.jerrodtuck.com/night-shift#generate-workflow
 # Portable template: docs/project-tracking/templates/night-shift.yml
 # Stack / Crucible / Test command: docs/project-tracking/GITHUB-PROJECTS.md
+# Daisy-chain promote is templates/chain-promote.yml — this job stays eligibility-only.
 
 on:
   # schedule:

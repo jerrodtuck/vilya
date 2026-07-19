@@ -1,0 +1,137 @@
+name: chain-promote
+# Promote night-shift:chain → night-shift:ready when all native blocked-by
+# blockers are closed. Copied from Vilya docs/project-tracking/templates/chain-promote.yml
+# → .github/workflows/chain-promote.yml in each product repo that runs night-shift chains.
+#
+# Process canon: Vilya docs/project-tracking/GITHUB-PROJECTS.md (Chain promote).
+# Night-shift skill stays eligibility-only; this workflow owns promotion.
+#
+# ── What it does ──────────────────────────────────────────────────────────────
+#   on issues: closed → GraphQL: issues this closed issue is blocking (dependents).
+#   For each open dependent with night-shift:chain ∧ plan:ready, ¬needs:decision,
+#   ¬type:epic: if every blockedBy blocker is CLOSED → add night-shift:ready and
+#   remove night-shift:chain. Expectation: one chain link per merge cycle.
+#
+# ── Secrets / permissions (product repo) ──────────────────────────────────────
+#   Default GITHUB_TOKEN is enough — no CLAUDE_CODE_OAUTH_TOKEN, no PAT.
+#   permissions.issues: write → label mutate. No checkout; no contents scope needed.
+#   GraphQL issue dependencies (blockedBy / blocking) require github.com
+#   (not GHES until that API exists there). Same-repo edges only in this template.
+#   Org Actions policies that block the Issues API will break this job — check there
+#   first. Fine-grained PAT alternative (rare): issues:write on this repo as e.g.
+#   CHAIN_PROMOTE_TOKEN, swapped into GH_TOKEN below.
+#
+# ── Prep on the board ─────────────────────────────────────────────────────────
+#   Set native blocked-by (UI or API), label successors night-shift:chain, ensure
+#   plan:ready before you expect promotion. No body-text Blocked-by: convention.
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: chain-promote-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    # Skip PR timeline noise if a pull_request ever arrives as issues.closed shape.
+    if: github.event.issue.pull_request == null
+    steps:
+      - name: Promote eligible night-shift:chain dependents
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          CLOSED_NUMBER: ${{ github.event.issue.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Dependents = issues this closed issue is blocking (they list us in blockedBy).
+          query_dependents='
+            query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+              repository(owner: $owner, name: $name) {
+                issue(number: $number) {
+                  blocking(first: 50, after: $cursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes {
+                      number
+                      state
+                      labels(first: 50) { nodes { name } }
+                      blockedBy(first: 50) {
+                        nodes { number state }
+                      }
+                    }
+                  }
+                }
+              }
+            }'
+
+          # Emit "promote" or a skip reason for one dependent node.
+          decision_jq='
+            . as $n
+            | ($n.labels.nodes | map(.name)) as $labs
+            | ($n.blockedBy.nodes | map(select(.state != "CLOSED")) | length) as $open
+            | if $n.state != "OPEN" then "not OPEN"
+              elif ($labs | index("night-shift:chain") | not) then "missing night-shift:chain"
+              elif ($labs | index("plan:ready") | not) then "missing plan:ready"
+              elif ($labs | index("needs:decision")) then "needs:decision"
+              elif ($labs | index("type:epic")) then "type:epic"
+              elif ($labs | index("night-shift:ready")) then "already night-shift:ready"
+              elif $open > 0 then "\($open) open blocker(s) remain"
+              else "promote"
+              end
+          '
+
+          cursor=""
+          promoted=0
+          skipped=0
+
+          while true; do
+            gql_args=(
+              -f query="$query_dependents"
+              -f owner="$OWNER"
+              -f name="$REPO"
+              -F number="$CLOSED_NUMBER"
+            )
+            if [[ -n "$cursor" ]]; then
+              gql_args+=(-f cursor="$cursor")
+            fi
+            payload=$(gh api graphql "${gql_args[@]}")
+
+            nodes=$(echo "$payload" | jq -c '.data.repository.issue.blocking.nodes // []')
+            count=$(echo "$nodes" | jq 'length')
+            if [[ "$count" -eq 0 && -z "$cursor" ]]; then
+              echo "No dependents (blocking) for #$CLOSED_NUMBER — nothing to promote."
+              break
+            fi
+
+            while IFS= read -r node; do
+              [[ -z "$node" ]] && continue
+              num=$(echo "$node" | jq -r '.number')
+              verdict=$(echo "$node" | jq -r "$decision_jq")
+              if [[ "$verdict" != "promote" ]]; then
+                echo "skip #$num — $verdict"
+                skipped=$((skipped + 1))
+                continue
+              fi
+              echo "promote #$num — night-shift:chain → night-shift:ready"
+              gh issue edit "$num" --repo "$OWNER/$REPO" \
+                --add-label "night-shift:ready" \
+                --remove-label "night-shift:chain"
+              promoted=$((promoted + 1))
+            done < <(echo "$nodes" | jq -c '.[]')
+
+            has_next=$(echo "$payload" | jq -r '.data.repository.issue.blocking.pageInfo.hasNextPage')
+            if [[ "$has_next" != "true" ]]; then
+              break
+            fi
+            cursor=$(echo "$payload" | jq -r '.data.repository.issue.blocking.pageInfo.endCursor')
+          done
+
+          echo "Done. promoted=$promoted skipped=$skipped (closed #$CLOSED_NUMBER)"
