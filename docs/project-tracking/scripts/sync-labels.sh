@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Sync the standard label set into a repo — the set every board shares:
 # type:* (bug/feature/epic/task), priority:* (critical/high/medium/low), and the
-# autonomy set (needs:plan, plan:ready, night-shift:ready, needs:decision).
+# autonomy set (needs:plan, plan:ready, night-shift:chain, night-shift:ready,
+# needs:decision).
 # Standard set ONLY — area:* labels are repo-specific by definition; create them
 # from the repo's config file (docs/project-tracking/GITHUB-PROJECTS.md,
 # "Area labels" section).
@@ -45,6 +46,7 @@ labels=(
   "priority:low|0e8a16|When idle"
   "needs:plan|1d76db|Enqueue for Planner (kickoff + verify plan)"
   "plan:ready|0e8a16|Planner finished - kickoff + verify plan on issue"
+  "night-shift:chain|c5def5|Waiting in a night-shift chain - not yet eligible"
   "night-shift:ready|0e8a16|Safe for night-shift to pick up autonomously"
   "needs:decision|d93f0b|Loop stopped at a fork - operator decision needed"
 )

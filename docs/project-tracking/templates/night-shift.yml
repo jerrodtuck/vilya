@@ -5,6 +5,11 @@ name: night-shift
 # Stack / Crucible / Test command: this repo's docs/project-tracking/GITHUB-PROJECTS.md
 # — not this file. Process canon: Vilya docs/project-tracking/GITHUB-PROJECTS.md.
 #
+# This skill/workflow stays dumb on daisy chains: it only picks issues already
+# labeled night-shift:ready ∧ plan:ready. Promotion of night-shift:chain successors
+# is docs/project-tracking/templates/chain-promote.yml (copy beside this file) —
+# event-driven on issues: closed via native blocked-by. Do not teach promote here.
+#
 # ── Fill-ins ──────────────────────────────────────────────────────────────────
 #   path_to_claude_code_executable → __CLAUDE_EXE__
 #   Uncomment schedule: only after a green manual run.
