@@ -13,7 +13,7 @@ runs that **same** chain unattended via GitHub Actions on each product repo.
 ```
 vilya/
 ├── skills/                     # canonical source of truth — the SKILL.md skills
-│   ├── start-feature/          # process: issue → worktree → plan → consult
+│   ├── start-feature/          # process: issue → worktree → setup (Plan → /planner)
 │   ├── finish-feature/         # process: tests → crucible → PR → changelog
 │   ├── merge-pr/               # process: triage → test → squash-merge
 │   ├── chip/                   # dispatch: issue → background worker session → PR
@@ -26,6 +26,7 @@ vilya/
 │   ├── crucible-fastapi/       # review: same, FastAPI dialect
 │   ├── crucible-django/        # review: same, Django dialect
 │   ├── crucible-ml/            # review: same, Python ML/data dialect
+│   ├── planner/                # autonomous: drain needs:plan → plan:ready (Fable)
 │   └── night-shift/            # autonomous: daytime chain → opens PRs
 ├── apps/
 │   └── skill-registry/         # Next.js (VSA) app — The Dev Loop site + registry

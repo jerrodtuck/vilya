@@ -17,7 +17,7 @@ export const CATEGORY_LABELS: Record<SkillCategory, string> = {
 
 export function categorize(slug: string): SkillCategory {
   if (slug.startsWith("crucible")) return "review";
-  if (slug === "night-shift") return "autonomous";
+  if (slug === "night-shift" || slug === "planner") return "autonomous";
   if (slug === "history" || slug === "product-map") return "recall";
   return "process";
 }
@@ -34,6 +34,7 @@ export function stackOf(slug: string): string {
 export function invocationOf(skill: Skill): string {
   if (skill.frontmatter["disable-model-invocation"]) return "manual only";
   if (skill.slug === "night-shift") return "scheduler-fired";
+  if (skill.slug === "planner") return "standing session";
   return "model + manual";
 }
 
