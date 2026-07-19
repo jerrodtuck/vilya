@@ -57,9 +57,10 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Plan-model / execute-model routing",
-    claudeCode: "No automatic mid-session switch — tried `opusplan` (`ANTHROPIC_DEFAULT_OPUS_MODEL` / `ANTHROPIC_DEFAULT_SONNET_MODEL` env overrides) and it did not reliably drive plan→execute in our chip flow. Model is fixed at session startup — but the chip flow already splits plan/execute across sessions: the orchestrator plans on its `/model` pick, the chip executes on the `model` in the `settings.local.json` copied into its worktree via `.worktreeinclude`. The model boundary is the dispatch boundary.",
-    cursor: "No automatic plan→execute model switch documented either — but Cloud Agents accept `mode: \"plan\"` for the first run and a per-dispatch `model.id`, so a plan-dispatch → execute-dispatch split on different models is expressible directly in the API",
+    claudeCode: "No automatic mid-session switch — tried `opusplan` + env overrides and it did not reliably drive plan→execute inside one session. Chip-flow split is across sessions: a standing Planner on Fable writes the kickoff + verify plan and labels `plan:ready`; the chip session executes on Sonnet. The orchestrator is not the planning seat. Daytime may skip Planner when the issue is already clear; night-shift requires `plan:ready` ∧ `night-shift:ready`.",
+    cursor: "No automatic plan→execute model switch documented either — but Cloud Agents accept `mode: \"plan\"` for the first run and a per-dispatch `model.id`, so a plan-dispatch → execute-dispatch split on different models is expressible directly in the API. IDE work uses the per-conversation model dropdown (manual hand-switch when one chat both plans and builds).",
     certainty: "confirmed",
+    note: "Do not teach “chip flow = orchestrator `/model` plans → Sonnet chip.” That was the #89 altitude error; Planner session = plan model, chip session = execute model.",
     sources: [
       { label: "Claude Code — Model config", href: "https://code.claude.com/docs/en/model-config" },
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
@@ -67,10 +68,10 @@ export const DIFFERENCES: DifferenceRow[] = [
   },
   {
     area: "Where the model choice lives",
-    claudeCode: "`model` in `.claude/settings.local.json` — read at session startup, so it sets the default for every new session, and chips inherit it via the copy `.worktreeinclude` places in their worktree. `/model` overrides the current session only. `spawn_task` has no model parameter — a chip's model is whatever that copied file says.",
-    cursor: "IDE: per-conversation model dropdown. Cloud Agents: `model.id` on `POST /v1/agents` per dispatch; when omitted, resolves user default → team default → system default — all account-level, no repo-file-based model config. Neither tool reads the other's setting: both tools on one repo means setting the model in each separately.",
+    claudeCode: "Planner seat: launch or session `/model` on the standing Fable session (not a repo file). Execute path: `model` in `.claude/settings.local.json` — read at session startup; chips inherit it via `.worktreeinclude`. `/model` overrides the current session only. `spawn_task` has no model parameter — a chip's model is whatever that copied file says.",
+    cursor: "IDE: per-conversation model dropdown — not Claude's settings file. Cloud Agents: `model.id` on `POST /v1/agents` per dispatch; when omitted, resolves user default → team default → system default — all account-level, no repo-file-based model config. Neither tool reads the other's setting: both tools on one repo means setting the model in each separately.",
     certainty: "confirmed",
-    note: "Claude Code side directly tested (2026-07-17); Cursor side from the Cloud Agents API reference. Notable asymmetry: Cursor can pin a model per dispatched worker in the API call; Claude Code pins it via the file copied into the chip's worktree.",
+    note: "Claude Code side directly tested (2026-07-17); Cursor side from the Cloud Agents API reference + IDE picker behavior. Asymmetry: Cursor pins per dispatch via API `model.id`; Claude Code pins chip execute via the worktree file and pins plan via the Planner session's `/model` — not via orchestrator `/model`.",
     sources: [
       { label: "Claude Code — Model config", href: "https://code.claude.com/docs/en/model-config" },
       { label: "Cursor — Cloud Agents API", href: "https://cursor.com/docs/background-agent/api/overview" },
