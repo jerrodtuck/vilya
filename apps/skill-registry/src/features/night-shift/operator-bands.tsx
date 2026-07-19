@@ -71,20 +71,6 @@ export const SETUP_ONCE_STEPS: OperatorStep[] = [
       </>
     ),
   },
-  {
-    text: (
-      <>
-        Keep <b>Bypass permissions</b> only in the overnight launcher — not in
-        your interactive user defaults.
-      </>
-    ),
-    expect: (
-      <>
-        Expected: daytime sessions still prompt; the Actions job uses{" "}
-        <code>--permission-mode bypassPermissions</code> unattended.
-      </>
-    ),
-  },
 ];
 
 export const RUN_TONIGHT_STEPS: OperatorStep[] = [

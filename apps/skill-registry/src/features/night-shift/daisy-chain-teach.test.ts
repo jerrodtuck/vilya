@@ -5,24 +5,7 @@ import {
   RUN_TONIGHT_STEPS,
   SETUP_ONCE_STEPS,
 } from "./operator-bands";
-import type { OperatorStep } from "./operator-steps";
-
-function collectText(node: unknown): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(collectText).join("");
-  if (typeof node === "object" && "props" in node) {
-    const el = node as { props?: { children?: unknown } };
-    return collectText(el.props?.children);
-  }
-  return "";
-}
-
-function stepsBlob(steps: OperatorStep[]): string {
-  return steps
-    .map((s) => `${collectText(s.text)}\n${collectText(s.expect)}`)
-    .join("\n");
-}
+import { stepsBlob } from "./step-text";
 
 describe("night-shift daisy-chain teach (#216)", () => {
   it("Setup once includes night-shift:chain and chain-promote.yml", () => {

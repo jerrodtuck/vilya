@@ -164,7 +164,7 @@ export function NightAgentMap({ aside }: { aside?: ReactNode }) {
         <span>click a stage for detail ↓</span>
       </div>
 
-      <div className="grid">
+      <div className={selected ? "ns-drawer-full" : "grid"}>
         <div className={`panel${selected && isDistinctKind(STAGES[selected].kind) ? " ns-panel-distinct" : ""}`}>
           <div className="kicker">{drawer.kicker}</div>
           <h3 style={{ color: `var(${drawer.c})` }}>{drawer.title}</h3>
@@ -173,7 +173,7 @@ export function NightAgentMap({ aside }: { aside?: ReactNode }) {
             dangerouslySetInnerHTML={{ __html: drawer.bodyHtml }}
           />
         </div>
-        {aside}
+        {!selected ? aside : null}
       </div>
     </>
   );

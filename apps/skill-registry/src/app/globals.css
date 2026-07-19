@@ -730,6 +730,26 @@ h1 .you { color: var(--orch); }
 .ns-trouble td { padding: 10px 12px 10px 0; border-bottom: 1px solid #20262f; vertical-align: top; color: var(--muted); }
 .ns-trouble td:first-child { color: var(--text); font-weight: 600; }
 .ns-trouble td:last-child { padding-right: 0; }
+/* #200 — stage drawer full width when selected; Runbook + Desktop secondary */
+.ns-drawer-full { margin-top: 16px; }
+.ns-drawer-full > .panel { width: 100%; }
+.ns-runbook { margin-top: 16px; }
+.ns-runbook h4 { color: var(--text); font-weight: 700; }
+.ns-desktop {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 12px 16px;
+}
+.ns-desktop summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  list-style-position: outside;
+}
+.ns-desktop summary .muted { font-weight: 500; font-size: 12.5px; }
 
 /* ---------- site: home — the board moves itself (#171) ----------
    Static annotated strip: the section composes `.board .movers` so the
