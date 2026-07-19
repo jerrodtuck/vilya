@@ -35,7 +35,7 @@ export const STACK_PRESETS: readonly StackPreset[] = [
     stack: "nextjs",
     crucibleVariant: "crucible-nextjs",
     testCommand: "npm test && npm run build",
-    defaultBranch: "main",
+    defaultBranch: "master",
   },
   {
     stack: "blazor",

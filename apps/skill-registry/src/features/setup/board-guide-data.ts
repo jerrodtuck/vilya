@@ -4,7 +4,7 @@
 // home page's feature. Process canon: GITHUB-PROJECTS.md "One-time repo setup".
 
 export const CANON_SETUP_URL =
-  "https://github.com/jerrodtuck/vilya/blob/main/docs/project-tracking/GITHUB-PROJECTS.md#one-time-repo-setup";
+  "https://github.com/jerrodtuck/vilya/blob/master/docs/project-tracking/GITHUB-PROJECTS.md#one-time-repo-setup";
 
 export const PROJECT_CREATE_COMMAND = "gh project create --owner <user>";
 export const PROJECT_SCOPE_COMMAND = "gh auth refresh -s project";

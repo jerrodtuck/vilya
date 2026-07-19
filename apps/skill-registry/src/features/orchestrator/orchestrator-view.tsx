@@ -149,7 +149,7 @@ export function OrchestratorView() {
         <div className="note" style={{ marginTop: 8 }}>
           Template:{" "}
           <a
-            href="https://github.com/jerrodtuck/vilya/blob/main/docs/project-tracking/templates/night-shift.yml"
+            href="https://github.com/jerrodtuck/vilya/blob/master/docs/project-tracking/templates/night-shift.yml"
             target="_blank"
             rel="noreferrer"
           >

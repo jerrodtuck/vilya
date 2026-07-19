@@ -12,7 +12,7 @@ const PLACEHOLDER = {
   crucibleVariant: "crucible-<stack>",
   testCommand: "<test command>",
   manualSmoke: "<manual smoke or live-only>",
-  defaultBranch: "main",
+  defaultBranch: "master",
   statusTodo: "<todo-id>",
   statusInProgress: "<in-progress-id>",
   statusBlocked: "<blocked-id>",

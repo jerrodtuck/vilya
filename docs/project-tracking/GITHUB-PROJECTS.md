@@ -28,7 +28,7 @@ one model for the whole run. Single-session daytime work still hand-switches per
 | **Crucible variant** | `crucible-nextjs` | the review skill installed in this repo |
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
 | **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
-| Default branch | `main` | `git remote show origin` |
+| Default branch | `master` | `git remote show origin` |
 
 Status option ids (fill after first setup):
 

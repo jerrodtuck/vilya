@@ -5,9 +5,9 @@ import { NightAgentMap } from "./night-agent-map";
 import { NightShiftWorkflowTool } from "./night-shift-workflow-tool";
 
 const REPO = "https://github.com/jerrodtuck/vilya";
-const WORKFLOW_HREF = `${REPO}/blob/main/.github/workflows/night-shift.yml`;
-const TEMPLATE_HREF = `${REPO}/blob/main/docs/project-tracking/templates/night-shift.yml`;
-const SKILL_SRC_HREF = `${REPO}/blob/main/skills/night-shift/SKILL.md`;
+const WORKFLOW_HREF = `${REPO}/blob/master/.github/workflows/night-shift.yml`;
+const TEMPLATE_HREF = `${REPO}/blob/master/docs/project-tracking/templates/night-shift.yml`;
+const SKILL_SRC_HREF = `${REPO}/blob/master/skills/night-shift/SKILL.md`;
 
 export function NightShiftView() {
   const workflowTemplate = loadNightShiftTemplate();
