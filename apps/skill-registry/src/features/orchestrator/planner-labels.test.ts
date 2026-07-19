@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { FLOWS } from "./data";
 import {
+  NIGHT_SHIFT_CHAIN_PREP,
   NIGHT_SHIFT_ELIGIBILITY,
   PLANNER_ORCH_DOCTRINE,
   PROMPTS,
@@ -38,5 +39,20 @@ describe("Planner / night-shift eligibility labels (#207)", () => {
       i.text.includes(PLANNER_ORCH_DOCTRINE)
     );
     expect(withDoctrine.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("teaches daisy-chain prep without prompt-side promote (#216)", () => {
+    expect(NIGHT_SHIFT_CHAIN_PREP).toContain("night-shift:chain");
+    expect(NIGHT_SHIFT_CHAIN_PREP).toContain("blocked-by");
+    expect(NIGHT_SHIFT_CHAIN_PREP).toContain("chain-promote.yml");
+    expect(NIGHT_SHIFT_CHAIN_PREP).toMatch(/never promotes/i);
+    expect(PLANNER_ORCH_DOCTRINE).toContain(NIGHT_SHIFT_CHAIN_PREP);
+
+    const night = PROMPTS.find((g) => g.node === "NIGHT");
+    expect(night).toBeDefined();
+    const corpus = night!.items.map((i) => i.text).join("\n");
+    expect(corpus).toContain(NIGHT_SHIFT_CHAIN_PREP);
+    expect(corpus).toContain("chain-promote.yml");
+    expect(corpus).toMatch(/Never promote night-shift:chain/i);
   });
 });

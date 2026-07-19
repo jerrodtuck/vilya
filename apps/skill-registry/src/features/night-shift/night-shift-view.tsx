@@ -4,7 +4,11 @@ import Link from "next/link";
 import { loadNightShiftTemplate } from "./load-night-shift-template";
 import { NightAgentMap } from "./night-agent-map";
 import { NightShiftWorkflowTool } from "./night-shift-workflow-tool";
-import { SETUP_ONCE_STEPS, RUN_TONIGHT_STEPS } from "./operator-bands";
+import {
+  DAISY_CHAIN_STEPS,
+  RUN_TONIGHT_STEPS,
+  SETUP_ONCE_STEPS,
+} from "./operator-bands";
 import { VERIFY_CHECKS } from "./operator-guide";
 import { OperatorSteps } from "./operator-steps";
 import { TroubleshootTable } from "./troubleshoot-table";
@@ -12,6 +16,7 @@ import { TroubleshootTable } from "./troubleshoot-table";
 const REPO = "https://github.com/jerrodtuck/vilya";
 const WORKFLOW_HREF = `${REPO}/blob/master/.github/workflows/night-shift.yml`;
 const TEMPLATE_HREF = `${REPO}/blob/master/docs/project-tracking/templates/night-shift.yml`;
+const CHAIN_PROMOTE_HREF = `${REPO}/blob/master/docs/project-tracking/templates/chain-promote.yml`;
 const SKILL_SRC_HREF = `${REPO}/blob/master/skills/night-shift/SKILL.md`;
 
 function MapAside() {
@@ -106,6 +111,10 @@ export function NightShiftView() {
             portable template
           </a>
           {" · "}
+          <a href={CHAIN_PROMOTE_HREF} target="_blank" rel="noreferrer">
+            chain-promote template
+          </a>
+          {" · "}
           <a href={WORKFLOW_HREF} target="_blank" rel="noreferrer">
             live workflow
           </a>
@@ -132,6 +141,18 @@ export function NightShiftView() {
         <a href="#how-it-works">How it works</a>.
       </p>
       <OperatorSteps steps={RUN_TONIGHT_STEPS} />
+
+      <h2 id="daisy-chains">Daisy chains</h2>
+      <p className="muted" style={{ lineHeight: 1.55 }}>
+        Night-shift stays <b>dumb</b> — it only picks issues already{" "}
+        <code>night-shift:ready</code> ∧ <code>plan:ready</code>. Multi-issue
+        paths use <code>night-shift:chain</code> + native blocked-by;{" "}
+        <a href={CHAIN_PROMOTE_HREF} target="_blank" rel="noreferrer">
+          <code>chain-promote.yml</code>
+        </a>{" "}
+        owns promote after merge. Cadence: prep → merge → promote → next night.
+      </p>
+      <OperatorSteps steps={DAISY_CHAIN_STEPS} />
 
       <div className="note teal" style={{ marginTop: 16 }} id="verify">
         <b>Verify</b> before you trust overnight cron (or after the first manual

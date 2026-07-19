@@ -30,6 +30,12 @@ Eligible = **all** of:
 - Has a clear brief and acceptance in the issue body — enough to build without guessing.
 - Priority set; take highest priority, then oldest.
 
+**Do not promote successors.** Issues labeled only `night-shift:chain` are **not** eligible —
+leave them alone. Promotion (`night-shift:chain` → `night-shift:ready` when native blocked-by
+blockers close) is owned by the product repo's `chain-promote.yml` workflow (portable template:
+`docs/project-tracking/templates/chain-promote.yml`), not by this skill and not by overnight
+prompt logic. One chain link per merge cycle is the expected cadence.
+
 No eligible issue → post "nothing eligible tonight" and stop. Take issues one at a time; loop back to
 step 1 only if budget remains (see §6).
 
@@ -98,12 +104,17 @@ issue cleanly over starting three messily.
 
 ## One-time setup this skill assumes
 
-- Labels: `night-shift:ready`, `plan:ready`, `needs:decision` (plus Planner enqueue `needs:plan`
-  used in daytime prep — not required on the issue at pick time if `plan:ready` is already on).
+- Labels: `night-shift:ready`, `plan:ready`, `night-shift:chain`, `needs:decision` (plus Planner
+  enqueue `needs:plan` used in daytime prep — not required on the issue at pick time if
+  `plan:ready` is already on).
 - Prep ritual (operator + orchestrator, before the unattended window): scope issues → Planner
-  (`needs:plan` → `plan:ready`) → label `night-shift:ready`.
-- GitHub Actions workflow on the **product** repo — the per-repo bits (workflow file, runner,
-  `CLAUDE_CODE_OAUTH_TOKEN` secret) are noted in that repo's config-only `GITHUB-PROJECTS.md`;
-  the process itself is canonical in Vilya's `docs/project-tracking/GITHUB-PROJECTS.md` and its
-  workflow templates. Manual `workflow_dispatch` until schedule is proven.
+  (`needs:plan` → `plan:ready`) → label `night-shift:ready` on the head of tonight's path.
+  For a daisy chain: set native **blocked-by** edges, label successors `night-shift:chain`, and
+  ensure each successor already has `plan:ready` before you expect `chain-promote.yml` to flip
+  them to `night-shift:ready` after a blocker closes.
+- GitHub Actions workflows on the **product** repo — `night-shift.yml` (this loop) and, for
+  chains, `chain-promote.yml` (promotion only). Per-repo bits (runner, `CLAUDE_CODE_OAUTH_TOKEN`)
+  are noted in that repo's config-only `GITHUB-PROJECTS.md`; process canon lives in Vilya's
+  `docs/project-tracking/GITHUB-PROJECTS.md` and its workflow templates. Manual
+  `workflow_dispatch` until schedule is proven.
 - Repo access + `gh` auth available to the Actions job (`CLAUDE_CODE_OAUTH_TOKEN` + `GH_TOKEN`).

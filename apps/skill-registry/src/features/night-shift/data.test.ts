@@ -78,6 +78,14 @@ describe("night-agent stage model", () => {
     expect(STAGES.OUTPUTS.bodyHtml).toContain("/prune");
   });
 
+  it("Steering keeps the skill dumb; Outputs teach promote after merge (#216)", () => {
+    expect(STAGES.STEERING.bodyHtml).toContain("night-shift:chain");
+    expect(STAGES.STEERING.bodyHtml).toContain("chain-promote.yml");
+    expect(STAGES.STEERING.bodyHtml).toMatch(/No promote/i);
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("chain-promote");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("night-shift:ready");
+  });
+
   it("geometry covers every stage once and edges use typed endpoints", () => {
     expect(STAGE_GEOMS.map((g) => g.id).sort()).toEqual([...STAGE_ORDER].sort());
     for (const edge of EDGES) {

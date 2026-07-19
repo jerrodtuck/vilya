@@ -136,7 +136,8 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
       <li><b>Eligibility</b> — <code>night-shift:ready</code> ∧ <code>plan:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
-      <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
+      <li><b>No promote</b> — <code>night-shift:chain</code> successors are left alone. Promotion is <code>chain-promote.yml</code> (native blocked-by + <code>plan:ready</code>), not this skill.</li>
+      <li><b>Daytime chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
       <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/prune</code> owns that pairing.</li>
       <li><b>Fork stop</b> — comment + recommendation, label <code>needs:decision</code>, Blocked, next issue. Never guess.</li>
       <li><b>PR never merge</b> — open only; operator merges via <code>/merge-pr</code> in the morning.</li>
@@ -166,6 +167,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li>Triage the report; merge Ready PRs with <code>/merge-pr</code>.</li>
       <li>Answer forks and drop <code>needs:decision</code> when you decide.</li>
+      <li>On a daisy chain: closing the blocker lets <code>chain-promote</code> flip the next <code>night-shift:chain</code> (+ <code>plan:ready</code>) issue to <code>night-shift:ready</code> for the following night.</li>
       <li>Run <code>/prune</code> from the daytime clone (and Actions <code>_work</code> if trees remain).</li>
     </ul>`,
   },
