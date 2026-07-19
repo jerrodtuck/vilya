@@ -142,8 +142,9 @@ gh pr merge <n> --repo <owner>/<repo> --squash
   worktree just merged, say so explicitly — do not attempt `git worktree remove` on the tree
   you are standing in. Cursor Archive / Claude delete do **not** replace `/prune` for
   `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` or `.claude/worktrees/` paths. If prune
-  hits Permission denied, see [/prune](../prune/SKILL.md) §5a — leftover `cursor-agent-worker`
-  may hold `--worker-dir`; kill only when the operator authorizes.
+  hits Permission denied on an eligible row, see [/prune](../prune/SKILL.md) §5a —
+  leftover `cursor-agent-worker` may hold `--worker-dir`; `/prune --apply` kills matching
+  PIDs (no second ask) and re-removes.
 
 ## Honesty bar
 

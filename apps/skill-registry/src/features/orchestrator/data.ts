@@ -85,7 +85,7 @@ export const NODES: Record<string, FlowNode> = {
     <li><b>Live-only</b> (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>
     <li><b>Squash, always</b> — one issue = one commit on the default branch: <code>gh pr merge --squash --delete-branch</code>. The PR body (with <code>Closes #</code>) becomes the commit message.</li>
     <li>Confirm the board moved; <b>handoff to <code>/prune</code></b> from the main clone — do not delete the feature worktree from inside it. Cursor Archive / Claude delete do not own <code>%USERPROFILE%\\.cursor\\worktrees\\&lt;repo&gt;</code>.</li>
-    <li><b>Permission denied on folder delete?</b> Leftover <code>cursor-agent-worker</code> may hold <code>--worker-dir</code> — kill only when you authorize (see <code>/prune</code> §5a).</li></ul>`,
+    <li><b>Permission denied on folder delete?</b> Leftover <code>cursor-agent-worker</code> may hold <code>--worker-dir</code> — <code>/prune --apply</code> kills matching PIDs for eligible rows (no second ask; see <code>/prune</code> §5a).</li></ul>`,
   },
   DONE: {
     kicker: "Merged",
