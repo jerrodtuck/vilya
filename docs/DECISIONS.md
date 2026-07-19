@@ -1,6 +1,25 @@
 # Decisions
 
-Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
+Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
+
+## 2026-07-19 — Prefix all Dev Loop skills with `vilya-` (#257)
+
+**Decision:** Every skill that ships from `jerrodtuck/vilya/skills/` is renamed so its folder name, frontmatter `name`, and slash invoke are `vilya-<skill>` (e.g. `/vilya-chip`, `/vilya-planner`, `/vilya-cursor-handoff`, `/vilya-crucible-nextjs`). Site pages, prompts, canon, install scripts, and cross-skill links update in the same effort. No nested `/vilya ` + space submenu — hosts expose flat skill names; typing `/vilya` filters by prefix. (decided by operator, 2026-07-19).
+
+**Options considered:**
+1. **Prefix every Dev Loop skill `vilya-` (chosen)** — cost: large rename across skills, registry mirrors, site/tests, docs, install links; longer crucible names; one clean namespace beside unrelated user-level skills ← chosen
+2. Prefix seat skills only — cost: inconsistent; generic names (`chip`, `history`) still collide
+3. Status quo short names — cost: no brand/namespace in a shared `~/.claude/skills` / `~/.cursor/skills` root
+
+**Why:** Operator wants a clear product boundary in a crowded personal skills install. Cursor/Claude skill UX is flat search by name — `vilya-` is the practical “namespace” (prefix filter), not a two-level command tree (confirmed: no `/vilya ` submenu; nested folders only organize disk, invoke name stays the leaf folder).
+
+**Consequences:**
+- Hard cut rename (no dual-invoke shim unless a host later documents aliases — unverified; do not promise).
+- Epic covers skills + content mirrors + install scripts + **all teaching surfaces** (role pages, Setup, Differences, Overview, Ask Vilya, skill detail links).
+- Operator re-runs install / refreshes symlinks after merge so user-level dirs match.
+- Unrelated skills (Cloudflare, Railway, etc.) stay unprefixed.
+
+**Evidence:** Operator lock in Product Architect session 2026-07-19; Cursor docs — skill name = folder containing `SKILL.md`, `/` search by name, nested category folders do not create slash namespaces; prior direction option (1) in same session. Children: #258 (skills + install), #259 (site/prompts), #260 (docs/canon).
 
 ## 2026-07-19 — Investigate-first hard-stop marking split (#239)
 

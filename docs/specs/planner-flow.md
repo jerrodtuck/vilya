@@ -3,7 +3,7 @@
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
 **Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site)  
-**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface landing in #208; Setup/differences model-routing rewrite remains #209
+**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260
 
 ## Intent
 
