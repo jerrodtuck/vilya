@@ -59,6 +59,8 @@ export interface LensGeom {
 export interface PromptItem {
   label: string;
   text: string;
+  /** Optional DOM id for in-page anchors; also accents the card as a path target. */
+  id?: string;
 }
 
 export interface PromptGroup {

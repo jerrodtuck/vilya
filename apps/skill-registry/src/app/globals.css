@@ -577,7 +577,9 @@ h1 .you { color: var(--orch); }
 .sevpill { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); color: var(--muted); }
 .prompts { margin-top: 16px; }
 .plabel { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 700; margin-bottom: 2px; }
-.prompt { position: relative; border: 1px solid var(--border); background: #0f1319; border-radius: 9px; padding: 9px 60px 9px 12px; margin: 8px 0; }
+.prompt { position: relative; border: 1px solid var(--border); background: #0f1319; border-radius: 9px; padding: 9px 60px 9px 12px; margin: 8px 0; scroll-margin-top: 5rem; }
+.prompt.path-card { border-color: #3b5470; box-shadow: 0 0 0 1px #2a3a50 inset; }
+.prompt:target { border-color: var(--orch); box-shadow: 0 0 0 1px hsl(187 72% 58% / 0.45) inset; }
 .prompt .plead { display: block; font-size: 10.5px; color: var(--faint); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
 .prompt .ptext { display: block; font-size: 12.5px; line-height: 1.5; color: #cdd4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-line; overflow-wrap: anywhere; }
 /* No transition on .copybtn: the shorthand (property: all) pins the .done

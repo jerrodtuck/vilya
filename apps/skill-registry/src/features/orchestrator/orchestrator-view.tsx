@@ -5,6 +5,7 @@ import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowMap } from "@/shared/ui/flow-map";
 import { PromptList } from "@/shared/ui/prompt-list";
 import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
+import { CursorDispatchPath } from "./cursor-dispatch-path";
 import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
 import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
 import { PROMPTS } from "./prompts";
@@ -109,6 +110,8 @@ export function OrchestratorView() {
           </div>
         }
       />
+
+      <CursorDispatchPath />
 
       <div className="panel" style={{ marginTop: 16 }}>
         <div className="kicker">Copy-paste</div>
