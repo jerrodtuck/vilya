@@ -16,10 +16,14 @@ describe("differences chip-completion monitor (#223)", () => {
     expect(monitor.claudeCode).toContain("exit-only");
     expect(monitor.cursor).toContain("notify_on_output");
     expect(monitor.cursor).toContain("pulls?head=");
-    expect(monitor.cursor).toContain("never `gh pr list`");
+    expect(monitor.cursor).toMatch(/≥120s|>=120s/);
+    expect(monitor.cursor).toContain("only on change");
+    expect(monitor.cursor).toMatch(/[Nn]ever `gh pr list`/);
     expect(monitor.cursor).toContain("gh project item-list");
     expect(monitor.cursor).toContain("No Monitor tool");
     expect(monitor.note).toMatch(/Monitor equivalent/i);
+    expect(monitor.note).toMatch(/[Nn]ever `gh pr list`/);
+    expect(monitor.cursor).not.toMatch(/~every 90s|~90s/);
   });
 
   it("completion-reliability Cursor cell mentions REST notify watcher", () => {

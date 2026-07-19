@@ -53,10 +53,10 @@ everything ships through chips.
 **In the same turn as every dispatch — no exceptions — the orchestrator arms a monitor** watching
 the chip's PR and the issue for new comments/state (§3), and moves Status to **In Progress**
 when GraphQL budget allows (best-effort — skip the board edit when `graphql.remaining == 0`).
-**Claude Code:** the **Monitor tool**. **Cursor:** a background shell with `notify_on_output` on
-**REST** (`pulls?head=` + issue comments — not `gh pr list` / `gh project item-list` / GraphQL)
-— Cursor has no Monitor tool; that watcher *is* the equivalent. The monitor *is* the completion
-signal; a dispatch without one is a chip nobody is listening for. Full cadence/dedup recipe: #237.
+**Claude Code:** the **Monitor tool** (if it shells `gh`, same REST endpoints as Cursor — never
+`gh pr list`). **Cursor:** a background shell with `notify_on_output` on **REST** (§3) — Cursor
+has no Monitor tool; that watcher *is* the equivalent. The monitor *is* the completion signal; a
+dispatch without one is a chip nobody is listening for.
 
 ## 2. The self-contained brief (the `prompt`)
 
@@ -93,15 +93,37 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 ## 3. After dispatch — the monitor is the signal
 
 The orchestrator's **monitor — armed in the same turn as the dispatch, no exceptions** — is the
-completion signal: watch the chip's PR (REST `pulls?head=`) and the issue for new comments/state.
+completion signal: watch the chip's PR and the issue for new comments/state over **REST only**.
 The chip's `gh issue comment` (§2) is what the monitor picks up; no push channel is relied on.
 
-**Mechanism by host**
+### REST-only hot path (Cursor **and** Claude)
+
+Poll with `gh api` (REST). **Never** shell `gh pr list` or `gh project item-list` on the monitor
+hot path — both are GraphQL and burn the shared user bucket.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=open` | chip PR appeared / number known |
+| `GET /repos/{owner}/{repo}/issues/{n}/comments?since={iso}` | new issue comments (or list + compare ids) |
+
+**Cadence:** **≥120s** between ticks (not 60s, not ~90s).
+
+**Dedup guard** (required):
+
+1. On arm, seed `last_pr_number` (empty if none), `last_comment_id`, and optionally `updated_at`.
+2. Each tick, fetch the two REST endpoints above.
+3. Print a **wake sentinel** (stdout line that matches Cursor `notify_on_output`, or that the
+   Claude Monitor tool surfaces) **only when** the PR number appears/changes or a newer comment
+   id arrives.
+4. **Do not** re-announce a standing open PR every tick — silence is correct when nothing changed.
+5. Stop the watcher after the merge batch for that chip set.
+
+### Mechanism by host
 
 | Host | How to arm | Do not |
 |------|------------|--------|
-| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on REST PR/comment side channels | An **exit-only** background shell watch loop — it detects in the output file but never notifies while the loop is still running; `gh project item-list` / GraphQL hot polls |
-| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on **REST**: `gh api …/pulls?head=<owner>:<branch>` + `gh api repos/<owner>/<repo>/issues/<N>/comments` ~every 90s; seed last-seen state; print a wake sentinel on change; stop after the merge batch | `gh pr list` (GraphQL), `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes). Cursor has **no** Monitor tool |
+| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on a loop that shells the **REST** endpoints above (≥120s, dedup). If the Monitor shells `gh`, use only those REST calls. | An **exit-only** background shell watch loop (detects in the output file but never notifies while running); `gh pr list`; `gh project item-list` / GraphQL hot polls |
+| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on the same **REST** endpoints, **≥120s**, with the dedup guard above. Cursor has **no** Monitor tool — this watcher *is* the equivalent. | `gh pr list` (GraphQL); `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes); exit-only watch loops |
 
 Why not `send_message`: **`mcp__ccd_session_mgmt__send_message` always prompts the user for
 confirmation by product contract** — no permission rule silences it (twice-tested) — so it can
@@ -109,9 +131,11 @@ never carry an unattended report. It remains fine for *attended* handoffs, one a
 each. Harness end-pings don't fire either — a finished chip *idles* (`isRunning: false`), the
 session never ends, so no end-notification is emitted.
 
-Backup checks when the monitor is quiet, and always before merge:
+Backup checks when the monitor is quiet, and always before merge (same REST — still never
+`gh pr list`):
 
-- Claude Code: `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or REST `pulls?head=` / issue comments
+- Claude Code: `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or REST
+  `pulls?head=` / issue comments
 - Cursor: REST `pulls?head=` / issue comments (same side channel the watcher uses)
 
 When the PR is up, **review the chip's commits** against the verify + crucible bar before merge.
