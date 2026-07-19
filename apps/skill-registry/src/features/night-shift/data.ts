@@ -45,7 +45,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <p>Two triggers on <code>.github/workflows/night-shift.yml</code>:</p>
     <ul>
       <li><b>Manual</b> — <code>workflow_dispatch</code> from Actions UI or <code>gh workflow run night-shift</code>.</li>
-      <li><b>Scheduled</b> — cron <code>0 8 * * *</code> (~2–3am America/Chicago, UTC). Active on this repo.</li>
+      <li><b>Scheduled</b> — cron <code>0 8 * * *</code> (~2–3am America/Chicago, UTC). Commented out in the template until you uncomment it on the product default branch.</li>
     </ul>
     <p>Concurrency group <code>night-shift</code> with <code>cancel-in-progress: false</code> — one overnight run finishes before another cancels it.</p>
     <h4><span class="swatch" style="background:var(--start)"></span>Operator strip</h4>
@@ -64,17 +64,19 @@ export const STAGES: Record<StageId, NightStage> = {
     kind: "happy",
     chipLabel: "Runner",
     bodyHtml: `
-    <p>Job runs on <code>runs-on: [self-hosted, windows]</code>. The GitHub Actions service
-    (<b>Runner.Listener</b>) long-polls GitHub, then spawns a worker for the job.</p>
+    <p>Job runs on <code>runs-on: [self-hosted, windows]</code> for every product repo
+    (Next.js or CygNet). The listener long-polls GitHub, then spawns a worker for the job.</p>
     <ul>
       <li>Fresh <b>full-history</b> clone (<code>actions/checkout@v4</code>, <code>fetch-depth: 0</code>) under the runner&apos;s <code>_work</code> directory.</li>
       <li>That checkout is <b>distinct</b> from the operator&apos;s daytime clone — night-shift never shares your dirty working tree.</li>
-      <li>Node, Git for Windows, and <code>gh</code> must be on the <b>service account</b> PATH.</li>
+      <li>Node, Git for Windows, and <code>gh</code> must be on the listener process PATH.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--orch)"></span>Setup (once per repo)</h4>
     <ul>
-      <li>Register a self-hosted runner on the product repo; install as a Windows service; labels <code>self-hosted</code>, <code>windows</code>.</li>
-      <li>Private repos only — fork PRs on a public repo could execute on your machine.</li>
+      <li>Register a self-hosted runner on the <b>private</b> product repo; separate folder per repo; labels <code>self-hosted</code>, <code>windows</code>. Per-repo registration scopes the box — no stack label required.</li>
+      <li><b>Bring-up:</b> <code>.\\run.cmd</code> (foreground; keep the terminal open). <b>Always-on:</b> <code>.\\svc.cmd install</code> + <code>start</code> when that script exists (admin).</li>
+      <li>Change labels later in Settings → Runners → edit Labels (or remove + re-register). Missing labels = job queued forever.</li>
+      <li>Bash: workflow pins Git Bash via <code>GITHUB_PATH</code> — host PATH tweaks unnecessary when that pin is present. See Failure layer.</li>
     </ul>`,
   },
   IDENTITY: {
@@ -102,15 +104,16 @@ export const STAGES: Record<StageId, NightStage> = {
     kicker: "4 · Headless loop",
     title: "Think → tool → result",
     mapTitle: "Loop",
-    mapRole: "max-turns 60",
+    mapRole: "timeout · daytime chain",
     c: "--review",
     kind: "happy",
     chipLabel: "Loop",
     bodyHtml: `
     <p>Single job step: <code>anthropics/claude-code-action@v1</code> with a prompt that points at
-    <code>skills/night-shift/SKILL.md</code>.</p>
+    <code>skills/night-shift/SKILL.md</code> — same daytime chain, leave a PR.</p>
     <ul>
-      <li><code>--max-turns 60</code> caps the think → tool → result cycles.</li>
+      <li><b>Runaway guard:</b> job <code>timeout-minutes: 180</code> (wall clock). A high
+        <code>--max-turns</code> (500) is last-ditch only — CLI defaults ~10 if omitted; do not use a tight turn budget as the feature size limit.</li>
       <li>Allowed tools: <code>Edit</code>, <code>Read</code>, <code>Write</code>, <code>Bash</code> —
         Bash is how it runs <code>git</code> / <code>gh</code> / <code>npm</code> with the same conventions you use daytime.</li>
       <li><code>--permission-mode bypassPermissions</code> — unattended; the skill&apos;s gates replace interactive consent.</li>
@@ -133,10 +136,11 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li><b>Preflight</b> — abort loudly if <code>git</code>/<code>gh</code>/tests are unavailable.</li>
       <li><b>Eligibility</b> — only <code>auto:ready</code>; skip <code>needs:decision</code> and <code>type:epic</code>.</li>
-      <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code>.</li>
+      <li><b>Chain</b> — <code>/start-feature</code> → implement → <code>/crucible-&lt;stack&gt;</code> (≤3 rounds to Ready) → <code>/finish-feature</code> → detach worktree.</li>
+      <li><b>Branches</b> — daytime <code>feat|fix|docs/&lt;issue#&gt;-*</code> under <code>.claude/worktrees/</code> (Actions <code>_work</code>), <b>not</b> chip <code>claude/*</code>. <code>/prune</code> owns that pairing.</li>
       <li><b>Fork stop</b> — comment + recommendation, label <code>needs:decision</code>, Blocked, next issue. Never guess.</li>
       <li><b>PR never merge</b> — open only; operator merges via <code>/merge-pr</code> in the morning.</li>
-      <li><b>Morning report</b> — PR opened / needs call / stuck / skipped.</li>
+      <li><b>Morning report</b> — unreviewed triage queue (unlike chips reviewed as they open): PR opened / needs call / stuck / skipped.</li>
       <li>Budget: up to 3 issues per run.</li>
     </ul>
     <p class="ns-safety-note">Safety gates are the product — visually distinct from the happy-path spine on purpose.</p>`,
@@ -153,8 +157,8 @@ export const STAGES: Record<StageId, NightStage> = {
     bodyHtml: `
     <p>Proven on the first green overnight run (#29 → PR #34):</p>
     <ul>
-      <li>Feature branch authored as <b><code>claude[bot]</code></b>.</li>
-      <li>Pull request opened (<code>Closes #</code> or <code>Refs #</code> per merge routing) — <b>never merged</b> by the agent.</li>
+      <li>Feature branch authored as <b><code>claude[bot]</code></b> on <code>feat|fix|docs/&lt;issue#&gt;-*</code> (not <code>claude/*</code>).</li>
+      <li>Pull request opened (<code>Closes #</code> or <code>Refs #</code> per merge routing) — <b>never merged</b> by the agent; <b>unreviewed overnight</b> (chip PRs are reviewed as they open).</li>
       <li>Board Status moved (In Progress → Done / Blocked / Verifying as appropriate).</li>
       <li>Morning report posted so triage is a review queue, not archaeology.</li>
     </ul>
@@ -162,6 +166,7 @@ export const STAGES: Record<StageId, NightStage> = {
     <ul>
       <li>Triage the report; merge Ready PRs with <code>/merge-pr</code>.</li>
       <li>Answer forks and drop <code>needs:decision</code> when you decide.</li>
+      <li>Run <code>/prune</code> from the daytime clone (and Actions <code>_work</code> if trees remain).</li>
     </ul>`,
   },
   FAILURE: {
@@ -177,13 +182,16 @@ export const STAGES: Record<StageId, NightStage> = {
     <p>Real walls from wiring the runner (#23, PRs #31–#33) — keep them visible so the next
     machine does not rediscover them silently:</p>
     <ol>
-      <li><b>WSL bash stub</b> — Actions expected a real Bash; Git Bash on the service PATH fixed it.</li>
+      <li><b>WSL bash stub</b> — <code>bash</code> often resolves to <code>System32\\bash.exe</code>. With only <code>docker-desktop</code>, steps die with <code>execvpe(/bin/bash) failed</code>. Fix: workflow Git Bash pin (<code>GITHUB_PATH</code> + <code>CLAUDE_CODE_GIT_BASH_PATH</code>) — shipped in the generic template.</li>
+      <li><b>Session / branch “missing”</b> — Actions cwd is the runner <code>_work</code> checkout. Claude sessions land under <code>~/.claude/projects/C--…-_work-…</code>, not the daytime repo path. WIP branches may exist only under <code>_work/&lt;repo&gt;/</code> until push — <code>master</code> stays clean.</li>
+      <li><b>Tight <code>--max-turns</code></b> — a 60-turn cap aborted mid-feature before push. Guard with job <code>timeout-minutes</code>; keep <code>--max-turns</code> high (or you inherit the CLI default ~10).</li>
+      <li><b>Label mismatch</b> — job <code>runs-on</code> must be a subset of the runner&apos;s labels (extra labels on the runner are fine; a missing required label → queued forever).</li>
       <li><b><code>id-token: write</code></b> — required for OIDC → Claude GitHub App token exchange.</li>
       <li><b>Claude GitHub App install</b> — App must be installed on the repo or org.</li>
       <li><b>Windows CLI installer</b> — unsupported; point at a <b>pre-installed</b> <code>claude.exe</code>.</li>
       <li><b>Expired OAuth session</b> — refresh with <code>claude setup-token</code> and update the repo secret.</li>
     </ol>
-    <p class="ns-safety-note"><b>Shared-profile caveat:</b> the runner service uses the operator&apos;s
+    <p class="ns-safety-note"><b>Shared-profile caveat:</b> a service or long-lived <code>run.cmd</code> listener uses the operator&apos;s
     <code>~/.claude</code> profile on this machine. An expired desktop session can break overnight runs
     even when the repo secret looks fine.</p>`,
   },

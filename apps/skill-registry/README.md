@@ -43,6 +43,7 @@ src/
     skills/                #   load-skills, types, meta
     git/                   #   history (git log)
 content/GITHUB-PROJECTS.md # bundled template for Setup → Regenerate (synced from docs/)
+content/night-shift.yml    # bundled workflow template for /night-shift generator
 ```
 
 No cross-feature imports; features compose the shared kernel. Data loading is in

@@ -43,8 +43,9 @@ describe("night-agent stage model", () => {
     expect(stageList().map((s) => s.id)).toEqual([...STAGE_ORDER]);
   });
 
-  it("Dispatch documents active cron and Identity documents the two-token split", () => {
+  it("Dispatch documents optional cron and Identity documents the two-token split", () => {
     expect(STAGES.DISPATCH.bodyHtml).toContain("0 8 * * *");
+    expect(STAGES.DISPATCH.bodyHtml).toContain("Commented out");
     expect(STAGES.DISPATCH.bodyHtml).toContain("workflow_dispatch");
     expect(STAGES.IDENTITY.bodyHtml).toContain("claude[bot]");
     expect(STAGES.IDENTITY.bodyHtml).toContain("CLAUDE_CODE_OAUTH_TOKEN");
@@ -54,10 +55,27 @@ describe("night-agent stage model", () => {
   it("Failure layer lists the bring-up walls and shared-profile caveat", () => {
     const html = STAGES.FAILURE.bodyHtml;
     expect(html).toContain("WSL bash stub");
+    expect(html).toContain("CLAUDE_CODE_GIT_BASH_PATH");
+    expect(html).toContain("Label mismatch");
     expect(html).toContain("id-token: write");
     expect(html).toContain("pre-installed");
     expect(html).toContain("Shared-profile caveat");
     expect(html).toContain("~/.claude");
+  });
+
+  it("Runner stage documents run.cmd bring-up and label matching", () => {
+    const html = STAGES.RUNNER.bodyHtml;
+    expect(html).toContain(".\\run.cmd");
+    expect(html).toContain("runs-on");
+    expect(html).toContain("GITHUB_PATH");
+  });
+
+  it("Steering and Outputs distinguish night-shift branches from chips", () => {
+    expect(STAGES.STEERING.bodyHtml).toContain("feat|fix|docs/");
+    expect(STAGES.STEERING.bodyHtml).toContain("claude/*");
+    expect(STAGES.STEERING.bodyHtml).toContain("/prune");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("unreviewed overnight");
+    expect(STAGES.OUTPUTS.bodyHtml).toContain("/prune");
   });
 
   it("geometry covers every stage once and edges use typed endpoints", () => {

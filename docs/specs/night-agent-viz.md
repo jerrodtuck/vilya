@@ -1,7 +1,7 @@
 # Night-agent visualization
 
 **Created:** 2026-07-12  
-**Last updated:** 2026-07-18  
+**Last updated:** 2026-07-19  
 **Issue:** [#36](https://github.com/jerrodtuck/vilya/issues/36)  
 **Status:** Shipped — PR #58 merged 2026-07-12, #36 closed; page live at `/night-shift`
 
@@ -16,10 +16,10 @@ Desktop routines with explicit Bypass — never user-global `defaultMode`).
 
 Happy-path spine (left → right):
 
-1. **Dispatch** — `workflow_dispatch` + active cron `0 8 * * *`
+1. **Dispatch** — `workflow_dispatch` + optional cron `0 8 * * *` (commented in template until enabled)
 2. **Runner** — self-hosted Windows Listener; fresh full-history clone in `_work`
 3. **Identity** — OIDC → Claude GitHub App (`claude[bot]`) + `CLAUDE_CODE_OAUTH_TOKEN`
-4. **Loop** — `claude-code-action@v1`, `--max-turns 60`, Read/Write/Edit/Bash
+4. **Loop** — `claude-code-action@v1`, `timeout-minutes` + high `--max-turns`, Read/Write/Edit/Bash
 5. **Steering** — `skills/night-shift/SKILL.md` gates (`auto:ready`, crucible, `needs:decision`, never-merge)
 6. **Outputs** — branch as `claude[bot]`, PR, board moves, morning report
 

@@ -38,10 +38,16 @@ For the chosen issue, invoke the skills — worktrees, branches, board Status, v
 routing are owned by `/start-feature`, not by this skill:
 
 1. **`/start-feature #<n>`** — issue, worktree, branch, In Progress, verify plan on the issue.
+   Branches are **daytime-style** `feat|fix|docs/<issue#>-slug` under `.claude/worktrees/`
+   (Actions `_work` checkout). **Not** chip `claude/*` branches — `/prune` expects that pairing.
 2. **Implement** in the owning vertical slice (VSA + SOLID bar = daytime).
 3. **`/crucible-<stack>`** from config (`crucible-blazor` | `crucible-nextjs`): apply top
    remediations, re-review until **Ready** — cap at **3 refactor rounds**, then stop and report.
 4. **`/finish-feature`** — tests green, changelog fragment, open the PR.
+5. **Detach the worktree** before the next issue — from the Actions checkout root (not inside the
+   feature tree): `git worktree remove <path>` and `git branch -D <local branch>`. Leave the
+   **remote** branch + open PR alone. Self-hosted `_work` persists between runs; do not leave
+   trees piled up for morning `/prune` unless remove fails (then report the path).
 
 **Unattended consult:** when a real design fork appears during start-feature or implementation, do
 **not** wait for the operator. Comment options + your recommendation on the issue, label
@@ -54,6 +60,9 @@ consult still waits; only this unattended path skips the wait.)
   read the issue's declared merge routing; never downgrade `live-only` to `Closes #`).
 - **Never merge, never force-push a shared branch, never push to the default branch.** You open the
   PR; the operator merges in the morning (via `/merge-pr`).
+- **Morning review queue, not chip-style as-they-open review.** Chip PRs are reviewed when each
+  chip finishes; night-shift PRs land **unreviewed overnight**. The morning report is the triage
+  list — operator `/merge-pr` (or reject) after waking. Do not assume anyone watched the run.
 
 ## 4. Guardrails (hard limits)
 
@@ -68,13 +77,15 @@ consult still waits; only this unattended path skips the wait.)
 
 ## 5. Morning report — the point of the whole thing
 
-Wake the operator to a **review queue**. Post a digest (issue comments and/or a standing "Night
-shift log" issue) covering, per issue:
+Wake the operator to a **review queue** (these PRs have not been human-reviewed yet — unlike
+chips). Post a digest (issue comments and/or a standing "Night shift log" issue) covering, per
+issue:
 
 - **PR opened** — link, test counts, readiness signal, anything deferred.
 - **Needs your call** — the fork you stopped at + your recommendation.
 - **Stuck** — what failed, where the WIP branch is, your best guess at the cause.
 - **Skipped** — ineligible issues and why.
+- **Cleanup** — any worktree you could not detach (path under `_work`).
 
 Plain, honest, skimmable. If nothing shipped, say so and why.
 

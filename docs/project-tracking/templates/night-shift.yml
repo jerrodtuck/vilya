@@ -1,0 +1,87 @@
+name: night-shift
+# Self-hosted overnight loop for __REPO_FULL__.
+# Copied from Vilya docs/project-tracking/templates/night-shift.yml
+# (or generated at https://vilya.jerrodtuck.com/night-shift).
+# Stack / Crucible / Test command: this repo's docs/project-tracking/GITHUB-PROJECTS.md
+# — not this file. Process canon: Vilya docs/project-tracking/GITHUB-PROJECTS.md.
+#
+# ── Fill-ins ──────────────────────────────────────────────────────────────────
+#   path_to_claude_code_executable → __CLAUDE_EXE__
+#   Uncomment schedule: only after a green manual run.
+#
+# ── Runner (once per private product repo) ────────────────────────────────────
+#   Settings → Actions → Runners → New self-hosted runner → Windows x64
+#   Folder: __RUNNER_DIR__  Labels: self-hosted,windows
+#   Bring-up: .\run.cmd  Always-on: .\svc.cmd install/start if present
+#   Secret: claude setup-token → CLAUDE_CODE_OAUTH_TOKEN
+#   Bash: this job pins Git Bash via GITHUB_PATH.
+#
+# ── Runaway guards ────────────────────────────────────────────────────────────
+#   Primary: job timeout-minutes (wall clock) — same daytime-sized work, leave a PR.
+#   Secondary: high --max-turns (CLI defaults ~10 if omitted — do not omit).
+#   Also: concurrency group night-shift (one run at a time).
+#
+# ── SECURITY ──────────────────────────────────────────────────────────────────
+#   Self-hosted runners: PRIVATE repos only.
+
+on:
+  # schedule:
+  #   - cron: "0 8 * * *" # ~2–3am America/Chicago (UTC, no DST)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write # claude-code-action exchanges an OIDC token for GitHub App credentials
+  actions: read
+
+concurrency:
+  group: night-shift
+  cancel-in-progress: false
+
+jobs:
+  night-shift:
+    runs-on: [self-hosted, windows]
+    # Wall-clock runaway brake — not a "finish a feature in N turns" budget.
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Prefer Git Bash over C:\Windows\System32\bash.exe (WSL relay / docker-desktop).
+      - name: Prefer Git Bash over WSL stub
+        shell: powershell
+        run: |
+          "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "C:\Program Files\Git\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Night shift
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLAUDE_CODE_GIT_BASH_PATH: C:\Program Files\Git\bin\bash.exe
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          path_to_claude_code_executable: __CLAUDE_EXE__
+          # Private repos only. Leave false once a product has a green overnight run.
+          show_full_output: false
+          prompt: |
+            You are running NIGHT SHIFT on ${{ github.repository }}. The operator is asleep.
+
+            Follow the night-shift skill exactly (user-level install, or
+            skills/night-shift/SKILL.md if vendored).
+
+            Read this repo's docs/project-tracking/GITHUB-PROJECTS.md for
+            Stack, Crucible variant, and Test command. Run the daytime chain:
+            /start-feature → implement → /<Crucible variant from that file> →
+            remediate → /finish-feature (use that Test command).
+
+            Open PRs only — never merge, never push to the default branch.
+            At a real design fork: comment recommendation, label needs:decision,
+            Blocked, next issue. Finish with the morning report per the skill.
+          claude_args: |
+            --max-turns 500
+            --allowedTools Edit,Read,Write,Bash
+            --permission-mode bypassPermissions

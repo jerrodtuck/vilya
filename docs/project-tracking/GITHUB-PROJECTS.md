@@ -131,7 +131,9 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 ### Daytime chain (primary)
 
 New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
-(`feat|fix|docs/<issue#>-slug` for single-session daytime work; `claude/*` for chips).
+(`feat|fix|docs/<issue#>-slug` for daytime **and** night-shift; `claude/*` only for chips).
+Night-shift reuses daytime branch names under `.claude/worktrees/` (often Actions `_work`) —
+`/prune` owns that pairing; do not expect `claude/*` for overnight trees.
 
 ```text
 /start-feature → implement → /crucible-<stack> → remediate → /finish-feature → /merge-pr → Done
@@ -171,12 +173,18 @@ the full wording.
 ### Night-shift via GitHub Actions
 
 Night-shift is **not** a second methodology. It runs the **same daytime chain** unattended on a
-**product** repo (headless Claude Code via Actions). Vilya ships the skill + workflow templates;
-each product repo enables the workflow.
+**product** repo (headless Claude Code via Actions). Vilya ships **one** generic workflow
+template; each product repo copies it. Stack-specific commands are **not** forked into YAML —
+the skill reads them from that product’s config-only `GITHUB-PROJECTS.md`.
 
 Eligibility: labeled `auto:ready`, not `needs:decision`, not `type:epic`. Opens PRs; **never
 merges**. At a real design fork: comment options + recommendation, label `needs:decision`, Blocked,
 next issue.
+
+**Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
+Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each
+PR, night-shift detaches its worktree so self-hosted `_work` does not accumulate — leftovers
+still go through `/prune` (including `_work` checkouts on the runner box).
 
 | Topology | What you configure |
 |----------|-------------------|
@@ -184,8 +192,43 @@ next issue.
 | **Org later** (e.g. `jestrion`) | Org self-hosted runners + runner groups; workflows still per repo; optional org-level secret. **Claude Max/Pro stays personal** — the OAuth token still bills your subscription. **Personal GitHub Pro does not cover the org** — org Actions entitlements follow the org’s plan. |
 
 Manual-only by default (`workflow_dispatch`). Uncomment `schedule:` only after a product run is
-proven green. Templates: this repo’s `.github/workflows/night-shift.yml` and
-`docs/project-tracking/templates/night-shift-dotnet-cygnet.yml`.
+proven green. Portable template:
+`docs/project-tracking/templates/night-shift.yml` (live copy on this repo:
+`.github/workflows/night-shift.yml`). Generate a filled YAML for a product repo at
+https://vilya.jerrodtuck.com/night-shift#generate-workflow (repo name + `claude.exe` path).
+
+#### What is generic vs what you fill in
+
+| Concern | Where it lives |
+|---------|----------------|
+| Workflow shape (checkout, Git Bash pin, Claude action, Bypass, job `timeout-minutes`) | One YAML — copy the template |
+| **Stack**, **Crucible variant**, **Test command**, **Manual smoke** | Product `docs/project-tracking/GITHUB-PROJECTS.md` (skills already read these) |
+| `path_to_claude_code_executable` | Edit once in the copied workflow (per machine; `Get-Command claude`) |
+| Machine toolchains (Node, .NET, CygNet SDK, …) | Already installed on the self-hosted box — **not** a second workflow file |
+
+| Stack (config key) | Box must already have |
+|--------------------|------------------------|
+| `nextjs` | Node 20+, npm |
+| `blazor` (incl. CygNet products) | .NET SDK; CygNet SDK + live access when the Test command / issue needs them |
+| other | whatever that repo’s **Test command** requires |
+
+#### Self-hosted runner bring-up (Windows)
+
+Per **private** product repo, on the always-on box:
+
+1. **Fill product config** — Repo config block has Stack, Crucible variant, Test command.
+2. **Copy workflow** — from `docs/project-tracking/templates/night-shift.yml` →
+   `.github/workflows/night-shift.yml`; set `path_to_claude_code_executable`.
+3. **Register runner** — Settings → Actions → Runners → New self-hosted runner → Windows x64.
+   Separate folder per repo; labels `self-hosted,windows` (per-repo registration scopes the box;
+   no stack label required).
+4. **Start listening** — Bring-up: `.\run.cmd` (keep terminal open). Always-on: `.\svc.cmd install`
+   + `start` if present. Job waits forever if the listener is offline or `runs-on` asks for a
+   missing label.
+5. **Secret** — `claude setup-token` → `CLAUDE_CODE_OAUTH_TOKEN`.
+6. **Bash** — the workflow prepends Git Bash via `GITHUB_PATH` and sets
+   `CLAUDE_CODE_GIT_BASH_PATH`. Host PATH / WSL tweaks are unnecessary when that pin is present.
+7. **Verify** — runner Idle/Online; `gh workflow run night-shift`; job leaves Queued.
 
 ## One-time repo setup
 

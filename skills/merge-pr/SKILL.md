@@ -11,10 +11,11 @@ description: >-
 # Merge PR (any stack)
 
 > Companion: [/finish-feature](../finish-feature/SKILL.md) opens PRs; [/night-shift](../night-shift/SKILL.md)
-> leaves them overnight; [/prune](../prune/SKILL.md) cleans Cursor feature worktrees after
-> squash. This skill is the operator's side of the handshake — **nothing merges
-> without it**. Repo / test command / default branch come from this repo's
-> `docs/project-tracking/GITHUB-PROJECTS.md` config block.
+> leaves them overnight **unreviewed** (morning batch — not chip as-they-open review);
+> [/prune](../prune/SKILL.md) cleans Cursor + Claude (chip `claude/*` and night-shift
+> `feat|fix|docs/*`) worktrees after squash. This skill is the operator's side of the
+> handshake — **nothing merges without it**. Repo / test command / default branch come from
+> this repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block.
 
 ## 0. Policy — squash, always
 
@@ -136,12 +137,13 @@ gh pr merge <n> --repo <owner>/<repo> --squash
 - `Refs #` PR (live retest owed) → move the issue to **Verifying** yourself; it reaches Done only
   after live confirmation.
 - **Cleanup is a handoff, not an in-place delete:** tell the operator to run `/prune` (dry-run)
-  then `/prune --apply` from the **main clone**. If this session's cwd is inside the feature
+  then `/prune --apply` from the **main clone** (and, after a night-shift batch, from the
+  Actions `_work` checkout if trees remain). If this session's cwd is inside the feature
   worktree just merged, say so explicitly — do not attempt `git worktree remove` on the tree
   you are standing in. Cursor Archive / Claude delete do **not** replace `/prune` for
-  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` paths. If prune hits Permission
-  denied, see [/prune](../prune/SKILL.md) §5a — leftover `cursor-agent-worker` may hold
-  `--worker-dir`; kill only when the operator authorizes.
+  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` or `.claude/worktrees/` paths. If prune
+  hits Permission denied, see [/prune](../prune/SKILL.md) §5a — leftover `cursor-agent-worker`
+  may hold `--worker-dir`; kill only when the operator authorizes.
 
 ## Honesty bar
 
