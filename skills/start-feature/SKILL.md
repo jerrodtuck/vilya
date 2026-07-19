@@ -97,6 +97,21 @@ Recommend one.
 
 Trivial work → build.
 
+### Investigate-first / hard-stop (unknowns)
+
+When **step 1 is an unknown** (SDK surface, third-party behavior, unverified runtime fact), mark
+the gate so the chip cannot talk itself into implementing:
+
+| Mode | Marking | What the kickoff / brief must say |
+|------|---------|-----------------------------------|
+| **Daytime / attended** | Explicit **Investigate-first / hard-stop** section in the kickoff (Planner writes it in chip-flow; this skill writes it in the single-session footnote) | The stop is **non-negotiable**: investigate → post findings + 2–3 options with costs + recommendation on the issue → **hard stop** → wait for the operator's pick on the issue (or attended relay) → then implement. Do **not** soften to optional wait. Do **not** auto-pick the "obvious" option. |
+| **Unattended / night-shift** | Label **`needs:decision`**, Status **Blocked** | Same options comment + recommendation; do not wait — next eligible issue. |
+
+This gate does **not** replace Planner for ordinary `plan:ready` issues. Planner's own fork rules
+(finish with consult notes vs stop at `needs:decision` when the plan cannot finish) stay as in
+[/planner](../planner/SKILL.md). Investigate-first is for execute-time unknowns whose step 1 must
+run before a real choice exists — see [/chip](../chip/SKILL.md) §2a.
+
 ## 5. Working rules
 
 - **The issue is the shared state.** Progress in issue comments / PR body — not markdown trackers.
@@ -124,6 +139,10 @@ in the single-session footnote, this skill writes it.
     done **pre-merge** via `/merge-pr`; PR still uses `Closes #`.
   - `live-only` — verification needs the live / deployed system (hardware, brokers, real CygNet);
     PR will use `Refs #` → **Verifying** → Done after live confirmation.
+- When step 1 is an unknown: the **Investigate-first / hard-stop** section (§4) — non-negotiable
+  stop after findings + options; daytime waits for the operator pick; unattended uses
+  `needs:decision`.
 
-Then build (after the daytime execution-model handoff when it applies). Close path: **tests green →
-`/crucible-<stack>` → remediate → `/finish-feature` → operator merges via `/merge-pr`**.
+Then build (after the daytime execution-model handoff when it applies — and only after any
+investigate-first pick is recorded). Close path: **tests green → `/crucible-<stack>` → remediate →
+`/finish-feature` → operator merges via `/merge-pr`**.

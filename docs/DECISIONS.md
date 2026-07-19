@@ -2,6 +2,31 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /adr.
 
+## 2026-07-19 — Investigate-first hard-stop marking split (#239)
+
+**Decision:** Canonize Anduin's investigate → findings + options on the issue → **hard stop** →
+operator pick → implement pattern for execute-time unknowns. **Daytime / attended** marks the gate
+with an explicit **Investigate-first / hard-stop** section in the kickoff (non-negotiable stop;
+no auto-pick). **Unattended / night-shift** mid-run forks keep **`needs:decision`** + Blocked.
+Does not replace Planner for ordinary `plan:ready` issues. (locked in #239 kickoff, 2026-07-19).
+
+**Options considered:**
+1. **`needs:decision` only** for every fork — cost: daytime boards look Blocked while the
+   operator is live in chat; conflates unattended stop with attended wait.
+2. **Kickoff section only** — cost: night-shift eligibility / chain-promote cannot see a prose
+   section; unattended loops would wait forever or guess.
+3. **Split (chosen):** daytime kickoff section + unattended `needs:decision` — cost: two marks
+   to teach; clear per mode.
+
+**Why:** Chips talk themselves into "findings clearly favor X" unless the stop is named
+non-negotiable in the brief. Label `needs:decision` stays the machine-readable unattended brake;
+the kickoff section is the daytime chip-brief brake.
+
+**Consequences:** `/chip` §2a, `/start-feature` §4, `/planner` kickoff shape, night-shift
+unattended consult, orchestrator/planner site cards. REST monitor recipe (#237) unchanged.
+
+**Evidence:** #239 (issue + kickoff); Anduin #228 working pattern.
+
 ## 2026-07-19 — Night-shift chain promote via native blocked-by (#214)
 
 **Decision:** Product repos run an event-driven `chain-promote` workflow on `issues: closed` that reads GitHub **native blocked-by**. When all blockers of a dependent are closed and the dependent carries `night-shift:chain` and `plan:ready` (and is not `needs:decision` / epic), apply `night-shift:ready` and drop `night-shift:chain`. Night-shift skill stays eligibility-only. Vilya owns canon + template; each product repo owns the live workflow + backfill. (decided by operator in architect session, 2026-07-19).

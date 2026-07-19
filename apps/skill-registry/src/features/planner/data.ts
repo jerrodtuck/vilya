@@ -45,6 +45,7 @@ export const NODES: Record<string, FlowNode> = {
     <li>Goal + acceptance restated tightly.</li>
     <li>File ownership / out of scope when parallel streams exist.</li>
     <li><b>Verify plan</b> and <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code>.</li>
+    <li>When step 1 is an unknown: <b>Investigate-first / hard-stop</b> section — non-negotiable stop after findings + options; no auto-pick.</li>
     <li>Explicit: chips/workers implement; Planner does not.</li></ul>`,
   },
   FORK: {
@@ -54,7 +55,8 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>At a real design fork while planning, surface <b>2–3 options</b> with costs and a stated recommendation on the issue.</p>
     <ul><li><b>Plan can finish with open forks</b> for the implementer → still set <code>plan:ready</code>.</li>
-    <li><b>Plan cannot finish</b> without an operator call → <code>needs:decision</code>, Status <b>Blocked</b>, keep <code>needs:plan</code>, do <b>not</b> set <code>plan:ready</code>.</li></ul>`,
+    <li><b>Plan cannot finish</b> without an operator call → <code>needs:decision</code>, Status <b>Blocked</b>, keep <code>needs:plan</code>, do <b>not</b> set <code>plan:ready</code>.</li>
+    <li><b>Investigate-first</b> (execute-time unknown) → daytime kickoff section with a hard stop; unattended uses <code>needs:decision</code>. Does not replace ordinary <code>plan:ready</code>.</li></ul>`,
   },
   READY: {
     kicker: "plan:ready",
