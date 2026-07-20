@@ -3,9 +3,9 @@ name: vilya-planner
 description: >-
   Standing plan loop — drain needs:plan (or an operator-named issue), write kickoff +
   verify plan (+ forks) on the issue, clear needs:plan and set plan:ready. One Fable
-  session per repo. Never implements, dispatches, or merges. Use when the operator
-  says "/vilya-planner", "plan the queue", "drain needs:plan", or runs a standing Planner
-  session for a repo.
+  session per repo. Arms an intake Monitor when idle; never implements, dispatches,
+  merges, or process/completion self-watches. Use when the operator says "/vilya-planner",
+  "plan the queue", "drain needs:plan", or runs a standing Planner session for a repo.
 ---
 
 # Planner (any stack)
@@ -27,7 +27,8 @@ not the orchestrator, not a chip, and not night-shift.
 | Cardinality | One Planner session **per repo** |
 | Model | Session expected on **Fable** (`claude --model fable` or equivalent). Orchestrator + chips stay on Sonnet. Do **not** claim `spawn_task` can pin Fable. |
 | Output | Kickoff comment + verify plan (+ costed fork options when needed) on the issue; label `plan:ready` |
-| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm monitors, or edit feature code |
+| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm **process/completion** self-watches, or edit feature code |
+| Required when idle | **Intake Monitor** for open `needs:plan` (see below) |
 
 ## Enqueue
 
@@ -45,7 +46,8 @@ Opt-in label **`needs:plan`**. Operator or orchestrator applies it. The operator
    plan and merge routing. At a real design fork during planning, include 2–3 options
    with costs + your recommendation in that comment (or a follow-up on the same issue).
 4. Label transition: **remove** `needs:plan`, **add** `plan:ready`.
-5. Drain the next `needs:plan` issue. Idle when the queue is empty; stay in session.
+5. Drain the next `needs:plan` issue. When the queue is empty, **arm the intake
+   Monitor** (§ Intake Monitor) and stay in session — do not wait for an operator ping.
 
 ### Forks while planning
 
@@ -76,6 +78,34 @@ Post on the issue (not a private note). Cover:
   section on daytime chips. This gate does **not** replace ordinary `plan:ready` planning.
 - Explicit: chips/workers implement; Planner does not.
 
+## Intake Monitor (Planner-owned)
+
+Host wake only reaches the session that armed it. Idle without intake is asleep until
+pinged — arm intake whenever standing and the queue is empty (and re-arm after each drain
+when idle again).
+
+| | |
+|---|---|
+| **Cadence** | ≥120s (not 60s / not ~90s) |
+| **Signal** | Open `needs:plan` set **gains** an issue number |
+| **Cursor** | Background shell + `notify_on_output` on REST |
+| **Claude Code** | Monitor tool on the equivalent poll (peer host) |
+
+### Recipe
+
+1. Seed last-seen open issue numbers labeled `needs:plan` via REST
+   (`gh api` search/issues with `label:needs:plan state:open`, or equivalent) —
+   never `gh project item-list` / GraphQL on the hot path; do not use `gh pr list`
+   (GraphQL).
+2. Each tick: re-fetch. Print a **wake sentinel** only when the set **gains** at least
+   one issue (not every tick; not shrinks alone). Match `notify_on_output` (Cursor) or
+   the Monitor tool pattern (Claude) to that sentinel.
+3. On wake: drain per Standing loop; when idle again, re-arm intake.
+
+**Never** arm process/completion self-watches: do not watch your own process/session,
+and do not watch `plan:ready` / your own kickoff as a completion signal — that is
+orchestrator-owned. You are not a chip. You do not spawn chips.
+
 ## Completion signal (orchestrator-owned)
 
 When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **board
@@ -85,9 +115,6 @@ as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
 standing poller is **mortal** (host may tear down the shell) — orchestrator re-arms when
 dead / after long gaps / missing expected signal; do **not** kill/re-arm every drain
 (#270 / #267). Claude Code Monitor path stays host-specific.
-
-**This skill does not arm monitors and does not spawn chips.** Do not watch your own
-process. You are not a chip.
 
 ### Cursor intake poller liveness (complement)
 
@@ -111,5 +138,6 @@ just to re-seed — persist/`last-seen` body is owned elsewhere (#267).
 - Never implement "just a little" to validate the plan.
 - Never dispatch or merge.
 - Never pretend `spawn_task` selected Fable for you.
+- Never treat "never arm monitors" as forbidding **intake** — intake is required; process/completion self-watch is still forbidden.
 - If the brief is too thin to plan, say so on the issue and stop at `needs:decision`
   rather than inventing acceptance.
