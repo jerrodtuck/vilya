@@ -41,6 +41,7 @@ export function invocationOf(skill: Skill): string {
   if (skill.frontmatter["disable-model-invocation"]) return "manual only";
   if (skill.slug === SKILL_SLUGS.nightShift) return "scheduler-fired";
   if (skill.slug === SKILL_SLUGS.planner) return "standing session";
+  if (skill.slug === SKILL_SLUGS.architect) return "standing session";
   return "model + manual";
 }
 
