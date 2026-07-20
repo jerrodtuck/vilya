@@ -164,9 +164,13 @@ are written inline by `/vilya-start-feature` and `/vilya-finish-feature`.
 
 **Planner** is an anytime standing loop (one Fable session per repo). Enqueue with opt-in
 `needs:plan`; Planner drains the queue → writes kickoff + verify plan on the issue →
-`plan:ready`. When you enqueue planning, the orchestrator arms a **board Monitor** for
-`plan:ready` (and/or the plan kickoff comment) — not a process monitor on the Planner session.
-Daytime may chip without `plan:ready` when the issue is already clear (attended judgment).
+`plan:ready`. The orchestrator owns a **standing `plan:ready` poller** (REST + host wake,
+≥120s, wake on set gain; Cursor shells are mortal — re-arm when dead, #270) so Planner
+finish wakes the seat without relying on same-turn enqueue memory. Same-turn per-enqueue
+board Monitor for that issue remains best-practice reinforcement, not the sole wake path.
+Never a process monitor on the Planner session. Planner intake for `needs:plan` stays
+Planner-owned (#255). Daytime may chip without `plan:ready` when the issue is already
+clear (attended judgment).
 
 ```text
 [optional] needs:plan → Planner (Fable) → plan:ready

@@ -2,6 +2,26 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
 
+## 2026-07-19 — Orchestrator standing plan:ready poller (amends #203)
+
+**Decision:** The orchestrator session owns a **standing completion poller** for Planner output — REST + host wake (`notify_on_output` on Cursor; Monitor tool on Claude Code), cadence ≥120s, wake when an open issue **gains** `plan:ready` (dedup on issue set / label transition). Same-turn per-enqueue board Monitor remains best practice but is **no longer the sole wake path**. Never monitor the Planner process/session. (decided by operator, 2026-07-19; motivated by ops: Planner intake poller works; orchestrator repeatedly skipped per-enqueue arm).
+
+**Options considered:**
+1. Louder teaching only (“enqueue = label + monitor, no exceptions”) — cost: cheap; still fails under load.
+2. **Standing orchestrator `plan:ready` poller (chosen)** — cost: second standing watcher on orchestrator; REST/quota hygiene; skill + standing-orders amend ← chosen
+3. Operator nag / status quo per-enqueue only — cost: operator babysits the seat.
+
+**Why:** Twin of Planner intake (#255): the seat that needs the signal owns a structural wake. `notify_on_output` only wakes the arming session; board remains the handoff. Per-enqueue arming is easy to skip because labeling feels complete; chip dispatch’s “no exceptions” hammer does not transfer. Ops evidence: Planner standing intake works; orchestrator forgets Planner completion monitors.
+
+**Consequences:**
+- Amend orchestrator standing orders (Claude + Cursor cards), canon Planner paragraph, `/chip` only if it teaches enqueue, site Orchestrator prompts/tests.
+- Keep: never watch Planner process; chip completion monitors still per-dispatch; Planner intake stays Planner-owned (#255).
+- Softens #203 “when you enqueue, arm a board Monitor” from sole mechanism → standing poller required; per-enqueue arm optional reinforcement.
+- `DECISIONS.md` append on owning feature branch.
+- Cursor standing poller teaching includes re-arm / liveness (#270) — not set-and-forget.
+
+**Evidence:** Operator lock Product Architect session 2026-07-19; ops report same day; prior `2026-07-19 — Planner loop… (#203)`; `#255` Planner intake Monitor ADR; Cursor REST + `notify_on_output` recipe; `#270` shell teardown.
+
 ## 2026-07-19 — Cursor tears down long-running monitor shells (#270)
 
 **Decision:** Treat Cursor's reclaim/teardown of long-running background shells as a

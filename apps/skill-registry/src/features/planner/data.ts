@@ -70,10 +70,10 @@ export const NODES: Record<string, FlowNode> = {
   },
   HANDOFF: {
     kicker: "Orchestrator signal",
-    title: "Board Monitor picks up",
+    title: "Standing poller picks up",
     c: "--handoff",
     bodyHtml: `
-    <p>When the orchestrator (or operator) enqueued <code>needs:plan</code>, <b>they</b> armed a <b>completion</b> board Monitor watching <code>plan:ready</code> and/or this kickoff comment.</p>
+    <p>The orchestrator owns a <b>standing <code>plan:ready</code> poller</b> (session start / idle; wake on set gain). Same-turn per-enqueue board Monitor is reinforcement only — not the sole wake path.</p>
     <p>Planner arms <b>intake</b> for <code>needs:plan</code> only — never process/completion self-watches, and never spawn chips. You are not a chip.</p>`,
   },
 };
@@ -89,7 +89,7 @@ export const FLOWS: Record<string, FlowDef> = {
   drain: {
     label: "Drain the queue",
     descHtml:
-      "<b>Drain the queue.</b> Poll <code>needs:plan</code>, ground the brief, write kickoff + verify plan, mark <code>plan:ready</code>, hand off via the completion board Monitor.",
+      "<b>Drain the queue.</b> Poll <code>needs:plan</code>, ground the brief, write kickoff + verify plan, mark <code>plan:ready</code>, hand off via the orchestrator's standing <code>plan:ready</code> poller.",
     nodes: ["PLAN", "QUEUE", "RECALL", "WRITE", "READY", "HANDOFF"],
     edges: [
       "plan-queue",
@@ -116,7 +116,7 @@ export const FLOWS: Record<string, FlowDef> = {
   handoff: {
     label: "Handoff to orchestrator",
     descHtml:
-      "<b>Handoff.</b> <code>plan:ready</code> is the signal — the orchestrator's completion board Monitor (not the Planner process) picks it up.",
+      "<b>Handoff.</b> <code>plan:ready</code> is the signal — the orchestrator's standing <code>plan:ready</code> poller (not the Planner process) picks it up.",
     nodes: ["READY", "HANDOFF"],
     edges: ["ready-handoff"],
   },
@@ -147,6 +147,6 @@ export const DEFAULT_DRAWER: FlowNode = {
     <h4><span class="swatch" style="background:var(--ready)"></span>Signal is the board</h4>
     <ul>
       <li>Remove <code>needs:plan</code>, add <code>plan:ready</code>.</li>
-      <li>Orchestrator arms the <b>completion board Monitor</b>; Planner arms <b>intake</b> when idle.</li>
+      <li>Orchestrator arms a <b>standing <code>plan:ready</code> poller</b>; Planner arms <b>intake</b> when idle.</li>
     </ul>`,
 };
