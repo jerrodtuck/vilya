@@ -15,6 +15,7 @@ describe("SKILL_INVOKES / SKILL_SLUGS", () => {
     expect(SKILL_INVOKES.architect).toBe("/vilya-architect");
     expect(SKILL_INVOKES.orchestrator).toBe("/vilya-orchestrator");
     expect(SKILL_INVOKES.orchestratorCursor).toBe("/vilya-orchestrator-cursor");
+    expect(SKILL_INVOKES.askVilya).toBe("/vilya-ask-vilya");
     expect(SKILL_INVOKES.chip).toBe("/vilya-chip");
   });
 

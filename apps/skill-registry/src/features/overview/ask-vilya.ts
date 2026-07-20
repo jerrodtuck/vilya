@@ -1,13 +1,11 @@
-// Feature slice: overview — the "Ask Vilya" front-door prompt card (#143).
-// One copyable prompt carrying the routing test, the lanes, and the fixed
-// answer format (lane · exact next prompt · one-line why with canon
-// citation). Prompt card only, by decision on #143: the house proving
-// ground — prompts graduate to skills once usage proves the recipe stable
-// (as /vilya-chip did). No skill, no new role, and it never writes to the board.
+// Feature slice: overview — the "Ask Vilya" front-door prompt card (#143),
+// graduated to /vilya-ask-vilya (#278). Role-routing only: never writes the
+// board. Copy remains as paste fallback (#254 apply-or-run pattern).
 // Stateless and read-only, so one Ask Vilya spans all repos.
 // Planner lane added in #208 (anytime plan loop between direction and dispatch).
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
+import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
 export const ASK_VILYA: PromptGroup = {
   node: "ASK",
@@ -19,6 +17,7 @@ export const ASK_VILYA: PromptGroup = {
   items: [
     {
       label: "Route me",
+      skill: SKILL_SLUGS.askVilya,
       text: `Ask Vilya — route me: <what you want to do, or the question you have>
 
 Apply the routing test: does this change what we intended, or only what we'll do next?
