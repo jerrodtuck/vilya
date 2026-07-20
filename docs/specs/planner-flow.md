@@ -2,8 +2,8 @@
 
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
-**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#255](https://github.com/jerrodtuck/vilya/issues/255) (Planner intake Monitor), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)  
-**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; intake Monitor (#255) amends idle/monitor clause from #203; Cursor monitor-shell teardown/re-arm taught in #270
+**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#255](https://github.com/jerrodtuck/vilya/issues/255) (Planner intake Monitor), [#267](https://github.com/jerrodtuck/vilya/issues/267) (persist intake across drains), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)
+**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; intake Monitor (#255) amends idle/monitor clause from #203; #267 amends lifecycle to persist one poller across drains; Cursor monitor-shell teardown/re-arm taught in #270
 
 ## Intent
 
@@ -42,8 +42,10 @@ issue into Planner chat.
 1. Standing Planner session polls for `needs:plan` and drains the queue.
 2. For each issue: write kickoff + verify plan (and costed fork options when needed)
    onto the issue; apply `plan:ready`; drop `needs:plan`.
-3. When the queue is empty (or between drains), the Planner **arms an intake Monitor**
-   so a new `needs:plan` wakes the same session — do not wait for an operator ping.
+3. When the queue is empty, the Planner **arms one intake Monitor** (if none is
+   running) so a new `needs:plan` wakes the same session — do not wait for an
+   operator ping. That poller **persists across drains**; do not kill/re-arm after
+   every issue just to re-seed `last-seen`.
 4. Orchestrator, when enqueueing planning, arms a **completion board Monitor** for that
    issue — watch for `plan:ready` and/or the plan kickoff comment. Same doctrine as chips
    (side channel + Monitor), different signal (label/plan comment, not a PR).
@@ -69,15 +71,21 @@ Without an intake alarm, an idle Planner is asleep until pinged — that contrad
 Cadence **≥120s** (not 60s / not ~90s). REST-first — never `gh project item-list` /
 GraphQL on the hot path (`gh pr list` is GraphQL; do not use it for this poller).
 
-1. Seed the last-seen set of open issue numbers labeled `needs:plan`
+1. Arm **one** intake poller at session start / idle empty queue. Leave it running
+   across drains — **do not** kill/re-arm after every drain to reset `last-seen`.
+   (Host shell teardown / re-arm-when-dead is [#270](https://github.com/jerrodtuck/vilya/issues/270).)
+2. Each tick: re-fetch the open `needs:plan` set
    (`gh api` issues/search with `label:needs:plan state:open`, or equivalent REST).
-2. Each tick: re-fetch the open set. Print a **wake sentinel** only when the set
-   **gains** at least one issue number (not on every tick; not on shrinks alone).
+   Compute gains vs `last-seen`, then **always set `last-seen = current set`**
+   (including empty). Removals re-seed via that assignment — no process restart.
+   Print a **wake sentinel** only when the set **gains** at least one issue number
+   (not on every tick; not on shrinks alone; never re-announce the same standing set).
 3. **Cursor:** background shell + `notify_on_output` matched to that sentinel
    (stdout match wakes the session — not an exit-only watch loop).
 4. **Claude Code:** arm the **Monitor tool** on the equivalent background poll
    (peer host mechanism; same gain-only wake).
-5. On wake: drain per loop behavior; when idle again, re-arm intake.
+5. On wake: drain per loop behavior. The intake poller **keeps running** — do not
+   kill/re-arm to re-seed.
 
 ## Cursor shell teardown (standing monitors)
 
@@ -118,6 +126,10 @@ this spec + VISION + the #203 ADR are the durable claim.
 for `needs:plan`; it still never arms process/completion self-watches. Standing Fable
 Planner, labels, and orchestrator completion Monitor are unchanged.
 
+#267 amends #255 lifecycle only: one poller persists across drains; every tick
+re-seeds `last-seen = current set`. “Re-arm when idle again” must not mean kill the
+process to reset seed — that churn caused missed wakes.
+
 ## Non-goals (this landing)
 
 - Planner inside Actions / the night-shift job (deferred).
@@ -128,5 +140,5 @@ Planner, labels, and orchestrator completion Monitor are unchanged.
 ## Verify
 
 - Merge routing: **tests-only** (docs)
-- Facts match #203 ADR + #255 intake amend (intake Planner-owned; completion orchestrator-owned)
-- Links resolve to #203 / #204 / #255; no edits to `GITHUB-PROJECTS.md` Autonomy tables on this branch
+- Facts match #203 ADR + #255 intake amend + #267 persist amend (intake Planner-owned; completion orchestrator-owned; one poller across drains)
+- Links resolve to #203 / #204 / #255 / #267; no edits to `GITHUB-PROJECTS.md` Autonomy tables on this branch

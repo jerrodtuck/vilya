@@ -32,6 +32,24 @@ fix Cursor itself; does not change ≥120s REST / no GraphQL hot path.
 (persist-across-drains complement); #261 (standing orch `plan:ready` poller); #255
 (Planner intake); prior `2026-07-19 — Cursor REST chip monitor` teaching (#223/#237).
 
+## 2026-07-19 — Planner intake poller persists across drains (amends #255)
+
+**Decision:** The Planner **intake** poller is armed once (session start / idle empty queue) and **left running across drains**. Do **not** kill/re-arm after every issue to reset `last-seen`. Each tick: fetch open `needs:plan` → compute gains vs `last-seen` → **always set `last-seen = current set`** (including empty) → wake only on gain; never re-announce the same standing set. Removals re-seed via the assignment; no process restart. Same lifecycle on Cursor (`notify_on_output`) and Claude Code (Monitor tool). (decided by operator from Planner ops, 2026-07-19).
+
+**Options considered:**
+1. Kill/re-arm after every drain to reset `last-seen` — cost: Windows `exit_code=4294967295` noise; watcher can die quietly; missed wakes (observed: #261 sat on `needs:plan` with no `PLANNER_INTAKE_WAKE`) ← rejected
+2. **Persist one poller; re-seed `last-seen` every tick (chosen)** — cost: trivial recipe clarity; matches gain-only wake without process churn ← chosen
+
+**Why:** Ops on standing Planner (`jerrodtuck/vilya`, Cursor): intentional `Stop-Process` looked like poller failure; a later watcher died (~95s) with no wake while work waited on the board. REST ≥120s + gain-only sentinel shape stays; only lifecycle/seeding changes.
+
+**Consequences:**
+- Update `/vilya-planner` skill intake section, registry mirror, Planner site standing-orders card; clarify `#255` / spec if they imply re-arm-as-restart.
+- Optional honesty: host “error” after intentional kill ≠ intake failure — prefer never killing.
+- Unchanged: no process/completion self-watch; orchestrator owns `plan:ready` completion (#261); cadence/REST-only; no auto-dispatch on wake.
+- Host shell teardown / re-arm-when-dead is a separate amend (#270).
+
+**Evidence:** Planner session ops report 2026-07-19 (draft to architect); prior `#255` intake Monitor ADR; issue #261 missed wake until manual notice; issue #267.
+
 ## 2026-07-19 — Planner intake Monitor for needs:plan wake (amends #203)
 
 **Decision:** The standing Planner session owns an **intake** board poller in its own session — REST + host wake (`notify_on_output` on Cursor; Monitor tool on Claude Code), cadence ≥120s, wake only when the open `needs:plan` set gains an issue. Soften “Planner never arms monitors” to: never arm **process/completion** monitors on yourself; **intake** for your own queue is required. Orchestrator still arms only the **completion** board Monitor (`plan:ready` / kickoff) when enqueueing. Reject sibling-chat ping and “Planner as orchestrator subagent” as the default. (decided by operator, 2026-07-19; Cursor intake loop **tested** in-session the same day).
