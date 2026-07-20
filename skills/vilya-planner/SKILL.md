@@ -46,8 +46,9 @@ Opt-in label **`needs:plan`**. Operator or orchestrator applies it. The operator
    plan and merge routing. At a real design fork during planning, include 2–3 options
    with costs + your recommendation in that comment (or a follow-up on the same issue).
 4. Label transition: **remove** `needs:plan`, **add** `plan:ready`.
-5. Drain the next `needs:plan` issue. When the queue is empty, **arm the intake
-   Monitor** (§ Intake Monitor) and stay in session — do not wait for an operator ping.
+5. Drain the next `needs:plan` issue. When the queue is empty, ensure the intake
+   poller from § Intake Monitor is armed, and stay in session — do not wait for an
+   operator ping.
 
 ### Forks while planning
 
@@ -81,8 +82,9 @@ Post on the issue (not a private note). Cover:
 ## Intake Monitor (Planner-owned)
 
 Host wake only reaches the session that armed it. Idle without intake is asleep until
-pinged — arm intake whenever standing and the queue is empty (and re-arm after each drain
-when idle again).
+pinged. Follow the Recipe below — one poller, persist across drains, every-tick
+`last-seen` sync. (If the host tears down the shell entirely, re-arm-when-dead is
+[#270](https://github.com/jerrodtuck/vilya/issues/270) — not this recipe.)
 
 | | |
 |---|---|
@@ -93,24 +95,32 @@ when idle again).
 
 ### Recipe
 
-1. Seed last-seen open issue numbers labeled `needs:plan` via REST
-   (`gh api` search/issues with `label:needs:plan state:open`, or equivalent) —
-   never `gh project item-list` / GraphQL on the hot path; do not use `gh pr list`
-   (GraphQL).
-2. Each tick: re-fetch. Print a **wake sentinel** only when the set **gains** at least
-   one issue (not every tick; not shrinks alone). Match `notify_on_output` (Cursor) or
-   the Monitor tool pattern (Claude) to that sentinel.
-3. On wake: drain per Standing loop; when idle again, re-arm intake.
+1. Arm **one** intake poller at session start / idle empty queue. Leave it running
+   across drains — **do not** kill/re-arm after every drain to reset `last-seen`.
+2. Each tick via REST (`gh api` search/issues with `label:needs:plan state:open`, or
+   equivalent) — never `gh project item-list` / GraphQL on the hot path; do not use
+   `gh pr list` (GraphQL):
+   - Fetch the open `needs:plan` set.
+   - Compute gains vs `last-seen`.
+   - **Always set `last-seen = current set`** (including empty). Removals re-seed via
+     this assignment; no process restart.
+   - Print a **wake sentinel** only when the set **gains** at least one issue (not
+     every tick; not shrinks alone; never re-announce the same standing set). Match
+     `notify_on_output` (Cursor) or the Monitor tool pattern (Claude) to that sentinel.
+3. On wake: drain per Standing loop. The intake poller **keeps running** — do not
+   kill/re-arm to re-seed.
 
 **Never** arm process/completion self-watches: do not watch your own process/session,
 and do not watch `plan:ready` / your own kickoff as a completion signal — that is
-orchestrator-owned. You are not a chip. You do not spawn chips.
+orchestrator-owned. You are not a chip. You do not spawn chips. Optional honesty: a
+background shell “error” after an intentional kill is not intake failure — preferred
+recipe avoids kills entirely.
 
 ## Completion signal (orchestrator-owned)
 
-When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **board
-Monitor** for that issue watching `plan:ready` and/or this kickoff comment. Same doctrine
-as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
+When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **completion
+board Monitor** for that issue watching `plan:ready` and/or this kickoff comment. Same
+doctrine as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
 `notify_on_output`), different signal (label/plan comment, not a PR). On Cursor, that
 standing poller is **mortal** (host may tear down the shell) — orchestrator re-arms when
 dead / after long gaps / missing expected signal; do **not** kill/re-arm every drain
@@ -122,7 +132,7 @@ If this Planner session's standing `needs:plan` intake uses a Cursor background 
 `notify_on_output`, treat that shell as **mortal** too: leave it running across drains;
 **re-arm only** when the host tore it down or a long gap / missing expected signal shows
 it is gone (one REST check + re-arm). Do **not** kill/re-arm after every successful drain
-just to re-seed — persist/`last-seen` body is owned elsewhere (#267).
+just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 
 ## Daytime vs night-shift
 

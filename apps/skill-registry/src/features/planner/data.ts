@@ -14,7 +14,7 @@ export const NODES: Record<string, FlowNode> = {
     <p>You are the <b>standing plan loop</b> — peer of orchestrator and night-shift, not a direction seat. One Planner session <b>per repo</b>, launched on <b>Fable</b>.</p>
     <ul><li>Drain <code>needs:plan</code>; write kickoff + verify plan on the issue; mark <code>plan:ready</code>.</li>
     <li>Never implement, never dispatch chips, never merge, never arm process/completion self-watches.</li>
-    <li>When idle, arm a Planner-owned <b>intake Monitor</b> for <code>needs:plan</code> (REST + host wake).</li>
+    <li>When idle, arm one Planner-owned <b>intake Monitor</b> for <code>needs:plan</code> (REST + host wake) and leave it running across drains.</li>
     <li>Enqueue is opt-in: the board queue is the brief list — the operator does not paste each issue into this chat.</li></ul>`,
   },
   QUEUE: {
@@ -24,7 +24,7 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>Poll open issues labeled <code>needs:plan</code> (highest priority, then oldest).</p>
     <ul><li>If the operator names an issue, plan that one — apply <code>needs:plan</code> if missing so the transition is visible.</li>
-    <li>When the queue is empty, arm the intake Monitor (≥120s, wake only when the open set <b>gains</b> an issue) and stay standing — do not wait for a ping.</li></ul>`,
+    <li>When the queue is empty, arm one intake Monitor if needed (≥120s, every-tick <code>last-seen</code> sync, wake only when the open set <b>gains</b> an issue). Leave it running across drains — do not kill/re-arm to re-seed. Stay standing — do not wait for a ping.</li></ul>`,
   },
   RECALL: {
     kicker: "Ground the brief",
@@ -89,7 +89,7 @@ export const FLOWS: Record<string, FlowDef> = {
   drain: {
     label: "Drain the queue",
     descHtml:
-      "<b>Drain the queue.</b> Poll <code>needs:plan</code>, ground the brief, write kickoff + verify plan, mark <code>plan:ready</code>, hand off via the board Monitor.",
+      "<b>Drain the queue.</b> Poll <code>needs:plan</code>, ground the brief, write kickoff + verify plan, mark <code>plan:ready</code>, hand off via the completion board Monitor.",
     nodes: ["PLAN", "QUEUE", "RECALL", "WRITE", "READY", "HANDOFF"],
     edges: [
       "plan-queue",
@@ -116,7 +116,7 @@ export const FLOWS: Record<string, FlowDef> = {
   handoff: {
     label: "Handoff to orchestrator",
     descHtml:
-      "<b>Handoff.</b> <code>plan:ready</code> is the signal — the orchestrator's board Monitor (not the Planner process) picks it up.",
+      "<b>Handoff.</b> <code>plan:ready</code> is the signal — the orchestrator's completion board Monitor (not the Planner process) picks it up.",
     nodes: ["READY", "HANDOFF"],
     edges: ["ready-handoff"],
   },
@@ -141,11 +141,12 @@ export const DEFAULT_DRAWER: FlowNode = {
     <h4><span class="swatch" style="background:var(--queue)"></span>Drain <code>needs:plan</code></h4>
     <ul>
       <li>Opt-in enqueue; standing Fable session; one seat per repo.</li>
-      <li>Never implement, dispatch, or merge.</li>
+      <li>Never implement, dispatch, merge, or arm process/completion self-watches.</li>
+      <li>When idle, arm one intake Monitor and leave it running across drains.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--ready)"></span>Signal is the board</h4>
     <ul>
       <li>Remove <code>needs:plan</code>, add <code>plan:ready</code>.</li>
-      <li>Orchestrator arms the <b>completion</b> Monitor; Planner arms <b>intake</b> when idle.</li>
+      <li>Orchestrator arms the <b>completion board Monitor</b>; Planner arms <b>intake</b> when idle.</li>
     </ul>`,
 };

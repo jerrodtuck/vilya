@@ -1,5 +1,5 @@
-// #208 / #255: planner teaching surface must carry seat doctrine + label transitions
-// + Planner-owned intake Monitor (not process/completion self-watch).
+// #208 / #255 / #267: planner teaching surface must carry seat doctrine + label
+// transitions + Planner-owned intake Monitor that persists across drains.
 import { describe, expect, it } from "vitest";
 import { FLOWS, NODES } from "./data";
 import { PROMPTS } from "./prompts";
@@ -13,7 +13,7 @@ function collectStrings(value: unknown): string {
   return "";
 }
 
-describe("Planner doctrine (#208 / #255)", () => {
+describe("Planner doctrine (#208 / #255 / #267)", () => {
   it("standing orders teach one seat, Fable, labels, and never-execute", () => {
     const standing = PROMPTS.find((g) => g.node === "PLAN");
     expect(standing?.wide).toBe(true);
@@ -24,7 +24,7 @@ describe("Planner doctrine (#208 / #255)", () => {
     expect(text).toMatch(/never implement/i);
     expect(text).toMatch(/never dispatch/i);
     expect(text).toMatch(/never merge/i);
-    expect(text).toContain("board Monitor");
+    expect(text).toMatch(/completion board Monitor/i);
     expect(text).toContain("mortal");
     expect(text).toContain("re-arm");
     expect(text).toContain("#270");
@@ -41,6 +41,21 @@ describe("Planner doctrine (#208 / #255)", () => {
     expect(text).toContain("Monitor tool");
     expect(text).toMatch(/process\/completion self-watches/i);
     expect(text).not.toContain("never arm monitors");
+  });
+
+  it("standing orders persist one intake poller across drains (#267)", () => {
+    const standing = PROMPTS.find((g) => g.node === "PLAN");
+    const text = standing?.items.map((i) => i.text).join("\n") ?? "";
+    expect(text).toMatch(/running across drains/i);
+    expect(text).toMatch(/do not kill\/re-arm/i);
+    expect(text).toMatch(/last-seen\s*=\s*current set/i);
+    expect(text).toMatch(/#270/);
+    expect(NODES.QUEUE.bodyHtml).toMatch(/across drains/i);
+    expect(NODES.QUEUE.bodyHtml).toMatch(/kill\/re-arm/i);
+    const handoff = PROMPTS.find((g) => g.node === "HANDOFF");
+    const handoffText = handoff?.items.map((i) => i.text).join("\n") ?? "";
+    expect(handoffText).toMatch(/across drains/i);
+    expect(handoffText).toMatch(/completion board Monitor/i);
   });
 
   it("map copy teaches intake vs completion ownership (#255)", () => {
