@@ -1,7 +1,9 @@
-// #223 / #233: Cursor orchestrator teaches REST + notify_on_output, not GraphQL polls.
+// #223 / #233 / #270: Cursor orchestrator teaches REST + notify_on_output, not GraphQL polls;
+// Cursor shells are mortal — re-arm, do not thrash every drain.
 import { describe, expect, it } from "vitest";
 import {
   CURSOR_DISPATCH_MONITOR,
+  CURSOR_SHELL_TEARDOWN_DOCTRINE,
   GRAPHQL_QUOTA_DOCTRINE,
   HOST_MONITOR_MECHANISMS,
   PLANNER_ORCH_DOCTRINE,
@@ -65,6 +67,18 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(HOST_MONITOR_MECHANISMS).toContain("never gh project item-list");
     expect(HOST_MONITOR_MECHANISMS).toContain("gh pr list is GraphQL");
     expect(PLANNER_ORCH_DOCTRINE).toContain(HOST_MONITOR_MECHANISMS);
+  });
+
+  it("Cursor shell teardown doctrine teaches mortal shells + re-arm without drain thrash (#270)", () => {
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("mortal");
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("re-arm");
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("arm-once-and-forget");
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("#267");
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("kill/re-arm after every successful drain");
+    expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("process-lifetime parity");
+    expect(CURSOR_DISPATCH_MONITOR).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
+    expect(PLANNER_ORCH_DOCTRINE).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
+    expect(PLANNER_ORCH_DOCTRINE).toContain("Standing plan:ready pollers on Cursor");
   });
 });
 

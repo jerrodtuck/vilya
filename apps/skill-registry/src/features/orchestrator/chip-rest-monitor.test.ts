@@ -1,4 +1,5 @@
-// #237: /vilya-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list.
+// #237 / #270: /vilya-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list;
+// Cursor shells are mortal — re-arm without drain thrash.
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -32,5 +33,14 @@ describe("/vilya-chip REST monitor (#237)", () => {
     expect(skill).toContain("Monitor tool");
     // No leftover ~90s cadence in the recipe.
     expect(skill).not.toMatch(/~every 90s|poll ~every 90s|comments ~90s/);
+  });
+
+  it("Cursor row teaches mortal shells + re-arm without every-drain thrash (#270)", () => {
+    const skill = readChipSkill();
+    expect(skill).toContain("mortal");
+    expect(skill).toContain("arm → assume mortal → re-arm");
+    expect(skill).toContain("arm-once-and-forget");
+    expect(skill).toContain("#267");
+    expect(skill).toContain("process-lifetime parity");
   });
 });

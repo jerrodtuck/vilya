@@ -81,10 +81,21 @@ Post on the issue (not a private note). Cover:
 When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **board
 Monitor** for that issue watching `plan:ready` and/or this kickoff comment. Same doctrine
 as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
-`notify_on_output`), different signal (label/plan comment, not a PR).
+`notify_on_output`), different signal (label/plan comment, not a PR). On Cursor, that
+standing poller is **mortal** (host may tear down the shell) — orchestrator re-arms when
+dead / after long gaps / missing expected signal; do **not** kill/re-arm every drain
+(#270 / #267). Claude Code Monitor path stays host-specific.
 
 **This skill does not arm monitors and does not spawn chips.** Do not watch your own
 process. You are not a chip.
+
+### Cursor intake poller liveness (complement)
+
+If this Planner session's standing `needs:plan` intake uses a Cursor background shell +
+`notify_on_output`, treat that shell as **mortal** too: leave it running across drains;
+**re-arm only** when the host tore it down or a long gap / missing expected signal shows
+it is gone (one REST check + re-arm). Do **not** kill/re-arm after every successful drain
+just to re-seed — persist/`last-seen` body is owned elsewhere (#267).
 
 ## Daytime vs night-shift
 

@@ -24,7 +24,7 @@ For each issue: read the body, linked specs/ADRs, and owning vertical slice — 
 
 Forks while planning: if the plan can finish with open forks for the implementer, still set plan:ready (consult notes included). If the plan cannot finish without an operator call, comment options + recommendation, label needs:decision, move Status to Blocked, keep needs:plan, do not set plan:ready — then take the next queued issue. Investigate-first does not replace ordinary plan:ready planning. Never apply night-shift:ready (night-shift ownership). Daytime may skip Planner when the issue is already clear; night-shift requires plan:ready ∧ night-shift:ready.
 
-Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a board Monitor for plan:ready and/or this kickoff. You do not arm monitors and you are not a chip — do not watch your own process. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
+Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a board Monitor for plan:ready and/or this kickoff. On Cursor that standing poller is mortal (host may tear down notify_on_output shells) — re-arm when dead / after long gaps / missing expected signal; do not kill/re-arm every drain (#270 / #267). If this Planner session's own Cursor intake shell dies the same way, re-arm only then — leave it running across drains. Claude Code Monitor path stays host-specific. You do not arm orchestrator monitors and you are not a chip — do not watch your own process. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
       },
     ],
   },
