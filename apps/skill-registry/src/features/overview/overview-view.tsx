@@ -1,5 +1,6 @@
 // Feature slice: overview — the methodology's front door (server component).
 import Link from "next/link";
+import { SKILL_INVOKES } from "@/shared/skills/invokes";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { PromptList } from "@/shared/ui/prompt-list";
 import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
@@ -93,9 +94,10 @@ export function OverviewView() {
         <div className="kicker">Front door</div>
         <h3>Ask Vilya</h3>
         <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
-          Who handles this — architect, planner, orchestrator, or you? Paste
-          the card below with your question; the answer comes back in a fixed
-          shape: <b>lane · exact next prompt · one-line why</b> with its canon
+          Who handles this — architect, planner, orchestrator, or you? Run{" "}
+          <code>{SKILL_INVOKES.askVilya}</code> with your question (or paste
+          the card below); the answer comes back in a fixed shape:{" "}
+          <b>lane · exact next prompt · one-line why</b> with its canon
           citation. It routes — it never creates issues or dispatches.
         </p>
         <div
