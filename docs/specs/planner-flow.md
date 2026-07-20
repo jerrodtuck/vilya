@@ -2,8 +2,8 @@
 
 **Created:** 2026-07-19  
 **Last updated:** 2026-07-19  
-**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site)  
-**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260
+**Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)  
+**Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vilya-planner`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; Cursor monitor-shell teardown/re-arm taught in #270
 
 ## Intent
 
@@ -45,6 +45,17 @@ issue into Planner chat.
    watch for `plan:ready` and/or the plan kickoff comment. Same doctrine as chips
    (side channel + Monitor), different signal (label/plan comment, not a PR).
 4. Do **not** monitor the Planner process or session. Planner is not a chip.
+
+## Cursor shell teardown (standing monitors)
+
+On **Cursor**, long-running background shells used for `notify_on_output` watchers
+(chip-completion, standing orch `plan:ready` pollers, Planner intake) are **mortal** —
+the host may reclaim them quietly. Teach **arm → assume mortal → re-arm** on noticed
+death, long idle gaps, or a missing expected signal (one REST check, then re-arm if
+the shell is gone). Do **not** arm-once-and-forget. Complement #267: re-seed
+`last-seen` every tick; do **not** kill/re-arm after every successful drain.
+**Claude Code** Monitor tool path stays host-specific — no process-lifetime parity.
+Canon + ADR: `GITHUB-PROJECTS.md` chip-chain section; `DECISIONS.md` (#270).
 
 ## Daytime vs night-shift gates
 

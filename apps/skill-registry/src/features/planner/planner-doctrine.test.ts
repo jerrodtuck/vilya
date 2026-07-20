@@ -24,6 +24,10 @@ describe("Planner doctrine (#208)", () => {
     expect(text).toMatch(/never dispatch/i);
     expect(text).toMatch(/never merge/i);
     expect(text).toContain("board Monitor");
+    expect(text).toContain("mortal");
+    expect(text).toContain("re-arm");
+    expect(text).toContain("#270");
+    expect(text).toContain("#267");
   });
 
   it("map copy never revives auto:ready", () => {

@@ -189,6 +189,16 @@ shell with **`notify_on_output`** on **REST** (`gh api …/pulls?head=<owner>:<b
 GraphQL on the hot path (`gh pr list` is GraphQL). Full recipe: `/vilya-chip` §3. The
 orchestrator cards carry the standing-order wording.
 
+**Cursor shell teardown (host limit):** long-running background shells are **mortal** — Cursor
+may reclaim or tear them down quietly; an armed `notify_on_output` watcher is not proof it is
+still alive. Teach **arm → assume mortal → re-arm** when the session notices death, after long
+idle gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is
+gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just
+to re-seed (re-seed `last-seen` every tick instead — #267). Same rule for chip-completion
+monitors, standing orch `plan:ready` pollers, and Planner intake watchers on Cursor. Claude
+Code's Monitor tool path stays host-specific — no false process-lifetime parity. ADR:
+`docs/DECISIONS.md` (`2026-07-19 — Cursor tears down long-running monitor shells`, #270).
+
 **GraphQL quota / board edits:** product orchestrators on the same GitHub user share **one**
 GraphQL bucket. Board Status moves are **rate-gated / best-effort** — when
 `graphql.remaining == 0`, skip `gh project item-edit` / hot `item-list` polls and comment on

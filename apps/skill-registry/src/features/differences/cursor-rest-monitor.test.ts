@@ -21,8 +21,12 @@ describe("differences chip-completion monitor (#223)", () => {
     expect(monitor.cursor).toMatch(/[Nn]ever `gh pr list`/);
     expect(monitor.cursor).toContain("gh project item-list");
     expect(monitor.cursor).toContain("No Monitor tool");
+    expect(monitor.cursor).toContain("mortal");
+    expect(monitor.cursor).toContain("re-arm");
+    expect(monitor.cursor).toContain("kill/re-arm every drain");
     expect(monitor.note).toMatch(/Monitor equivalent/i);
     expect(monitor.note).toMatch(/[Nn]ever `gh pr list`/);
+    expect(monitor.note).toContain("#270");
     expect(monitor.cursor).not.toMatch(/~every 90s|~90s/);
   });
 

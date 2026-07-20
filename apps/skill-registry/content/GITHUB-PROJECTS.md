@@ -7,15 +7,15 @@ block plus a pointer back here — generated with the site's Setup → Regenerat
 sections below live only in this file; skills read config from each repo's file and process
 from their own SKILL.md.
 
-Skills (`start-feature` / `finish-feature` / `update-docs` / `night-shift` / `/planner` / …) read
-owner, project, labels, stack, test command, and crucible variant from here. Planning vs execution
-**models** are per-operator, never stored in this file: **Planner session = Fable**
-(`claude --model fable`); **orchestrator + chips = Sonnet** via `model` in
-`.claude/settings.local.json` (gitignored; chips inherit it via `.worktreeinclude`) — **not**
-orchestrator `/model` as the planner. **Cursor** — per-conversation model dropdown, both phases;
-**night-shift** — the model is fixed by the launcher (workflow file), one model for the whole run.
-Single-session daytime work still hand-switches per `/start-feature` when not using a Planner
-session.
+Skills (`vilya-start-feature` / `vilya-finish-feature` / `vilya-update-docs` /
+`vilya-night-shift` / `/vilya-planner` / …) read owner, project, labels, stack, test command,
+and crucible variant from here. Planning vs execution **models** are per-operator, never stored
+in this file: **Planner session = Fable** (`claude --model fable`); **orchestrator + chips =
+Sonnet** via `model` in `.claude/settings.local.json` (gitignored; chips inherit it via
+`.worktreeinclude`) — **not** orchestrator `/model` as the planner. **Cursor** — per-conversation
+model dropdown, both phases; **night-shift** — the model is fixed by the launcher (workflow
+file), one model for the whole run. Single-session daytime work still hand-switches per
+`/vilya-start-feature` when not using a Planner session.
 
 ## Repo config — fill this in per repo
 
@@ -27,9 +27,9 @@ session.
 | Project id | `PVT_kwHOAYNJN84BdH1y` | `gh project view <n> --owner <owner> --format json --jq .id` |
 | Status field id | `PVTSSF_lAHOAYNJN84BdH1yzhXrqCM` | see "Field ids" below |
 | **Stack** | `nextjs` | the repo's framework |
-| **Crucible variant** | `crucible-nextjs` | the review skill installed in this repo |
-| **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/finish-feature` runs in step 1 |
-| **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
+| **Crucible variant** | `vilya-crucible-nextjs` | the review skill installed in this repo |
+| **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/vilya-finish-feature` runs in step 1 |
+| **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/vilya-merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
 | Default branch | `master` | `git remote show origin` |
 
 Status option ids (fill after first setup):
@@ -133,15 +133,15 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 
 ### PR close convention
 
-- **Merge routing is declared on the issue at kickoff** (`/start-feature` verify plan):
-  `tests-only` · `local-smoke` (hands-on check pre-merge via `/merge-pr`) · `live-only`
+- **Merge routing is declared on the issue at kickoff** (`/vilya-start-feature` verify plan):
+  `tests-only` · `local-smoke` (hands-on check pre-merge via `/vilya-merge-pr`) · `live-only`
   (Verifying owed). Finish and merge read it — nobody re-decides at PR time.
 - Done-done at merge (`tests-only` / `local-smoke`): `Closes #<issue>`
 - Live retest owed (`live-only`): `Refs #<issue>` → move to Verifying after merge
 - **Merge method: squash, always** — one issue = one commit on the default branch;
   `gh pr merge <n> --squash`. Remote branch removal is the repo's `delete_branch_on_merge`
-  setting; local branch + worktree cleanup is `/prune`'s job, never merge-time. The operator
-  merges via `/merge-pr`; agents never do.
+  setting; local branch + worktree cleanup is `/vilya-prune`'s job, never merge-time. The
+  operator merges via `/vilya-merge-pr`; agents never do.
 
 ## Process
 
@@ -150,15 +150,15 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
 (`feat|fix|docs/<issue#>-slug` for daytime **and** night-shift; `claude/*` only for chips).
 Night-shift reuses daytime branch names under `.claude/worktrees/` (often Actions `_work`) —
-`/prune` owns that pairing; do not expect `claude/*` for overnight trees.
+`/vilya-prune` owns that pairing; do not expect `claude/*` for overnight trees.
 
 ```text
-/start-feature → implement → /crucible-<stack> → remediate → /finish-feature → /merge-pr → Done
+/vilya-start-feature → implement → /vilya-crucible-<stack> → remediate → /vilya-finish-feature → /vilya-merge-pr → Done
 ```
 
-`/update-docs` is a **routing** skill (manual / mid-work: “where does this go?”, log a decision,
-capture a bug). It is **not** stepped by the happy path. Specs and changelog fragments are written
-inline by `/start-feature` and `/finish-feature`.
+`/vilya-update-docs` is a **routing** skill (manual / mid-work: “where does this go?”, log a
+decision, capture a bug). It is **not** stepped by the happy path. Specs and changelog fragments
+are written inline by `/vilya-start-feature` and `/vilya-finish-feature`.
 
 ### Chip chain (dispatched)
 
@@ -172,22 +172,32 @@ Daytime may chip without `plan:ready` when the issue is already clear (attended 
 [optional] needs:plan → Planner (Fable) → plan:ready
   → chip dispatch (spawn_task / Cursor worker, brief carries the issue, verify routing,
     crucible gate; orchestrator same turn: arms a host monitor + moves In Progress)
-  → chip implements → /crucible-<stack> → /finish-feature (PR) → completion comment
-    on the issue (gh); orchestrator monitor picks it up → operator /merge-pr → auto-archive
-    on PR close → periodic /prune --apply
+  → chip implements → /vilya-crucible-<stack> → /vilya-finish-feature (PR) → completion comment
+    on the issue (gh); orchestrator monitor picks it up → operator /vilya-merge-pr → auto-archive
+    on PR close → periodic /vilya-prune --apply
 ```
 
 Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
 (`gh` — no prompt, attended or not); the orchestrator's dispatch monitor picks it up (loop
-documented on the site's Setup page and in `/chip`). Dispatch carries **two same-turn
+documented on the site's Setup page and in `/vilya-chip`). Dispatch carries **two same-turn
 obligations**: arm the monitor and move the issue to **In Progress** on the board, since
 GitHub's built-in workflows only cover added→Todo and closed/merged→Done. **Claude Code**
 arms the **Monitor tool** — never an **exit-only** background shell watch loop (detects but
 cannot notify while running). **Cursor** has no Monitor tool; the equivalent is a background
 shell with **`notify_on_output`** on **REST** (`gh api …/pulls?head=<owner>:<branch>&state=open`
 + issue comments, cadence **≥120s**, wake only on change) — never `gh project item-list` /
-GraphQL on the hot path (`gh pr list` is GraphQL). Full recipe: `/chip` §3. The orchestrator
-cards carry the standing-order wording.
+GraphQL on the hot path (`gh pr list` is GraphQL). Full recipe: `/vilya-chip` §3. The
+orchestrator cards carry the standing-order wording.
+
+**Cursor shell teardown (host limit):** long-running background shells are **mortal** — Cursor
+may reclaim or tear them down quietly; an armed `notify_on_output` watcher is not proof it is
+still alive. Teach **arm → assume mortal → re-arm** when the session notices death, after long
+idle gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is
+gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just
+to re-seed (re-seed `last-seen` every tick instead — #267). Same rule for chip-completion
+monitors, standing orch `plan:ready` pollers, and Planner intake watchers on Cursor. Claude
+Code's Monitor tool path stays host-specific — no false process-lifetime parity. ADR:
+`docs/DECISIONS.md` (`2026-07-19 — Cursor tears down long-running monitor shells`, #270).
 
 **GraphQL quota / board edits:** product orchestrators on the same GitHub user share **one**
 GraphQL bucket. Board Status moves are **rate-gated / best-effort** — when
@@ -227,17 +237,18 @@ API** (`GET …/dependencies/blocking` on the closed issue; each dependent's blo
 `…/dependencies/blocked_by`) — **no GraphQL**. When **all** of a dependent's blockers are
 closed, and the dependent has `night-shift:chain` ∧ `plan:ready`, not `needs:decision`,
 not `type:epic`, it applies `night-shift:ready` (and drops `night-shift:chain`). The
-night-shift skill stays **dumb** — eligibility read only; promotion is this workflow, not
+`/vilya-night-shift` stays **dumb** — eligibility read only; promotion is this workflow, not
 agent-side. Expectation: **one chain link per merge cycle**, not a full path per overnight
 run. Prep a chain: native blocked-by edges + `night-shift:chain` (+ `plan:ready`) on
 successors; do not invent body-text `Blocked-by:` conventions. REST issue-dependencies
 are on github.com (and GHE Cloud where available); not on GHES until those endpoints
 exist there.
 
-**Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via `/merge-pr`).
-Chip PRs are reviewed as each chip opens. Branches stay `feat|fix|docs/<issue#>-*`; after each
-PR, night-shift detaches its worktree so self-hosted `_work` does not accumulate — leftovers
-still go through `/prune` (including `_work` checkouts on the runner box).
+**Unlike chips:** night-shift PRs land **unreviewed** overnight (morning triage via
+`/vilya-merge-pr`). Chip PRs are reviewed as each chip opens. Branches stay
+`feat|fix|docs/<issue#>-*`; after each PR, night-shift detaches its worktree so self-hosted
+`_work` does not accumulate — leftovers still go through `/vilya-prune` (including `_work`
+checkouts on the runner box).
 
 | Topology | What you configure |
 |----------|-------------------|

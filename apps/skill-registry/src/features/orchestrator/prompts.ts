@@ -57,11 +57,19 @@ export const HOST_MONITOR_MECHANISMS =
   "Claude Code uses the Monitor tool; Cursor uses a background shell with notify_on_output on REST (pulls?head= + issue comments / labels — never gh project item-list / GraphQL on the hot path; gh pr list is GraphQL)";
 
 /**
+ * Cursor host limit — long-running notify_on_output shells are mortal.
+ * Shared by Cursor dispatch monitor + Planner board-monitor doctrine so chip
+ * and plan:ready pollers cannot drift on re-arm vs thrash (#270 / #267).
+ */
+export const CURSOR_SHELL_TEARDOWN_DOCTRINE =
+  "Cursor host limit: long-running background shells (notify_on_output watchers) are mortal — Cursor may reclaim or tear them down quietly; an armed monitor is not proof it is still alive. Teach arm → assume mortal → re-arm when the session notices death, after long idle gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do not arm-once-and-forget. Do not kill/re-arm after every successful drain just to re-seed (that thrash is the #267 anti-pattern — re-seed last-seen every tick instead). Claude Code Monitor tool path stays host-specific; do not pretend process-lifetime parity.";
+
+/**
  * Cursor same-turn dispatch monitor — REST + notify_on_output recipe.
  * Cursor has no Monitor tool; this watcher is the equivalent.
  */
 export const CURSOR_DISPATCH_MONITOR =
-  "In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso> for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path, and do not use gh pr list for the monitor (it is GraphQL; Projects GraphQL can burn the hourly budget in minutes). Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional updated_at); print a wake sentinel that matches notify_on_output only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.";
+  `In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso> for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path, and do not use gh pr list for the monitor (it is GraphQL; Projects GraphQL can burn the hourly budget in minutes). Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional updated_at); print a wake sentinel that matches notify_on_output only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. ${CURSOR_SHELL_TEARDOWN_DOCTRINE} That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.`;
 
 /**
  * Planner enqueue + board-Monitor doctrine shared by Claude Code and Cursor
@@ -71,7 +79,7 @@ export const CURSOR_DISPATCH_MONITOR =
  */
 export const PLANNER_ORCH_DOCTRINE = [
   "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
-  `When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session.`,
+  `When you enqueue needs:plan, in the same turn arm a board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session. Standing plan:ready pollers on Cursor absorb the same shell-teardown rule: ${CURSOR_SHELL_TEARDOWN_DOCTRINE}`,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
 ].join(" ");

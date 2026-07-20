@@ -2,6 +2,36 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
 
+## 2026-07-19 — Cursor tears down long-running monitor shells (#270)
+
+**Decision:** Treat Cursor's reclaim/teardown of long-running background shells as a
+**named host limit**. Orchestrator chip monitors, standing `plan:ready` pollers, and
+Planner intake watchers that use `notify_on_output` are **mortal**: arm → assume mortal →
+**re-arm** when the session notices death, after long idle gaps, or when an expected
+signal is missing (one REST check, then re-arm if the shell is gone). Do **not** teach
+arm-once-and-forget. Preserve the #267 complement: re-seed `last-seen` every tick; do
+**not** kill/re-arm after every successful drain. Claude Code's Monitor tool path stays
+host-specific — no false process-lifetime parity. (locked ops finding + Planner soft
+fork A, 2026-07-19).
+
+**Options considered:**
+1. **Short ADR + skill/prompt/canon teach (chosen)** — cost: one DECISIONS row + cross-skill
+   wording; durable across seats ← chosen
+2. Teaching-only, no `DECISIONS.md` row — cost: lower; issue body easier to lose
+
+**Why:** Ops saw a chip monitor for #259 armed then dead ~2 min (PID recycled, no wake).
+Seats were treating "armed" as "alive." Naming teardown + re-arm duty stops that without
+thrashing monitors every drain (#267).
+
+**Consequences:** Canon (`GITHUB-PROJECTS.md`), `planner-flow` teardown section, Cursor
+orchestrator standing orders (`CURSOR_DISPATCH_MONITOR` / `PLANNER_ORCH_DOCTRINE`),
+`/vilya-chip` §3 Cursor row, Planner intake complement, Differences monitor row. Does not
+fix Cursor itself; does not change ≥120s REST / no GraphQL hot path.
+
+**Evidence:** #270 (locked finding + kickoff); #259 (monitor died mid-chip); #267
+(persist-across-drains complement); #261 (standing orch `plan:ready` poller); #255
+(Planner intake); prior `2026-07-19 — Cursor REST chip monitor` teaching (#223/#237).
+
 ## 2026-07-19 — Prefix all Dev Loop skills with `vilya-` (#257)
 
 **Decision:** Every skill that ships from `jerrodtuck/vilya/skills/` is renamed so its folder name, frontmatter `name`, and slash invoke are `vilya-<skill>` (e.g. `/vilya-chip`, `/vilya-planner`, `/vilya-cursor-handoff`, `/vilya-crucible-nextjs`). Site pages, prompts, canon, install scripts, and cross-skill links update in the same effort. No nested `/vilya ` + space submenu — hosts expose flat skill names; typing `/vilya` filters by prefix. (decided by operator, 2026-07-19).
