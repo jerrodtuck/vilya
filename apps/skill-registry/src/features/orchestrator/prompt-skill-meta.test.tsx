@@ -1,11 +1,17 @@
-// #254: graduated orchestrator cards carry skill metadata for PromptList.
+// #254 / #268: graduated role cards carry skill metadata; orch seats must not
+// map skill → vilya-chip (chip is dispatch, not the orchestrator seat).
 import { describe, expect, it } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { SKILL_AFFORDANCE_LEAD } from "../../shared/skills/skill-affordance";
 import { SKILL_SLUGS } from "../../shared/skills/invokes";
+import { PromptList } from "../../shared/ui/prompt-list";
 import {
   CURSOR_ORCH_PROMPT_LABEL,
   CURSOR_WORKER_A_PROMPT_LABEL,
 } from "./cursor-dispatch";
 import { PROMPTS } from "./prompts";
+
+const CLAUDE_ORCH_LABEL = "Claude Code — orchestrator · spawn_task chips";
 
 function orchGroup() {
   const orch = PROMPTS.find((g) => g.node === "ORCH");
@@ -13,22 +19,40 @@ function orchGroup() {
   return orch!;
 }
 
-describe("orchestrator prompt skill metadata (#254)", () => {
-  it("maps Worker A + Claude chip dispatch; leaves Cursor orch paste-only", () => {
+describe("orchestrator prompt skill metadata (#254 / #268)", () => {
+  it("maps Worker A; leaves Claude + Cursor orch paste-only", () => {
     const orch = orchGroup();
     const workerA = orch.items.find((i) => i.label === CURSOR_WORKER_A_PROMPT_LABEL);
-    const chip = orch.items.find(
-      (i) => i.label === "Claude Code — orchestrator · spawn_task chips"
-    );
+    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_LABEL);
     const cursorOrch = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL);
     const workerB = orch.items.find(
       (i) => i.label === "Cursor — worker kickoff B · worker does its own setup"
     );
 
     expect(workerA?.skill).toBe(SKILL_SLUGS.cursorHandoff);
-    expect(chip?.skill).toBe(SKILL_SLUGS.chip);
+    expect(claudeOrch?.skill).toBeUndefined();
     expect(cursorOrch?.skill).toBeUndefined();
     expect(workerB?.skill).toBeUndefined();
+  });
+
+  it("never maps any ORCH standing-order item skill → vilya-chip", () => {
+    const orch = orchGroup();
+    for (const item of orch.items) {
+      expect(item.skill).not.toBe(SKILL_SLUGS.chip);
+    }
+  });
+
+  it("Claude orch card stays paste-only in PromptList (no chip affordance)", () => {
+    const orch = orchGroup();
+    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_LABEL)!;
+    // Render the seat alone — body doctrine may still name /vilya-chip as dispatch.
+    const html = renderToStaticMarkup(
+      <PromptList group={{ ...orch, items: [claudeOrch] }} />
+    );
+    expect(html).toContain(CLAUDE_ORCH_LABEL);
+    expect(html).not.toContain("pskill");
+    expect(html).not.toContain(SKILL_AFFORDANCE_LEAD);
+    expect(html).toContain("Copy");
   });
 
   it("maps process skill groups that already ship", () => {
