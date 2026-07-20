@@ -4,6 +4,7 @@ import {
   isCrucibleSlug,
   RECALL_SLUGS,
   SKILL_SLUGS,
+  STANDING_SESSION_SLUGS,
 } from "./invokes";
 import type { Skill, SkillCategory } from "./types";
 
@@ -40,8 +41,7 @@ export function stackOf(slug: string): string {
 export function invocationOf(skill: Skill): string {
   if (skill.frontmatter["disable-model-invocation"]) return "manual only";
   if (skill.slug === SKILL_SLUGS.nightShift) return "scheduler-fired";
-  if (skill.slug === SKILL_SLUGS.planner) return "standing session";
-  if (skill.slug === SKILL_SLUGS.architect) return "standing session";
+  if (STANDING_SESSION_SLUGS.has(skill.slug)) return "standing session";
   return "model + manual";
 }
 

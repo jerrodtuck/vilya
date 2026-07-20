@@ -12,6 +12,8 @@ export const SKILL_SLUGS = {
   nightShift: "vilya-night-shift",
   cursorHandoff: "vilya-cursor-handoff",
   architect: "vilya-architect",
+  orchestrator: "vilya-orchestrator",
+  orchestratorCursor: "vilya-orchestrator-cursor",
   history: "vilya-history",
   productMap: "vilya-product-map",
   adr: "vilya-adr",
@@ -30,6 +32,8 @@ export const SKILL_INVOKES = {
   nightShift: `/${SKILL_SLUGS.nightShift}`,
   cursorHandoff: `/${SKILL_SLUGS.cursorHandoff}`,
   architect: `/${SKILL_SLUGS.architect}`,
+  orchestrator: `/${SKILL_SLUGS.orchestrator}`,
+  orchestratorCursor: `/${SKILL_SLUGS.orchestratorCursor}`,
   history: `/${SKILL_SLUGS.history}`,
   productMap: `/${SKILL_SLUGS.productMap}`,
   adr: `/${SKILL_SLUGS.adr}`,
@@ -43,6 +47,14 @@ export const AUTONOMOUS_SLUGS = new Set<string>([
 export const RECALL_SLUGS = new Set<string>([
   SKILL_SLUGS.history,
   SKILL_SLUGS.productMap,
+]);
+
+/** Standing-session seats — invocationOf labels these distinctly from model+manual. */
+export const STANDING_SESSION_SLUGS = new Set<string>([
+  SKILL_SLUGS.planner,
+  SKILL_SLUGS.architect,
+  SKILL_SLUGS.orchestrator,
+  SKILL_SLUGS.orchestratorCursor,
 ]);
 
 export function isCrucibleSlug(slug: string): boolean {
