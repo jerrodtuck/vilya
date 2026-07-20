@@ -7,6 +7,7 @@
 // not copied, per #133.
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
+import { SKILL_SLUGS } from "../../shared/skills/invokes";
 import {
   CURSOR_DISPATCH_PANEL_ID,
   CURSOR_HANDOFF_SKILL,
@@ -89,6 +90,7 @@ export const PROMPTS: PromptGroup[] = [
       },
       {
         label: "Claude Code — orchestrator · spawn_task chips",
+        skill: SKILL_SLUGS.chip,
         text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (the architect, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
@@ -111,6 +113,7 @@ Your jobs: board/issue ops; enqueue Planner when needed (needs:plan + board Moni
 
       },
       {
+        // Ungraduated seat (#224) — paste-only until /vilya-orchestrator-cursor ships.
         id: CURSOR_ORCH_PROMPT_ID,
         label: CURSOR_ORCH_PROMPT_LABEL,
         text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (the architect, by contrast, is one seat per product board, spanning that product's repos).
@@ -137,6 +140,7 @@ Your job:
       {
         id: CURSOR_WORKER_A_PROMPT_ID,
         label: CURSOR_WORKER_A_PROMPT_LABEL,
+        skill: SKILL_SLUGS.cursorHandoff,
         text: "You're the implementer for issue #<N> (if unfilled, derive it from this worktree's branch: feat|fix|docs/<issue#>-slug), working only in this worktree. /vilya-start-feature already ran in the orchestrator session — issue, branch, worktree, and board Status are set; don't re-run it. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR — the orchestrator only sees the board. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vilya-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vilya-finish-feature — PR that Closes #<N>.",
       },
       {
@@ -145,10 +149,12 @@ Your job:
       },
       {
         label: "Prune worktrees (dry-run)",
+        skill: SKILL_SLUGS.prune,
         text: "From the main clone: /vilya-prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone). When a lock holder is detected on an eligible row, preview would kill PID … for <path>. Touch nothing — never kill on dry-run.",
       },
       {
         label: "Prune worktrees — apply",
+        skill: SKILL_SLUGS.prune,
         text: "From the main clone: /vilya-prune --apply — remove the eligible Cursor feature worktrees and paired local branches, then git fetch --prune. Skip dirty trees and anything with an open PR. Never run this from inside a worktree being removed. If Permission denied on an eligible row, identify cursor-agent-worker node.exe whose cmdline includes --worker-dir or that worktree path, kill those PIDs (--apply is the authorization — no second ask), report each kill (PID + path), and re-remove.",
       },
     ],
@@ -162,14 +168,17 @@ Your job:
     items: [
       {
         label: "New brief",
+        skill: SKILL_SLUGS.startFeature,
         text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first on the planning model (I pick it in the UI — not from GITHUB-PROJECTS.md). Give me the verify plan including merge routing (tests-only, local-smoke, or live-only). Then stop and ask me to switch to the execution model before coding — skip that stop if I'm already on the model I'll build with, or this is an unattended one-model run. Consult me at any fork. Close path: tests green → /vilya-crucible-<stack> → remediate → /vilya-finish-feature.",
       },
       {
         label: "Existing issue",
+        skill: SKILL_SLUGS.startFeature,
         text: "Pick up issue #<N> — set up the worktree and read the owning slice before you touch anything.",
       },
       {
         label: "Just go",
+        skill: SKILL_SLUGS.startFeature,
         text: "Work the next thing on the board — tell me which issue you're taking and why.",
       },
     ],
@@ -231,13 +240,19 @@ Your job:
     group: "/vilya-update-docs",
     c: "--docs",
     items: [
-      { label: "Route it", text: "Where does this go? <thing>" },
+      {
+        label: "Route it",
+        skill: SKILL_SLUGS.updateDocs,
+        text: "Where does this go? <thing>",
+      },
       {
         label: "Capture a bug",
+        skill: SKILL_SLUGS.updateDocs,
         text: "Capture this as its own linked bug and keep going on the current branch: <desc>.",
       },
       {
         label: "Log a decision",
+        skill: SKILL_SLUGS.updateDocs,
         text: "Log this design decision and reference it from the issue: <decision>.",
       },
     ],
@@ -249,10 +264,12 @@ Your job:
     items: [
       {
         label: "Ship it",
+        skill: SKILL_SLUGS.finishFeature,
         text: "Finish the feature — run the suites and report exact counts, rebase onto the default branch, write the changelog fragment, run /vilya-crucible-<stack> and remediate until the signal reads Ready, then open the PR that Closes #<N> with the crucible result in Verification.",
       },
       {
         label: "Live retest owed",
+        skill: SKILL_SLUGS.finishFeature,
         text: "Wrap it up, but a live retest is owed: open the PR with Refs #<N> and move it to Verifying instead of Done.",
       },
     ],
@@ -264,18 +281,22 @@ Your job:
     items: [
       {
         label: "Triage the queue",
+        skill: SKILL_SLUGS.mergePr,
         text: "What's open and mergeable? For each PR: CI status, the crucible signal and test counts from its Verification section, diff size — and whether it needs a local checkout or can merge on review alone.",
       },
       {
         label: "Checkout & test",
+        skill: SKILL_SLUGS.mergePr,
         text: "Check out PR #<N> in a throwaway worktree, run the repo's test command, and report exact counts — then remove the throwaway worktree.",
       },
       {
         label: "Manual smoke — set me up (optional)",
+        skill: SKILL_SLUGS.mergePr,
         text: "I want agent-prepped smoke for PR #<N>. Check it out in a throwaway worktree, launch it per the repo's Manual smoke config, and give me the click-path: which screen, which action, what correct looks like. Hold the merge until I call it good. (Default is I already smoked in the feature worktree — don't launch unless I ask.)",
       },
       {
         label: "Merge it",
+        skill: SKILL_SLUGS.mergePr,
         text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /vilya-prune from the main clone — do not delete the feature worktree from inside it. If prune hits Permission denied on an eligible row, follow /vilya-prune §5a — --apply kills matching cursor-agent-worker PIDs (no second ask) and re-removes.",
       },
     ],
@@ -342,6 +363,7 @@ Your job:
       },
       {
         label: "Reference — the standing prompt baked into the workflow",
+        skill: SKILL_SLUGS.nightShift,
         text: `Follow skills/vilya-night-shift/SKILL.md exactly on this product repo. For each eligible issue (${NIGHT_SHIFT_ELIGIBILITY}) run the daytime chain: /vilya-start-feature → implement → /vilya-crucible-<stack> → remediate → /vilya-finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Never promote night-shift:chain successors — chain-promote.yml owns that. Post the morning report.`,
       },
     ],
@@ -353,14 +375,17 @@ Your job:
     items: [
       {
         label: "Catch up on an issue",
+        skill: SKILL_SLUGS.history,
         text: "History of #<N> — what have we tried, in order, and what happened each time.",
       },
       {
         label: "Catch up on a topic",
+        skill: SKILL_SLUGS.history,
         text: "Catch me up on <area/topic>: find the related issues across open and closed, and give me the chronological what-we-tried.",
       },
       {
         label: "Before restarting work",
+        skill: SKILL_SLUGS.history,
         text: "Before I pick this back up — what did we do last on <topic>, and did any approach get reverted or superseded?",
       },
     ],

@@ -4,6 +4,10 @@ import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { getSkillDetail } from "./skill-detail";
 import { rewriteSkillLinks } from "./rewrite-links";
+import {
+  SKILL_AFFORDANCE_LEAD,
+  skillInvoke,
+} from "@/shared/skills/skill-affordance";
 import { stackOf, invocationOf, levelOf } from "@/shared/skills/meta";
 
 export function SkillView({ slug }: { slug: string }) {
@@ -28,6 +32,12 @@ export function SkillView({ slug }: { slug: string }) {
       {fm.description ? <p className="lead">{fm.description}</p> : null}
 
       <div className="fmpanel">
+        <div className="fmrow">
+          <span className="k">run</span>
+          <span className="v">
+            {SKILL_AFFORDANCE_LEAD} <code>{skillInvoke(skill.slug)}</code>.
+          </span>
+        </div>
         <div className="fmrow">
           <span className="k">invocation</span>
           <span className="v">{invocationOf(skill)}</span>

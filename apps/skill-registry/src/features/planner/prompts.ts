@@ -4,6 +4,7 @@
 // needs:plan → plan:ready, never implement/dispatch/merge).
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
+import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
 export const PROMPTS: PromptGroup[] = [
   {
@@ -14,6 +15,7 @@ export const PROMPTS: PromptGroup[] = [
     items: [
       {
         label: "Claude Code + Cursor — Planner (Fable)",
+        skill: SKILL_SLUGS.planner,
         text: `You're the Planner for this repo — the standing plan loop. One Planner seat per repo; this session is expected on Fable (claude --model fable or equivalent). Orchestrator + chips stay on Sonnet. You never implement, never dispatch chips (spawn_task / any session spawn), never merge, never arm monitors, and never edit feature code. Your output is a kickoff comment + verify plan (+ costed fork options when needed) on the issue, then the label transition needs:plan → plan:ready.
 
 Enqueue is opt-in: drain open issues labeled needs:plan (highest priority, then oldest). If the operator names an issue, plan that one — apply needs:plan if missing so the transition is visible. The operator does not paste each brief into this chat; the board queue is the brief list.
