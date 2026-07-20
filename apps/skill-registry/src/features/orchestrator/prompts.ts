@@ -49,17 +49,17 @@ export const LAB_RUNS_ARE_CHIPS_ASIDE =
   "What never runs here: lab/live probes and commits to master — those are chips (dispatch → monitor → verify-the-claim).";
 
 /**
- * Host-specific chip/board monitor mechanisms — shared by Planner enqueue
- * doctrine and (for Cursor) the dispatch standing-orders bullet so the two
- * cards cannot drift on "how to arm."
+ * Host-specific chip/board monitor mechanisms — shared by the standing
+ * plan:ready poller doctrine and (for Cursor) the dispatch standing-orders
+ * bullet so the cards cannot drift on "how to arm."
  */
 export const HOST_MONITOR_MECHANISMS =
   "Claude Code uses the Monitor tool; Cursor uses a background shell with notify_on_output on REST (pulls?head= + issue comments / labels — never gh project item-list / GraphQL on the hot path; gh pr list is GraphQL)";
 
 /**
  * Cursor host limit — long-running notify_on_output shells are mortal.
- * Shared by Cursor dispatch monitor + Planner board-monitor doctrine so chip
- * and plan:ready pollers cannot drift on re-arm vs thrash (#270 / #267).
+ * Shared by Cursor dispatch monitor + standing plan:ready poller so chip and
+ * plan:ready pollers cannot drift on re-arm vs thrash (#270 / #267).
  */
 export const CURSOR_SHELL_TEARDOWN_DOCTRINE =
   "Cursor host limit: long-running background shells (notify_on_output watchers) are mortal — Cursor may reclaim or tear them down quietly; an armed monitor is not proof it is still alive. Teach arm → assume mortal → re-arm when the session notices death, after long idle gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do not arm-once-and-forget. Do not kill/re-arm after every successful drain just to re-seed (that thrash is the #267 anti-pattern — re-seed last-seen every tick instead). Claude Code Monitor tool path stays host-specific; do not pretend process-lifetime parity.";
@@ -72,14 +72,22 @@ export const CURSOR_DISPATCH_MONITOR =
   `In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso> for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path, and do not use gh pr list for the monitor (it is GraphQL; Projects GraphQL can burn the hourly budget in minutes). Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional updated_at); print a wake sentinel that matches notify_on_output only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. ${CURSOR_SHELL_TEARDOWN_DOCTRINE} That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.`;
 
 /**
- * Planner enqueue + board-Monitor doctrine shared by Claude Code and Cursor
- * orchestrator standing orders so the two cards cannot drift.
+ * Orchestrator standing plan:ready poller — twin of Planner intake (#255).
+ * Required wake path; same-turn per-enqueue Monitor is reinforcement only.
+ * Shared by Claude + Cursor standing orders so the recipe cannot drift.
+ */
+export const ORCH_PLAN_READY_POLLER =
+  `At session start and when idle, arm one standing plan:ready poller (if none is running) so Planner finish wakes this session without relying on same-turn memory at needs:plan enqueue. Cadence ≥120s (not 60s / not ~90s). REST-first — never gh project item-list / GraphQL on the hot path (gh pr list is GraphQL). Each tick: re-fetch open issues with label:plan:ready state:open (gh api search/issues or equivalent REST); compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone. Host mechanisms: ${HOST_MONITOR_MECHANISMS}. Leave the poller running; re-seed last-seen every tick — do not kill/re-arm after every wake just to re-seed (#267). ${CURSOR_SHELL_TEARDOWN_DOCTRINE} Same-turn per-enqueue completion board Monitor for that issue (plan:ready and/or the plan kickoff comment) remains best-practice reinforcement, not the sole wake path. Never monitor the Planner process or session. Chip completion monitors stay per-dispatch. Intake polling for needs:plan is Planner-owned — you do not arm the Planner's queue wake.`;
+
+/**
+ * Planner enqueue + standing plan:ready poller doctrine shared by Claude Code
+ * and Cursor orchestrator standing orders so the two cards cannot drift.
  * Mechanism differs by host (see HOST_MONITOR_MECHANISMS); the side channel
  * is always the issue/PR — never the Planner process.
  */
 export const PLANNER_ORCH_DOCTRINE = [
   "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
-  `When you enqueue needs:plan, in the same turn arm a completion board Monitor for that issue — watch for plan:ready and/or the plan kickoff comment (label/plan comment side channel). Same monitor doctrine as chips: ${HOST_MONITOR_MECHANISMS}. Never monitor the Planner process or session. Intake polling for needs:plan is Planner-owned — you do not arm the Planner's queue wake. Standing plan:ready pollers on Cursor absorb the same shell-teardown rule: ${CURSOR_SHELL_TEARDOWN_DOCTRINE}`,
+  ORCH_PLAN_READY_POLLER,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
 ].join(" ");
@@ -117,7 +125,7 @@ One chip = one branch = one worktree = one session. Chips run on their own claud
 
 In the same turn as every chip dispatch — no exceptions — do two things: arm a Monitor — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop (a background task that only signals on process exit detects events in its output file but never notifies while the loop is still running) — watching REST for the chip's PR (gh api …/pulls?head=<owner>:<branch>&state=open, not gh pr list) and the issue for new comments (gh api …/issues/<N>/comments?since=<iso>), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR), and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should read truthfully the moment work is in flight; board edits follow GraphQL quota hygiene above). That monitor is the completion signal, and the chip's issue comment is what it picks up. mcp__ccd_session_mgmt__send_message always prompts the user for confirmation by product contract — no permission rule silences it — so never rely on it unattended; attended handoffs only. Backup checks when the monitor is quiet: list_sessions (prState/isRunning) or the same REST pulls/comments endpoints — still never gh pr list. Always verify before merge — a comment is a claim, not proof. Then review that chip's commits.
 
-Your jobs: board/issue ops; enqueue Planner when needed (needs:plan + board Monitor for plan:ready); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vilya-merge-pr (squash, never delete the branch); worktree cleanup via /vilya-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
+Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the standing plan:ready poller (per-enqueue board Monitor is reinforcement); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vilya-merge-pr (squash, never delete the branch); worktree cleanup via /vilya-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
 
       },
       {

@@ -118,13 +118,15 @@ recipe avoids kills entirely.
 
 ## Completion signal (orchestrator-owned)
 
-When the orchestrator (or operator) enqueues `needs:plan`, **they** arm a **completion
-board Monitor** for that issue watching `plan:ready` and/or this kickoff comment. Same
-doctrine as chips (side channel + host monitor — Claude Monitor tool or Cursor REST
-`notify_on_output`), different signal (label/plan comment, not a PR). On Cursor, that
-standing poller is **mortal** (host may tear down the shell) — orchestrator re-arms when
-dead / after long gaps / missing expected signal; do **not** kill/re-arm every drain
-(#270 / #267). Claude Code Monitor path stays host-specific.
+The orchestrator owns a **standing `plan:ready` poller** (session start / idle; REST +
+host wake; ≥120s; wake when the open set **gains** an issue) so this finish wakes them
+without relying on same-turn enqueue memory (#261). Same doctrine as chips (side channel
++ host monitor — Claude Monitor tool or Cursor REST `notify_on_output`), different signal
+(label/plan comment, not a PR). Same-turn per-enqueue board Monitor for that issue remains
+best-practice reinforcement, not the sole wake path. On Cursor, that standing poller is
+**mortal** (host may tear down the shell) — orchestrator re-arms when dead / after long
+gaps / missing expected signal; do **not** kill/re-arm every drain (#270 / #267). Claude
+Code Monitor path stays host-specific.
 
 ### Cursor intake poller liveness (complement)
 

@@ -26,7 +26,7 @@ Forks while planning: if the plan can finish with open forks for the implementer
 
 When the queue is empty, arm one Planner-owned intake Monitor so a new needs:plan wakes this session — do not wait for an operator ping. Leave that poller running across drains — do not kill/re-arm after every issue just to re-seed. Cursor: background shell + notify_on_output on REST (gh api search/issues for label:needs:plan state:open — never gh project item-list / GraphQL; do not use gh pr list). Claude Code: Monitor tool on the equivalent poll. Cadence ≥120s (not 60s / not ~90s). Every tick: fetch open needs:plan → gains vs last-seen → always set last-seen = current set (including empty); print a wake sentinel only when the set gains an issue. Removals re-seed via the assignment — no process restart. Host shell teardown / re-arm-when-dead is #270 — not this recipe.
 
-Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a completion board Monitor for plan:ready and/or this kickoff. On Cursor that standing poller is mortal (host may tear down notify_on_output shells) — re-arm when dead / after long gaps / missing expected signal; do not kill/re-arm every drain (#270 / #267). If this Planner session's own Cursor intake shell dies the same way, re-arm only then — leave it running across drains. Claude Code Monitor path stays host-specific. You arm intake only — never process/completion self-watches; you are not a chip. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
+Completion signal is orchestrator-owned: they arm a standing plan:ready poller (session start / idle; gain-only wake) so this finish wakes them without relying on same-turn enqueue memory; same-turn per-enqueue board Monitor is reinforcement only (#261). On Cursor that standing poller is mortal (host may tear down notify_on_output shells) — re-arm when dead / after long gaps / missing expected signal; do not kill/re-arm every drain (#270 / #267). If this Planner session's own Cursor intake shell dies the same way, re-arm only then — leave it running across drains. Claude Code Monitor path stays host-specific. You arm intake only — never process/completion self-watches; you are not a chip. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
       },
     ],
   },
@@ -70,7 +70,7 @@ Completion signal is orchestrator-owned: when they enqueue needs:plan they arm a
     items: [
       {
         label: "Close the drain step",
-        text: "Planner done on #<N> — kickoff + verify plan are on the issue and plan:ready is set. Orchestrator's completion board Monitor picks it up from here; nothing here became code. I did not arm a process/completion self-watch or spawn a chip — the intake Monitor stays running across drains.",
+        text: "Planner done on #<N> — kickoff + verify plan are on the issue and plan:ready is set. Orchestrator's standing plan:ready poller picks it up from here; nothing here became code. I did not arm a process/completion self-watch or spawn a chip — the intake Monitor stays running across drains.",
       },
     ],
   },

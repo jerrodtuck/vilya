@@ -6,6 +6,7 @@ import {
   CURSOR_SHELL_TEARDOWN_DOCTRINE,
   GRAPHQL_QUOTA_DOCTRINE,
   HOST_MONITOR_MECHANISMS,
+  ORCH_PLAN_READY_POLLER,
   PLANNER_ORCH_DOCTRINE,
   PROMPTS,
 } from "./prompts";
@@ -66,7 +67,22 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(HOST_MONITOR_MECHANISMS).toContain("notify_on_output");
     expect(HOST_MONITOR_MECHANISMS).toContain("never gh project item-list");
     expect(HOST_MONITOR_MECHANISMS).toContain("gh pr list is GraphQL");
+    expect(ORCH_PLAN_READY_POLLER).toContain(HOST_MONITOR_MECHANISMS);
     expect(PLANNER_ORCH_DOCTRINE).toContain(HOST_MONITOR_MECHANISMS);
+  });
+
+  it("standing plan:ready poller recipe is REST + gain-only + not sole-enqueue (#261)", () => {
+    expect(ORCH_PLAN_READY_POLLER).toContain("standing plan:ready poller");
+    expect(ORCH_PLAN_READY_POLLER).toMatch(/≥120s|>=120s/);
+    expect(ORCH_PLAN_READY_POLLER).toContain("label:plan:ready");
+    expect(ORCH_PLAN_READY_POLLER).toContain("wake sentinel");
+    expect(ORCH_PLAN_READY_POLLER).toContain("gains at least one issue number");
+    expect(ORCH_PLAN_READY_POLLER).toContain("never re-announce the same standing set");
+    expect(ORCH_PLAN_READY_POLLER).toContain("not the sole wake path");
+    expect(ORCH_PLAN_READY_POLLER).toContain("Never monitor the Planner process or session");
+    expect(ORCH_PLAN_READY_POLLER).toContain("Chip completion monitors stay per-dispatch");
+    expect(ORCH_PLAN_READY_POLLER).toMatch(/Intake polling for needs:plan is Planner-owned/i);
+    expect(PLANNER_ORCH_DOCTRINE).toContain(ORCH_PLAN_READY_POLLER);
   });
 
   it("Cursor shell teardown doctrine teaches mortal shells + re-arm without drain thrash (#270)", () => {
@@ -77,8 +93,8 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("kill/re-arm after every successful drain");
     expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("process-lifetime parity");
     expect(CURSOR_DISPATCH_MONITOR).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
+    expect(ORCH_PLAN_READY_POLLER).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
     expect(PLANNER_ORCH_DOCTRINE).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
-    expect(PLANNER_ORCH_DOCTRINE).toContain("Standing plan:ready pollers on Cursor");
   });
 });
 
