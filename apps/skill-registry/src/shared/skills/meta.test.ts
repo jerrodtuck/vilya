@@ -32,6 +32,8 @@ describe("categorize", () => {
     expect(categorize("vilya-product-map")).toBe("recall");
     expect(categorize("vilya-start-feature")).toBe("process");
     expect(categorize("vilya-architect")).toBe("process");
+    expect(categorize("vilya-orchestrator")).toBe("process");
+    expect(categorize("vilya-orchestrator-cursor")).toBe("process");
   });
 });
 
