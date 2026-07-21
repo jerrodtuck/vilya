@@ -1,23 +1,23 @@
-// Shared kernel: canonical skill slugs + slash invokes (vilya-* hard cut).
+// Shared kernel: canonical skill slugs + slash invokes (vl-* hard cut).
 // Teaching copy and meta helpers import from here so renames stay one edit.
 
 export const SKILL_SLUGS = {
-  chip: "vilya-chip",
-  startFeature: "vilya-start-feature",
-  finishFeature: "vilya-finish-feature",
-  mergePr: "vilya-merge-pr",
-  updateDocs: "vilya-update-docs",
-  prune: "vilya-prune",
-  planner: "vilya-plan",
-  nightShift: "vilya-night-shift",
-  cursorHandoff: "vilya-cursor-handoff",
-  architect: "vilya-arch",
-  orchestrator: "vilya-orch-claude",
-  orchestratorCursor: "vilya-orch-cursor",
-  askVilya: "vilya-ask-vilya",
-  history: "vilya-history",
-  productMap: "vilya-product-map",
-  adr: "vilya-adr",
+  chip: "vl-chip",
+  startFeature: "vl-start-feature",
+  finishFeature: "vl-finish-feature",
+  mergePr: "vl-merge-pr",
+  updateDocs: "vl-update-docs",
+  prune: "vl-prune",
+  planner: "vl-plan",
+  nightShift: "vl-night-shift",
+  cursorHandoff: "vl-cursor-handoff",
+  architect: "vl-arch",
+  orchestrator: "vl-orch-claude",
+  orchestratorCursor: "vl-orch-cursor",
+  askVilya: "vl-ask",
+  history: "vl-history",
+  productMap: "vl-product-map",
+  adr: "vl-adr",
 } as const;
 
 export type SkillSlug = (typeof SKILL_SLUGS)[keyof typeof SKILL_SLUGS];
@@ -60,5 +60,5 @@ export const STANDING_SESSION_SLUGS = new Set<string>([
 ]);
 
 export function isCrucibleSlug(slug: string): boolean {
-  return slug.startsWith("vilya-crucible");
+  return slug.startsWith("vl-crucible");
 }

@@ -1,4 +1,4 @@
-// #237 / #270: /vilya-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list;
+// #237 / #270: /vl-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list;
 // Cursor shells are mortal — re-arm without drain thrash.
 import fs from "node:fs";
 import path from "node:path";
@@ -7,14 +7,14 @@ import { describe, expect, it } from "vitest";
 function readChipSkill(): string {
   const bundled = path.resolve(
     process.cwd(),
-    "content/skills/vilya-chip/SKILL.md",
+    "content/skills/vl-chip/SKILL.md",
   );
-  const monorepo = path.resolve(process.cwd(), "../../skills/vilya-chip/SKILL.md");
+  const monorepo = path.resolve(process.cwd(), "../../skills/vl-chip/SKILL.md");
   const skillPath = fs.existsSync(bundled) ? bundled : monorepo;
   return fs.readFileSync(skillPath, "utf8");
 }
 
-describe("/vilya-chip REST monitor (#237)", () => {
+describe("/vl-chip REST monitor (#237)", () => {
   it("bans gh pr list and prescribes REST pulls + comments with ≥120s dedup", () => {
     const skill = readChipSkill();
     expect(skill).toContain("REST-only hot path");

@@ -20,7 +20,7 @@ Happy-path spine (left → right):
 2. **Runner** — self-hosted Windows Listener; fresh full-history clone in `_work`
 3. **Identity** — OIDC → Claude GitHub App (`claude[bot]`) + `CLAUDE_CODE_OAUTH_TOKEN`
 4. **Loop** — `claude-code-action@v1`, `timeout-minutes` + high `--max-turns`, Read/Write/Edit/Bash
-5. **Steering** — `skills/vilya-night-shift/SKILL.md` gates (`auto:ready` at ship; now `night-shift:ready`, crucible, `needs:decision`, never-merge)
+5. **Steering** — `skills/vl-night-shift/SKILL.md` gates (`auto:ready` at ship; now `night-shift:ready`, crucible, `needs:decision`, never-merge)
 6. **Outputs** — branch as `claude[bot]`, PR, board moves, morning report
 
 Safety / failure (visually distinct):

@@ -45,9 +45,9 @@ describe("Cursor Task/BoN dispatch (#285)", () => {
     expect(CURSOR_DISPATCH_FALLBACK_SUMMARY).toMatch(/Fallback.*Worker A/i);
   });
 
-  it("fallback Step 3 is run /vilya-cursor-handoff in the worktree", () => {
+  it("fallback Step 3 is run /vl-cursor-handoff in the worktree", () => {
     expect(CURSOR_DISPATCH_STEP3_LEAD).toBe("In the worktree, run");
-    expect(CURSOR_HANDOFF_SKILL).toBe("vilya-cursor-handoff");
+    expect(CURSOR_HANDOFF_SKILL).toBe("vl-cursor-handoff");
   });
 
   it("Cursor orch standing orders teach Task/BoN wake, not Worker-A-only", () => {

@@ -1,4 +1,4 @@
-// #254 / #278: Overview Ask Vilya card carries /vilya-ask-vilya skill metadata.
+// #254 / #278: Overview Ask Vilya card carries /vl-ask skill metadata.
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -10,7 +10,7 @@ import { PromptList } from "../../shared/ui/prompt-list";
 import { ASK_VILYA } from "./ask-vilya";
 
 describe("Ask Vilya prompt skill metadata (#278)", () => {
-  it("Route me card maps to vilya-ask-vilya and renders the affordance", () => {
+  it("Route me card maps to vl-ask and renders the affordance", () => {
     const card = ASK_VILYA.items[0];
     expect(card.skill).toBe(SKILL_SLUGS.askVilya);
 

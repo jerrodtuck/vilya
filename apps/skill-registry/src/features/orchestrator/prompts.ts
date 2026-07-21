@@ -31,7 +31,7 @@ export const NIGHT_SHIFT_CHAIN_PREP =
 /**
  * Shared GraphQL quota hygiene — Claude + Cursor orchestrator standing orders
  * compose this so product orchestrators cannot drift on the shared user bucket.
- * Chip-monitor cadence/dedup lives in /vilya-chip (§3) and CURSOR_DISPATCH_MONITOR.
+ * Chip-monitor cadence/dedup lives in /vl-chip (§3) and CURSOR_DISPATCH_MONITOR.
  */
 export const GRAPHQL_QUOTA_DOCTRINE =
   "GraphQL quota hygiene (Anduin + Vilya orchestrators share one user GraphQL bucket): board Status moves are rate-gated / best-effort — check gh api rate_limit; when graphql.remaining == 0, skip project item-edit/item-list and comment on the issue instead; never poll gh project item-list or retry GraphQL in a tight loop. Chip completion monitors are REST-first (gh api …/pulls?head=<owner>:<branch> + issue comments) — gh pr list is GraphQL, not REST. Mid-window: if GraphQL drains fast again, measure drain rate before blaming either orchestrator (ambient ~2/min vs a hot loop). Never kill the main-clone cursor-agent-worker as a leftover board-watch script — that PID is the live orchestrator worker.";
@@ -86,7 +86,7 @@ export const ORCH_PLAN_READY_POLLER =
  * is always the issue/PR — never the Planner process.
  */
 export const PLANNER_ORCH_DOCTRINE = [
-  "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-plan session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
+  "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vl-plan session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
   ORCH_PLAN_READY_POLLER,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
@@ -108,11 +108,11 @@ export const PROMPTS: PromptGroup[] = [
         text: "You're my implementation partner on this repo. House rules: vertical-slice architecture, outcome-oriented SOLID, one issue = one branch = one worktree. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs before implementing. Hold the crucible review bar and report progress honestly.",
       },
       {
-        // Graduated seat (#268) — skill → /vilya-orch-claude. Chip stays dispatch-only.
+        // Graduated seat (#268) — skill → /vl-orch-claude. Chip stays dispatch-only.
         host: "cc",
         label: CLAUDE_ORCH_PROMPT_LABEL,
         skill: SKILL_SLUGS.orchestrator,
-        text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
+        text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vl-arch, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
 
@@ -120,26 +120,26 @@ ${GRAPHQL_QUOTA_DOCTRINE}
 
 ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
 
-Every implementation, test, and remediation unit is dispatched as a chip by invoking the /vilya-chip skill — never call spawn_task directly; /vilya-chip owns the brief template so nothing gets freehanded. It produces a spawn_task call with:
+Every implementation, test, and remediation unit is dispatched as a chip by invoking the /vl-chip skill — never call spawn_task directly; /vl-chip owns the brief template so nothing gets freehanded. It produces a spawn_task call with:
 - title leads with the issue id — #<N> <concise-name> — so it's spottable in the UI.
 - tldr: one plain-English line.
 - cwd: the repo root (main clone).
-- prompt: a fully self-contained brief — the chip starts fresh in its own worktree with none of our conversation — carrying the task, acceptance criteria, owning slice, plan artifacts when plan:ready, the verify gate (or, for a docs/config chip with no test surface, a doc verify gate: links resolve, facts cross-checked against source), the close path: /vilya-crucible-<stack> until Ready → /vilya-finish-feature (PR titled #<N> <name>, Closes #<N>; no merge, no push to the default branch), plus the completion-report instruction: right after the PR opens — or when stopping at a fork/blocker, where the options comment is the report — post a concise gh issue comment on the chip's issue leading with PR # and gate results (never send_message). And the no-spawn_task rule: chips never call spawn_task or any session-spawning tool — deferred ideas go on the issue as a comment for you to triage.
+- prompt: a fully self-contained brief — the chip starts fresh in its own worktree with none of our conversation — carrying the task, acceptance criteria, owning slice, plan artifacts when plan:ready, the verify gate (or, for a docs/config chip with no test surface, a doc verify gate: links resolve, facts cross-checked against source), the close path: /vl-crucible-<stack> until Ready → /vl-finish-feature (PR titled #<N> <name>, Closes #<N>; no merge, no push to the default branch), plus the completion-report instruction: right after the PR opens — or when stopping at a fork/blocker, where the options comment is the report — post a concise gh issue comment on the chip's issue leading with PR # and gate results (never send_message). And the no-spawn_task rule: chips never call spawn_task or any session-spawning tool — deferred ideas go on the issue as a comment for you to triage.
 
 One chip = one branch = one worktree = one session. Chips run on their own claude/* branch and PR against the default branch — expected; don't fight it. Chips stay Sonnet via .claude/settings.local.json (gitignored; worktrees inherit via .worktreeinclude) — not orchestrator /model.
 
 In the same turn as every chip dispatch — no exceptions — do two things: arm a Monitor — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop (a background task that only signals on process exit detects events in its output file but never notifies while the loop is still running) — watching REST for the chip's PR (gh api …/pulls?head=<owner>:<branch>&state=open, not gh pr list) and the issue for new comments (gh api …/issues/<N>/comments?since=<iso>), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR), and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should read truthfully the moment work is in flight; board edits follow GraphQL quota hygiene above). That monitor is the completion signal, and the chip's issue comment is what it picks up. mcp__ccd_session_mgmt__send_message always prompts the user for confirmation by product contract — no permission rule silences it — so never rely on it unattended; attended handoffs only. Backup checks when the monitor is quiet: list_sessions (prState/isRunning) or the same REST pulls/comments endpoints — still never gh pr list. Always verify before merge — a comment is a claim, not proof. Then review that chip's commits.
 
-Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the standing plan:ready poller (per-enqueue board Monitor is reinforcement); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vilya-merge-pr (squash, never delete the branch); worktree cleanup via /vilya-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
+Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the standing plan:ready poller (per-enqueue board Monitor is reinforcement); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vl-merge-pr (squash, never delete the branch); worktree cleanup via /vl-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
 
       },
       {
-        // Graduated seat (#268) — skill → /vilya-orch-cursor. Chip stays dispatch-only.
+        // Graduated seat (#268) — skill → /vl-orch-cursor. Chip stays dispatch-only.
         host: "cursor",
         id: CURSOR_ORCH_PROMPT_ID,
         label: CURSOR_ORCH_PROMPT_LABEL,
         skill: SKILL_SLUGS.orchestratorCursor,
-        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Daytime default is Task/BoN worktree-first chips: Task return wakes this session; the Projects board, issues, and PRs remain the durable coordination channel (never invent a second channel). One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Daytime default is Task/BoN worktree-first chips: Task return wakes this session; the Projects board, issues, and PRs remain the durable coordination channel (never invent a second channel). One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vl-arch, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
 
@@ -149,51 +149,51 @@ ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
 
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
-- Kick off streams via /vilya-start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Optional plan first (operator picks the planning model in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime Planner is optional — enqueue needs:plan for night-shift / hard forks. Single-model chips skip a plan→execute model switch.
+- Kick off streams via /vl-start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Optional plan first (operator picks the planning model in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime Planner is optional — enqueue needs:plan for night-shift / hard forks. Single-model chips skip a plan→execute model switch.
 - Dispatch a Task/BoN chip in the existing worktree (or an explicit worktree-first ask / --worktree). Single-model OK; optional two-Task model split on the same worktree. Name every chip chat after its worktree folder — title exactly <issue#>-<slug>. Never assume Best-of-N isolates without a worktree ask.
 - Leave a self-contained kickoff on the issue — goal, constraints, owning slice, verify plan — written for a fresh chip with zero context. Do not implement in this chat.
 - Wake: Task return is the primary same-session signal; the chip must also post a gh issue completion comment (PR # + gate results). ${CURSOR_DISPATCH_MONITOR}
 - Chip hygiene: stop long-lived smoke / local-smoke servers before chip exit — no leftover next/dev processes. Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
-- Fallback when not using Task chips: operator opens the worktree and runs /vilya-cursor-handoff (Worker A). A and B are mutually exclusive; never teach Worker A as the daytime default.
+- Fallback when not using Task chips: operator opens the worktree and runs /vl-cursor-handoff (Worker A). A and B are mutually exclusive; never teach Worker A as the daytime default.
 - When a bug or question lands: at most one quick repro probe (to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose kickoff carries the investigation — root-causing runs in that chip's fresh context window, never in this chat. This chat's window is the pipeline's shared resource; if your probes start multiplying, that is the signal to stop and dispatch.
 - Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.
 - One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
-- After /vilya-merge-pr squash: you own /vilya-prune from the main clone (dry-run, then --apply). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean %USERPROFILE%\\.cursor\\worktrees\\<repo>.`,
+- After /vl-merge-pr squash: you own /vl-prune from the main clone (dry-run, then --apply). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean %USERPROFILE%\\.cursor\\worktrees\\<repo>.`,
       },
       {
         host: "cursor",
         id: CURSOR_WORKER_A_PROMPT_ID,
         label: CURSOR_WORKER_A_PROMPT_LABEL,
         skill: SKILL_SLUGS.cursorHandoff,
-        text: "You're the implementer for issue #<N> (if unfilled, derive it from this worktree's branch: feat|fix|docs/<issue#>-slug), working only in this worktree. /vilya-start-feature already ran in the orchestrator session — issue, branch, worktree, and board Status are set; don't re-run it. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR — the orchestrator only sees the board. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vilya-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vilya-finish-feature — PR that Closes #<N>.",
+        text: "You're the implementer for issue #<N> (if unfilled, derive it from this worktree's branch: feat|fix|docs/<issue#>-slug), working only in this worktree. /vl-start-feature already ran in the orchestrator session — issue, branch, worktree, and board Status are set; don't re-run it. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR — the orchestrator only sees the board. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vl-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vl-finish-feature — PR that Closes #<N>.",
       },
       {
         host: "cursor",
         label: "Cursor — worker kickoff B · worker does its own setup",
-        text: "You're the implementer for issue #<N>. No setup has run yet — run /vilya-start-feature on #<N> yourself: worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug, board Status to In Progress. Then do all feature work inside that worktree — never the main clone. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vilya-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vilya-finish-feature — PR that Closes #<N>.",
+        text: "You're the implementer for issue #<N>. No setup has run yet — run /vl-start-feature on #<N> yourself: worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug, board Status to In Progress. Then do all feature work inside that worktree — never the main clone. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vl-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vl-finish-feature — PR that Closes #<N>.",
       },
       {
         label: "Prune worktrees (dry-run)",
         skill: SKILL_SLUGS.prune,
-        text: "From the main clone: /vilya-prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone), plus gated Cursor probes (probe/* / *-probe-* / bon-probe-* / model-switch-probe-*) as eligible (probe). When a lock holder is detected on an eligible row, preview would kill PID … for <path>. Touch nothing — never kill on dry-run. Do not list arbitrary BoN / Parallel pools.",
+        text: "From the main clone: /vl-prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone), plus gated Cursor probes (probe/* / *-probe-* / bon-probe-* / model-switch-probe-*) as eligible (probe). When a lock holder is detected on an eligible row, preview would kill PID … for <path>. Touch nothing — never kill on dry-run. Do not list arbitrary BoN / Parallel pools.",
       },
       {
         label: "Prune worktrees — apply",
         skill: SKILL_SLUGS.prune,
-        text: "From the main clone: /vilya-prune --apply — remove the eligible Cursor feature worktrees, gated probe rows (eligible (probe)), and paired local branches, then git fetch --prune. Skip dirty trees, open PRs, and non-gated BoN pools. Never run this from inside a worktree being removed. If Permission denied on an eligible row, identify cursor-agent-worker node.exe whose cmdline includes --worker-dir or that worktree path, kill those PIDs (--apply is the authorization — no second ask), report each kill (PID + path), and re-remove.",
+        text: "From the main clone: /vl-prune --apply — remove the eligible Cursor feature worktrees, gated probe rows (eligible (probe)), and paired local branches, then git fetch --prune. Skip dirty trees, open PRs, and non-gated BoN pools. Never run this from inside a worktree being removed. If Permission denied on an eligible row, identify cursor-agent-worker node.exe whose cmdline includes --worker-dir or that worktree path, kill those PIDs (--apply is the authorization — no second ask), report each kill (PID + path), and re-remove.",
       },
     ],
     noteHtml: ORCH_NOTE_BY_HOST.cursor,
   },
   {
     node: "START",
-    group: "/vilya-start-feature",
+    group: "/vl-start-feature",
     c: "--start",
     items: [
       {
         label: "New brief",
         skill: SKILL_SLUGS.startFeature,
-        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first on the planning model (I pick it in the UI — not from GITHUB-PROJECTS.md). Give me the verify plan including merge routing (tests-only, local-smoke, or live-only). Then stop and ask me to switch to the execution model before coding — skip that stop if I'm already on the model I'll build with, or this is an unattended one-model run. Consult me at any fork. Close path: tests green → /vilya-crucible-<stack> → remediate → /vilya-finish-feature.",
+        text: "Start on: <brief>. Create the issue, add it to the board, branch feat/<n>-slug. Plan phase first on the planning model (I pick it in the UI — not from GITHUB-PROJECTS.md). Give me the verify plan including merge routing (tests-only, local-smoke, or live-only). Then stop and ask me to switch to the execution model before coding — skip that stop if I'm already on the model I'll build with, or this is an unattended one-model run. Consult me at any fork. Close path: tests green → /vl-crucible-<stack> → remediate → /vl-finish-feature.",
       },
       {
         label: "Existing issue",
@@ -261,7 +261,7 @@ Your job:
   },
   {
     node: "DOCS",
-    group: "/vilya-update-docs",
+    group: "/vl-update-docs",
     c: "--docs",
     items: [
       {
@@ -283,13 +283,13 @@ Your job:
   },
   {
     node: "FINISH",
-    group: "/vilya-finish-feature",
+    group: "/vl-finish-feature",
     c: "--finish",
     items: [
       {
         label: "Ship it",
         skill: SKILL_SLUGS.finishFeature,
-        text: "Finish the feature — run the suites and report exact counts, rebase onto the default branch, write the changelog fragment, run /vilya-crucible-<stack> and remediate until the signal reads Ready, then open the PR that Closes #<N> with the crucible result in Verification.",
+        text: "Finish the feature — run the suites and report exact counts, rebase onto the default branch, write the changelog fragment, run /vl-crucible-<stack> and remediate until the signal reads Ready, then open the PR that Closes #<N> with the crucible result in Verification.",
       },
       {
         label: "Live retest owed",
@@ -300,7 +300,7 @@ Your job:
   },
   {
     node: "MERGE",
-    group: "/vilya-merge-pr",
+    group: "/vl-merge-pr",
     c: "--merge",
     items: [
       {
@@ -321,11 +321,11 @@ Your job:
       {
         label: "Merge it",
         skill: SKILL_SLUGS.mergePr,
-        text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /vilya-prune from the main clone — do not delete the feature worktree from inside it. If prune hits Permission denied on an eligible row, follow /vilya-prune §5a — --apply kills matching cursor-agent-worker PIDs (no second ask) and re-removes.",
+        text: "Squash-merge PR #<N> and delete the remote branch. Confirm the issue moved to Done (or move it to Verifying if the PR used Refs #). Then hand off cleanup: tell me to /vl-prune from the main clone — do not delete the feature worktree from inside it. If prune hits Permission denied on an eligible row, follow /vl-prune §5a — --apply kills matching cursor-agent-worker PIDs (no second ask) and re-removes.",
       },
     ],
     noteHtml:
-      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never. Cleanup after squash is a handoff to <b>/vilya-prune</b> (orchestrator, main clone) — not an in-place delete from the feature worktree. Permission denied on folder delete → leftover <code>cursor-agent-worker</code>; <code>/vilya-prune --apply</code> kills matching PIDs for eligible rows (report PID + path).",
+      "Squash is the house method — one issue = one commit on the default branch. A merge commit is for the rare PR whose commit-by-commit history is the deliverable; rebase-merge never. Cleanup after squash is a handoff to <b>/vl-prune</b> (orchestrator, main clone) — not an in-place delete from the feature worktree. Permission denied on folder delete → leftover <code>cursor-agent-worker</code>; <code>/vl-prune --apply</code> kills matching PIDs for eligible rows (report PID + path).",
   },
   {
     node: "VERIFY",
@@ -388,7 +388,7 @@ Your job:
       {
         label: "Reference — the standing prompt baked into the workflow",
         skill: SKILL_SLUGS.nightShift,
-        text: `Follow skills/vilya-night-shift/SKILL.md exactly on this product repo. For each eligible issue (${NIGHT_SHIFT_ELIGIBILITY}) run the daytime chain: /vilya-start-feature → implement → /vilya-crucible-<stack> → remediate → /vilya-finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Never promote night-shift:chain successors — chain-promote.yml owns that. Post the morning report.`,
+        text: `Follow skills/vl-night-shift/SKILL.md exactly on this product repo. For each eligible issue (${NIGHT_SHIFT_ELIGIBILITY}) run the daytime chain: /vl-start-feature → implement → /vl-crucible-<stack> → remediate → /vl-finish-feature. Up to 3 issues. Stop at real design forks (needs:decision + Blocked). Never merge. Never promote night-shift:chain successors — chain-promote.yml owns that. Post the morning report.`,
       },
     ],
   },

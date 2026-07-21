@@ -14,7 +14,7 @@ describe("PromptList skill affordance (#254)", () => {
       items: [
         {
           label: "Worker A",
-          skill: "vilya-cursor-handoff",
+          skill: "vl-cursor-handoff",
           text: "paste fallback body",
         },
       ],
@@ -22,7 +22,7 @@ describe("PromptList skill affordance (#254)", () => {
     const html = renderToStaticMarkup(<PromptList group={group} />);
     expect(html).toContain("pskill");
     expect(html).toContain(SKILL_AFFORDANCE_LEAD);
-    expect(html).toContain(skillInvoke("vilya-cursor-handoff"));
+    expect(html).toContain(skillInvoke("vl-cursor-handoff"));
     expect(html).toContain("Copy");
     expect(html).toContain("paste fallback body");
   });

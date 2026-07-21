@@ -36,10 +36,10 @@ export const HOST_FLOWS: Record<
       "Enqueue Planner → plan:ready → spawn_task chip → completion comment → orch merge.",
     steps: [
       { id: "orch", label: "Orchestrator", blurb: "One seat per repo; owns dispatch + merge queue", board: "issue" },
-      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — standing /vilya-plan", board: "verify" },
+      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — standing /vl-plan", board: "verify" },
       { id: "chip", label: "spawn_task chip", blurb: "Own worktree + branch; Sonnet execute", board: "status" },
       { id: "done", label: "PR + comment", blurb: "Chip stops; Monitor wakes orch", board: "pr" },
-      { id: "merge", label: "Merge + prune", blurb: "Operator /vilya-merge-pr from main clone", board: "merge" },
+      { id: "merge", label: "Merge + prune", blurb: "Operator /vl-merge-pr from main clone", board: "merge" },
     ],
     advanced: [
       "Daytime may skip Planner when the issue is already clear — still not the Cursor two-Task story.",
@@ -56,7 +56,7 @@ export const HOST_FLOWS: Record<
       { id: "plan", label: "Plan (optional)", blurb: "In-session or orch kickoff; enqueue Planner for night-shift", board: "verify" },
       { id: "chip", label: "Task / BoN chip", blurb: "Explicit worktree-first ask (or --worktree)", board: "status" },
       { id: "done", label: "PR + comment", blurb: "Task returns + gh completion comment; REST notify is mortal", board: "pr" },
-      { id: "merge", label: "Merge + prune", blurb: "Operator /vilya-merge-pr from main clone", board: "merge" },
+      { id: "merge", label: "Merge + prune", blurb: "Operator /vl-merge-pr from main clone", board: "merge" },
     ],
     advanced: [
       "Optional two-Task model split on the same worktree (e.g. Grok → Composer). Same model for both is valid.",

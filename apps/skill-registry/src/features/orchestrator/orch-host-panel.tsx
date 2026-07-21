@@ -89,7 +89,7 @@ export function OrchHostPanel() {
           {" — "}
           {DESKTOP_HOST_LABEL[host]} orch skill.{" "}
           <b>Orchestrator</b> is the seat/job;{" "}
-          <code>/vilya-orch-claude</code> / <code>/vilya-orch-cursor</code> are
+          <code>/vl-orch-claude</code> / <code>/vl-orch-cursor</code> are
           which desktop skill. Host story:{" "}
           <Link href="/differences">Two desktops</Link>.
         </p>
@@ -134,7 +134,7 @@ export function OrchHostPanel() {
                 <b>Looped</b>
                 <span>
                   review → refactor → re-review runs until <code>Ready</code>,
-                  then auto-hands to <code>/vilya-finish-feature</code>. The inner
+                  then auto-hands to <code>/vl-finish-feature</code>. The inner
                   loop you can automate.
                 </span>
               </div>
