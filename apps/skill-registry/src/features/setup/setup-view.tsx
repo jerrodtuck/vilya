@@ -140,7 +140,10 @@ const CHIP_STEPS: SetupStep[] = [
         The session-liveness gate makes this safe: live / non-archived
         sessions are skipped automatically. On eligible rows,{" "}
         <code>--apply</code> also authorizes scoped kills of lock holders
-        whose cmdline names that worktree (dry-run only previews).
+        whose cmdline names that worktree (dry-run only previews). Scope also
+        includes gated Cursor probe trees (
+        <code>probe/*</code>, <code>*-probe-*</code>) when closed-out — not
+        arbitrary BoN / Parallel pools.
       </>
     ),
   },

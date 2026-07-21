@@ -175,12 +175,12 @@ Your job:
       {
         label: "Prune worktrees (dry-run)",
         skill: SKILL_SLUGS.prune,
-        text: "From the main clone: /vilya-prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone). When a lock holder is detected on an eligible row, preview would kill PID … for <path>. Touch nothing — never kill on dry-run.",
+        text: "From the main clone: /vilya-prune — list eligible %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-* folders and paired local branches (MERGED/CLOSED / remote gone), plus gated Cursor probes (probe/* / *-probe-* / bon-probe-* / model-switch-probe-*) as eligible (probe). When a lock holder is detected on an eligible row, preview would kill PID … for <path>. Touch nothing — never kill on dry-run. Do not list arbitrary BoN / Parallel pools.",
       },
       {
         label: "Prune worktrees — apply",
         skill: SKILL_SLUGS.prune,
-        text: "From the main clone: /vilya-prune --apply — remove the eligible Cursor feature worktrees and paired local branches, then git fetch --prune. Skip dirty trees and anything with an open PR. Never run this from inside a worktree being removed. If Permission denied on an eligible row, identify cursor-agent-worker node.exe whose cmdline includes --worker-dir or that worktree path, kill those PIDs (--apply is the authorization — no second ask), report each kill (PID + path), and re-remove.",
+        text: "From the main clone: /vilya-prune --apply — remove the eligible Cursor feature worktrees, gated probe rows (eligible (probe)), and paired local branches, then git fetch --prune. Skip dirty trees, open PRs, and non-gated BoN pools. Never run this from inside a worktree being removed. If Permission denied on an eligible row, identify cursor-agent-worker node.exe whose cmdline includes --worker-dir or that worktree path, kill those PIDs (--apply is the authorization — no second ask), report each kill (PID + path), and re-remove.",
       },
     ],
     noteHtml: ORCH_NOTE_BY_HOST.cursor,
