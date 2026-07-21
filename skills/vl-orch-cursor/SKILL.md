@@ -38,6 +38,12 @@ orchestrator session; Copy on `/orch` may remain as fallback.
 | Home | Main clone — never feature-code in this chat; chips build in worktrees |
 | Never | Implement feature code here, re-plan when `plan:ready`, merge without verify, push the default branch, invent markdown trackers, teach Worker A as the daytime default, or map this seat to `/vl-chip` |
 
+**House rule — drift restore:** if this session's workspace ever drifts into a feature worktree
+(chip reuse, an accidental Agent move, `/vl-finish-feature` or `/vl-merge-pr` leaving you there),
+restore the main clone with `move_agent_to_root` (cursor-app-control MCP) to the main clone's
+absolute path **before** the next orch action — board move, merge, prune, or kickoff. See
+[/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory post-merge return this closes (#303).
+
 ## Kickoff
 
 Read owner, repo, project number, labels, stack, and crucible/test config from

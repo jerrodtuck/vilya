@@ -2,6 +2,45 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-07-21 — Seats return to main clone after merge (#303)
+
+**Decision:** `/vl-merge-pr` and the two orch seats (`/vl-orch-cursor`, `/vl-orch-claude`) must
+**return to the repo's main clone** immediately after a successful squash-merge, or whenever the
+session's workspace/cwd has drifted into a feature worktree — before the turn ends, and before
+any further board/merge/prune/kickoff action. Cursor uses `move_agent_to_root`
+(cursor-app-control MCP); Claude Code leaves the feature worktree / re-opens the main clone's
+cwd. The existing "don't `git worktree remove` the tree you're standing in" warning stays as
+belt-and-suspenders, not the primary control. (decided by operator, 2026-07-21).
+
+**Options considered:**
+1. Keep the warn-only text (say so if you're stuck in the worktree) — cost: relies on the agent
+   noticing and reporting; #301 showed a merge-pr/orch session can just stay put until the
+   operator catches it ← rejected as primary
+2. **Mandatory return step in `/vl-merge-pr` §5 + house rule in both orch seats (chosen)** —
+   cost: one explicit step per merge, small skill-text addition ← chosen
+3. Automate via a hook/gate that refuses further orch tool calls until cwd equals the main clone
+   — cost: no reliable cross-host "current cwd" signal to gate on; overbuilt for a discipline
+   gap ← rejected (revisit if drift recurs after this ADR)
+
+**Why:** Failure museum — after the #301 squash-merge, the orch session stayed in the
+`301-worktreeinclude-shim` feature worktree until the operator manually caught it and called it
+out. The seats already warned against deleting the tree they stand in, but nothing told them to
+actively leave it. Returning is now mandatory: check main-clone-ness the moment merge succeeds,
+restore before the turn ends, and only then do board verification and hand `/vl-prune` off from
+the main clone.
+
+**Consequences:**
+- `/vl-merge-pr` §5 renamed "Return to main clone, then board + prune handoff"; honesty bar
+  gains a "merged ≠ returned" line.
+- `/vl-orch-cursor` and `/vl-orch-claude` Seat sections gain an explicit drift-restore house rule
+  citing the same failure mode.
+- `npm run sync:skills` mirrors these into the registry content.
+- No change to `/vl-prune`'s own "never remove the tree you stand in" gate — this ADR fixes the
+  step *before* prune, not prune itself.
+
+**Evidence:** #301 (`301-worktreeinclude-shim` squash-merge — orch session stayed put until the
+operator caught it); #303 (this fix); `cursor-app-control` MCP `move_agent_to_root` tool.
+
 ## 2026-07-21 — `.worktreeinclude` is the shared list; Cursor applies via shim (#301)
 
 **Decision:** Repo-root `.worktreeinclude` is the **single declarative list** of gitignored files to copy into new worktrees. Claude Code keeps native support. Cursor does **not** read that file natively — Vilya ships `scripts/apply-worktreeinclude.(ps1|sh)` plus `.cursor/worktrees.json`, and `/vl-start-feature` / Cursor orch run the same script after bare `git worktree add`. Copy only (no symlinks). (decided by operator, 2026-07-21).
