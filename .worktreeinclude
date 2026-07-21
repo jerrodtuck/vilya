@@ -1,1 +1,6 @@
+# Gitignored paths to copy into every new worktree.
+# Claude Code reads this file natively. Cursor + orch `git worktree add` apply it via
+# scripts/apply-worktreeinclude.(ps1|sh) (see .cursor/worktrees.json and /vl-start-feature).
+# Prefer explicit relative paths. Only matching gitignored files are copied.
+
 .claude/settings.local.json

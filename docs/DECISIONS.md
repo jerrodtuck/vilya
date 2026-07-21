@@ -2,6 +2,25 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-07-21 — `.worktreeinclude` is the shared list; Cursor applies via shim (#301)
+
+**Decision:** Repo-root `.worktreeinclude` is the **single declarative list** of gitignored files to copy into new worktrees. Claude Code keeps native support. Cursor does **not** read that file natively — Vilya ships `scripts/apply-worktreeinclude.(ps1|sh)` plus `.cursor/worktrees.json`, and `/vl-start-feature` / Cursor orch run the same script after bare `git worktree add`. Copy only (no symlinks). (decided by operator, 2026-07-21).
+
+**Options considered:**
+1. Dual inventories (`.worktreeinclude` + hand-maintained copy commands in `worktrees.json`) — cost: drift ← rejected
+2. Symlinks into worktrees — cost: Windows privileges; chip edits hit the main secrets file ← rejected
+3. **One `.worktreeinclude` + Cursor/orch adapter (chosen)** — cost: small committed shim; products copy scripts once ← chosen
+4. User-level global script as source of truth — cost: not portable with the repo ← rejected
+
+**Why:** Operators already know Claude's include file. Cursor's `worktrees.json` is imperative only; orch daytime trees use `git worktree add` and never run Cursor setup. One list + one adapter covers both desktops without a second inventory.
+
+**Consequences:**
+- Ship adapter scripts + `.cursor/worktrees.json` in Vilya; teach Setup / `/differences`.
+- `/vl-start-feature` and Cursor orch must run the adapter after creating a worktree.
+- Product repos adopt by copying the shim files and extending `.worktreeinclude` (e.g. `.env.local`).
+
+**Evidence:** Operator plan 2026-07-21; Claude worktrees docs (`.worktreeinclude`); Cursor worktrees docs (`worktrees.json`); `/differences` row on gitignored copy.
+
 ## 2026-07-21 — Operator-chat voice: `/vl-adhd`, seats load it (#295)
 
 **Decision:** Ship one Vilya skill `/vl-adhd` (ADHD kept in the slug), adapted from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) (MIT, credit upstream). Operator-facing chat from orch / arch / plan / merge-pr follows it; those seats load/apply the skill — the operator does not invoke it in the normal path. Chip briefs, ADRs, kickoffs, and PR Verification stay long-form. (decided by operator, 2026-07-21).

@@ -41,9 +41,15 @@ If the repo isn't already known, detect it:
    `git config core.longpaths true` on Windows / a new worktree.
    - Cursor daytime: `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>`
    - Prefer never coding in the main clone when a parallel stream exists.
-2. Non-trivial design → `docs/specs/<slug>.md` linked from the issue (design doc, not tracker).
+2. **Apply `.worktreeinclude`** after `git worktree add` (Cursor orch / bare git path). Claude
+   Code copies that file natively; Cursor's `.cursor/worktrees.json` only runs when Cursor
+   creates the tree. From the **main clone**:
+   - Windows: `powershell -NoProfile -File scripts/apply-worktreeinclude.ps1 -Dest <worktree> -Source <main-clone>`
+   - Unix: `bash scripts/apply-worktreeinclude.sh --dest <worktree> --source <main-clone>`
+   Prefer explicit paths in `.worktreeinclude` (`.env.local`, etc.). Copy only — no symlinks.
+3. Non-trivial design → `docs/specs/<slug>.md` linked from the issue (design doc, not tracker).
    Include **`Created: YYYY-MM-DD`** and the owning issue link in the spec body.
-3. Read the real architecture around the change — prefer the owning **vertical slice**. Do not
+4. Read the real architecture around the change — prefer the owning **vertical slice**. Do not
    invent layer-cake or dumping-ground folders (.NET `Controllers/`·`Services/`·`Repositories/`, or
    a flat `components/`·`utils/` in JS/TS) for a feature.
 

@@ -1,0 +1,4 @@
+{
+  "setup-worktree-windows": "../scripts/apply-worktreeinclude.ps1",
+  "setup-worktree-unix": "../scripts/apply-worktreeinclude.sh"
+}

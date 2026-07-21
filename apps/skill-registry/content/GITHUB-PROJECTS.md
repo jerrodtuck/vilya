@@ -233,6 +233,14 @@ board-watch script — that process is the live orchestrator worker.
 | `docs/specs/*.md`, `docs/design/*.md`, `docs/VISION.md` | Slow-moving. On create: `Created: YYYY-MM-DD` + owning issue. On material revise: bump `Last updated: YYYY-MM-DD`. |
 | `docs/project-tracking/changelog.d/YYYY-MM-DD-<slug>.md` | One fragment per PR — safe in parallel. Never edit assembled `CHANGELOG.md` on a feature branch. |
 
+**Gitignored locals into worktrees:** list paths once in repo-root `.worktreeinclude`
+(gitignore syntax; only ignored matches copy). Claude Code applies that file natively.
+Cursor applies the **same list** via `scripts/apply-worktreeinclude.(ps1|sh)` from
+`.cursor/worktrees.json`; after orch `git worktree add`, `/vl-start-feature` (and Cursor
+orch) run that script — Cursor setup does not fire on bare git worktrees. Product repos
+copy the shim from Vilya once, then only extend `.worktreeinclude` (e.g. `.env.local`).
+Teaching: site Setup + `/differences`.
+
 ### Night-shift via GitHub Actions
 
 Night-shift is **not** a second methodology. It runs the **same daytime chain** unattended on a
