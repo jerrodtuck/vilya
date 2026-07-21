@@ -1,6 +1,24 @@
 # Decisions
 
-Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
+Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
+
+## 2026-07-20 — Skill prefix hard-cut: `vilya-*` → `vl-*` (#289 / #280)
+
+**Decision:** Hard-cut rename every Dev Loop skill so folder name, frontmatter `name`, and slash invoke are `vl-<rest>` (e.g. `/vl-chip`, `/vl-orch-cursor`, `/vl-crucible-nextjs`). Front door shortens further: `vilya-ask-vilya` → `vl-ask` (drop the redundant product token in the slug; display copy may still say “Ask Vilya”). Keep the git repo `jerrodtuck/vilya` and the Dev Loop / Vilya site brand. No dual-name aliases. (decided by operator, 2026-07-20).
+
+**Options considered:**
+1. Dual install / alias both `vilya-*` and `vl-*` — cost: teaching drift; install ambiguity ← rejected
+2. **Hard-cut `vilya-*` → `vl-*` + front door `vl-ask` (chosen)** — cost: one-time sweep of skills, registry mirrors, site, tests, canon; operators re-run `install-skills` and remove stale `~/.claude/skills/vilya-*` junctions ← chosen
+3. Keep `vilya-ask-vilya` → `vl-ask-vilya` only — cost: redundant “vilya” in the shortest front-door slug ← rejected
+
+**Why:** Operator wants a shorter skill namespace. Slash browse still clusters under `/vl`; two letters instead of five. Front door `vl-ask` is the cold-read slug; product brand stays elsewhere.
+
+**Consequences:**
+- Live teaching surfaces (`skills/`, registry content, site prompts/tests, `GITHUB-PROJECTS.md`, specs status lines) use only `vl-*` invokes.
+- Historical `changelog.d/` and older ADR archaeology may keep `vilya-*` names.
+- After merge, re-run `scripts/install-skills.(ps1|sh)` and delete leftover `~/.claude/skills/vilya-*` junctions (rename breaks old junction targets; install leaves unmatched entries untouched).
+
+**Evidence:** #289 (locked scope 2026-07-20); epic #280; prior prefix ADR `2026-07-19 — Prefix all Dev Loop skills with vilya-` (#257); seat rename ADR `2026-07-20 — Seat skill rename: orch / arch / plan` (#283).
 
 ## 2026-07-20 — Prune gated Cursor probe worktrees (#287 / #280)
 

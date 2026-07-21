@@ -11,9 +11,9 @@ describe("night-shift Runbook (#200)", () => {
     expect(html).toContain("After sleep");
     expect(html).toContain("plan:ready");
     expect(html).toContain("night-shift:ready");
-    expect(html).toContain("/vilya-merge-pr");
+    expect(html).toContain("/vl-merge-pr");
     expect(html).toContain("chain-promote");
-    expect(html).toContain("/vilya-prune");
+    expect(html).toContain("/vl-prune");
     expect(html).toContain("ns-runbook");
   });
 });

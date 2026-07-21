@@ -16,7 +16,7 @@ const FULL_CONFIG = mergeConfig(emptyConfig(), {
   projectId: "PVT_abc",
   statusFieldId: "PVTSSF_xyz",
   stack: "blazor",
-  crucibleVariant: "vilya-crucible-blazor",
+  crucibleVariant: "vl-crucible-blazor",
   testCommand: "dotnet test",
   manualSmoke: "dotnet run",
   defaultBranch: "master",
@@ -41,7 +41,7 @@ describe("generateSlim", () => {
     expect(out).toContain("| Owner | `acme` |");
     expect(out).toContain("| Repo | `acme/widgets` |");
     expect(out).toContain("| **Stack** | `blazor` |");
-    expect(out).toContain("| **Crucible variant** | `vilya-crucible-blazor` |");
+    expect(out).toContain("| **Crucible variant** | `vl-crucible-blazor` |");
     expect(out).toContain("Todo:         aaa");
     expect(out).toContain("`area:api` · `area:ui`");
     expect(out).toContain("### Night-shift (per-repo)");
@@ -58,7 +58,7 @@ describe("generateSlim", () => {
     const out = generateSlim(emptyConfig());
     expect(out).toContain("`<owner>`");
     expect(out).toContain("`<owner>/<repo>`");
-    expect(out).toContain("vilya-crucible-<stack>");
+    expect(out).toContain("vl-crucible-<stack>");
     expect(out).toContain("`area:<slice>`");
     expect(out).toContain("<todo-id>");
     expect(out).not.toContain("jerrodtuck/widgets");

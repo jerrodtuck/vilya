@@ -33,7 +33,7 @@ export function Runbook() {
           <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
             <li>
               Triage the morning report; merge Ready PRs with{" "}
-              <code>/vilya-merge-pr</code>.
+              <code>/vl-merge-pr</code>.
             </li>
             <li>
               Answer forks and drop <code>needs:decision</code> when you decide.
@@ -45,7 +45,7 @@ export function Runbook() {
               for the following night.
             </li>
             <li>
-              Run <code>/vilya-prune</code> from the daytime clone (and Actions{" "}
+              Run <code>/vl-prune</code> from the daytime clone (and Actions{" "}
               <code>_work</code> if trees remain).
             </li>
           </ul>

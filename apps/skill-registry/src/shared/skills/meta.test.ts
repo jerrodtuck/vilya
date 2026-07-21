@@ -24,30 +24,30 @@ describe("levelOf", () => {
 });
 
 describe("categorize", () => {
-  it("buckets vilya-* slugs into review / autonomous / recall / process", () => {
-    expect(categorize("vilya-crucible-nextjs")).toBe("review");
-    expect(categorize("vilya-night-shift")).toBe("autonomous");
-    expect(categorize("vilya-plan")).toBe("autonomous");
-    expect(categorize("vilya-history")).toBe("recall");
-    expect(categorize("vilya-product-map")).toBe("recall");
-    expect(categorize("vilya-start-feature")).toBe("process");
-    expect(categorize("vilya-arch")).toBe("process");
-    expect(categorize("vilya-orch-claude")).toBe("process");
-    expect(categorize("vilya-orch-cursor")).toBe("process");
-    expect(categorize("vilya-ask-vilya")).toBe("process");
+  it("buckets vl-* slugs into review / autonomous / recall / process", () => {
+    expect(categorize("vl-crucible-nextjs")).toBe("review");
+    expect(categorize("vl-night-shift")).toBe("autonomous");
+    expect(categorize("vl-plan")).toBe("autonomous");
+    expect(categorize("vl-history")).toBe("recall");
+    expect(categorize("vl-product-map")).toBe("recall");
+    expect(categorize("vl-start-feature")).toBe("process");
+    expect(categorize("vl-arch")).toBe("process");
+    expect(categorize("vl-orch-claude")).toBe("process");
+    expect(categorize("vl-orch-cursor")).toBe("process");
+    expect(categorize("vl-ask")).toBe("process");
   });
 });
 
 describe("stackOf", () => {
   it("names every crucible dialect's stack", () => {
-    expect(stackOf("vilya-crucible-blazor")).toBe("Blazor / .NET");
-    expect(stackOf("vilya-crucible-nextjs")).toBe("Next.js / React");
-    expect(stackOf("vilya-crucible-fastapi")).toBe("FastAPI / Python");
-    expect(stackOf("vilya-crucible-django")).toBe("Django / Python");
-    expect(stackOf("vilya-crucible-ml")).toBe("Python ML / Data");
+    expect(stackOf("vl-crucible-blazor")).toBe("Blazor / .NET");
+    expect(stackOf("vl-crucible-nextjs")).toBe("Next.js / React");
+    expect(stackOf("vl-crucible-fastapi")).toBe("FastAPI / Python");
+    expect(stackOf("vl-crucible-django")).toBe("Django / Python");
+    expect(stackOf("vl-crucible-ml")).toBe("Python ML / Data");
   });
 
   it("falls back to any stack for process skills", () => {
-    expect(stackOf("vilya-start-feature")).toBe("any stack");
+    expect(stackOf("vl-start-feature")).toBe("any stack");
   });
 });

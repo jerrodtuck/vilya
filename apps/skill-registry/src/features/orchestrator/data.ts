@@ -19,7 +19,7 @@ export const NODES: Record<string, FlowNode> = {
     <p>Everything else — issue creation, labels, branch naming, board status, PR body — is mechanical and belongs to the skills.</p>`,
   },
   START: {
-    kicker: "/vilya-start-feature",
+    kicker: "/vl-start-feature",
     title: "Kick off the work",
     c: "--start",
     bodyHtml: `
@@ -40,10 +40,10 @@ export const NODES: Record<string, FlowNode> = {
     <ul><li>Feature logic lives in its <b>owning vertical slice</b> — no app-wide Controllers/Services/Repositories layer-cake.</li>
     <li>Shared kernel = contracts/ports only.</li>
     <li>No <code>ProjectReference</code> into a sibling product.</li></ul>
-    <p>Surfaced a bug here? → <code>/vilya-update-docs</code>, don't derail the branch.</p>`,
+    <p>Surfaced a bug here? → <code>/vl-update-docs</code>, don't derail the branch.</p>`,
   },
   REVIEW: {
-    kicker: "vilya-crucible-{blazor,nextjs}",
+    kicker: "vl-crucible-{blazor,nextjs}",
     title: "Refactor-oriented review",
     c: "--review",
     bodyHtml: `
@@ -61,7 +61,7 @@ export const NODES: Record<string, FlowNode> = {
     <p>This is the loop's turn of the crank: keep cycling until the signal reads <b>Ready</b>.</p>`,
   },
   FINISH: {
-    kicker: "/vilya-finish-feature",
+    kicker: "/vl-finish-feature",
     title: "Close it out",
     c: "--finish",
     bodyHtml: `
@@ -70,11 +70,11 @@ export const NODES: Record<string, FlowNode> = {
     <li>Rebase onto the fresh default branch.</li>
     <li>Spec + issue reflect shipped vs. remaining (follow-ups as issues).</li>
     <li>One <code>changelog.d/</code> fragment — never edit <code>CHANGELOG.md</code> on the branch.</li>
-    <li><b>Crucible — do not skip:</b> run <code>/vilya-crucible-&lt;stack&gt;</code>, remediate 🔴/🟠 until <b>Ready</b>.</li>
+    <li><b>Crucible — do not skip:</b> run <code>/vl-crucible-&lt;stack&gt;</code>, remediate 🔴/🟠 until <b>Ready</b>.</li>
     <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b> — crucible + remediations go in Verification.</li></ul>`,
   },
   MERGE: {
-    kicker: "/vilya-merge-pr",
+    kicker: "/vl-merge-pr",
     title: "Review & merge",
     c: "--merge",
     bodyHtml: `
@@ -84,8 +84,8 @@ export const NODES: Record<string, FlowNode> = {
     <li><b>Checkout owed?</b> Fastest: <code>gh pr checkout &lt;n&gt;</code>. Isolated: fetch <code>pull/&lt;n&gt;/head</code> into a <b>throwaway worktree</b>, run the repo's test command, remove it.</li>
     <li><b>Live-only</b> (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>
     <li><b>Squash, always</b> — one issue = one commit on the default branch: <code>gh pr merge --squash --delete-branch</code>. The PR body (with <code>Closes #</code>) becomes the commit message.</li>
-    <li>Confirm the board moved; <b>handoff to <code>/vilya-prune</code></b> from the main clone — do not delete the feature worktree from inside it. Cursor Archive / Claude delete do not own <code>%USERPROFILE%\\.cursor\\worktrees\\&lt;repo&gt;</code>.</li>
-    <li><b>Permission denied on folder delete?</b> Leftover <code>cursor-agent-worker</code> may hold <code>--worker-dir</code> — <code>/vilya-prune --apply</code> kills matching PIDs for eligible rows (no second ask; see <code>/vilya-prune</code> §5a).</li></ul>`,
+    <li>Confirm the board moved; <b>handoff to <code>/vl-prune</code></b> from the main clone — do not delete the feature worktree from inside it. Cursor Archive / Claude delete do not own <code>%USERPROFILE%\\.cursor\\worktrees\\&lt;repo&gt;</code>.</li>
+    <li><b>Permission denied on folder delete?</b> Leftover <code>cursor-agent-worker</code> may hold <code>--worker-dir</code> — <code>/vl-prune --apply</code> kills matching PIDs for eligible rows (no second ask; see <code>/vl-prune</code> §5a).</li></ul>`,
   },
   DONE: {
     kicker: "Merged",
@@ -121,7 +121,7 @@ export const NODES: Record<string, FlowNode> = {
     <p>After live confirmation → move to <b>Done</b>.</p>`,
   },
   DOCS: {
-    kicker: "/vilya-update-docs",
+    kicker: "/vl-update-docs",
     title: "The router",
     c: "--docs",
     bodyHtml: `
@@ -143,7 +143,7 @@ export const NODES: Record<string, FlowNode> = {
     title: "Epic + sub-issues",
     c: "--epic",
     bodyHtml: `
-    <p>A multi-stream initiative becomes an <b>Epic</b> with sub-issues. Start one sub-issue via <code>/vilya-start-feature</code>.</p>
+    <p>A multi-stream initiative becomes an <b>Epic</b> with sub-issues. Start one sub-issue via <code>/vl-start-feature</code>.</p>
     <p>This is your <b>parallelism primitive</b>: each sub-issue is an independent slice in its own worktree, so several can be in flight at once without stepping on each other.</p>`,
   },
 };
@@ -159,14 +159,14 @@ export const FLOWS: Record<string, FlowDef> = {
   happy: {
     label: "Happy path",
     descHtml:
-      "<b>Happy path.</b> <code>/vilya-start-feature</code> → implement in the slice → review → <code>/vilya-finish-feature</code> → <code>/vilya-merge-pr</code> → Done (then <code>/vilya-prune</code> from the main clone). The clean straight line.",
+      "<b>Happy path.</b> <code>/vl-start-feature</code> → implement in the slice → review → <code>/vl-finish-feature</code> → <code>/vl-merge-pr</code> → Done (then <code>/vl-prune</code> from the main clone). The clean straight line.",
     nodes: ["ORCH", "START", "IMPL", "REVIEW", "FINISH", "MERGE", "DONE"],
     edges: ["o-s", "s-i", "i-r", "r-f", "f-m", "m-d"],
   },
   merge: {
     label: "Merge a PR",
     descHtml:
-      "<b>Merge a PR.</b> An open PR — yours or night-shift's — gets triaged (CI, crucible signal, diff), operator-owned smoke when owed, then a squash merge: one issue, one commit on the default branch. Board → Done; worktree cleanup is <code>/vilya-prune</code> from the main clone.",
+      "<b>Merge a PR.</b> An open PR — yours or night-shift's — gets triaged (CI, crucible signal, diff), operator-owned smoke when owed, then a squash merge: one issue, one commit on the default branch. Board → Done; worktree cleanup is <code>/vl-prune</code> from the main clone.",
     nodes: ["FINISH", "MERGE", "DONE"],
     edges: ["f-m", "m-d"],
   },
@@ -244,7 +244,7 @@ export const DEFAULT_DRAWER: FlowNode = {
     <p>Pick any node in the map to see what that skill does, when you invoke it, and what it reads from the repo config. The whole ecosystem is designed so that <b>you make the decisions and the skills carry the mechanics.</b></p>
     <h4><span class="swatch" style="background:var(--start)"></span>The linear spine</h4>
     <ul>
-      <li><code>/vilya-start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/vilya-finish-feature</code> → <code>/vilya-merge-pr</code> → Done.</li>
+      <li><code>/vl-start-feature</code> → implement in the slice → <code>crucible</code> review → <code>/vl-finish-feature</code> → <code>/vl-merge-pr</code> → Done.</li>
       <li>Everything writes status to the <b>board</b> — that's your single source of truth.</li>
     </ul>
     <h4><span class="swatch" style="background:var(--review)"></span>The engine: review ↔ refactor</h4>

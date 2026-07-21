@@ -1,0 +1,70 @@
+---
+name: vl-finish-feature
+description: Close out a feature branch on any stack — tests green, PR that Closes the issue, spec status, changelog fragment. Use when the user says "wrap up", "finish the feature", "ship it", "open the PR", or the implementation work on an issue is done. Pairs with /vl-start-feature.
+---
+
+# Finish Feature (any stack)
+
+> Companion: [/vl-start-feature](../vl-start-feature/SKILL.md). Tracking + this repo's ids/labels:
+> `docs/project-tracking/GITHUB-PROJECTS.md`.
+
+Run in order. Repo / test command / label values come from this repo's `GITHUB-PROJECTS.md` config
+block. Nothing here is stack-specific — it drives .NET, Next.js, or any repo with a test command.
+
+## 1. Suites green — state the counts
+
+Run this repo's **Test command** from the `GITHUB-PROJECTS.md` config block — for example:
+
+```bash
+dotnet test                    # Blazor / .NET repo
+npm test && npm run build      # Next.js repo (typecheck/build counts too)
+```
+
+Report exact counts (and a clean typecheck/build where that's the gate). Name any pre-existing
+failures with evidence. Failing tests / build = not finished.
+
+## 2. Rebase onto the fresh default branch
+
+`git fetch origin` and rebase (or merge) onto `origin/<default-branch>`. Re-verify build/tests if it
+moved.
+
+## 3. Spec + issue reflect shipped vs remaining
+
+- Update `docs/specs/<slug>.md` status if present; bump **`Last updated: YYYY-MM-DD`** on that
+  revise.
+- Remaining work → follow-up issues on the board (not prose-only).
+- Do not claim Complete on unit tests alone when a live / integration retest is owed.
+
+## 4. One changelog fragment
+
+Write `docs/project-tracking/changelog.d/YYYY-MM-DD-<slug>.md`. **Never edit CHANGELOG.md** on the
+feature branch.
+
+## 5. Crucible review — run the skill
+
+**Do not skip.** Invoke the stack crucible skill and follow its output:
+
+- .NET / Blazor → `/vl-crucible-blazor` (skill: `vl-crucible-blazor`)
+- Next.js → `/vl-crucible-nextjs` (skill: `vl-crucible-nextjs`)
+
+Apply 🔴 blockers and 🟠 should-fix remediations; re-test. Proceed to the PR only when
+merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediations in the PR
+**Verification** section.
+
+## 6. Open the PR
+
+- **`Closes #` vs `Refs #` comes from the issue's declared merge routing** (verify plan from
+  `/vl-start-feature` step 5) — don't re-derive it here. No routing on the issue? Decide now, and
+  say in the PR that you did.
+- **Done-done** (`tests-only` / `local-smoke`): PR body includes `Closes #<issue>` — a
+  `local-smoke` still happens, pre-merge, in `/vl-merge-pr`.
+- **Live retest owed** (`live-only`): use `Refs #<issue>`; after merge move to **Verifying**;
+  close → Done only after live confirmation.
+- Structure: **Summary** · **Remaining / deferred** (linked issues) · **Verification** ·
+  **Operator actions**.
+- Do not merge from the task branch unless the operator asks — merging is the operator's move,
+  via [/vl-merge-pr](../vl-merge-pr/SKILL.md) (which hands worktree cleanup to [/vl-prune](../vl-prune/SKILL.md)).
+
+## Honesty bar
+
+Report failed tests, skipped steps, crucible findings not yet fixed, and "not live-verified" plainly.

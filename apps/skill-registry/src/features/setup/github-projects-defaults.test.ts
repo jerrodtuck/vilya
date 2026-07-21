@@ -33,7 +33,7 @@ describe("usualFill", () => {
   it("derives crucible from stack", () => {
     const parsed = mergeConfig(emptyConfig(), { stack: "blazor" });
     const filled = mergeConfig(parsed, usualFill(parsed));
-    expect(filled.crucibleVariant).toBe("vilya-crucible-blazor");
+    expect(filled.crucibleVariant).toBe("vl-crucible-blazor");
   });
 });
 
@@ -45,7 +45,7 @@ describe("suggestionFor", () => {
     );
     expect(suggestionFor("typeFieldLine", cfg)).toContain("Roadmap c3d24af8");
     expect(presetForStack("wpf-blazor-hybrid")?.crucibleVariant).toBe(
-      "vilya-crucible-blazor"
+      "vl-crucible-blazor"
     );
   });
 });

@@ -1,4 +1,4 @@
-// #254: Planner standing-orders card carries /vilya-plan skill metadata.
+// #254: Planner standing-orders card carries /vl-plan skill metadata.
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -10,7 +10,7 @@ import { PromptList } from "../../shared/ui/prompt-list";
 import { PROMPTS } from "./prompts";
 
 describe("planner prompt skill metadata (#254)", () => {
-  it("standing-orders card maps to vilya-plan and renders the affordance", () => {
+  it("standing-orders card maps to vl-plan and renders the affordance", () => {
     const plan = PROMPTS.find((g) => g.node === "PLAN");
     expect(plan).toBeDefined();
     const card = plan!.items[0];

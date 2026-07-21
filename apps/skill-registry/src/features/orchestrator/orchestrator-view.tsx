@@ -16,7 +16,7 @@ export function OrchestratorView() {
         </h1>
         <p className="lead">
           <b>Orchestrator</b> is the seat/job — dispatch, monitor, merge, prune.{" "}
-          <code>/vilya-orch-claude</code> and <code>/vilya-orch-cursor</code> are
+          <code>/vl-orch-claude</code> and <code>/vl-orch-cursor</code> are
           which desktop skill. Pick your host below; the skills are your
           instruments. Everything reports into one shared state: the GitHub
           Projects board. Click a <b>flow</b> to light its path, or click any{" "}
@@ -79,12 +79,12 @@ export function OrchestratorView() {
         <b>stack</b> · <b>test command</b> · <code>area:*</code>{" "}
         labels) from
         that repo&apos;s <code>GITHUB-PROJECTS.md</code>. Drop the process
-        skills + the matching <code>vilya-crucible-&lt;stack&gt;</code>{" "}
+        skills + the matching <code>vl-crucible-&lt;stack&gt;</code>{" "}
         into any repo
         and the whole loop works. &nbsp;·&nbsp; Instruments:{" "}
         <b>
-          /vilya-start-feature · /vilya-crucible-{"{blazor,nextjs}"} · /vilya-finish-feature ·
-          /vilya-merge-pr · /vilya-update-docs · /vilya-history · /vilya-night-shift
+          /vl-start-feature · /vl-crucible-{"{blazor,nextjs}"} · /vl-finish-feature ·
+          /vl-merge-pr · /vl-update-docs · /vl-history · /vl-night-shift
         </b>{" "}
         over the GitHub Projects board.
       </div>

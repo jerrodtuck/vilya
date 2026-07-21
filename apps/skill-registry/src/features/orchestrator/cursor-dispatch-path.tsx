@@ -34,7 +34,7 @@ export function CursorDispatchPath() {
           <span className="t">
             <b>Seat</b>{" "}
             <a href={`#${CURSOR_ORCH_PROMPT_ID}`}>{CURSOR_ORCH_PROMPT_LABEL}</a>{" "}
-            (<code>/vilya-orch-cursor</code>) on the main clone.
+            (<code>/vl-orch-cursor</code>) on the main clone.
             <small>
               Dispatch lock — board, worktrees, merge queue. Does not implement.
             </small>
@@ -45,7 +45,7 @@ export function CursorDispatchPath() {
           <span className="t">
             <b>Orch:</b> issue + worktree + kickoff (+ optional plan).
             <small>
-              <code>/vilya-start-feature</code> writes the brief on the issue.
+              <code>/vl-start-feature</code> writes the brief on the issue.
               Daytime Planner is optional — enqueue <code>needs:plan</code> for
               night-shift / hard forks.
             </small>
@@ -76,7 +76,7 @@ export function CursorDispatchPath() {
           <span className="n">5</span>
           <span className="t">
             <b>
-              <code>/vilya-merge-pr</code> → <code>/vilya-prune</code>
+              <code>/vl-merge-pr</code> → <code>/vl-prune</code>
             </b>{" "}
             from the main clone.
             <small>
@@ -106,7 +106,7 @@ export function CursorDispatchPath() {
               <a href={`#${CURSOR_ORCH_PROMPT_ID}`}>{CURSOR_ORCH_PROMPT_LABEL}</a>{" "}
               in the main-clone session.
               <small>
-                Seats the orchestrator. It runs <code>/vilya-start-feature</code>{" "}
+                Seats the orchestrator. It runs <code>/vl-start-feature</code>{" "}
                 and leaves the kickoff — it does not implement.
               </small>
             </span>
@@ -131,7 +131,7 @@ export function CursorDispatchPath() {
               <code>/{CURSOR_HANDOFF_SKILL}</code>.
               <small>
                 Worker A seat — already in the worktree; do not re-run{" "}
-                <code>/vilya-start-feature</code>.{" "}
+                <code>/vl-start-feature</code>.{" "}
                 <b>A and B are mutually exclusive.</b> Paste fallback:{" "}
                 <a href={`#${CURSOR_WORKER_A_PROMPT_ID}`}>
                   {CURSOR_WORKER_A_PROMPT_LABEL}

@@ -1,4 +1,4 @@
-// #287: gated Cursor probe eligibility for /vilya-prune — not arbitrary BoN pools.
+// #287: gated Cursor probe eligibility for /vl-prune — not arbitrary BoN pools.
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -12,11 +12,11 @@ import {
 function readPruneSkill(): string {
   const bundled = path.resolve(
     process.cwd(),
-    "content/skills/vilya-prune/SKILL.md",
+    "content/skills/vl-prune/SKILL.md",
   );
   const monorepo = path.resolve(
     process.cwd(),
-    "../../skills/vilya-prune/SKILL.md",
+    "../../skills/vl-prune/SKILL.md",
   );
   const skillPath = fs.existsSync(bundled) ? bundled : monorepo;
   return fs.readFileSync(skillPath, "utf8");

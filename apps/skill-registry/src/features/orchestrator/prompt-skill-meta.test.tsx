@@ -1,5 +1,5 @@
 // #254 / #268: graduated role cards carry skill metadata; orch seats must not
-// map skill → vilya-chip (chip is dispatch, not the orchestrator seat).
+// map skill → vl-chip (chip is dispatch, not the orchestrator seat).
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { skillInvoke, SKILL_AFFORDANCE_LEAD } from "../../shared/skills/skill-affordance";
@@ -34,17 +34,17 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
     expect(workerB?.skill).toBeUndefined();
   });
 
-  it("never maps any ORCH standing-order item skill → vilya-chip", () => {
+  it("never maps any ORCH standing-order item skill → vl-chip", () => {
     const orch = orchGroup();
     for (const item of orch.items) {
       expect(item.skill).not.toBe(SKILL_SLUGS.chip);
     }
   });
 
-  it("Claude orch card renders /vilya-orch-claude affordance (not chip)", () => {
+  it("Claude orch card renders /vl-orch-claude affordance (not chip)", () => {
     const orch = orchGroup();
     const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_PROMPT_LABEL)!;
-    // Render the seat alone — body doctrine may still name /vilya-chip as dispatch.
+    // Render the seat alone — body doctrine may still name /vl-chip as dispatch.
     const html = renderToStaticMarkup(
       <PromptList group={{ ...orch, items: [claudeOrch] }} />
     );
@@ -60,7 +60,7 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
     expect(html).toContain("Copy");
   });
 
-  it("Cursor orch card renders /vilya-orch-cursor affordance (not chip)", () => {
+  it("Cursor orch card renders /vl-orch-cursor affordance (not chip)", () => {
     const orch = orchGroup();
     const cursorOrch = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL)!;
     const html = renderToStaticMarkup(

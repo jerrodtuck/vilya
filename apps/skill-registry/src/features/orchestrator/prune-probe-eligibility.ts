@@ -1,5 +1,5 @@
 /**
- * #287 — gated Cursor probe shape for `/vilya-prune`.
+ * #287 — gated Cursor probe shape for `/vl-prune`.
  * Folder/branch matching only; closed-out / clean / not-cwd stay agent-side.
  */
 

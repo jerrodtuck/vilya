@@ -39,7 +39,7 @@ Closing one blocker may promote at most the dependents that were waiting only on
 | **Vilya** | Process canon (`GITHUB-PROJECTS.md` Chain promote), Autonomy label `night-shift:chain`, reusable template, this spec + ADR, skill/site teaching (#216) |
 | **Product repos** (e.g. Anduin) | Live `.github/workflows/chain-promote.yml` copied from the template; backfill native blocked-by on that board's chains |
 
-`/vilya-night-shift` stays **dumb**: eligibility read only (`night-shift:ready` ∧ `plan:ready`).
+`/vl-night-shift` stays **dumb**: eligibility read only (`night-shift:ready` ∧ `plan:ready`).
 It does not promote chain successors.
 
 ## Workflow template
