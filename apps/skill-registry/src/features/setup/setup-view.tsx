@@ -266,6 +266,17 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         table lives in the process canon (Vilya&apos;s{" "}
         <code>GITHUB-PROJECTS.md</code>), not in product config files.
       </p>
+      <p className="muted" style={{ lineHeight: 1.55, marginTop: 12 }}>
+        <b>Gitignored locals (.env, settings, SDK drops):</b> list paths once in
+        repo-root <code>.worktreeinclude</code> (gitignore syntax; only ignored
+        matches copy). Claude Code copies them natively. Cursor applies the{" "}
+        <b>same file</b> via <code>scripts/apply-worktreeinclude</code> wired
+        from <code>.cursor/worktrees.json</code>; orch daytime trees also run
+        that script after <code>git worktree add</code> (
+        <code>/vl-start-feature</code>). Product repos copy the shim from Vilya
+        once, then only extend <code>.worktreeinclude</code>. Details:{" "}
+        <a href="/differences">Differences</a>.
+      </p>
 
       <div className="note" style={{ marginTop: 16 }}>
         Overnight runs: full per-repo checklist on{" "}

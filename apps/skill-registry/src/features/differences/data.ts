@@ -18,9 +18,10 @@ export const DIFFERENCES: DifferenceRow[] = [
   {
     area: "Copy gitignored files into a fresh worktree",
     claudeCode: "`.worktreeinclude` — declarative gitignore-pattern list; copy is automatic",
-    cursor: "`.cursor/worktrees.json` — imperative; runs a `setup-worktree(-windows|-unix)` script you write",
+    cursor:
+      "Same `.worktreeinclude` list via Vilya shim: `.cursor/worktrees.json` runs `scripts/apply-worktreeinclude.(ps1|sh)`. Orch `git worktree add` must run that script too (`/vl-start-feature`) — Cursor setup does not fire on bare git worktrees.",
     certainty: "confirmed",
-    note: "Neither tool reads the other's file — a repo needing both (e.g. vendor SDK binaries) needs both configs, kept in sync by hand.",
+    note: "One list for both desktops. Cursor does not read `.worktreeinclude` natively — the shim + orch step apply it. Products copy the shim files once and only extend `.worktreeinclude`.",
     sources: [
       { label: "Claude Code — Worktrees", href: "https://code.claude.com/docs/en/worktrees" },
       { label: "Cursor — Worktrees", href: "https://cursor.com/docs/configuration/worktrees" },
