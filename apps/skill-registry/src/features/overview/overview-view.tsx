@@ -21,11 +21,12 @@ export function OverviewView() {
         turn you into the <b>architect</b> who sets direction, the{" "}
         <b>planner</b> who plans onto the board, and the{" "}
         <b>orchestrator</b> who dispatches it: one architect seat per product
-        board, one Planner and one orchestrator per repo. You point them by
-        day, decide at the forks, and keep the board honest. Night-shift runs
-        that <b>same</b> chain unattended. One{" "}
-        <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
-        speak the same skills.
+        board, one orchestrator per repo, and one Planner per repo on Claude
+        Code chip-flow (Cursor daytime Planner is optional — see{" "}
+        <Link href="/differences">Two desktops</Link>). You point them by day,
+        decide at the forks, and keep the board honest. Night-shift runs that{" "}
+        <b>same</b> chain unattended. One <code>GITHUB-PROJECTS.md</code> per
+        repo; Claude Code and Cursor both speak the same skills.
       </p>
 
       <div className="rolestrip" aria-label="Role order">
@@ -73,7 +74,7 @@ export function OverviewView() {
 
       <BoardStrip
         moversHref="#movers"
-        orchestratorHref="/orchestrator"
+        orchestratorHref="/orch"
         figure={<BoardScreenshot />}
         hint={
           <>
@@ -128,14 +129,14 @@ export function OverviewView() {
           </p>
           <span className="more">Open the planner map →</span>
         </Link>
-        <Link className="card" href="/orchestrator">
-          <h3>Orchestrator</h3>
+        <Link className="card" href="/orch">
+          <h3>Orch</h3>
           <p className="desc">
-            The interactive map. Light up any path — happy path,
+            The interactive map per desktop. Light up any path — happy path,
             review↔refactor loop, PR merge, consult forks, bug-mid-work,
             blocked, verifying, epic fan-out, night shift.
           </p>
-          <span className="more">Open the map →</span>
+          <span className="more">Open the orch map →</span>
         </Link>
         <Link className="card" href="/skills">
           <h3>Skills</h3>

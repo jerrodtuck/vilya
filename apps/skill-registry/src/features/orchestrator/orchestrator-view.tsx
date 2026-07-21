@@ -1,14 +1,10 @@
 // Feature slice: orchestrator — page composition (server component). The
-// interactive map is the client island; everything else renders on the server.
+// host toggle + map + path + prompt library live in OrchHostPanel (client).
 import Link from "next/link";
+import { Suspense } from "react";
 import { BoardStrip } from "@/shared/ui/board-strip";
-import { FlowMap } from "@/shared/ui/flow-map";
-import { PromptList } from "@/shared/ui/prompt-list";
 import { SITE_TAGLINE } from "@/shared/ui/site-tagline";
-import { CursorDispatchPath } from "./cursor-dispatch-path";
-import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
-import { EDGES, EDGE_LABELS, LENS_CONNECTOR, LENSES, NODE_GEOMS } from "./map-geometry";
-import { LAB_RUNS_ARE_CHIPS_ASIDE, PROMPTS } from "./prompts";
+import { OrchHostPanel } from "./orch-host-panel";
 
 export function OrchestratorView() {
   return (
@@ -16,13 +12,14 @@ export function OrchestratorView() {
       <header>
         <div className="eyebrow">{SITE_TAGLINE}</div>
         <h1>
-          <span className="you">You</span> are the orchestrator
+          <span className="you">You</span> are the orch
         </h1>
         <p className="lead">
-          The skills are your instruments. You don&apos;t write the boilerplate
-          — you point the skills, decide at the forks, and keep the board
-          honest. Everything reports into one shared state: the GitHub Projects
-          board. Click a <b>flow</b> to light its path, or click any{" "}
+          <b>Orchestrator</b> is the seat/job — dispatch, monitor, merge, prune.{" "}
+          <code>/vilya-orch-claude</code> and <code>/vilya-orch-cursor</code> are
+          which desktop skill. Pick your host below; the skills are your
+          instruments. Everything reports into one shared state: the GitHub
+          Projects board. Click a <b>flow</b> to light its path, or click any{" "}
           <b>node</b> to see what that skill does.
         </p>
         <div style={{ marginTop: 14 }}>
@@ -44,101 +41,9 @@ export function OrchestratorView() {
         }
       />
 
-      <FlowMap
-        nodes={NODES}
-        flows={FLOWS}
-        flowColors={FLOW_COLORS}
-        edges={EDGES}
-        edgeLabels={EDGE_LABELS}
-        nodeGeoms={NODE_GEOMS}
-        lenses={LENSES}
-        lensConnector={LENS_CONNECTOR}
-        defaultDrawer={DEFAULT_DRAWER}
-        prompts={PROMPTS}
-        ariaLabel="Skill orchestration map"
-        aside={
-          <div className="panel">
-            <div className="kicker">How you multitask</div>
-            <h3>Orchestrator modes</h3>
-            <p className="muted" style={{ margin: "8px 0 0", lineHeight: 1.5 }}>
-              {LAB_RUNS_ARE_CHIPS_ASIDE}
-            </p>
-            <div className="modes" style={{ marginTop: 12 }}>
-              <div className="mode" style={{ ["--m" as string]: "var(--start)" }}>
-                <b>Serial</b>
-                <span>
-                  One issue = one branch = one worktree. The default clean unit
-                  of work.
-                </span>
-              </div>
-              <div className="mode" style={{ ["--m" as string]: "var(--epic)" }}>
-                <b>Parallel (fan-out)</b>
-                <span>
-                  An Epic splits into sub-issues; each is an isolated slice in
-                  its own worktree. You context-switch between independent
-                  streams with no collisions.
-                </span>
-              </div>
-              <div className="mode" style={{ ["--m" as string]: "var(--review)" }}>
-                <b>Looped</b>
-                <span>
-                  review → refactor → re-review runs until <code>Ready</code>,
-                  then auto-hands to <code>/vilya-finish-feature</code>. The inner
-                  loop you can automate.
-                </span>
-              </div>
-              <div className="mode" style={{ ["--m" as string]: "var(--refactor)" }}>
-                <b>Parallel lenses</b>
-                <span>
-                  One review fans out into VSA · SOLID · stack · Simplify
-                  passes at once, then merges findings — faster than a single
-                  sweep.
-                </span>
-              </div>
-            </div>
-            <div className="kicker" style={{ marginTop: 16 }}>
-              Review output
-            </div>
-            <div className="sev">
-              <span className="sevpill" style={{ color: "#ff6b8a", borderColor: "#5c2e38" }}>
-                🔴 Blocker — merge waits
-              </span>
-              <span className="sevpill" style={{ color: "var(--refactor)", borderColor: "#5c4a2e" }}>
-                🟠 Should-fix
-              </span>
-              <span className="sevpill" style={{ color: "#e8d24f", borderColor: "#565028" }}>
-                🟡 Consider (stack)
-              </span>
-            </div>
-          </div>
-        }
-      />
-
-      <CursorDispatchPath />
-
-      <div className="panel" style={{ marginTop: 16 }}>
-        <div className="kicker">Copy-paste</div>
-        <h3>Orchestrator prompt library</h3>
-        <p className="muted" style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
-          The words you actually say to drive each skill. Fill the{" "}
-          <code>&lt;placeholders&gt;</code>{" "}
-          and paste. Every prompt also shows
-          up in its node&apos;s detail panel above — click <b>Copy</b> on any
-          of them.
-        </p>
-        <div className="lib">
-          {PROMPTS.map((g) => (
-            <div
-              key={g.group}
-              className={`libcard${g.wide ? " wide" : ""}`}
-              style={{ ["--lc" as string]: `var(${g.c})` }}
-            >
-              <h4>{g.group}</h4>
-              <PromptList group={g} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <Suspense fallback={<p className="muted">Loading orch desktop…</p>}>
+        <OrchHostPanel />
+      </Suspense>
 
       <div className="panel" style={{ marginTop: 16 }}>
         <div className="kicker">Autonomous · your runbook</div>

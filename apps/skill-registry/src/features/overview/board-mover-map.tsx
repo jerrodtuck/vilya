@@ -56,7 +56,7 @@ export function BoardMoverMap() {
         Seven transitions, one human touch.{" "}
         <Link href="/setup">Get this board on your repo</Link>
         <span className="board-sep"> · </span>
-        <Link href="/orchestrator">see who dispatches</Link>.
+        <Link href="/orch">see who dispatches</Link>.
       </div>
     </section>
   );

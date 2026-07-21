@@ -22,9 +22,12 @@ export function PlannerView() {
         <p className="lead">
           Your output is a kickoff + verify plan on the issue — never running
           code. Drain <code>needs:plan</code>, ground every brief in the owning
-          slice, and stop at forks that would make the kickoff wrong. Click a{" "}
-          <b>flow</b> to light its path, or click any <b>node</b> to see what
-          that step does.
+          slice, and stop at forks that would make the kickoff wrong. Required
+          for Claude Code chip-flow and night-shift prep;{" "}
+          <b>optional daytime on Cursor</b> (orch or in-session plan may write
+          the kickoff — see <Link href="/differences">Two desktops</Link>).
+          Click a <b>flow</b> to light its path, or click any <b>node</b> to see
+          what that step does.
         </p>
         <div style={{ marginTop: 14 }}>
           <Link className="setupbtn" href="/setup">
@@ -39,7 +42,7 @@ export function PlannerView() {
             Planner writes onto the same board every skill reports into —{" "}
             <code>needs:plan</code> in, kickoff + <code>plan:ready</code> out.
             The{" "}
-            <Link href="/orchestrator">orchestrator</Link> arms the Monitor;
+            <Link href="/orch">orch</Link> arms the Monitor;
             night-shift consumes <code>plan:ready</code> ∧{" "}
             <code>night-shift:ready</code>.
           </>
@@ -68,25 +71,25 @@ export function PlannerView() {
               >
                 <b>One Planner, one repo</b>
                 <span>
-                  Planning quality needs a pinned Fable session that owns that
-                  repo&apos;s <code>needs:plan</code> queue — not a chip and
-                  not the thin orchestrator. Two Planners on one repo means two
-                  writers to the same label queue and kickoff comments.
+                  When seated, planning quality needs a pinned Fable session that
+                  owns that repo&apos;s <code>needs:plan</code> queue — not a
+                  chip and not the thin orchestrator. Two Planners on one repo
+                  means two writers to the same label queue. Cursor daytime may
+                  skip seating Planner entirely.
                 </span>
               </div>
               <div
                 className="mode"
                 style={{ ["--m" as string]: "var(--orch)" }}
               >
-                <b>Beside the orchestrator</b>
+                <b>Beside the orch</b>
                 <span>
                   After{" "}
                   <Link href="/architect">Architect</Link> direction, before
                   (or beside){" "}
-                  <Link href="/orchestrator">Orchestrator</Link> dispatch.
-                  Planner plans onto the board; orchestrator dispatches chips
-                  that execute. Daytime may skip Planner when the issue is
-                  already clear.
+                  <Link href="/orch">Orch</Link> dispatch. Planner plans onto
+                  the board; orch dispatches chips that execute. Daytime may
+                  skip Planner when the issue is already clear.
                 </span>
               </div>
             </div>
@@ -121,7 +124,7 @@ export function PlannerView() {
       <div className="pagefoot">
         The planner never implements, dispatches, or merges — output is{" "}
         <b>kickoff · verify plan · plan:ready</b> on the board, for the{" "}
-        <Link href="/orchestrator">orchestrator</Link> (and night-shift) to
+        <Link href="/orch">orch</Link> (and night-shift) to
         pick up.
       </div>
     </>

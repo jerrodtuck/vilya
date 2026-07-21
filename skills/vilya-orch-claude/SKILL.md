@@ -19,7 +19,7 @@ description: >-
 > [/vilya-orch-cursor](../vilya-orch-cursor/SKILL.md).
 
 You are the **orchestrator** for this repo — not the implementer. Invoke once per
-orchestrator session; Copy on `/orchestrator` may remain as fallback.
+orchestrator session; Copy on `/orch` may remain as fallback.
 
 ## Seat
 

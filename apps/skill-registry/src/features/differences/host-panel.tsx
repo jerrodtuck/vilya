@@ -5,51 +5,49 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  DESKTOP_HOST_STORAGE_KEY,
+  parseDesktopHost,
+  type DesktopHostId,
+} from "@/shared/ui/desktop-host";
+import {
   FAILURE_MUSEUM,
   HOST_FLOWS,
   HOST_LABEL,
   SHARED_BOARD,
-  type HostId,
 } from "./host-story";
 import { DifferencesMatrix } from "./matrix";
-
-const STORAGE_KEY = "vilya-diff-host";
-
-function parseHost(value: string | null): HostId | null {
-  if (value === "cc" || value === "claude") return "cc";
-  if (value === "cursor" || value === "cur") return "cursor";
-  return null;
-}
 
 export function HostPanel() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const fromUrl = parseHost(searchParams.get("host"));
-  const [host, setHost] = useState<HostId>(fromUrl ?? "cc");
+  const fromUrl = parseDesktopHost(searchParams.get("host"));
+  const [host, setHost] = useState<DesktopHostId>(fromUrl ?? "cc");
 
   useEffect(() => {
     if (fromUrl) {
       setHost(fromUrl);
       try {
-        localStorage.setItem(STORAGE_KEY, fromUrl);
+        localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, fromUrl);
       } catch {
         /* ignore quota / private mode */
       }
       return;
     }
     try {
-      const stored = parseHost(localStorage.getItem(STORAGE_KEY));
+      const stored = parseDesktopHost(
+        localStorage.getItem(DESKTOP_HOST_STORAGE_KEY)
+      );
       if (stored) setHost(stored);
     } catch {
       /* ignore */
     }
   }, [fromUrl]);
 
-  function selectHost(next: HostId) {
+  function selectHost(next: DesktopHostId) {
     setHost(next);
     try {
-      localStorage.setItem(STORAGE_KEY, next);
+      localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, next);
     } catch {
       /* ignore */
     }

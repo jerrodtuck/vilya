@@ -1,7 +1,11 @@
-// #219 / #247 / #253: Cursor three-step path; Step 3 = /vilya-cursor-handoff in worktree.
+// #285: Cursor daytime Task/BoN primary; Worker A three-step is fallback.
+// Anchors from #219 / #247 / #253 remain for the collapsed fallback path.
 import { describe, expect, it } from "vitest";
 import {
+  CURSOR_DISPATCH_FALLBACK_SUMMARY,
   CURSOR_DISPATCH_PANEL_ID,
+  CURSOR_DISPATCH_PRIMARY_KICKER,
+  CURSOR_DISPATCH_PRIMARY_TITLE,
   CURSOR_DISPATCH_STEP3_LEAD,
   CURSOR_HANDOFF_SKILL,
   CURSOR_ORCH_PROMPT_ID,
@@ -17,7 +21,7 @@ function orchGroup() {
   return orch!;
 }
 
-describe("Cursor three-step dispatch (#219 / #247 / #253)", () => {
+describe("Cursor Task/BoN dispatch (#285)", () => {
   it("anchors orchestrator + Worker A paste cards for the path panel", () => {
     const orch = orchGroup();
     const orchKickoff = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL);
@@ -26,21 +30,42 @@ describe("Cursor three-step dispatch (#219 / #247 / #253)", () => {
     expect(workerA?.id).toBe(CURSOR_WORKER_A_PROMPT_ID);
   });
 
-  it("standing-orders intro points at the numbered Cursor path and /vilya-cursor-handoff", () => {
+  it("standing-orders intro points at Task/BoN primary and Worker A fallback", () => {
     const orch = orchGroup();
     expect(orch.introHtml).toContain(`#${CURSOR_DISPATCH_PANEL_ID}`);
-    expect(orch.introHtml).toContain("three-step");
+    expect(orch.introHtml).toMatch(/Task\/BoN/i);
+    expect(orch.introHtml).toMatch(/fallback/i);
     expect(orch.introHtml).toContain(`/${CURSOR_HANDOFF_SKILL}`);
-    expect(orch.introHtml).toMatch(/Step 3/i);
+    expect(orch.introHtml).not.toMatch(/three-step path/i);
   });
 
-  it("Step 3 is run /vilya-cursor-handoff in the worktree, not paste Worker A", () => {
+  it("primary path titles Task/BoN; Worker A is collapsed fallback", () => {
+    expect(CURSOR_DISPATCH_PRIMARY_KICKER).toMatch(/Task\/BoN/i);
+    expect(CURSOR_DISPATCH_PRIMARY_TITLE).toMatch(/Task\/BoN/i);
+    expect(CURSOR_DISPATCH_FALLBACK_SUMMARY).toMatch(/Fallback.*Worker A/i);
+  });
+
+  it("fallback Step 3 is run /vilya-cursor-handoff in the worktree", () => {
     expect(CURSOR_DISPATCH_STEP3_LEAD).toBe("In the worktree, run");
     expect(CURSOR_HANDOFF_SKILL).toBe("vilya-cursor-handoff");
+  });
+
+  it("Cursor orch standing orders teach Task/BoN wake, not Worker-A-only", () => {
+    const orch = orchGroup();
+    const cursorOrch = orch.items.find((i) => i.id === CURSOR_ORCH_PROMPT_ID);
+    expect(cursorOrch?.text).toMatch(/Task\/BoN/i);
+    expect(cursorOrch?.text).toMatch(/Task return/i);
+    expect(cursorOrch?.text).toMatch(/worktree-first/i);
+    expect(cursorOrch?.text).toMatch(/stop long-lived smoke/i);
+    expect(cursorOrch?.text).toMatch(/Fallback when not using Task chips/i);
+    expect(cursorOrch?.text).not.toMatch(
+      /I start a separate agent session on each worktree/i
+    );
   });
 
   it("keeps Worker A/B exclusivity on the standing-orders note", () => {
     const orch = orchGroup();
     expect(orch.noteHtml).toMatch(/Worker A and B are mutually exclusive/i);
+    expect(orch.noteHtml).toMatch(/Task\/BoN/i);
   });
 });
