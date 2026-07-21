@@ -142,9 +142,18 @@ The chip's `gh issue comment` (§2) is what the monitor picks up; no push channe
 Poll with `gh api` (REST). **Never** shell `gh pr list` or `gh project item-list` on the monitor
 hot path — both are GraphQL and burn the shared user bucket.
 
+**PR detection has two recipes — pick by dispatch path, not by host** (#293). The `head=` filter
+only works when the branch name embeds the issue number; it silently never matches otherwise:
+
+| Dispatch path | Branch embeds issue #? | PR-detection recipe |
+|---------------|-------------------------|----------------------|
+| Cursor daytime / night-shift (`feat\|fix\|docs/<issue#>-*` — baked in at worktree creation) | Yes | `GET /repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=open` |
+| Claude chips (`spawn_task`, random `claude/<adjective>-<name>-<hash>` branch) | **No** | `GET /repos/{owner}/{repo}/pulls?state=open`, then filter: `.[] \| select(.title \| startswith("#<N> "))` — titles are reliably `#<N> <name>` per §2's close-out (`/vl-finish-feature`), so title is the real signal when the branch carries no issue number |
+
+Issue-comment monitoring is **the same for both paths** — always by issue number, never by branch:
+
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=open` | chip PR appeared / number known |
 | `GET /repos/{owner}/{repo}/issues/{n}/comments?since={iso}` | new issue comments (or list + compare ids) |
 
 **Cadence:** **≥120s** between ticks (not 60s, not ~90s).
@@ -152,7 +161,8 @@ hot path — both are GraphQL and burn the shared user bucket.
 **Dedup guard** (required):
 
 1. On arm, seed `last_pr_number` (empty if none), `last_comment_id`, and optionally `updated_at`.
-2. Each tick, fetch the two REST endpoints above.
+2. Each tick, fetch this dispatch path's PR-detection recipe (table above) plus the issue-comments
+   endpoint.
 3. Print a **wake sentinel** (stdout line that matches Cursor `notify_on_output`, or that the
    Claude Monitor tool surfaces) **only when** the PR number appears/changes or a newer comment
    id arrives.
@@ -163,8 +173,8 @@ hot path — both are GraphQL and burn the shared user bucket.
 
 | Host | How to arm | Do not |
 |------|------------|--------|
-| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on a loop that shells the **REST** endpoints above (≥120s, dedup). If the Monitor shells `gh`, use only those REST calls. | An **exit-only** background shell watch loop (detects in the output file but never notifies while running); `gh pr list`; `gh project item-list` / GraphQL hot polls |
-| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on the same **REST** endpoints, **≥120s**, with the dedup guard above. Cursor has **no** Monitor tool — this watcher *is* the equivalent. **Host limit:** those shells are **mortal** — Cursor may tear them down quietly. Teach **arm → assume mortal → re-arm** when the session notices death, after long gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just to re-seed (re-seed `last-seen` every tick — #267). | `gh pr list` (GraphQL); `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes); exit-only watch loops; assuming process-lifetime parity with Claude's Monitor tool |
+| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on a loop that shells the **REST** recipe for the dispatch path above (≥120s, dedup) — `spawn_task` chips use the **title-match** PR recipe, never `head=`, since their branch carries no issue number. If the Monitor shells `gh`, use only those REST calls. | An **exit-only** background shell watch loop (detects in the output file but never notifies while running); `gh pr list`; `gh project item-list` / GraphQL hot polls; using the `head=` recipe on a Claude chip's random branch |
+| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on the same **REST** recipe, **≥120s**, with the dedup guard above — Cursor daytime/night-shift branches embed the issue #, so `head=` is correct here. Cursor has **no** Monitor tool — this watcher *is* the equivalent. **Host limit:** those shells are **mortal** — Cursor may tear them down quietly. Teach **arm → assume mortal → re-arm** when the session notices death, after long gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just to re-seed (re-seed `last-seen` every tick — #267). | `gh pr list` (GraphQL); `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes); exit-only watch loops; assuming process-lifetime parity with Claude's Monitor tool |
 
 Why not `send_message`: **`mcp__ccd_session_mgmt__send_message` always prompts the user for
 confirmation by product contract** — no permission rule silences it (twice-tested) — so it can
@@ -176,7 +186,7 @@ Backup checks when the monitor is quiet, and always before merge (same REST — 
 `gh pr list`):
 
 - Claude Code: `mcp__ccd_session_mgmt__list_sessions` (`prState` / `isRunning`), or REST
-  `pulls?head=` / issue comments
+  `pulls?state=open` + title-match / issue comments
 - Cursor: REST `pulls?head=` / issue comments (same side channel the watcher uses)
 
 When the PR is up, **review the chip's commits** against the verify + crucible bar before merge.

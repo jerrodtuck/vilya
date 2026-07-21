@@ -64,10 +64,13 @@ Anduin + Vilya orchestrators share one user GraphQL bucket: board Status moves a
 rate-gated / best-effort — check `gh api rate_limit`; when `graphql.remaining == 0`,
 skip project item-edit/item-list and comment on the issue instead; never poll
 `gh project item-list` or retry GraphQL in a tight loop. Chip completion monitors
-are REST-first (`gh api …/pulls?head=<owner>:<branch>` + issue comments) — `gh pr list`
-is GraphQL, not REST. Mid-window: if GraphQL drains fast again, measure drain rate
-before blaming either orchestrator. Never kill the main-clone `cursor-agent-worker`
-as a leftover board-watch script — that PID is the live orchestrator worker.
+are REST-first — `gh api …/pulls?state=open` filtered by title prefix `#<N> ` (not
+`head=<owner>:<branch>`: `spawn_task` chips land on a random `claude/*` branch with
+no issue number in it, so `head=` silently never matches — #293) + issue comments.
+`gh pr list` is GraphQL, not REST. Mid-window: if GraphQL drains fast again, measure
+drain rate before blaming either orchestrator. Never kill the main-clone
+`cursor-agent-worker` as a leftover board-watch script — that PID is the live
+orchestrator worker.
 
 ## Lab runs are chips
 
@@ -100,15 +103,16 @@ Sonnet via `.claude/settings.local.json` (gitignored; worktrees inherit via
 
 In the same turn as every chip dispatch — no exceptions — do two things:
 
-1. Arm a **Monitor** — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop — watching REST for the chip's PR (`gh api …/pulls?head=<owner>:<branch>&state=open`, not `gh pr list`) and the issue for new comments (`gh api …/issues/<N>/comments?since=<iso>`), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR).
+1. Arm a **Monitor** — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop — watching REST for the chip's PR (`gh api …/pulls?state=open`, then filter `.[] | select(.title | startswith("#<N> "))`; **not** `head=<owner>:<branch>` — the chip's `claude/*` branch carries no issue number, so `head=` never matches; not `gh pr list`) and the issue for new comments (`gh api …/issues/<N>/comments?since=<iso>`), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR).
 2. Move the issue to **In Progress** on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens; board edits follow GraphQL quota hygiene above).
 
 That monitor is the completion signal, and the chip's issue comment is what it picks
 up. `mcp__ccd_session_mgmt__send_message` always prompts the user for confirmation
 by product contract — no permission rule silences it — so never rely on it
 unattended; attended handoffs only. Backup checks when the monitor is quiet:
-`list_sessions` (prState/isRunning) or the same REST pulls/comments endpoints —
-still never `gh pr list`. Always verify before merge — a comment is a claim, not proof.
+`list_sessions` (prState/isRunning) or the same REST title-match pulls/comments
+endpoints — still never `gh pr list`. Always verify before merge — a comment is a
+claim, not proof.
 Then review that chip's commits.
 
 ## Jobs
