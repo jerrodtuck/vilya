@@ -92,8 +92,11 @@ function Expand-IncludePattern([string]$Root, [string]$Pattern) {
   $full = Join-Path $Root $norm
   if (-not (Test-Path -LiteralPath $full)) { return @() }
   $item = Get-Item -LiteralPath $full -Force
+  # Trailing /** : expand to files under the tree. The directory itself is often
+  # not gitignored (tracked README siblings) — only ignored files should copy.
   if ($item.PSIsContainer -and $recursiveDir) {
-    return @($item.FullName)
+    return @(Get-ChildItem -LiteralPath $full -Recurse -File -Force -ErrorAction SilentlyContinue |
+      ForEach-Object { $_.FullName })
   }
   return @($item.FullName)
 }
