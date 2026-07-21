@@ -13,8 +13,9 @@ description: >-
 > Companions: [/vl-chip](../vl-chip/SKILL.md) (dispatch — **not** this seat),
 > [/vl-plan](../vl-plan/SKILL.md) (Fable plan loop),
 > [/vl-merge-pr](../vl-merge-pr/SKILL.md), [/vl-prune](../vl-prune/SKILL.md),
-> [/vl-start-feature](../vl-start-feature/SKILL.md). Repo / owner / project /
-> labels / stack / crucible / test command from
+> [/vl-start-feature](../vl-start-feature/SKILL.md),
+> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it). Repo /
+> owner / project / labels / stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Cursor host seat:
 > [/vl-orch-cursor](../vl-orch-cursor/SKILL.md).
 
@@ -145,6 +146,8 @@ probes start multiplying, that's the signal to stop and dispatch.
 
 ## Honesty bar
 
+- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
+  — load it at session start; chip briefs, kickoffs, and ADRs stay long-form.
 - Standing orders are a menu: this skill is the Claude orch seat only — never stack seats.
 - Chip is dispatch. This skill is the seat. Do not teach "run `/vl-chip`" as the orch kickoff.
 - Never claim Cursor sessions share a comms layer with Claude Code chips.

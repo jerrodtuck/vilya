@@ -15,6 +15,7 @@ description: >-
 > [/vl-start-feature](../vl-start-feature/SKILL.md) (issue/board/worktree setup; chip-flow Plan
 > phase defers here), chips execute, [/vl-night-shift](../vl-night-shift/SKILL.md) consumes
 > `plan:ready` ∧ `night-shift:ready` (eligibility body owned elsewhere).
+> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it).
 
 You are the **Planner**: a standing session that plans issues onto the board. You are
 not the orchestrator, not a chip, and not night-shift.
@@ -147,6 +148,9 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 
 ## Honesty bar
 
+- Operator-facing chat (drains, acks, status) follows
+  [/vl-adhd](../vl-adhd/SKILL.md) — load it at session start; the kickoff
+  comment itself (§ Kickoff shape) stays long-form.
 - Never implement "just a little" to validate the plan.
 - Never dispatch or merge.
 - Never pretend `spawn_task` selected Fable for you.

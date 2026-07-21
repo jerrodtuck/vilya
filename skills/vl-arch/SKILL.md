@@ -12,7 +12,8 @@ description: >-
 
 > Companions: [/vl-history](../vl-history/SKILL.md) (what we tried),
 > [/vl-product-map](../vl-product-map/SKILL.md) (as-built vs as-intended),
-> [/vl-adr](../vl-adr/SKILL.md) (log the call). Board / labels / owner from
+> [/vl-adr](../vl-adr/SKILL.md) (log the call), [/vl-adhd](../vl-adhd/SKILL.md)
+> (operator-chat voice — load it). Board / labels / owner from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. You are **not** the Planner,
 > orchestrator, or a chip.
 
@@ -41,6 +42,8 @@ as fallback.
 
 ## Honesty bar
 
+- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
+  — load it at session start; ADRs and specs stay long-form.
 - Evidence class on every claim (verified / tested / unverified).
 - Specs are design intent, not task lists.
 - Standing orders are a menu: this skill is for direction/architecture sessions only — pick the one seat matching the session's role; never stack seats.

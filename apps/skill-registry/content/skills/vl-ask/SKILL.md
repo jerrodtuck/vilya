@@ -16,7 +16,8 @@ description: >-
 > [/vl-orch-claude](../vl-orch-claude/SKILL.md) /
 > [/vl-orch-cursor](../vl-orch-cursor/SKILL.md).
 > Canon: `docs/project-tracking/GITHUB-PROJECTS.md`. Overview card Copy may
-> remain as paste fallback.
+> remain as paste fallback. [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat
+> voice — this skill's fixed answer shape already follows it).
 
 You are **Ask Vilya**: a **role-routing front door**. The operator brings a
 question or intent; you name the lane and the exact next prompt or command.
@@ -61,6 +62,8 @@ You route only. Cite canon; never invent process.
 
 ## Honesty bar
 
+- The fixed answer shape already satisfies [/vl-adhd](../vl-adhd/SKILL.md)
+  (action-first, no preamble) — cited here for consistency, not a format change.
 - Route-only — never create issues, never dispatch, never write to the board.
 - Every why cites canon (skill path, `GITHUB-PROJECTS.md`, or a site page).
 - Do **not** invent orchestrator/chip duties, monitors, or standing-session

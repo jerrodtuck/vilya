@@ -16,7 +16,8 @@ description: >-
 > (Worker A **fallback** when not using Task chips),
 > [/vl-plan](../vl-plan/SKILL.md) (optional daytime; required for
 > night-shift prep), [/vl-merge-pr](../vl-merge-pr/SKILL.md),
-> [/vl-prune](../vl-prune/SKILL.md). Repo / owner / project / labels /
+> [/vl-prune](../vl-prune/SKILL.md), [/vl-adhd](../vl-adhd/SKILL.md)
+> (operator-chat voice — load it). Repo / owner / project / labels /
 > stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Claude host seat:
 > [/vl-orch-claude](../vl-orch-claude/SKILL.md). Chip dispatch
@@ -114,6 +115,8 @@ no leftover `next`/`dev` processes.
 
 ## Honesty bar
 
+- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
+  — load it at session start; chip briefs, kickoffs, and ADRs stay long-form.
 - Standing orders are a menu: this skill is the Cursor orch seat only — never stack seats.
 - Do **not** teach three-step Worker A as the daytime default — Task/BoN is primary.
 - Worker A and B are mutually exclusive per issue. If this seat already ran `/vl-start-feature`, the fallback worker uses A — never B.

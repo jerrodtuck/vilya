@@ -2,6 +2,26 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-07-21 — Operator-chat voice: `/vl-adhd`, seats load it (#295)
+
+**Decision:** Ship one Vilya skill `/vl-adhd` (ADHD kept in the slug), adapted from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) (MIT, credit upstream). Operator-facing chat from orch / arch / plan / merge-pr follows it; those seats load/apply the skill — the operator does not invoke it in the normal path. Chip briefs, ADRs, kickoffs, and PR Verification stay long-form. (decided by operator, 2026-07-21).
+
+**Options considered:**
+1. Install upstream `/i-have-adhd` only (invoke yourself each session) — cost: easy to forget; not in Vilya install-skills; seats still essay ← rejected
+2. Host-only always-apply (Cursor rule + CLAUDE.md) — cost: not shipped by Vilya; Claude/Cursor drift ← rejected as primary
+3. **One `/vl-adhd` skill + seat honesty bars load it (chosen)** — cost: one new skill + short citations in seat honesty bars; registry mirror ← chosen
+4. Heavier "Operator channel" + separate smoke-card product — cost: overbuilt for the ask ← rejected
+
+**Why:** Operator wants ADHD-friendly voice baked into Vilya when agents talk *to them* (smoke handoffs, orch/arch/plan replies). Invoke-only fails when seats forget. Audience split keeps chip/board artifacts useful. Slug may keep `adhd` — clarity over euphemism for this personal Dev Loop.
+
+**Consequences:**
+- Add `skills/vl-adhd/SKILL.md` (+ registry content mirror).
+- Honesty bars: `/vl-orch-claude`, `/vl-orch-cursor`, `/vl-arch`, `/vl-plan`, `/vl-merge-pr` (± `/vl-ask`) cite load `/vl-adhd` for operator chat.
+- Operator slash-invokes only as fallback if a host skipped the load.
+- `docs/DECISIONS.md` append lands on the owning feature branch with the implementation PR.
+
+**Evidence:** Architect session 2026-07-21; operator lock ("other skills run it"); upstream https://github.com/ayghri/i-have-adhd; VISION "Written once, run anywhere" / skills carry mechanics.
+
 ## 2026-07-20 — Skill prefix hard-cut: `vilya-*` → `vl-*` (#289 / #280)
 
 **Decision:** Hard-cut rename every Dev Loop skill so folder name, frontmatter `name`, and slash invoke are `vl-<rest>` (e.g. `/vl-chip`, `/vl-orch-cursor`, `/vl-crucible-nextjs`). Front door shortens further: `vilya-ask-vilya` → `vl-ask` (drop the redundant product token in the slug; display copy may still say “Ask Vilya”). Keep the git repo `jerrodtuck/vilya` and the Dev Loop / Vilya site brand. No dual-name aliases. (decided by operator, 2026-07-20).
