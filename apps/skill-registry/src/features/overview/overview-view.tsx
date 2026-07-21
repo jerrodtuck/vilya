@@ -101,6 +101,11 @@ export function OverviewView() {
           <b>lane · exact next prompt · one-line why</b> with its canon
           citation. It routes — it never creates issues or dispatches.
         </p>
+        <p className="muted" style={{ margin: "8px 0 0", lineHeight: 1.5 }}>
+          Standing seats also load <code>{SKILL_INVOKES.adhd}</code> — action
+          first, restate state, visible wins — for replies to you; you invoke
+          it yourself only as a one-time fallback if a host skipped the load.
+        </p>
         <div
           className="libcard"
           style={{ ["--lc" as string]: `var(${ASK_VILYA.c})`, marginTop: 14 }}
