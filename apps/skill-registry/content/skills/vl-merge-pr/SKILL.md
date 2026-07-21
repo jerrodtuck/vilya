@@ -194,20 +194,34 @@ gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge \
 - **`sha=` is required** on this path (use the `SHA` captured from the tip you reviewed).
 - On 405 / conflicts → §3 (`/vl-finish-feature` rebase), not a retry without rebase.
 
-## 5. Board + prune handoff
+## 5. Return to main clone, then board + prune handoff
+
+**Returning is mandatory, not optional.** The moment squash-merge (§4) succeeds, check whether
+this session's workspace/cwd is the repo's **main clone**. If it is not — you are still sitting
+in the feature worktree that just merged — return **before this turn ends**, then continue with
+the board check and prune handoff below:
+
+- **Cursor:** `move_agent_to_root` (cursor-app-control MCP) to the main clone's absolute path.
+- **Claude Code:** leave the feature worktree — re-open / `cd` back to the main clone's cwd —
+  before taking another orch/merge-pr action. Do not keep acting as merge-pr or orchestrator
+  from inside the worktree you just merged.
+
+This is the failure mode #303 exists to close: after a squash-merge, an orch session stayed in
+the just-merged feature worktree until the operator caught it. Belt-and-suspenders: if a turn
+still ends with the session inside the merged worktree, say so explicitly and do not attempt
+`git worktree remove` on the tree you are standing in — but that admission is a fallback, not a
+substitute for returning.
 
 - `Closes #` PR → the board workflow auto-moves the issue to **Done**. Verify it actually moved.
 - `Refs #` PR (live retest owed) → move the issue to **Verifying** yourself; it reaches Done only
   after live confirmation.
-- **Cleanup is a handoff, not an in-place delete:** tell the operator to run `/vl-prune` (dry-run)
-  then `/vl-prune --apply` from the **main clone** (and, after a night-shift batch, from the
-  Actions `_work` checkout if trees remain). If this session's cwd is inside the feature
-  worktree just merged, say so explicitly — do not attempt `git worktree remove` on the tree
-  you are standing in. Cursor Archive / Claude delete do **not** replace `/vl-prune` for
-  `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` or `.claude/worktrees/` paths. If prune
-  hits Permission denied on an eligible row, see [/vl-prune](../vl-prune/SKILL.md) §5a —
-  leftover `cursor-agent-worker` may hold `--worker-dir`; `/vl-prune --apply` kills matching
-  PIDs (no second ask) and re-removes.
+- **Cleanup is a handoff, not an in-place delete:** from the main clone, tell the operator to run
+  `/vl-prune` (dry-run) then `/vl-prune --apply` (and, after a night-shift batch, from the
+  Actions `_work` checkout if trees remain). Cursor Archive / Claude delete do **not** replace
+  `/vl-prune` for `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-*` or `.claude/worktrees/`
+  paths. If prune hits Permission denied on an eligible row, see
+  [/vl-prune](../vl-prune/SKILL.md) §5a — leftover `cursor-agent-worker` may hold
+  `--worker-dir`; `/vl-prune --apply` kills matching PIDs (no second ask) and re-removes.
 
 ## Honesty bar
 
@@ -217,4 +231,7 @@ sections stay long-form. Never merge over red checks silently. Name any
 verification you skipped ("merged on review alone, no local run").
 Distinguish **merged** from **merged and live-verified** — that's what
 Verifying is for. Distinguish **merged** from **pruned** — leftover
-worktrees after squash are expected until `/vl-prune --apply`.
+worktrees after squash are expected until `/vl-prune --apply`. Distinguish
+**merged** from **returned** — do not report a merge done while the session
+is still sitting in the feature worktree; §5's return is mandatory, and
+staying put "for now" is the exact #303 failure this bar forbids.

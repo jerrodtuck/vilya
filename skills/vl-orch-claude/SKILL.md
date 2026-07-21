@@ -32,6 +32,12 @@ orchestrator session; Copy on `/orch` may remain as fallback.
 | Dispatch | Every implementation / test / remediation unit → [/vl-chip](../vl-chip/SKILL.md). **Never** call `spawn_task` directly; never map this seat to chip. |
 | Never | Implement feature code, re-plan when `plan:ready`, merge without review, push the default branch, or root-cause beyond one quick repro |
 
+**House rule — drift restore:** if this session's workspace/cwd ever drifts into a feature
+worktree (chip reuse, an accidental move, a chip or `/vl-merge-pr` flow leaving you there),
+restore the main clone's cwd — leave the feature tree — **before** the next orch action: board
+move, merge, prune, or kickoff. See [/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory
+post-merge return this closes (#303).
+
 ## Kickoff
 
 Read owner, repo, project number, labels, stack, and crucible/test config from
