@@ -2,6 +2,39 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
 
+## 2026-07-20 — One board, two desktops (#281 / #280; absorbs #271 Option A)
+
+**Decision:** Teach **one board contract, two desktop chip backends** — same outcomes
+(issue → Status → verify plan → PR → merge → prune), different host mechanisms. Do
+**not** force Claude Code seat parity onto Cursor (standing Planner, silent worktree
+isolation). Evidence class on matrix rows stays `confirmed` / `unverified`; new
+2026-07-20 probe rows are `confirmed` only where Support or direct probe locked them.
+
+| Concern | Claude Code | Cursor |
+|---------|-------------|--------|
+| Board + labels + verify routing | Shared — only durable cross-session channel | Shared |
+| Planner for chip-flow | **Required** standing Fable `/vilya-planner` (no reliable mid-session plan→execute model switch) | **Optional** daytime — orch or in-session plan writes kickoff; enqueue `needs:plan` for Fable drain / night-shift / hard forks (**#271 Option A**) |
+| Chip spawn | `spawn_task` → own worktree | Task / `best-of-n-runner` with **explicit worktree-first** ask (or CLI `--worktree`); BoN does **not** auto-isolate (Support 2026-07-20) |
+| Plan→execute model split | Planner session (Fable) ≠ chip session (Sonnet) | Optional: two Tasks on the **same** worktree (e.g. Grok → Composer); **same model for both is valid** (`resume` keeps prior model) |
+| Cloud / remote | Not the primary desktop chip path | Cloud Task = Linux VM — portable stacks OK; **not** Anduin/CygNet (Windows SDK + local CygNet) |
+| Completion wake | Monitor tool | Mortal `notify_on_output` + issue completion comment (#270) |
+
+**Options considered:**
+1. Force Cursor into CC seat parity (standing Planner + assume BoN isolates) — cost: ops pain (#267/#270); false teaching; Support contradicted isolation ← rejected
+2. **One board / two desktops teaching + ADR/canon (chosen)** — cost: site + docs; Cursor orch BoN recipe remains follow-on ← chosen
+3. Cursor-only rewrite that drops CC Planner — cost: breaks CC chip-flow ← rejected
+
+**Why:** Probes + Cursor Support (orch session `ab4276d0-…`, 2026-07-20) locked BoN worktree-first and optional daytime Planner. Shared board contracts must not fork; divergent machinery must be taught explicitly so operators do not borrow the other host’s seats.
+
+**Consequences:**
+- Site `/differences` is the teaching surface (host toggle story-first; matrix second).
+- Canon paragraph in `GITHUB-PROJECTS.md` points here + `/differences`.
+- Absorbs **#271 Option A** — Cursor daytime Planner optional; orch still required; `/vilya-planner` not deleted; night-shift still needs `plan:ready`.
+- Cursor orch skill deep-links here for BoN/cloud/model-split detail (recipe follow-ons under #280).
+- Does **not** rename `vilya-*` skills; does **not** make Architect a standing orch child.
+
+**Evidence:** Epic #280; head #281; #271 Option A lock; Cursor Support BoN worktree note 2026-07-20; probes BoN-fail → cloud OK → BoN OK with worktree ask → Grok→Composer two-chip OK; prior Planner ADRs (#203/#255/#261/#270).
+
 ## 2026-07-19 — Orchestrator standing plan:ready poller (amends #203)
 
 **Decision:** The orchestrator session owns a **standing completion poller** for Planner output — REST + host wake (`notify_on_output` on Cursor; Monitor tool on Claude Code), cadence ≥120s, wake when an open issue **gains** `plan:ready` (dedup on issue set / label transition). Same-turn per-enqueue board Monitor remains best practice but is **no longer the sole wake path**. Never monitor the Planner process/session. (decided by operator, 2026-07-19; motivated by ops: Planner intake poller works; orchestrator repeatedly skipped per-enqueue arm).

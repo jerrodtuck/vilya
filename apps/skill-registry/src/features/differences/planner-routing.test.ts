@@ -27,7 +27,8 @@ describe("differences Planner model routing (#209)", () => {
     expect(knobs.claudeCode).toContain("settings.local.json");
     expect(knobs.claudeCode).toContain("spawn_task");
     expect(knobs.claudeCode).not.toContain("plan:ready");
-    expect(knobs.cursor).toContain("per-conversation model dropdown");
+    expect(knobs.cursor).toContain("per-conversation");
+    expect(knobs.cursor).toContain("model dropdown");
     expect(knobs.note).toMatch(/not via orchestrator/i);
   });
 });

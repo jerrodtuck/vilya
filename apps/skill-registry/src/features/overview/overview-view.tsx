@@ -165,13 +165,12 @@ export function OverviewView() {
       </div>
 
       <div className="callout">
-        <b>One body, two tools.</b> Cursor and Claude Code both speak the
-        SKILL.md standard, so each skill is authored <b>once</b>. The shared
-        fields — <code>name</code>, <code>description</code>,{" "}
-        <code>disable-model-invocation</code> — behave identically in both;
-        Claude Code&apos;s extra fields are additive and harmlessly ignored by
-        Cursor. The only per-project variation lives in each repo&apos;s{" "}
-        <code>GITHUB-PROJECTS.md</code>.
+        <b>One board, two desktops.</b> Cursor and Claude Code share the board
+        contract (issues, Status, verify plan, merge routing) and the{" "}
+        SKILL.md body — skills are authored <b>once</b>. Chip spawn, Planner
+        seat, and cloud/local gates diverge by host; learn the paths on{" "}
+        <Link href="/differences">Two desktops</Link>. Per-repo variation lives
+        in each repo&apos;s <code>GITHUB-PROJECTS.md</code>.
       </div>
 
       <div className="callout">
