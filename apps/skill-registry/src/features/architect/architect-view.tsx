@@ -122,7 +122,7 @@ export function ArchitectView() {
       <div className="pagefoot">
         The architect never implements, dispatches, or merges — output is{" "}
         <b>issues · ADRs · specs</b> on the board, for the{" "}
-        <Link href="/orchestrator">orchestrator</Link> to pick up.
+        <Link href="/orch">orch</Link> to pick up.
       </div>
     </>
   );

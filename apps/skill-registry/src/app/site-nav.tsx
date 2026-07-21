@@ -8,7 +8,7 @@ const LINKS = [
   { href: "/", label: "Overview" },
   { href: "/architect", label: "Architect" },
   { href: "/planner", label: "Planner" },
-  { href: "/orchestrator", label: "Orchestrator" },
+  { href: "/orch", label: "Orch" },
   { href: "/skills", label: "Skills" },
   { href: "/setup", label: "Setup" },
   { href: "/night-shift", label: "Night shift" },

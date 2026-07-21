@@ -92,7 +92,7 @@ export function NightShiftView() {
         Wire a product repo once, then start overnight runs.{" "}
         <b>Setup once → Run tonight</b> — the pipeline map comes after you can
         operate. Same daytime Dev Loop, unattended; methodology stays on{" "}
-        <Link href="/orchestrator">Orchestrator</Link>.
+        <Link href="/orch">Orch</Link>.
       </p>
       <div className="metarow" aria-label="Night-shift scope">
         <span className="badge">once per product repo</span>
@@ -230,7 +230,7 @@ export function NightShiftView() {
 
       <div className="pagefoot">
         Instrument: <b>{SKILL_INVOKES.nightShift}</b> · opens PRs only · never merges ·{" "}
-        <Link href="/orchestrator">Orchestrator</Link> for the daytime map.
+        <Link href="/orch">Orch</Link> for the daytime map.
       </div>
     </>
   );

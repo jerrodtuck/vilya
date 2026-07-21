@@ -35,7 +35,7 @@ type BoardStripProps = {
   hint?: ReactNode;
   /** Anchor down to the mover-map section when shown on Overview. */
   moversHref?: string;
-  /** Link the header into Orchestrator when shown on Overview. */
+  /** Link the header into Orch when shown on Overview. */
   orchestratorHref?: string;
   /** Screenshot figure (the real board) rendered inside the card. */
   figure?: ReactNode;
@@ -65,7 +65,7 @@ export function BoardStrip({
             <>
               <span className="board-sep">·</span>
               <Link href={orchestratorHref}>
-                the flows that drive it → Orchestrator
+                the flows that drive it → Orch
               </Link>
             </>
           ) : null}

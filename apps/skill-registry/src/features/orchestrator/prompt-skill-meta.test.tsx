@@ -5,13 +5,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { skillInvoke, SKILL_AFFORDANCE_LEAD } from "../../shared/skills/skill-affordance";
 import { SKILL_SLUGS } from "../../shared/skills/invokes";
 import { PromptList } from "../../shared/ui/prompt-list";
+import { CLAUDE_ORCH_PROMPT_LABEL } from "./claude-dispatch";
 import {
   CURSOR_ORCH_PROMPT_LABEL,
   CURSOR_WORKER_A_PROMPT_LABEL,
 } from "./cursor-dispatch";
 import { PROMPTS } from "./prompts";
-
-const CLAUDE_ORCH_LABEL = "Claude Code — orchestrator · spawn_task chips";
 
 function orchGroup() {
   const orch = PROMPTS.find((g) => g.node === "ORCH");
@@ -23,7 +22,7 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
   it("maps Claude + Cursor orch seats and Worker A; leaves Worker B paste-only", () => {
     const orch = orchGroup();
     const workerA = orch.items.find((i) => i.label === CURSOR_WORKER_A_PROMPT_LABEL);
-    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_LABEL);
+    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_PROMPT_LABEL);
     const cursorOrch = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL);
     const workerB = orch.items.find(
       (i) => i.label === "Cursor — worker kickoff B · worker does its own setup"
@@ -44,12 +43,12 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
 
   it("Claude orch card renders /vilya-orch-claude affordance (not chip)", () => {
     const orch = orchGroup();
-    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_LABEL)!;
+    const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_PROMPT_LABEL)!;
     // Render the seat alone — body doctrine may still name /vilya-chip as dispatch.
     const html = renderToStaticMarkup(
       <PromptList group={{ ...orch, items: [claudeOrch] }} />
     );
-    expect(html).toContain(CLAUDE_ORCH_LABEL);
+    expect(html).toContain(CLAUDE_ORCH_PROMPT_LABEL);
     expect(html).toContain("pskill");
     expect(html).toContain(SKILL_AFFORDANCE_LEAD);
     expect(html).toContain(

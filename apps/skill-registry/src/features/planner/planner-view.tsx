@@ -42,7 +42,7 @@ export function PlannerView() {
             Planner writes onto the same board every skill reports into —{" "}
             <code>needs:plan</code> in, kickoff + <code>plan:ready</code> out.
             The{" "}
-            <Link href="/orchestrator">orchestrator</Link> arms the Monitor;
+            <Link href="/orch">orch</Link> arms the Monitor;
             night-shift consumes <code>plan:ready</code> ∧{" "}
             <code>night-shift:ready</code>.
           </>
@@ -82,15 +82,14 @@ export function PlannerView() {
                 className="mode"
                 style={{ ["--m" as string]: "var(--orch)" }}
               >
-                <b>Beside the orchestrator</b>
+                <b>Beside the orch</b>
                 <span>
                   After{" "}
                   <Link href="/architect">Architect</Link> direction, before
                   (or beside){" "}
-                  <Link href="/orchestrator">Orchestrator</Link> dispatch.
-                  Planner plans onto the board; orchestrator dispatches chips
-                  that execute. Daytime may skip Planner when the issue is
-                  already clear.
+                  <Link href="/orch">Orch</Link> dispatch. Planner plans onto
+                  the board; orch dispatches chips that execute. Daytime may
+                  skip Planner when the issue is already clear.
                 </span>
               </div>
             </div>
@@ -125,7 +124,7 @@ export function PlannerView() {
       <div className="pagefoot">
         The planner never implements, dispatches, or merges — output is{" "}
         <b>kickoff · verify plan · plan:ready</b> on the board, for the{" "}
-        <Link href="/orchestrator">orchestrator</Link> (and night-shift) to
+        <Link href="/orch">orch</Link> (and night-shift) to
         pick up.
       </div>
     </>

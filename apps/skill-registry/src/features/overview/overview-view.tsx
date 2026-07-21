@@ -74,7 +74,7 @@ export function OverviewView() {
 
       <BoardStrip
         moversHref="#movers"
-        orchestratorHref="/orchestrator"
+        orchestratorHref="/orch"
         figure={<BoardScreenshot />}
         hint={
           <>
@@ -129,14 +129,14 @@ export function OverviewView() {
           </p>
           <span className="more">Open the planner map →</span>
         </Link>
-        <Link className="card" href="/orchestrator">
-          <h3>Orchestrator</h3>
+        <Link className="card" href="/orch">
+          <h3>Orch</h3>
           <p className="desc">
-            The interactive map. Light up any path — happy path,
+            The interactive map per desktop. Light up any path — happy path,
             review↔refactor loop, PR merge, consult forks, bug-mid-work,
             blocked, verifying, epic fan-out, night shift.
           </p>
-          <span className="more">Open the map →</span>
+          <span className="more">Open the orch map →</span>
         </Link>
         <Link className="card" href="/skills">
           <h3>Skills</h3>

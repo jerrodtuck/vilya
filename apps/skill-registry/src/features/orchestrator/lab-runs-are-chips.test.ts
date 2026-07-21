@@ -1,5 +1,6 @@
 // #245: both orchestrator standing orders teach lab-runs-are-chips + no master commits.
 import { describe, expect, it } from "vitest";
+import { CLAUDE_ORCH_PROMPT_LABEL } from "./claude-dispatch";
 import { CURSOR_ORCH_PROMPT_LABEL } from "./cursor-dispatch";
 import {
   LAB_RUNS_ARE_CHIPS_ASIDE,
@@ -26,7 +27,7 @@ describe("Lab runs are chips (#245)", () => {
   });
 
   it("Claude and Cursor standing orders both compose the lab-runs doctrine", () => {
-    const claude = orchItem("Claude Code — orchestrator · spawn_task chips");
+    const claude = orchItem(CLAUDE_ORCH_PROMPT_LABEL);
     const cursor = orchItem(CURSOR_ORCH_PROMPT_LABEL);
     expect(claude).toContain(LAB_RUNS_ARE_CHIPS_DOCTRINE);
     expect(cursor).toContain(LAB_RUNS_ARE_CHIPS_DOCTRINE);

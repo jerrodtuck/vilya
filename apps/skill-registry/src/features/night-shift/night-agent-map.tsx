@@ -15,7 +15,7 @@ const DEFAULT_DRAWER = {
     <ul>
       <li><b>Steering</b> and <b>Failure</b> use distinct styling — safety gates and bring-up walls are the product, not footnotes.</li>
       <li>This is the same daytime Dev Loop, driven headless by GitHub Actions + Claude Code on your self-hosted Windows box.</li>
-      <li>The daytime methodology map stays on <a href="/orchestrator">Orchestrator</a>; this page teaches the agent machinery.</li>
+      <li>The daytime methodology map stays on <a href="/orch">Orch</a>; this page teaches the agent machinery.</li>
     </ul>`,
 };
 

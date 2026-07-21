@@ -274,7 +274,7 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
       <div className="pagefoot">
         Not started with VSA? Don&apos;t rewrite — add the slice folder, route
         new work through slices, migrate the rest as an Epic. The Crucible
-        review runs in brownfield mode. See <a href="/orchestrator">Orchestrator</a>.
+        review runs in brownfield mode. See <a href="/orch">Orch</a>.
       </div>
     </>
   );

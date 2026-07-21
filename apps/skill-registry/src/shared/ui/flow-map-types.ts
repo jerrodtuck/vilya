@@ -67,6 +67,10 @@ export interface PromptItem {
    * Copy stays as fallback. Omit for paste-only / ungraduated seats.
    */
   skill?: string;
+  /**
+   * Desktop host filter for /orch (?host=cc|cursor). Omit = shared (both hosts).
+   */
+  host?: "cc" | "cursor";
 }
 
 export interface PromptGroup {
