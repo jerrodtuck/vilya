@@ -22,9 +22,12 @@ export function PlannerView() {
         <p className="lead">
           Your output is a kickoff + verify plan on the issue — never running
           code. Drain <code>needs:plan</code>, ground every brief in the owning
-          slice, and stop at forks that would make the kickoff wrong. Click a{" "}
-          <b>flow</b> to light its path, or click any <b>node</b> to see what
-          that step does.
+          slice, and stop at forks that would make the kickoff wrong. Required
+          for Claude Code chip-flow and night-shift prep;{" "}
+          <b>optional daytime on Cursor</b> (orch or in-session plan may write
+          the kickoff — see <Link href="/differences">Two desktops</Link>).
+          Click a <b>flow</b> to light its path, or click any <b>node</b> to see
+          what that step does.
         </p>
         <div style={{ marginTop: 14 }}>
           <Link className="setupbtn" href="/setup">
@@ -68,10 +71,11 @@ export function PlannerView() {
               >
                 <b>One Planner, one repo</b>
                 <span>
-                  Planning quality needs a pinned Fable session that owns that
-                  repo&apos;s <code>needs:plan</code> queue — not a chip and
-                  not the thin orchestrator. Two Planners on one repo means two
-                  writers to the same label queue and kickoff comments.
+                  When seated, planning quality needs a pinned Fable session that
+                  owns that repo&apos;s <code>needs:plan</code> queue — not a
+                  chip and not the thin orchestrator. Two Planners on one repo
+                  means two writers to the same label queue. Cursor daytime may
+                  skip seating Planner entirely.
                 </span>
               </div>
               <div

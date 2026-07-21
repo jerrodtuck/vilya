@@ -23,8 +23,8 @@ export const ASK_VILYA: PromptGroup = {
 Apply the routing test: does this change what we intended, or only what we'll do next?
 
 1. Changes intent (vision, design, architecture, a prior call) → /vilya-arch — ADR/spec first, then issues.
-2. Needs a planning pass (scope, verify plan, or forks unclear) → enqueue needs:plan → standing Planner (Fable) drains to plan:ready — then Orchestrator.
-3. New work, intent unchanged and already clear (tweaks, polish, bugs) → issue on the board (/vilya-update-docs routing) → Orchestrator dispatches (daytime may skip Planner).
+2. Needs a planning pass (scope, verify plan, or forks unclear) → enqueue needs:plan → standing Planner (Fable) drains to plan:ready — then Orchestrator. On Cursor daytime, orch/in-session plan may suffice — skip standing Planner and go to orch when the brief is already clear enough to dispatch.
+3. New work, intent unchanged and already clear (tweaks, polish, bugs) → issue on the board (/vilya-update-docs routing) → Orchestrator dispatches (daytime may skip Planner; Cursor default chip is Task/BoN worktree-first).
 4. About in-flight work (a PR, a chip, merge, prune, board hygiene) → Orchestrator (/vilya-orch-claude or /vilya-orch-cursor).
 5. Operator-owned (merge authority, smoke, fork decisions) → me — name the exact command or skill.
 6. Pure process/canon question → answer directly, citing GITHUB-PROJECTS.md, the SKILL.md, or the site page.

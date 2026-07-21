@@ -98,7 +98,7 @@ export const PROMPTS: PromptGroup[] = [
     group: "Standing orders — paste once per session",
     c: "--orch",
     wide: true,
-    introHtml: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orchestrator</b>, follow the <a href="#${CURSOR_DISPATCH_PANEL_ID}">numbered three-step path</a> above — Step 3 is <code>/${CURSOR_HANDOFF_SKILL}</code> in the worktree (Worker A seat), not this menu.`,
+    introHtml: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orchestrator</b>, follow the <a href="#${CURSOR_DISPATCH_PANEL_ID}">Task/BoN Cursor path</a> above — daytime default is worktree-first Task/BoN chips (Task return + issue comment wake). Worker A (<code>/${CURSOR_HANDOFF_SKILL}</code>) is the collapsed fallback when not using Task chips.`,
     items: [
       {
         label: "Claude Code — session kickoff",
@@ -134,7 +134,7 @@ Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the
         id: CURSOR_ORCH_PROMPT_ID,
         label: CURSOR_ORCH_PROMPT_LABEL,
         skill: SKILL_SLUGS.orchestratorCursor,
-        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Daytime default is Task/BoN worktree-first chips: Task return wakes this session; the Projects board, issues, and PRs remain the durable coordination channel (never invent a second channel). One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
 
@@ -144,13 +144,13 @@ ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
 
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
-- Kick off streams via /vilya-start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Plan phase first on the planning model (operator picks it in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime: ask the operator to switch to the execution model before handing a worker the build. Unattended / one-model runs skip that switch.
-- Name every agent chat (chip) you kick off after its worktree folder — the title is exactly <issue#>-<slug> — so each chip maps 1:1 to its worktree at a glance.
-- Leave a self-contained kickoff + handoff comment on the issue — goal, constraints, owning slice, verify plan — written for a fresh session with zero context. Do not implement in this chat.
-- I start a separate agent session on each worktree for implementation.
-- ${CURSOR_DISPATCH_MONITOR}
-- Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
-- When a bug or question lands: at most one quick repro probe (to report "confirmed: X" instead of hearsay), then an issue on the board, then a worker chip whose kickoff comment carries the investigation — root-causing runs in that chip's fresh context window, never in this chat. This chat's window is the pipeline's shared resource; if your probes start multiplying, that is the signal to stop and dispatch.
+- Kick off streams via /vilya-start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Optional plan first (operator picks the planning model in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime Planner is optional — enqueue needs:plan for night-shift / hard forks. Single-model chips skip a plan→execute model switch.
+- Dispatch a Task/BoN chip in the existing worktree (or an explicit worktree-first ask / --worktree). Single-model OK; optional two-Task model split on the same worktree. Name every chip chat after its worktree folder — title exactly <issue#>-<slug>. Never assume Best-of-N isolates without a worktree ask.
+- Leave a self-contained kickoff on the issue — goal, constraints, owning slice, verify plan — written for a fresh chip with zero context. Do not implement in this chat.
+- Wake: Task return is the primary same-session signal; the chip must also post a gh issue completion comment (PR # + gate results). ${CURSOR_DISPATCH_MONITOR}
+- Chip hygiene: stop long-lived smoke / local-smoke servers before chip exit — no leftover next/dev processes. Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
+- Fallback when not using Task chips: operator opens the worktree and runs /vilya-cursor-handoff (Worker A). A and B are mutually exclusive; never teach Worker A as the daytime default.
+- When a bug or question lands: at most one quick repro probe (to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose kickoff carries the investigation — root-causing runs in that chip's fresh context window, never in this chat. This chat's window is the pipeline's shared resource; if your probes start multiplying, that is the signal to stop and dispatch.
 - Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.
 - One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
 - After /vilya-merge-pr squash: you own /vilya-prune from the main clone (dry-run, then --apply). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean %USERPROFILE%\\.cursor\\worktrees\\<repo>.`,
@@ -177,7 +177,7 @@ Your job:
       },
     ],
     noteHtml:
-      "⚠ <b>Worker A and B are mutually exclusive per issue.</b> If the orchestrator kickoff already ran <code>/vilya-start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet; it doubles as the solo-mode prompt for days you skip the orchestrator entirely. After squash-merge, <b>/vilya-prune</b> is an orchestrator job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>. <code>/vilya-prune --apply</code> authorizes scoped kills of lock holders whose cmdline names the eligible worktree; dry-run only previews.",
+      "⚠ Daytime Cursor default is <b>Task/BoN</b> (see path panel). <b>Worker A and B are mutually exclusive per issue</b> — use them only as fallback / solo mode. If the orchestrator kickoff already ran <code>/vilya-start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet. After squash-merge, <b>/vilya-prune</b> is an orchestrator job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>. <code>/vilya-prune --apply</code> authorizes scoped kills of lock holders whose cmdline names the eligible worktree; dry-run only previews.",
   },
   {
     node: "START",

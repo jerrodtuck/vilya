@@ -1,5 +1,5 @@
-// Feature slice: orchestrator — Cursor dispatch anchors (#219)
-// + Worker A seat skill invoke (#247 / #253).
+// Feature slice: orchestrator — Cursor daytime Task/BoN dispatch anchors (#285).
+// Worker A three-step remains fallback (#219 / #247 / #253).
 // Shared ids so the path panel, prompt cards, and tests stay aligned.
 import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
@@ -9,10 +9,17 @@ export const CURSOR_ORCH_PROMPT_ID = "cursor-orch-kickoff";
 export const CURSOR_WORKER_A_PROMPT_ID = "cursor-worker-a";
 
 export const CURSOR_ORCH_PROMPT_LABEL =
-  "Cursor — orchestrator kickoff (no comms layer)";
+  "Cursor — orchestrator · Task/BoN chips";
 export const CURSOR_WORKER_A_PROMPT_LABEL =
   "Cursor — worker kickoff A · orchestrator did setup";
 
-/** Step 3 of the numbered Cursor path — run the seat skill in the worktree. */
-export const CURSOR_DISPATCH_STEP3_LEAD =
-  "In the worktree, run";
+/** Primary daytime path — Task/BoN worktree-first (not Worker A). */
+export const CURSOR_DISPATCH_PRIMARY_KICKER = "Cursor · Task/BoN default";
+export const CURSOR_DISPATCH_PRIMARY_TITLE = "Task/BoN Cursor path";
+
+/** Collapsed fallback summary — three-step Worker A. */
+export const CURSOR_DISPATCH_FALLBACK_SUMMARY =
+  "Fallback · Worker A three-step";
+
+/** Fallback Step 3 — run the seat skill in the worktree. */
+export const CURSOR_DISPATCH_STEP3_LEAD = "In the worktree, run";

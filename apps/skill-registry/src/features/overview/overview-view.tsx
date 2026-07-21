@@ -21,11 +21,12 @@ export function OverviewView() {
         turn you into the <b>architect</b> who sets direction, the{" "}
         <b>planner</b> who plans onto the board, and the{" "}
         <b>orchestrator</b> who dispatches it: one architect seat per product
-        board, one Planner and one orchestrator per repo. You point them by
-        day, decide at the forks, and keep the board honest. Night-shift runs
-        that <b>same</b> chain unattended. One{" "}
-        <code>GITHUB-PROJECTS.md</code> per repo; Claude Code and Cursor both
-        speak the same skills.
+        board, one orchestrator per repo, and one Planner per repo on Claude
+        Code chip-flow (Cursor daytime Planner is optional — see{" "}
+        <Link href="/differences">Two desktops</Link>). You point them by day,
+        decide at the forks, and keep the board honest. Night-shift runs that{" "}
+        <b>same</b> chain unattended. One <code>GITHUB-PROJECTS.md</code> per
+        repo; Claude Code and Cursor both speak the same skills.
       </p>
 
       <div className="rolestrip" aria-label="Role order">

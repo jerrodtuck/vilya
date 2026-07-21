@@ -1,6 +1,7 @@
 // #223 / #233 / #270: Cursor orchestrator teaches REST + notify_on_output, not GraphQL polls;
 // Cursor shells are mortal — re-arm, do not thrash every drain.
 import { describe, expect, it } from "vitest";
+import { CURSOR_ORCH_PROMPT_LABEL } from "./cursor-dispatch";
 import {
   CURSOR_DISPATCH_MONITOR,
   CURSOR_SHELL_TEARDOWN_DOCTRINE,
@@ -40,7 +41,7 @@ describe("Cursor REST chip monitor (#223)", () => {
   });
 
   it("Cursor standing orders compose the dispatch monitor constant", () => {
-    const text = orchItem("Cursor — orchestrator kickoff (no comms layer)");
+    const text = orchItem(CURSOR_ORCH_PROMPT_LABEL);
     expect(text).toContain(CURSOR_DISPATCH_MONITOR);
     expect(text).toContain(PLANNER_ORCH_DOCTRINE);
     expect(text).toContain(GRAPHQL_QUOTA_DOCTRINE);
@@ -111,7 +112,7 @@ describe("GraphQL quota hygiene (#233)", () => {
 
   it("Claude and Cursor standing orders both compose the quota doctrine", () => {
     const claude = orchItem("Claude Code — orchestrator · spawn_task chips");
-    const cursor = orchItem("Cursor — orchestrator kickoff (no comms layer)");
+    const cursor = orchItem(CURSOR_ORCH_PROMPT_LABEL);
     expect(claude).toContain(GRAPHQL_QUOTA_DOCTRINE);
     expect(cursor).toContain(GRAPHQL_QUOTA_DOCTRINE);
   });
