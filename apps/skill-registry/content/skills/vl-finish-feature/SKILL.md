@@ -62,6 +62,9 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
   close → Done only after live confirmation.
 - Structure: **Summary** · **Remaining / deferred** (linked issues) · **Verification** ·
   **Operator actions**.
+- **Verification names the smoke result when the verify plan smokes a shared app host**: probe,
+  never manage (`/vl-chip` §2b) — "smoked against host @ `<commit>`" (flag if stale vs the default
+  branch), or "smoke owed — host not up at `<port>`" with the remedy. Never a silent skip.
 - Do not merge from the task branch unless the operator asks — merging is the operator's move,
   via [/vl-merge-pr](../vl-merge-pr/SKILL.md) (which hands worktree cleanup to [/vl-prune](../vl-prune/SKILL.md)).
 
