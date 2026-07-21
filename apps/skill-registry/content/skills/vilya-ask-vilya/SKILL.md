@@ -11,10 +11,10 @@ description: >-
 # Ask Vilya (any stack)
 
 > Front-door companion to the role seats — not a seat itself.
-> [/vilya-architect](../vilya-architect/SKILL.md) ·
-> [/vilya-planner](../vilya-planner/SKILL.md) ·
-> [/vilya-orchestrator](../vilya-orchestrator/SKILL.md) /
-> [/vilya-orchestrator-cursor](../vilya-orchestrator-cursor/SKILL.md).
+> [/vilya-arch](../vilya-arch/SKILL.md) ·
+> [/vilya-plan](../vilya-plan/SKILL.md) ·
+> [/vilya-orch-claude](../vilya-orch-claude/SKILL.md) /
+> [/vilya-orch-cursor](../vilya-orch-cursor/SKILL.md).
 > Canon: `docs/project-tracking/GITHUB-PROJECTS.md`. Overview card Copy may
 > remain as paste fallback.
 
@@ -37,7 +37,7 @@ You do **not** dispatch, monitor, plan, or implement.
 Apply first: **does this change what we intended, or only what we'll do next?**
 
 1. **Changes intent** (vision, design, architecture, a prior call) →
-   [/vilya-architect](../vilya-architect/SKILL.md) — ADR/spec first, then issues.
+   [/vilya-arch](../vilya-arch/SKILL.md) — ADR/spec first, then issues.
 2. **Needs a planning pass** (scope, verify plan, or forks unclear) → enqueue
    `needs:plan` → standing Planner (Fable) drains to `plan:ready` — then
    Orchestrator.
@@ -45,7 +45,7 @@ Apply first: **does this change what we intended, or only what we'll do next?**
    issue on the board ([/vilya-update-docs](../vilya-update-docs/SKILL.md)
    routing) → Orchestrator dispatches (daytime may skip Planner).
 4. **About in-flight work** (a PR, a chip, merge, prune, board hygiene) →
-   Orchestrator (`/vilya-orchestrator` or `/vilya-orchestrator-cursor`).
+   Orchestrator (`/vilya-orch-claude` or `/vilya-orch-cursor`).
 5. **Operator-owned** (merge authority, smoke, fork decisions) → the operator —
    name the exact command or skill.
 6. **Pure process/canon question** → answer directly, citing

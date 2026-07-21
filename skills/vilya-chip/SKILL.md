@@ -42,7 +42,7 @@ everything ships through chips.
   self-contained `prompt`, do not re-plan. Daytime may still chip **without** `plan:ready` when
   the operator skipped Planner and the issue is already clear (attended judgment). Prefer
   enqueueing Planner (`needs:plan`) when scope, verify routing, or forks still need a planning
-  pass — that path is orchestrator-owned; chips do not run `/vilya-planner`. Investigate-first is **not**
+  pass — that path is orchestrator-owned; chips do not run `/vilya-plan`. Investigate-first is **not**
   a substitute for Planner on ordinary `plan:ready` work.
 
 ## 1. Dispatch — the `spawn_task` call

@@ -1,10 +1,10 @@
 ---
-name: vilya-planner
+name: vilya-plan
 description: >-
   Standing plan loop — drain needs:plan (or an operator-named issue), write kickoff +
   verify plan (+ forks) on the issue, clear needs:plan and set plan:ready. One Fable
   session per repo. Arms an intake Monitor when idle; never implements, dispatches,
-  merges, or process/completion self-watches. Use when the operator says "/vilya-planner",
+  merges, or process/completion self-watches. Use when the operator says "/vilya-plan",
   "plan the queue", "drain needs:plan", or runs a standing Planner session for a repo.
 ---
 

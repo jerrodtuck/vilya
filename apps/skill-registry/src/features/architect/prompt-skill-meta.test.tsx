@@ -1,4 +1,4 @@
-// #254 / #269: Architect standing-orders card carries /vilya-architect skill metadata.
+// #254 / #269: Architect standing-orders card carries /vilya-arch skill metadata.
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -10,7 +10,7 @@ import { PromptList } from "../../shared/ui/prompt-list";
 import { PROMPTS } from "./prompts";
 
 describe("architect prompt skill metadata (#269)", () => {
-  it("standing-orders card maps to vilya-architect and renders the affordance", () => {
+  it("standing-orders card maps to vilya-arch and renders the affordance", () => {
     const arch = PROMPTS.find((g) => g.node === "ARCH");
     expect(arch).toBeDefined();
     const card = arch!.items[0];

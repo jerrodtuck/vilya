@@ -8,7 +8,7 @@ sections below live only in this file; skills read config from each repo's file 
 from their own SKILL.md.
 
 Skills (`vilya-start-feature` / `vilya-finish-feature` / `vilya-update-docs` /
-`vilya-night-shift` / `/vilya-planner` / …) read owner, project, labels, stack, test command,
+`vilya-night-shift` / `/vilya-plan` / …) read owner, project, labels, stack, test command,
 and crucible variant from here. Planning vs execution **models** are per-operator, never stored
 in this file: **Planner session = Fable** (`claude --model fable`); **orchestrator + chips =
 Sonnet** via `model` in `.claude/settings.local.json` (gitignored; chips inherit it via

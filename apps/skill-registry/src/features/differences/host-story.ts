@@ -36,7 +36,7 @@ export const HOST_FLOWS: Record<
       "Enqueue Planner → plan:ready → spawn_task chip → completion comment → orch merge.",
     steps: [
       { id: "orch", label: "Orchestrator", blurb: "One seat per repo; owns dispatch + merge queue", board: "issue" },
-      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — standing /vilya-planner", board: "verify" },
+      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — standing /vilya-plan", board: "verify" },
       { id: "chip", label: "spawn_task chip", blurb: "Own worktree + branch; Sonnet execute", board: "status" },
       { id: "done", label: "PR + comment", blurb: "Chip stops; Monitor wakes orch", board: "pr" },
       { id: "merge", label: "Merge + prune", blurb: "Operator /vilya-merge-pr from main clone", board: "merge" },

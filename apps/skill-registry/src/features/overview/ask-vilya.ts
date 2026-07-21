@@ -22,10 +22,10 @@ export const ASK_VILYA: PromptGroup = {
 
 Apply the routing test: does this change what we intended, or only what we'll do next?
 
-1. Changes intent (vision, design, architecture, a prior call) → /vilya-architect — ADR/spec first, then issues.
+1. Changes intent (vision, design, architecture, a prior call) → /vilya-arch — ADR/spec first, then issues.
 2. Needs a planning pass (scope, verify plan, or forks unclear) → enqueue needs:plan → standing Planner (Fable) drains to plan:ready — then Orchestrator.
 3. New work, intent unchanged and already clear (tweaks, polish, bugs) → issue on the board (/vilya-update-docs routing) → Orchestrator dispatches (daytime may skip Planner).
-4. About in-flight work (a PR, a chip, merge, prune, board hygiene) → Orchestrator.
+4. About in-flight work (a PR, a chip, merge, prune, board hygiene) → Orchestrator (/vilya-orch-claude or /vilya-orch-cursor).
 5. Operator-owned (merge authority, smoke, fork decisions) → me — name the exact command or skill.
 6. Pure process/canon question → answer directly, citing GITHUB-PROJECTS.md, the SKILL.md, or the site page.
 
@@ -37,5 +37,5 @@ Answer in exactly this format: lane · the exact next prompt or command to paste
     "&ldquo;changes I&rsquo;d like&rdquo; = <b>lane 3 (orchestrator)</b> when " +
     "the work is already clear — or <b>lane 2 (Planner)</b> when scope / " +
     "verify plan / forks need a planning pass. A change that contradicts " +
-    "the shipped design&rsquo;s intent goes to /vilya-architect first.",
+    "the shipped design&rsquo;s intent goes to /vilya-arch first.",
 };
