@@ -89,6 +89,9 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 - **Crucible gate**: run the repo's `vl-crucible-<stack>` skill (looked up in `GITHUB-PROJECTS.md`,
   e.g. `vl-crucible-blazor` / `vl-crucible-nextjs`) and remediate until the signal reads **Ready** —
   **not optional**.
+- **Shared-host smoke** (only when the verify gate smokes a running app host): the chip follows the
+  probe-never-manage contract in §2b — probe, don't start/kill/restart; a config need discovered
+  mid-smoke is a fork on the issue, not a restart.
 - **Close-out**: **`/vl-finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
   **Ready**, it opens the PR **titled `#<N> <name>`** with **`Closes #<N>`**, plus the `changelog.d/`
   fragment + spec status.
@@ -103,7 +106,8 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   `spawn_task`** or any session-spawning tool — deferred work goes on the issue, not into a new
   session; at a real design fork, **stop, comment 2–3 options on the issue, and wait** — do not
   guess; when the brief marks **Investigate-first / hard-stop**, that stop is **non-negotiable**
-  (§2a) — never auto-pick because "the findings clearly favor X."
+  (§2a) — never auto-pick because "the findings clearly favor X"; when smoking against a shared
+  app host, **probe it, never manage it** (§2b) — no start-in-process, no kill, no restart.
 
 ## 2a. Investigate-first / hard-stop (fork-gate for unknowns)
 
@@ -130,6 +134,34 @@ locked the fork is execute work, not investigate-first. Mid-implementation desig
 Recommendation on the issue is required; **auto-picking is forbidden**, including when findings
 seem obvious. The options comment **is** the completion report for that stop (§2). The
 orchestrator's REST monitor (§3) picks up that comment — do not invent a second channel.
+
+## 2b. Shared app-host smoke — probe, never manage
+
+Some verify plans need the chip to smoke a **running app instance**, not just run automated tests —
+e.g. hitting a shared Blazor/Next.js host to confirm a change behaves. That host may be **shared**:
+the operator, another chip, or the orchestrator may already own the running process, and the chip
+has no way to know from inside its own worktree. Treat it as owned by someone else until proven
+otherwise:
+
+1. **Probe, never manage.** Check the repo-configured smoke endpoint (e.g. `GET /health` on the
+   **Manual smoke** port from that repo's `GITHUB-PROJECTS.md`) before smoking. The chip never
+   starts the host in-process, never kills it, never restarts it — "restart to pick up config" is
+   forbidden even when a boot-time config gate makes it tempting. A config need discovered
+   mid-smoke is a **fork**: stop, comment it on the issue, do not restart to force it in.
+2. **Down = fail fast with a named remedy.** A host that doesn't answer the probe is not a silent
+   skip and not a reason to self-start it. The PR's Verification section says **"smoke owed — host
+   not up at `<port>`"** plus the one command an operator runs to bring it up. If — and only if —
+   the repo ships a **start-only** bring-up script (detached start, mutex + PID file, no stop verb),
+   the chip may call that script, since by construction it cannot interfere with an instance someone
+   else owns.
+3. **Name the code you smoked against.** When the host exposes build identity (e.g. `/health`
+   returning the running commit SHA), record **"smoked against host @ `<commit>`"** in the PR's
+   Verification section. A host stale relative to the default branch is a **flag in that section**,
+   not a silently-accepted result.
+
+Repo config (which port, which start-only script, if any) lives in that repo's
+`GITHUB-PROJECTS.md`; this probe-never-manage contract is process and applies everywhere a chip
+smokes a shared host. `/vl-finish-feature` step 6 carries the matching Verification-section wording.
 
 ## 3. After dispatch — the monitor is the signal
 
@@ -204,6 +236,8 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Never chip untracked work. Never chip past a real design fork without giving the operator options.
 - Never chip past an **Investigate-first / hard-stop** gate — findings + options, then stop; no
   implement until the operator's pick is on the issue (or an attended relay).
+- Never start, kill, or restart a shared app host to force a smoke through (§2b) — a down host is a
+  fail-fast Verification note with a named remedy, never a silent self-managed fix.
 - Chips **never self-merge**; the orchestrator reviews every chip before `/vl-merge-pr`.
 - Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
   `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on

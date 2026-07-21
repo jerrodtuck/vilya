@@ -192,7 +192,11 @@ site `/differences`.
 
 Chips never merge, never spawn sessions, and report via a **completion comment on the issue**
 (`gh` — no prompt, attended or not); the orchestrator's dispatch monitor picks it up (loop
-documented on the site's Setup page and in `/vl-chip`). Dispatch carries **two same-turn
+documented on the site's Setup page and in `/vl-chip`). When a verify plan smokes a **shared
+long-lived app host** (e.g. a Blazor/Next.js dev instance another session may already own), the
+chip **probes, never manages** it — no start-in-process, no kill, no restart; a down host is a
+fail-fast Verification note with a named remedy, not a silent skip (full contract: `/vl-chip` §2b,
+matching wording in `/vl-finish-feature` step 6). Dispatch carries **two same-turn
 obligations**: arm the monitor and move the issue to **In Progress** on the board, since
 GitHub's built-in workflows only cover added→Todo and closed/merged→Done. **Claude Code**
 arms the **Monitor tool** — never an **exit-only** background shell watch loop (detects but
