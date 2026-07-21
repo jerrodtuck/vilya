@@ -30,6 +30,16 @@ everything ships through chips.
 
 - There **must be a tracking issue** — create it via [/vl-start-feature](../vl-start-feature/SKILL.md)
   or [/vl-update-docs](../vl-update-docs/SKILL.md) first. **Never chip untracked work.**
+- **Board-membership check (idempotent, single call — not a poll loop):** ad-hoc `gh issue create`
+  succeeds even when the issue never lands on the board — it gives no signal that step 2 of
+  `GITHUB-PROJECTS.md`'s "Creating an issue (two commands)" pattern was skipped. Before writing
+  the brief, check once:
+  `gh issue view <n> --repo <owner>/<repo> --json projectItems --jq '.projectItems'` — non-empty
+  means it's on the board. If empty (`[]`), add it: `gh project item-add <n> --owner <owner> --url
+  https://github.com/<owner>/<repo>/issues/<n>` (owner/project number from `GITHUB-PROJECTS.md`).
+  `item-add` on an issue already on the board is a no-op, so this catches the gap regardless of how
+  the issue was created — do not skip the check just because the issue came from
+  `/vl-start-feature` or `/vl-update-docs`.
 - Read repo/owner/project/labels/**stack**/**crucible variant**/test command from
   `docs/project-tracking/GITHUB-PROJECTS.md`.
 - At a **real design fork**, stop and give the operator **2–3 options with costs** in plain chat —
