@@ -103,8 +103,14 @@ no leftover `next`/`dev` processes.
 8. Nested subagents only for board/research/read-only prep — never feature coding in the main clone.
 9. When a bug or question lands: at most one quick repro probe (to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose kickoff carries the investigation — root-causing runs in that chip's fresh context window, never in this chat. This chat's window is the pipeline's shared resource; if your probes start multiplying, that is the signal to stop and dispatch.
 10. Track progress across sessions via issues/PRs/board Status only. Never invent markdown trackers.
-11. One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
-12. After [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash: you own [/vl-prune](../vl-prune/SKILL.md) from the main clone (dry-run, then `--apply`). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean `%USERPROFILE%\.cursor\worktrees\<repo>`.
+11. **Ad-hoc issue creation** (a relayed cross-session finding, a fork spun into its own issue —
+    anything not going through [/vl-start-feature](../vl-start-feature/SKILL.md) or
+    [/vl-update-docs](../vl-update-docs/SKILL.md)) **must** use the two-command pattern from
+    `docs/project-tracking/GITHUB-PROJECTS.md`, "Creating an issue (two commands)": `gh issue
+    create` then `gh project item-add <n> --owner <owner> --url "$url"`. A plain `gh issue create`
+    succeeds silently even when it never lands on the board — do not rely on catching it later.
+12. One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
+13. After [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash: you own [/vl-prune](../vl-prune/SKILL.md) from the main clone (dry-run, then `--apply`). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean `%USERPROFILE%\.cursor\worktrees\<repo>`.
 
 ## Honesty bar
 
