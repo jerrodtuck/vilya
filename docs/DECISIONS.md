@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
 
+## 2026-07-20 — Prune gated Cursor probe worktrees (#287 / #280)
+
+**Decision:** `/vilya-prune` **does** clean gated Cursor probe leftovers under `.cursor/worktrees/<repo>/` when the folder matches `*-probe-*` / `bon-probe-*` / `model-switch-probe-*` **or** the branch is `probe/*`, using the same closed-out + clean + not-cwd gates as normal rows. Dry-run labels them `eligible (probe)`; `--apply` removes them (including scoped lock-holder kills). It still does **not** prune arbitrary Best-of-N / Parallel pools. (decided by operator, 2026-07-20).
+
+**Options considered:**
+1. Keep the total BoN carve-out (never touch Parallel / BoN trees) — cost: dogfood `probe/*` / `*-probe-*` leftovers pile forever ← rejected
+2. **Gated probe patterns only (chosen)** — cost: teach the pattern + keep non-gated pools skipped ← chosen
+3. Prune every Cursor worktree under `.cursor/worktrees/<repo>/` that is closed-out — cost: silent deletion of live BoN runs ← rejected
+
+**Why:** Probe trees do not self-clean; the prior skill text treated all BoN-adjacent pools as off-limits. A narrow folder/branch gate removes leftovers without widening to live Task/BoN pools.
+
+**Consequences:** Update `/vilya-prune` §3a + honesty bar; registry skill mirror; Setup prune note; orch prune cards; testable `isCursorProbeCandidate`. Claude `.claude/worktrees` rules unchanged.
+
+**Evidence:** #287 (locked design 2026-07-20); epic #280; prior carve-out in `/vilya-prune` “Why this exists”; `#227` `--apply` kill auth still applies to eligible probe rows.
+
 ## 2026-07-20 — Seat skill rename: orch / arch / plan (#283 / #280)
 
 **Decision:** Hard-cut rename of the four standing seat skills so folder name, frontmatter `name`, and slash invoke match short symmetric slugs: `vilya-orchestrator` → `vilya-orch-claude`, `vilya-orchestrator-cursor` → `vilya-orch-cursor`, `vilya-architect` → `vilya-arch`, `vilya-planner` → `vilya-plan`. Keep the `vilya-` prefix. No dual-name aliases, no submenu. (decided by operator, 2026-07-20).
