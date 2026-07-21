@@ -1,11 +1,11 @@
 ---
-name: vilya-orchestrator-cursor
+name: vilya-orch-cursor
 description: >-
   Cursor orchestrator seat — one dispatch lock per repo with no session-to-session
   comms layer. Stay in the main clone; kick off streams via /vilya-start-feature;
   leave self-contained kickoffs on issues; arm REST notify_on_output monitors;
   merge and prune from the main clone. Use when the operator says
-  "/vilya-orchestrator-cursor", "Cursor orchestrator", or seats the Cursor
+  "/vilya-orch-cursor", "Cursor orchestrator", or seats the Cursor
   orchestrator standing orders.
 ---
 
@@ -13,11 +13,11 @@ description: >-
 
 > Companions: [/vilya-start-feature](../vilya-start-feature/SKILL.md) (issue +
 > worktree + kickoff), [/vilya-cursor-handoff](../vilya-cursor-handoff/SKILL.md)
-> (Worker A seat in the worktree), [/vilya-planner](../vilya-planner/SKILL.md),
+> (Worker A seat in the worktree), [/vilya-plan](../vilya-plan/SKILL.md),
 > [/vilya-merge-pr](../vilya-merge-pr/SKILL.md), [/vilya-prune](../vilya-prune/SKILL.md).
 > Repo / owner / project / labels / stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Claude host seat:
-> [/vilya-orchestrator](../vilya-orchestrator/SKILL.md). Chip dispatch
+> [/vilya-orch-claude](../vilya-orch-claude/SKILL.md). Chip dispatch
 > ([/vilya-chip](../vilya-chip/SKILL.md)) is Claude `spawn_task` — **not** this
 > seat's kickoff.
 
@@ -29,7 +29,7 @@ orchestrator session; Copy on `/orchestrator` may remain as fallback.
 | Rule | Call |
 |------|------|
 | Role | Dispatch lock — board watch, start-feature kickoffs, monitors, merge queue, prune |
-| Cardinality | **One** orchestrator session **per repo**. Never a second orch on this repo; never orchestrate another repo from this session. `/vilya-architect` is one seat per product board. |
+| Cardinality | **One** orchestrator session **per repo**. Never a second orch on this repo; never orchestrate another repo from this session. `/vilya-arch` is one seat per product board. |
 | Coordination | Cursor agent sessions **cannot talk to each other** — Projects board, issues, and PRs are the only channel |
 | Home | Main clone — never feature-code in this chat; workers build in worktrees |
 | Never | Implement feature code here, re-plan when `plan:ready`, merge without verify, push the default branch, invent markdown trackers, or map this seat to `/vilya-chip` |
@@ -42,7 +42,7 @@ Read owner, repo, project number, labels, stack, and crucible/test config from
 ## Planner + standing plan:ready poller
 
 You are **not** the Planner. Do not plan on the orchestrator model — planning is a
-standing Fable [/vilya-planner](../vilya-planner/SKILL.md) session. Enqueue with
+standing Fable [/vilya-plan](../vilya-plan/SKILL.md) session. Enqueue with
 opt-in `needs:plan` when scope, verify plan, or forks need a planning pass;
 Planner drains the queue to `plan:ready` (kickoff + verify plan on the issue).
 

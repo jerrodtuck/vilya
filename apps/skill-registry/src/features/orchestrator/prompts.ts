@@ -86,7 +86,7 @@ export const ORCH_PLAN_READY_POLLER =
  * is always the issue/PR — never the Planner process.
  */
 export const PLANNER_ORCH_DOCTRINE = [
-  "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-planner session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
+  "You are not the Planner. Do not plan on orchestrator /model — planning is a standing Fable /vilya-plan session. Enqueue with opt-in needs:plan when scope, verify plan, or forks need a planning pass; Planner drains the queue to plan:ready (kickoff + verify plan on the issue).",
   ORCH_PLAN_READY_POLLER,
   "Daytime may proceed without plan:ready when the issue is already clear (attended judgment); when plan:ready is on, the brief must carry those plan artifacts.",
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
@@ -105,10 +105,10 @@ export const PROMPTS: PromptGroup[] = [
         text: "You're my implementation partner on this repo. House rules: vertical-slice architecture, outcome-oriented SOLID, one issue = one branch = one worktree. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs before implementing. Hold the crucible review bar and report progress honestly.",
       },
       {
-        // Graduated seat (#268) — skill → /vilya-orchestrator. Chip stays dispatch-only.
+        // Graduated seat (#268) — skill → /vilya-orch-claude. Chip stays dispatch-only.
         label: "Claude Code — orchestrator · spawn_task chips",
         skill: SKILL_SLUGS.orchestrator,
-        text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-architect, by contrast, is one seat per product board, spanning that product's repos).
+        text: `You're the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md at kickoff. You stay in the main clone on the default branch and never edit feature code yourself — everything ships through chips. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
 
@@ -130,11 +130,11 @@ Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the
 
       },
       {
-        // Graduated seat (#268) — skill → /vilya-orchestrator-cursor. Chip stays dispatch-only.
+        // Graduated seat (#268) — skill → /vilya-orch-cursor. Chip stays dispatch-only.
         id: CURSOR_ORCH_PROMPT_ID,
         label: CURSOR_ORCH_PROMPT_LABEL,
         skill: SKILL_SLUGS.orchestratorCursor,
-        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-architect, by contrast, is one seat per product board, spanning that product's repos).
+        text: `You are the orchestrator for this repo — not the implementer. Read owner, repo, project number, labels, stack, and crucible/test config from docs/project-tracking/GITHUB-PROJECTS.md. Cursor agent sessions can't talk to each other, so the Projects board, issues, and PRs are the only coordination channel — every handoff lives there, never in this chat. One orchestrator per repo: this session is this repo's dispatch lock — it owns the main clone, the worktree lifecycle, and the merge queue, so never run a second orchestrator on this repo and never orchestrate another repo from this session (/vilya-arch, by contrast, is one seat per product board, spanning that product's repos).
 
 ${PLANNER_ORCH_DOCTRINE}
 

@@ -42,7 +42,7 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
     }
   });
 
-  it("Claude orch card renders /vilya-orchestrator affordance (not chip)", () => {
+  it("Claude orch card renders /vilya-orch-claude affordance (not chip)", () => {
     const orch = orchGroup();
     const claudeOrch = orch.items.find((i) => i.label === CLAUDE_ORCH_LABEL)!;
     // Render the seat alone — body doctrine may still name /vilya-chip as dispatch.
@@ -61,7 +61,7 @@ describe("orchestrator prompt skill metadata (#254 / #268)", () => {
     expect(html).toContain("Copy");
   });
 
-  it("Cursor orch card renders /vilya-orchestrator-cursor affordance (not chip)", () => {
+  it("Cursor orch card renders /vilya-orch-cursor affordance (not chip)", () => {
     const orch = orchGroup();
     const cursorOrch = orch.items.find((i) => i.label === CURSOR_ORCH_PROMPT_LABEL)!;
     const html = renderToStaticMarkup(

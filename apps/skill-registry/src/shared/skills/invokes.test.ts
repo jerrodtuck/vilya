@@ -12,9 +12,9 @@ describe("SKILL_INVOKES / SKILL_SLUGS", () => {
   it("keeps slash invokes aligned with slugs", () => {
     expect(SKILL_INVOKES.startFeature).toBe(`/${SKILL_SLUGS.startFeature}`);
     expect(SKILL_INVOKES.cursorHandoff).toBe("/vilya-cursor-handoff");
-    expect(SKILL_INVOKES.architect).toBe("/vilya-architect");
-    expect(SKILL_INVOKES.orchestrator).toBe("/vilya-orchestrator");
-    expect(SKILL_INVOKES.orchestratorCursor).toBe("/vilya-orchestrator-cursor");
+    expect(SKILL_INVOKES.architect).toBe("/vilya-arch");
+    expect(SKILL_INVOKES.orchestrator).toBe("/vilya-orch-claude");
+    expect(SKILL_INVOKES.orchestratorCursor).toBe("/vilya-orch-cursor");
     expect(SKILL_INVOKES.askVilya).toBe("/vilya-ask-vilya");
     expect(SKILL_INVOKES.chip).toBe("/vilya-chip");
   });

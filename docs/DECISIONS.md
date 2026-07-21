@@ -2,6 +2,25 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vilya-adr.
 
+## 2026-07-20 — Seat skill rename: orch / arch / plan (#283 / #280)
+
+**Decision:** Hard-cut rename of the four standing seat skills so folder name, frontmatter `name`, and slash invoke match short symmetric slugs: `vilya-orchestrator` → `vilya-orch-claude`, `vilya-orchestrator-cursor` → `vilya-orch-cursor`, `vilya-architect` → `vilya-arch`, `vilya-planner` → `vilya-plan`. Keep the `vilya-` prefix. No dual-name aliases, no submenu. (decided by operator, 2026-07-20).
+
+**Options considered:**
+1. Dual install / alias both old and new invokes — cost: teaching drift; install ambiguity ← rejected
+2. **Hard-cut four-seat rename (chosen)** — cost: one-time sweep of skills, registry mirrors, site, tests, canon; operators re-run `install-skills` so `~/.claude/skills` junctions track new folder names ← chosen
+3. Drop `vilya-` prefix for even shorter names — cost: slash-browse collision / lost cluster ← rejected
+
+**Why:** Seat skills should read at a glance under `/vilya`. `orchestrator` vs `orchestrator-cursor` was asymmetric; orch / arch / plan clusters the seats the operator actually seats.
+
+**Consequences:**
+- Live teaching surfaces (`skills/`, registry content, site prompts/tests, `GITHUB-PROJECTS.md`) use only the new slugs.
+- Historical `changelog.d/` pre-rename fragments may keep old names.
+- After merge, re-run `scripts/install-skills.(ps1|sh)` so `~/.claude/skills` junctions point at the new folders (rename breaks old junction targets).
+- Chip / start-feature / crucible / merge / prune names unchanged (follow-on if wanted).
+
+**Evidence:** Epic #280; head #283; operator lock 2026-07-20; prior `vilya-*` rename ADRs (#257/#260).
+
 ## 2026-07-20 — One board, two desktops (#281 / #280; absorbs #271 Option A)
 
 **Decision:** Teach **one board contract, two desktop chip backends** — same outcomes

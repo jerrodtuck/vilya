@@ -7,7 +7,7 @@ description: Kick off a new feature or work stream on any repo's GitHub Projects
 
 > **Scope:** Internal dev-process skill for a VSA-structured product repo. Companion:
 > [/vilya-finish-feature](../vilya-finish-feature/SKILL.md). Plan loop for chip-flow:
-> [/vilya-planner](../vilya-planner/SKILL.md). Tracking model + this repo's project ids/labels:
+> [/vilya-plan](../vilya-plan/SKILL.md). Tracking model + this repo's project ids/labels:
 > `docs/project-tracking/GITHUB-PROJECTS.md`.
 
 All repo / project / label values come from this repo's `GITHUB-PROJECTS.md` **Repo config** block.
@@ -49,11 +49,11 @@ If the repo isn't already known, detect it:
 
 ## 3. Plan phase → then execute phase
 
-**Chip-flow / multi-session (default):** Plan phase belongs to **[/vilya-planner](../vilya-planner/SKILL.md)**,
+**Chip-flow / multi-session (default):** Plan phase belongs to **[/vilya-plan](../vilya-plan/SKILL.md)**,
 not the orchestrator session pretending to `/model` plan.
 
 1. Sections 1–2 still run here: issue, board Status, worktree, branch.
-2. If the issue needs a planning pass, enqueue **`needs:plan`** (or invoke `/vilya-planner` on a
+2. If the issue needs a planning pass, enqueue **`needs:plan`** (or invoke `/vilya-plan` on a
    named issue). Do **not** write the kickoff + verify plan in the orchestrator as a
    substitute for Planner when chip-flow is in use.
 3. When you enqueue `needs:plan`, arm a **board Monitor** for that issue watching
@@ -109,7 +109,7 @@ the gate so the chip cannot talk itself into implementing:
 
 This gate does **not** replace Planner for ordinary `plan:ready` issues. Planner's own fork rules
 (finish with consult notes vs stop at `needs:decision` when the plan cannot finish) stay as in
-[/vilya-planner](../vilya-planner/SKILL.md). Investigate-first is for execute-time unknowns whose step 1 must
+[/vilya-plan](../vilya-plan/SKILL.md). Investigate-first is for execute-time unknowns whose step 1 must
 run before a real choice exists — see [/vilya-chip](../vilya-chip/SKILL.md) §2a.
 
 ## 5. Working rules
@@ -129,7 +129,7 @@ run before a real choice exists — see [/vilya-chip](../vilya-chip/SKILL.md) §
 ## 6. Verify plan up front — including merge routing
 
 State how the feature will be verified, **on the issue** (kickoff comment), so finish and merge
-read it instead of re-deciding. In chip-flow, that kickoff is written by [/vilya-planner](../vilya-planner/SKILL.md);
+read it instead of re-deciding. In chip-flow, that kickoff is written by [/vilya-plan](../vilya-plan/SKILL.md);
 in the single-session footnote, this skill writes it.
 
 - Which test projects / suites.

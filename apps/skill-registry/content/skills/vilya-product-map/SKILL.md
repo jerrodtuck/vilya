@@ -1,11 +1,11 @@
 ---
 name: vilya-product-map
-description: Survey the product's as-built architecture against its as-intended direction and emit the diff — a divergence list where every entry cites both sides (issue #s, commit shas, file paths, section names) with an evidence class per claim. Use when the user says "product map", "as-built vs as-intended", "ground truth check", "survey the architecture", "is the vision still true", or a /vilya-architect session needs the gap list before proposing direction.
+description: Survey the product's as-built architecture against its as-intended direction and emit the diff — a divergence list where every entry cites both sides (issue #s, commit shas, file paths, section names) with an evidence class per claim. Use when the user says "product map", "as-built vs as-intended", "ground truth check", "survey the architecture", "is the vision still true", or a /vilya-arch session needs the gap list before proposing direction.
 ---
 
 # Product map — as-built vs as-intended (any stack)
 
-> **Scope:** [/vilya-architect](../vilya-architect/SKILL.md)'s ground-truth instrument, **read-only** — it surveys and reports,
+> **Scope:** [/vilya-arch](../vilya-arch/SKILL.md)'s ground-truth instrument, **read-only** — it surveys and reports,
 > never writes files, never files issues, never mutates the board. Companion to
 > [/vilya-history](../vilya-history/SKILL.md) (one topic's timeline through time; this is the whole product
 > at one instant) and [/vilya-adr](../vilya-adr/SKILL.md) (where findings that get decided are recorded).
@@ -15,7 +15,7 @@ description: Survey the product's as-built architecture against its as-intended 
 >
 > The survey unit is the **product board**. A product spanning several repos runs steps 2–4
 > once per repo (each from its own config block) and merges the pair tables into one map — the
-> `/vilya-architect` seat is per board, not per repo (today all products are single-repo; this is the
+> `/vilya-arch` seat is per board, not per repo (today all products are single-repo; this is the
 > contract, not new machinery).
 
 The valuable output is **not a diagram** — it is gap findings with receipts: each divergence

@@ -1,9 +1,9 @@
 ---
-name: vilya-architect
+name: vilya-arch
 description: >-
   Product Architect seat — decide and document product direction and architecture
   for one product board. Output is issues, ADRs, and specs; never implement,
-  dispatch chips, or merge. Use when the operator says "/vilya-architect",
+  dispatch chips, or merge. Use when the operator says "/vilya-arch",
   "architect session", "product direction", or opens a direction/architecture
   session for a product board.
 ---

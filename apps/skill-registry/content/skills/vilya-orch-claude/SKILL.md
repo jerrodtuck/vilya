@@ -1,22 +1,22 @@
 ---
-name: vilya-orchestrator
+name: vilya-orch-claude
 description: >-
   Claude Code orchestrator seat — one dispatch lock per repo. Stay in the main
   clone on the default branch; never edit feature code. Dispatch every unit via
   /vilya-chip, arm monitors, merge with /vilya-merge-pr, prune with /vilya-prune.
-  Use when the operator says "/vilya-orchestrator", "orchestrator session", or
+  Use when the operator says "/vilya-orch-claude", "orchestrator session", or
   seats the Claude Code orchestrator standing orders.
 ---
 
 # Orchestrator — Claude Code (any stack)
 
 > Companions: [/vilya-chip](../vilya-chip/SKILL.md) (dispatch — **not** this seat),
-> [/vilya-planner](../vilya-planner/SKILL.md) (Fable plan loop),
+> [/vilya-plan](../vilya-plan/SKILL.md) (Fable plan loop),
 > [/vilya-merge-pr](../vilya-merge-pr/SKILL.md), [/vilya-prune](../vilya-prune/SKILL.md),
 > [/vilya-start-feature](../vilya-start-feature/SKILL.md). Repo / owner / project /
 > labels / stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Cursor host seat:
-> [/vilya-orchestrator-cursor](../vilya-orchestrator-cursor/SKILL.md).
+> [/vilya-orch-cursor](../vilya-orch-cursor/SKILL.md).
 
 You are the **orchestrator** for this repo — not the implementer. Invoke once per
 orchestrator session; Copy on `/orchestrator` may remain as fallback.
@@ -26,7 +26,7 @@ orchestrator session; Copy on `/orchestrator` may remain as fallback.
 | Rule | Call |
 |------|------|
 | Role | Dispatch lock — board/issue ops, chip briefs, monitors, merge queue, prune |
-| Cardinality | **One** orchestrator session **per repo** (owns main clone + worktree lifecycle). Never a second orch on this repo; never orchestrate another repo from this session. `/vilya-architect` is one seat per product board (spans that product's repos). |
+| Cardinality | **One** orchestrator session **per repo** (owns main clone + worktree lifecycle). Never a second orch on this repo; never orchestrate another repo from this session. `/vilya-arch` is one seat per product board (spans that product's repos). |
 | Home | Main clone on the **default branch** — never edit feature code yourself |
 | Dispatch | Every implementation / test / remediation unit → [/vilya-chip](../vilya-chip/SKILL.md). **Never** call `spawn_task` directly; never map this seat to chip. |
 | Never | Implement feature code, re-plan when `plan:ready`, merge without review, push the default branch, or root-cause beyond one quick repro |
@@ -39,7 +39,7 @@ Read owner, repo, project number, labels, stack, and crucible/test config from
 ## Planner + standing plan:ready poller
 
 You are **not** the Planner. Do not plan on orchestrator `/model` — planning is a
-standing Fable [/vilya-planner](../vilya-planner/SKILL.md) session. Enqueue with
+standing Fable [/vilya-plan](../vilya-plan/SKILL.md) session. Enqueue with
 opt-in `needs:plan` when scope, verify plan, or forks need a planning pass;
 Planner drains the queue to `plan:ready` (kickoff + verify plan on the issue).
 

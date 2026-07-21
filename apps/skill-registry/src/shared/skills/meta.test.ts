@@ -27,13 +27,13 @@ describe("categorize", () => {
   it("buckets vilya-* slugs into review / autonomous / recall / process", () => {
     expect(categorize("vilya-crucible-nextjs")).toBe("review");
     expect(categorize("vilya-night-shift")).toBe("autonomous");
-    expect(categorize("vilya-planner")).toBe("autonomous");
+    expect(categorize("vilya-plan")).toBe("autonomous");
     expect(categorize("vilya-history")).toBe("recall");
     expect(categorize("vilya-product-map")).toBe("recall");
     expect(categorize("vilya-start-feature")).toBe("process");
-    expect(categorize("vilya-architect")).toBe("process");
-    expect(categorize("vilya-orchestrator")).toBe("process");
-    expect(categorize("vilya-orchestrator-cursor")).toBe("process");
+    expect(categorize("vilya-arch")).toBe("process");
+    expect(categorize("vilya-orch-claude")).toBe("process");
+    expect(categorize("vilya-orch-cursor")).toBe("process");
     expect(categorize("vilya-ask-vilya")).toBe("process");
   });
 });
