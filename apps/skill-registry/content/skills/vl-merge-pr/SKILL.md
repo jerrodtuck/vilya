@@ -16,6 +16,7 @@ description: >-
 > `feat|fix|docs/*`) worktrees after squash. This skill is the operator's side of the
 > handshake — **nothing merges without it**. Repo / test command / default branch come from
 > this repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block.
+> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it).
 
 ## 0. Policy — squash, always
 
@@ -210,7 +211,10 @@ gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge \
 
 ## Honesty bar
 
-Never merge over red checks silently. Name any verification you skipped ("merged on review alone,
-no local run"). Distinguish **merged** from **merged and live-verified** — that's what Verifying
-is for. Distinguish **merged** from **pruned** — leftover worktrees after squash are expected
-until `/vl-prune --apply`.
+Operator-facing chat (triage calls, merge confirmations) follows
+[/vl-adhd](../vl-adhd/SKILL.md) — load it at session start; PR Verification
+sections stay long-form. Never merge over red checks silently. Name any
+verification you skipped ("merged on review alone, no local run").
+Distinguish **merged** from **merged and live-verified** — that's what
+Verifying is for. Distinguish **merged** from **pruned** — leftover
+worktrees after squash are expected until `/vl-prune --apply`.
