@@ -45,7 +45,7 @@ export const PLAN_EXECUTE_BLOCKS: PlanExecuteBlock[] = [
   },
   {
     title: "Cursor is a different mechanism.",
-    body: "`.claude/settings.local.json`, `/model`, and `.worktreeinclude` are Claude Code only — Cursor reads none of them. In **Cursor**, the IDE model is chosen per conversation in the chat's model dropdown (planning and execution alike). Cursor has no repo-file-based model config — Cloud Agents take a `model.id` per dispatch in `POST /v1/agents`, falling back to your user default → team default → system default, all account-level. If you run both tools on one repo, set the model in each tool separately; neither inherits from the other.",
+    body: "`.claude/settings.local.json`, `/model`, and `.worktreeinclude` are Claude Code only — Cursor reads none of them. In **Cursor**, daytime Planner is **optional** (orch or in-session plan may write the kickoff; enqueue `/vilya-planner` for night-shift / hard forks). The IDE model is chosen per conversation or per Task; optional two-Task plan→execute on the same worktree; same model for both is valid. Cloud Agents take a `model.id` per dispatch in `POST /v1/agents`. Local BoN needs an explicit worktree-first ask. Why the seats diverge: [Two desktops](/differences). If you run both tools on one repo, set the model in each tool separately.",
   },
 ];
 

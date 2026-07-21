@@ -306,6 +306,105 @@ code {
 @media (max-width: 640px) {
   .diffcols { grid-template-columns: 1fr; }
 }
+
+/* ---------- site: differences — one board / two desktops (#281) ---------- */
+.diff-host-bar {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 40;
+  margin: 18px 0 8px;
+  padding: 10px 0 8px;
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background) / 0.96) 60%,
+    hsl(var(--background) / 0.7) 85%,
+    transparent
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.diff-host-bar[data-host="cc"] .toggle button.on {
+  color: var(--orch);
+  border-bottom: 2px solid var(--orch);
+}
+.diff-host-bar[data-host="cursor"] .toggle button.on {
+  color: var(--inprog);
+  border-bottom: 2px solid var(--inprog);
+}
+.diff-host-objective { margin: 8px 0 0; max-width: 42rem; line-height: 1.55; }
+.diff-shared { margin-top: 22px; }
+.diff-shared h2,
+.diff-host-flow h2,
+.diff-museum h2,
+.diff-matrix-section h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.diff-board-strip { margin: 14px 0 4px; }
+.diff-board-node { display: inline-flex; align-items: center; gap: 8px; }
+.diff-host-flow {
+  margin-top: 26px;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: hsl(var(--card) / 0.45);
+  border-left: 3px solid var(--orch);
+}
+.diff-host-flow[data-host="cursor"] { border-left-color: var(--inprog); }
+@media (prefers-reduced-motion: no-preference) {
+  .diff-host-flow { animation: fade-in 0.4s ease both; }
+}
+.diff-flow-steps {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.diff-flow-steps li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 2px;
+  border-bottom: 1px solid #20262f;
+}
+.diff-flow-steps li:last-child { border-bottom: 0; }
+.diff-flow-steps b {
+  font-size: 13.5px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  color: var(--text);
+}
+.diff-flow-steps span { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.diff-advanced { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.diff-advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.diff-advanced ul { margin: 6px 0 0; padding-left: 1.2rem; line-height: 1.55; }
+.diff-museum { margin-top: 28px; }
+.diff-museum-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  overflow: hidden;
+  background: hsl(var(--card) / 0.4);
+}
+.diff-museum-list li {
+  display: grid;
+  gap: 3px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #20262f;
+}
+.diff-museum-list li:last-child { border-bottom: 0; }
+.diff-museum-list b { font-size: 13.5px; color: var(--text); }
+.diff-museum-list span { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.diff-matrix-section { margin-top: 32px; }
 pre {
   background: hsl(222 47% 5%);
   border: 1px solid var(--border);

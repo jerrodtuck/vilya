@@ -170,7 +170,16 @@ finish wakes the seat without relying on same-turn enqueue memory. Same-turn per
 board Monitor for that issue remains best-practice reinforcement, not the sole wake path.
 Never a process monitor on the Planner session. Planner intake for `needs:plan` stays
 Planner-owned (#255). Daytime may chip without `plan:ready` when the issue is already
-clear (attended judgment).
+clear (attended judgment). **Host split (#271 / #281):** Claude Code chip-flow still
+needs the standing Fable Planner; **Cursor daytime Planner is optional** — orch or
+in-session plan may write the kickoff; enqueue Planner when you want the Fable drain /
+night-shift prep. Night-shift eligibility still requires `plan:ready`.
+
+**One board, two desktops:** GitHub issues + Project Status + labels + verify-plan merge
+routing are the shared contract on both hosts; chip spawn, Planner seat, model split,
+and cloud/local gates diverge by desktop. ADR:
+`docs/DECISIONS.md` (`2026-07-20 — One board, two desktops`); teaching surface:
+site `/differences`.
 
 ```text
 [optional] needs:plan → Planner (Fable) → plan:ready
