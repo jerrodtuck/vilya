@@ -72,13 +72,34 @@ fi
 copied=0
 skipped=0
 
+copy_one() {
+  local src="$1"
+  local rel="${src#"$SOURCE_ROOT"/}"
+  if ! git -C "$SOURCE_ROOT" check-ignore -q -- "$rel"; then
+    echo "apply-worktreeinclude: skip (not gitignored): $rel"
+    skipped=$((skipped + 1))
+    return
+  fi
+  local dest="$DEST_ROOT/$rel"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "apply-worktreeinclude: would copy $rel"
+    copied=$((copied + 1))
+    return
+  fi
+  mkdir -p "$(dirname "$dest")"
+  cp -a "$src" "$dest"
+  echo "apply-worktreeinclude: copied $rel"
+  copied=$((copied + 1))
+}
+
 while IFS= read -r line || [[ -n "$line" ]]; do
   pattern="$(printf '%s' "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
   [[ -z "$pattern" || "$pattern" == \#* ]] && continue
 
-  # Strip trailing /** or /
+  recursive=0
   if [[ "$pattern" == *'/**' ]]; then
     pattern="${pattern%/\*\*}"
+    recursive=1
   fi
   pattern="${pattern%/}"
 
@@ -89,29 +110,15 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     continue
   fi
 
-  rel="${src#"$SOURCE_ROOT"/}"
-  if ! git -C "$SOURCE_ROOT" check-ignore -q -- "$rel"; then
-    echo "apply-worktreeinclude: skip (not gitignored): $rel"
-    skipped=$((skipped + 1))
+  if [[ -d "$src" && "$recursive" -eq 1 ]]; then
+    # Directory itself may not be gitignored (tracked README); copy ignored files.
+    while IFS= read -r -d '' f; do
+      copy_one "$f"
+    done < <(find "$src" -type f -print0)
     continue
   fi
 
-  dest="$DEST_ROOT/$rel"
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "apply-worktreeinclude: would copy $rel"
-    copied=$((copied + 1))
-    continue
-  fi
-
-  mkdir -p "$(dirname "$dest")"
-  if [[ -d "$src" ]]; then
-    rm -rf "$dest"
-    cp -a "$src" "$dest"
-  else
-    cp -a "$src" "$dest"
-  fi
-  echo "apply-worktreeinclude: copied $rel"
-  copied=$((copied + 1))
+  copy_one "$src"
 done < "$INCLUDE"
 
 echo "apply-worktreeinclude: done (copied=$copied skipped=$skipped) source=$SOURCE_ROOT dest=$DEST_ROOT"
