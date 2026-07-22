@@ -161,6 +161,7 @@ probes start multiplying, that's the signal to stop and dispatch.
 - Standing orders are a menu: this skill is the Claude orch seat only — never stack seats.
 - Chip is dispatch. This skill is the seat. Do not teach "run `/vl-chip`" as the orch kickoff.
 - Never claim Cursor sessions share a comms layer with Claude Code chips.
+- Never execute another seat's skill (`/vl-arch`, `/vl-plan`, `/vl-ask`) in this session — that seat runs in its own session; route the operator there instead.
 
 ## Explicit
 

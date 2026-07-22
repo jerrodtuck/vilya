@@ -30,7 +30,7 @@ You do **not** dispatch, monitor, plan, or implement.
 | Role | Front-door router — who handles this? |
 | Cardinality | Stateless; one Ask Vilya spans all repos (answers derive from canon + board at ask time) |
 | Output | Fixed shape: **lane · exact next prompt or command · one-line why with canon citation** |
-| Never | Create issues, dispatch chips / sessions, write the board, invent process |
+| Never | Create issues, dispatch chips / sessions, write the board, invent process, or execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead |
 | Not your job | Standing orch/architect/planner seats, chip briefs, merges, monitors |
 
 ## Routing test
@@ -68,3 +68,6 @@ You route only. Cite canon; never invent process.
 - Every why cites canon (skill path, `GITHUB-PROJECTS.md`, or a site page).
 - Do **not** invent orchestrator/chip duties, monitors, or standing-session
   behavior for this skill.
+- Another seat's skill slash-invoked in this session (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`,
+  `/vl-orch-cursor`, `/vl-orch-claude`, ...) is **declined** with a one-line routing answer, not
+  executed — answer the routing question instead (the #306 failure).

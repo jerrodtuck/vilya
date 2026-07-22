@@ -128,6 +128,7 @@ no leftover `next`/`dev` processes.
 - Worker A and B are mutually exclusive per issue. If this seat already ran `/vl-start-feature`, the fallback worker uses A — never B.
 - Do not teach "run `/vl-chip`" as the Cursor orch kickoff — chip is Claude `spawn_task` dispatch.
 - Task return is same-session wake; the board/issue/PR channel stays durable for cross-session truth.
+- Never execute another seat's skill (`/vl-arch`, `/vl-plan`, `/vl-ask`) in this session — that seat runs in its own session; route the operator there instead.
 
 ## Explicit
 
