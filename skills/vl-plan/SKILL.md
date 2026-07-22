@@ -28,8 +28,11 @@ not the orchestrator, not a chip, and not night-shift.
 | Cardinality | One Planner session **per repo** |
 | Model | Session expected on **Fable** (`claude --model fable` or equivalent). Orchestrator + chips stay on Sonnet. Do **not** claim `spawn_task` can pin Fable. |
 | Output | Kickoff comment + verify plan (+ costed fork options when needed) on the issue; label `plan:ready` |
-| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm **process/completion** self-watches, edit feature code, or execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead |
+| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm **process/completion** self-watches, edit feature code, or execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead; plain-language implement asks ("implement", "fix that now", "edit the files", "write the code", edit product or Vilya skill files) — decline with a one-line route to the owning orchestrator session (product orch for product repos; Vilya orch for skills) and do not edit |
 | Required when idle | **Intake Monitor** for open `needs:plan` (see below) |
+
+**Desktop chat title (Claude Code Desktop UI only):** at session start, set or remind the operator to set this chat's title to `<repo-short>-plan` so `mcp__ccd_session_mgmt` can find this seat across desktops. `repo-short` = `gh repo view --json name -q .name` (or the leaf of `nameWithOwner`). **Not** Claude Code CLI. **Not** Cursor.
+
 
 ## Enqueue
 
@@ -158,6 +161,7 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
   `/vl-orch-cursor`, `/vl-orch-claude`, ...) is **declined** with a one-line routing answer, not
   executed — seat doctrine wins over the invoked skill's body, even when that skill's text
   reads like a green light (the #306 failure).
+- Plain-language implement / "fix that now" / edit product or Vilya skill files / write the code is **declined** with a one-line route to the owning orchestrator session (product orch for product repos; Vilya orch for skills) — do not edit; seat doctrine wins over the ask, even when the ask is urgent (the #308 gap after #306).
 - Never treat "never arm monitors" as forbidding **intake** — intake is required; process/completion self-watch is still forbidden.
 - If the brief is too thin to plan, say so on the issue and stop at `needs:decision`
   rather than inventing acceptance.
