@@ -15,6 +15,15 @@ description: >-
 > cleans the chip worktrees. Repo / owner / project / labels / **stack** / **crucible variant** /
 > test command come from `docs/project-tracking/GITHUB-PROJECTS.md`.
 
+## Seat check — read before § What a chip is
+
+`/vl-chip` dispatch is **orchestrator-only**. If this session is seated as `/vl-arch`,
+`/vl-plan`, `/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline**
+— one line: "chip dispatch is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude`
+session" — and stop. Do not call `spawn_task` from here. This file's steps below do not
+outrank the seat's Never list just because they're written down (the #306 failure: a
+`/vl-arch` session ran orch-only skills because their body read like license to proceed).
+
 ## What a chip is
 
 A **chip** is a background session dispatched via the **`spawn_task`** tool. It:

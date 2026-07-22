@@ -2,6 +2,49 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-07-21 — Seat boundary: refuse other seats' skills invoked in the wrong session (#306)
+
+**Decision:** A slash-invoked skill that belongs to a different seat than the one this session is
+seated as must be **declined**, not executed. Two mechanisms, both required: (1) a **Seat check**
+preamble near the top of the three orchestrator-only operator skills — `/vl-merge-pr`,
+`/vl-prune`, `/vl-chip` — that tells a non-orch session (`/vl-arch`, `/vl-plan`, `/vl-ask`, or
+any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`) to decline with a one-line route and
+stop before reading further; (2) an explicit refusal clause in the seat skills themselves —
+`/vl-arch`, `/vl-plan`, `/vl-ask` — stating that another seat's skill invoked here is declined
+with a one-line routing answer, and that **seat doctrine wins over the invoked skill's body**. The
+two orchestrator seats (`/vl-orch-cursor`, `/vl-orch-claude`) get a one-line reinforcement only, since
+they already own merge/prune/chip. (decided by operator, 2026-07-21).
+
+**Options considered:**
+1. Rely on the seat's own Never list only (status quo) — cost: the #306 incident happened with
+   a Never list already in place; the invoked skill's own body reads like a green light and can
+   outrank it in practice — rejected as sole control
+2. **Seat-check preamble on the orch-only skills + explicit refusal clause on the seat skills
+   (chosen)** — cost: one short section per touched skill; registry mirror sync — chosen
+3. A hook/gate that blocks slash-invoking a skill outside its declared seat — cost: no reliable
+   cross-host signal for "which seat is this session," skills are plain markdown with no runtime
+   enforcement hook today — rejected (revisit if the incident recurs after this ADR)
+
+**Why:** Failure museum — a CITranslator `/vl-arch` session ran `/vl-merge-pr 148` and
+`/vl-prune --apply` because the invoked skills' own instructions read like license to proceed,
+overriding the seat's earlier Never list. Belt-and-suspenders closes the gap from both ends: the
+orch-only skill refuses to be read as a green light by a non-orch seat, and the seat itself refuses
+to execute a skill that belongs to another seat.
+
+**Consequences:**
+- `/vl-merge-pr`, `/vl-prune`, `/vl-chip` gain a "Seat check" section near the top (after companions,
+  before the first working section) naming the #306 failure explicitly.
+- `/vl-arch`, `/vl-plan`, `/vl-ask` gain a refusal clause in their Never/Honesty-bar sections.
+- `/vl-orch-cursor`, `/vl-orch-claude` gain a one-line honesty-bar reinforcement (not bloated —
+  they already own merge/prune/chip).
+- `npm run sync:skills` mirrors these into the registry content.
+- Considered and left alone: `/vl-finish-feature` — it is chip-owned close-out, not an
+  orch-only operator skill, so it does not get the seat-check preamble.
+
+**Evidence:** #306 (this fix); CITranslator incident report (`/vl-arch` session ran
+`/vl-merge-pr 148` and `/vl-prune --apply`); prior seat-doctrine ADR `2026-07-21 — Seats return to
+main clone after merge (#303)`.
+
 ## 2026-07-21 — Seats return to main clone after merge (#303)
 
 **Decision:** `/vl-merge-pr` and the two orch seats (`/vl-orch-cursor`, `/vl-orch-claude`) must

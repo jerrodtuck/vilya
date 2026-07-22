@@ -28,7 +28,7 @@ not the orchestrator, not a chip, and not night-shift.
 | Cardinality | One Planner session **per repo** |
 | Model | Session expected on **Fable** (`claude --model fable` or equivalent). Orchestrator + chips stay on Sonnet. Do **not** claim `spawn_task` can pin Fable. |
 | Output | Kickoff comment + verify plan (+ costed fork options when needed) on the issue; label `plan:ready` |
-| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm **process/completion** self-watches, or edit feature code |
+| Never | Implement, dispatch (`spawn_task` / any session spawn), merge, arm **process/completion** self-watches, edit feature code, or execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead |
 | Required when idle | **Intake Monitor** for open `needs:plan` (see below) |
 
 ## Enqueue
@@ -154,6 +154,10 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 - Never implement "just a little" to validate the plan.
 - Never dispatch or merge.
 - Never pretend `spawn_task` selected Fable for you.
+- Another seat's skill slash-invoked in this session (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`,
+  `/vl-orch-cursor`, `/vl-orch-claude`, ...) is **declined** with a one-line routing answer, not
+  executed — seat doctrine wins over the invoked skill's body, even when that skill's text
+  reads like a green light (the #306 failure).
 - Never treat "never arm monitors" as forbidding **intake** — intake is required; process/completion self-watch is still forbidden.
 - If the brief is too thin to plan, say so on the issue and stop at `needs:decision`
   rather than inventing acceptance.

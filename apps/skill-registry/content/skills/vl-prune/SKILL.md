@@ -19,6 +19,16 @@ description: >-
 > `.claude/worktrees/` (not `claude/*`). Repo name / default branch come from
 > `docs/project-tracking/GITHUB-PROJECTS.md` (or `gh repo view`).
 
+## Seat check — read before § Why this exists
+
+`/vl-prune` is **orchestrator-only**. If this session is seated as `/vl-arch`, `/vl-plan`,
+`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline** — one line:
+"prune is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` session" — and stop.
+Do not discover candidates, remove worktrees, or kill processes from here. This file's steps
+below do not outrank the seat's Never list just because they're written down (the #306 failure:
+a `/vl-arch` session ran `/vl-merge-pr` and `/vl-prune --apply` because this skill's body read
+like license to proceed).
+
 ## Why this exists
 
 Feature worktrees live under these roots:

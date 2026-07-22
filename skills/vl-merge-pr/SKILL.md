@@ -18,6 +18,15 @@ description: >-
 > this repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block.
 > [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it).
 
+## Seat check — read before §0
+
+`/vl-merge-pr` is **orchestrator-only**. If this session is seated as `/vl-arch`, `/vl-plan`,
+`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline** — one line:
+"merge-pr is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` session" — and
+stop. Do not triage, smoke, or merge from here. This file's steps below do not outrank the
+seat's Never list just because they're written down (the #306 failure: a `/vl-arch` session ran
+`/vl-merge-pr` and `/vl-prune --apply` because this skill's body read like license to proceed).
+
 ## 0. Policy — squash, always
 
 One issue = one branch = one PR = **one commit on the default branch**. Squash-merge every PR:

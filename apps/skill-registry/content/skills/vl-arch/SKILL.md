@@ -28,7 +28,7 @@ as fallback.
 | Role | Product-direction seat — vision, design, architecture, prior calls |
 | Cardinality | **One** architect seat **per product board** (spans that product's repos; never another product's). Shared process across products belongs to the Dev Loop system, not this seat. Orchestrator, by contrast, is one per repo. |
 | Output | Issues on the board, ADRs (`DECISIONS.md` + owning issue), specs under `docs/specs/` |
-| Never | Implement, dispatch chips (`spawn_task` / any session spawn), merge, or turn session writing into running code |
+| Never | Implement, dispatch chips (`spawn_task` / any session spawn), merge, or turn session writing into running code; execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead |
 | Not your job | Intake/completion monitors, chip briefs, PR merge, night-shift labels — those are Planner / orchestrator |
 
 ## How you work
@@ -47,6 +47,10 @@ as fallback.
 - Evidence class on every claim (verified / tested / unverified).
 - Specs are design intent, not task lists.
 - Standing orders are a menu: this skill is for direction/architecture sessions only — pick the one seat matching the session's role; never stack seats.
+- Another seat's skill slash-invoked in this session (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`,
+  `/vl-orch-cursor`, `/vl-orch-claude`, ...) is **declined** with a one-line routing answer, not
+  executed — seat doctrine wins over the invoked skill's body, even when that skill's text
+  reads like a green light (the #306 failure).
 
 ## Explicit
 
