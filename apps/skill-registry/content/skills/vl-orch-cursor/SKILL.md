@@ -69,7 +69,7 @@ none is running) so Planner finish wakes this session without relying on
 same-turn memory at `needs:plan` enqueue:
 
 - Cadence ≥120s (not 60s / not ~90s).
-- REST-first — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is GraphQL).
+- REST-first — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is GraphQL; so is `gh issue list --json` — never either). Copy-paste bash recipe: site `/orch` card "Standing plan:ready poller—copy-paste REST bash".
 - Each tick: re-fetch open issues with `label:plan:ready state:open`; compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone.
 - Host: background shell with `notify_on_output` on REST.
 - **Cursor host limit:** long-running background shells are mortal — Cursor may reclaim or tear them down quietly; an armed monitor is not proof it is still alive. Teach arm → assume mortal → re-arm when the session notices death, after long idle gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do not arm-once-and-forget. Do not kill/re-arm after every successful drain just to re-seed (that thrash is the #267 anti-pattern — re-seed last-seen every tick instead).

@@ -2,7 +2,7 @@
 // label transitions + Planner-owned intake + orch standing plan:ready poller.
 import { describe, expect, it } from "vitest";
 import { FLOWS, NODES } from "./data";
-import { PROMPTS } from "./prompts";
+import { PLANNER_NEEDS_PLAN_INTAKE_BASH, PROMPTS } from "./prompts";
 
 function collectStrings(value: unknown): string {
   if (typeof value === "string") return value;
@@ -75,5 +75,37 @@ describe("Planner doctrine (#208 / #255 / #261 / #267)", () => {
     );
     expect(corpus).not.toContain("auto:ready");
     expect(corpus).toContain("night-shift:ready");
+  });
+});
+
+describe("Copy-paste REST bash card for needs:plan intake (#311)", () => {
+  it("standing orders explicitly ban gh issue list --json alongside gh pr list", () => {
+    const standing = PROMPTS.find((g) => g.node === "PLAN");
+    const text = standing?.items.map((i) => i.text).join("\n") ?? "";
+    expect(text).toContain("gh issue list --json");
+  });
+
+  it("PLANNER_NEEDS_PLAN_INTAKE_BASH is a runnable copy-paste form of the intake recipe", () => {
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("#!/usr/bin/env bash");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh api -X GET search/issues");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("label:needs:plan");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toMatch(/>=120s/);
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("sleep 150");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("WAKE: needs:plan gained #");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gained=$(comm -13");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("always re-seed last-seen = current set");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh issue list --json (GraphQL)");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh pr list (GraphQL)");
+    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh project item-list (GraphQL)");
+  });
+
+  it("the PLAN standing-orders group carries the bash card as an exact copy of the constant", () => {
+    const standing = PROMPTS.find((g) => g.node === "PLAN");
+    expect(standing).toBeDefined();
+    const card = standing!.items.find((i) =>
+      i.label.startsWith("Standing needs:plan intake")
+    );
+    expect(card).toBeDefined();
+    expect(card!.text).toBe(PLANNER_NEEDS_PLAN_INTAKE_BASH);
   });
 });

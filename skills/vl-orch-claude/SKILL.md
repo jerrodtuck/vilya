@@ -58,7 +58,7 @@ none is running) so Planner finish wakes this session without relying on
 same-turn memory at `needs:plan` enqueue:
 
 - Cadence ≥120s (not 60s / not ~90s).
-- REST-first — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is GraphQL).
+- REST-first — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is GraphQL; so is `gh issue list --json` — never either). Copy-paste bash recipe: site `/orch` card "Standing plan:ready poller—copy-paste REST bash".
 - Each tick: re-fetch open issues with `label:plan:ready state:open`; compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone.
 - Host: Claude Code **Monitor** tool. Leave the poller running; re-seed last-seen every tick — do not kill/re-arm after every wake just to re-seed (#267).
 - Same-turn per-enqueue completion board Monitor for that issue remains reinforcement, not the sole wake path.

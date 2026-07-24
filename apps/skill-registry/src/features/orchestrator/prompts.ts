@@ -34,7 +34,7 @@ export const NIGHT_SHIFT_CHAIN_PREP =
  * Chip-monitor cadence/dedup lives in /vl-chip (§3) and CURSOR_DISPATCH_MONITOR.
  */
 export const GRAPHQL_QUOTA_DOCTRINE =
-  "GraphQL quota hygiene (Anduin + Vilya orchestrators share one user GraphQL bucket): board Status moves are rate-gated / best-effort — check gh api rate_limit; when graphql.remaining == 0, skip project item-edit/item-list and comment on the issue instead; never poll gh project item-list or retry GraphQL in a tight loop. Chip completion monitors are REST-first (gh api …/pulls?head=<owner>:<branch> + issue comments) — gh pr list is GraphQL, not REST. Mid-window: if GraphQL drains fast again, measure drain rate before blaming either orchestrator (ambient ~2/min vs a hot loop). Never kill the main-clone cursor-agent-worker as a leftover board-watch script — that PID is the live orchestrator worker.";
+  "GraphQL quota hygiene (Anduin + Vilya orchestrators share one user GraphQL bucket): board Status moves are rate-gated / best-effort — check gh api rate_limit; when graphql.remaining == 0, skip project item-edit/item-list and comment on the issue instead; never poll gh project item-list or retry GraphQL in a tight loop. Chip completion monitors are REST-first (gh api …/pulls?head=<owner>:<branch> + issue comments) — gh pr list is GraphQL, not REST, and so is gh issue list --json (same shared bucket) — never either on a hot path. Mid-window: if GraphQL drains fast again, measure drain rate before blaming either orchestrator (ambient ~2/min vs a hot loop). Never kill the main-clone cursor-agent-worker as a leftover board-watch script — that PID is the live orchestrator worker.";
 
 /**
  * Lab/live runs + master-commit ban — Claude + Cursor orchestrator standing
@@ -54,7 +54,7 @@ export const LAB_RUNS_ARE_CHIPS_ASIDE =
  * bullet so the cards cannot drift on "how to arm."
  */
 export const HOST_MONITOR_MECHANISMS =
-  "Claude Code uses the Monitor tool; Cursor uses a background shell with notify_on_output on REST (pulls?head= + issue comments / labels — never gh project item-list / GraphQL on the hot path; gh pr list is GraphQL)";
+  "Claude Code uses the Monitor tool; Cursor uses a background shell with notify_on_output on REST (pulls?head= + issue comments / labels — never gh project item-list / GraphQL on the hot path; gh pr list is GraphQL; so is gh issue list --json — never either)";
 
 /**
  * Cursor host limit — long-running notify_on_output shells are mortal.
@@ -69,7 +69,7 @@ export const CURSOR_SHELL_TEARDOWN_DOCTRINE =
  * Cursor has no Monitor tool; this watcher is the equivalent.
  */
 export const CURSOR_DISPATCH_MONITOR =
-  `In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso> for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path, and do not use gh pr list for the monitor (it is GraphQL; Projects GraphQL can burn the hourly budget in minutes). Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional updated_at); print a wake sentinel that matches notify_on_output only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. ${CURSOR_SHELL_TEARDOWN_DOCTRINE} That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.`;
+  `In the same turn as every worker dispatch — no exceptions — do two things: arm a chip-completion monitor, and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should never show Todo for work that's running; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with notify_on_output (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open for the worker's PR and gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso> for new comments on dispatched issues — never gh project item-list / GraphQL on the hot path, and do not use gh pr list or gh issue list --json for the monitor (both are GraphQL; Projects GraphQL can burn the hourly budget in minutes). Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional updated_at); print a wake sentinel that matches notify_on_output only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. ${CURSOR_SHELL_TEARDOWN_DOCTRINE} That monitor is the completion signal; the worker's issue comment is what it picks up. Always verify before merge — a comment is a claim, not proof.`;
 
 /**
  * Orchestrator standing plan:ready poller — twin of Planner intake (#255).
@@ -77,7 +77,38 @@ export const CURSOR_DISPATCH_MONITOR =
  * Shared by Claude + Cursor standing orders so the recipe cannot drift.
  */
 export const ORCH_PLAN_READY_POLLER =
-  `At session start and when idle, arm one standing plan:ready poller (if none is running) so Planner finish wakes this session without relying on same-turn memory at needs:plan enqueue. Cadence ≥120s (not 60s / not ~90s). REST-first — never gh project item-list / GraphQL on the hot path (gh pr list is GraphQL). Each tick: re-fetch open issues with label:plan:ready state:open (gh api search/issues or equivalent REST); compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone. Host mechanisms: ${HOST_MONITOR_MECHANISMS}. Leave the poller running; re-seed last-seen every tick — do not kill/re-arm after every wake just to re-seed (#267). ${CURSOR_SHELL_TEARDOWN_DOCTRINE} Same-turn per-enqueue completion board Monitor for that issue (plan:ready and/or the plan kickoff comment) remains best-practice reinforcement, not the sole wake path. Never monitor the Planner process or session. Chip completion monitors stay per-dispatch. Intake polling for needs:plan is Planner-owned — you do not arm the Planner's queue wake.`;
+  `At session start and when idle, arm one standing plan:ready poller (if none is running) so Planner finish wakes this session without relying on same-turn memory at needs:plan enqueue. Cadence ≥120s (not 60s / not ~90s). REST-first — never gh project item-list / GraphQL on the hot path (gh pr list is GraphQL; gh issue list --json is GraphQL too — never either). Each tick: re-fetch open issues with label:plan:ready state:open (gh api search/issues or equivalent REST); compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone. Host mechanisms: ${HOST_MONITOR_MECHANISMS}. Leave the poller running; re-seed last-seen every tick — do not kill/re-arm after every wake just to re-seed (#267). ${CURSOR_SHELL_TEARDOWN_DOCTRINE} Same-turn per-enqueue completion board Monitor for that issue (plan:ready and/or the plan kickoff comment) remains best-practice reinforcement, not the sole wake path. Never monitor the Planner process or session. Chip completion monitors stay per-dispatch. Intake polling for needs:plan is Planner-owned — you do not arm the Planner's queue wake.`;
+
+/**
+ * Standing plan:ready poller -- copy-paste REST bash form of
+ * ORCH_PLAN_READY_POLLER above (#311). Same doctrine, runnable shape: never
+ * gh issue list --json / gh pr list / gh project item-list on the hot path;
+ * gain-only wake sentinel; cadence >=120s; always re-seed last-seen.
+ */
+export const ORCH_PLAN_READY_POLLER_BASH = [
+  "#!/usr/bin/env bash",
+  "# Standing plan:ready poller (copy-paste) -- REST-only, gain-only wake sentinel, cadence >=120s (not 60s / not ~90s).",
+  "# Never on this hot path: gh issue list --json (GraphQL) / gh pr list (GraphQL) / gh project item-list (GraphQL).",
+  "set -euo pipefail",
+  "OWNER=\"<owner>\"",
+  "REPO=\"<repo>\"",
+  "STATE=\"/tmp/${REPO}-plan-ready-last-seen.txt\"",
+  "touch \"$STATE\"",
+  "",
+  "while true; do",
+  "  current=$(gh api -X GET search/issues -f q=\"repo:$OWNER/$REPO is:issue is:open label:plan:ready\" --jq \".items[].number\" | sort -n)",
+  "  last_seen=$(cat \"$STATE\")",
+  "  gained=$(comm -13 <(echo \"$last_seen\") <(echo \"$current\"))",
+  "",
+  "  if [ -n \"$gained\" ]; then",
+  "    ids=$(echo \"$gained\" | xargs)",
+  "    echo \"WAKE: plan:ready gained #$ids\"",
+  "  fi",
+  "",
+  "  echo \"$current\" > \"$STATE\"   # always re-seed last-seen = current set, including empty -- never re-announce the same standing set",
+  "  sleep 150                     # cadence >=120s -- not 60s / not ~90s",
+  "done",
+].join("\n");
 
 /**
  * Planner enqueue + standing plan:ready poller doctrine shared by Claude Code
@@ -171,6 +202,10 @@ Your job:
         host: "cursor",
         label: "Cursor — worker kickoff B · worker does its own setup",
         text: "You're the implementer for issue #<N>. No setup has run yet — run /vl-start-feature on #<N> yourself: worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug, board Status to In Progress. Then do all feature work inside that worktree — never the main clone. Read the issue and its kickoff comment first — that is your full brief; no other session shares context with you. Build in the owning slice and report progress on the issue/PR. At a real design fork, stop, comment 2–3 options with costs + your recommendation on the issue, and wait for my call. If the kickoff marks Investigate-first / hard-stop, that stop is non-negotiable: investigate, post findings + options on the issue, hard stop — do not implement and do not auto-pick because findings look obvious — until I record the pick on the issue or relay it here. When the build is done, run the repo's crucible review skill (the vl-crucible-<stack> named in GITHUB-PROJECTS.md) on the branch, apply its top refactors, and re-review until the signal reads Ready — this gate is not optional. Only then close out with /vl-finish-feature — PR that Closes #<N>.",
+      },
+      {
+        label: "Standing plan:ready poller \u2014 copy-paste REST bash (#311)",
+        text: ORCH_PLAN_READY_POLLER_BASH,
       },
       {
         label: "Prune worktrees (dry-run)",
