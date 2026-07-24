@@ -38,6 +38,9 @@ restore the main clone's cwd — leave the feature tree — **before** the next 
 move, merge, prune, or kickoff. See [/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory
 post-merge return this closes (#303).
 
+**Desktop chat title (Claude Code Desktop UI only):** at session start, set or remind the operator to set this chat's title to `<repo-short>-orch` so `mcp__ccd_session_mgmt` can find this seat across desktops. `repo-short` = `gh repo view --json name -q .name` (or the leaf of `nameWithOwner`). **Not** Claude Code CLI. **Not** Cursor.
+
+
 ## Kickoff
 
 Read owner, repo, project number, labels, stack, and crucible/test config from

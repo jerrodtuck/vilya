@@ -44,6 +44,9 @@ restore the main clone with `move_agent_to_root` (cursor-app-control MCP) to the
 absolute path **before** the next orch action — board move, merge, prune, or kickoff. See
 [/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory post-merge return this closes (#303).
 
+**Chat title (optional, human scanning only):** Cursor chats may use `<repo-short>-orch` (same pattern as Claude Desktop standing seats) for easy scanning — there is **no** `ccd_session_mgmt` on Cursor; titles do not drive cross-session targeting.
+
+
 ## Kickoff
 
 Read owner, repo, project number, labels, stack, and crucible/test config from

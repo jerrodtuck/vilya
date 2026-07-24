@@ -2,6 +2,45 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-07-22 — Desktop session titles + harden arch refuse-implement (#308)
+
+**Decision:** (A) Standing seats on **Claude Code Desktop UI** title chats `<repo-short>-orch` /
+`<repo-short>-arch` / `<repo-short>-plan` (`repo-short` = `gh repo view --json name -q .name` or
+the leaf of `nameWithOwner`) so `mcp__ccd_session_mgmt` can find the right seat across desktops.
+Host scope is locked to Desktop UI — **not** Claude Code CLI, **not** Cursor. Cursor orch may use
+the same pattern for human scanning only; there is no `ccd_session_mgmt` on Cursor.
+(B) Direction seats (`/vl-arch`, `/vl-plan`, `/vl-ask`) decline plain-language implement asks
+("implement", "fix that now", edit product or Vilya skill files, "write the code") with a one-line
+route to the owning orchestrator — same rhetorical force as the #306 seat-check, different trigger.
+(decided by operator, 2026-07-22).
+
+**Options considered:**
+1. Rely on the existing Never "Implement" line alone — cost: the #308 incident happened with that
+   line already present; an urgent operator ask overrode it the same way a slash-skill body overrode
+   Never in #306 — rejected as sole control
+2. **Desktop title house rule on CC standing seats + explicit refuse-implement in Never + Honesty
+   bar on direction seats (chosen)** — cost: short skill-text additions + optional Differences
+   one-liner + registry sync — chosen
+3. A hard tool gate that blocks file edits outside chip/orch sessions — cost: no reliable
+   cross-host "which seat is this session" runtime signal today — rejected (revisit if the
+   incident recurs after this ADR)
+
+**Why:** Failure museum — a 2026-07-22 `/vl-arch` session edited product masters and Vilya skills
+in place when the operator said to implement/fix (later reverted). #306 closed wrong slash-skill
+execution; it did not close plain-language implement asks. Separately, standing Desktop seats need
+stable chat titles so `ccd_session_mgmt` can target orch/arch/plan across desktops.
+
+**Consequences:**
+- `/vl-orch-claude`, `/vl-arch`, `/vl-plan` gain a Desktop chat-title house rule at Seat /
+  session start (`<repo-short>-{orch,arch,plan}`).
+- `/vl-orch-cursor` gains an optional human-scanning title note only — no `ccd_session_mgmt`.
+- `/vl-arch`, `/vl-plan`, `/vl-ask` gain refuse-implement clauses in Never + Honesty bar.
+- Differences cross-session row note mentions the Desktop title pattern (thin).
+- `npm run sync:skills` mirrors skill changes into the registry content.
+
+**Evidence:** #308 (this fix); #306 seat-boundary ADR; 2026-07-22 arch-session implement drift
+(reverted).
+
 ## 2026-07-21 — Seat boundary: refuse other seats' skills invoked in the wrong session (#306)
 
 **Decision:** A slash-invoked skill that belongs to a different seat than the one this session is
