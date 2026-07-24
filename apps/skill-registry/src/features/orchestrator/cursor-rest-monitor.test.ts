@@ -9,6 +9,7 @@ import {
   GRAPHQL_QUOTA_DOCTRINE,
   HOST_MONITOR_MECHANISMS,
   ORCH_PLAN_READY_POLLER,
+  ORCH_PLAN_READY_POLLER_BASH,
   PLANNER_ORCH_DOCTRINE,
   PROMPTS,
 } from "./prompts";
@@ -116,5 +117,39 @@ describe("GraphQL quota hygiene (#233)", () => {
     const cursor = orchItem(CURSOR_ORCH_PROMPT_LABEL);
     expect(claude).toContain(GRAPHQL_QUOTA_DOCTRINE);
     expect(cursor).toContain(GRAPHQL_QUOTA_DOCTRINE);
+  });
+});
+
+describe("Copy-paste REST bash card for the plan:ready poller (#311)", () => {
+  it("explicitly bans gh issue list --json alongside the existing gh pr list / gh project item-list bans", () => {
+    expect(GRAPHQL_QUOTA_DOCTRINE).toContain("gh issue list --json");
+    expect(HOST_MONITOR_MECHANISMS).toContain("gh issue list --json");
+    expect(ORCH_PLAN_READY_POLLER).toContain("gh issue list --json");
+    expect(CURSOR_DISPATCH_MONITOR).toContain("gh issue list --json");
+  });
+
+  it("ORCH_PLAN_READY_POLLER_BASH is a runnable copy-paste form of the doctrine above", () => {
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("#!/usr/bin/env bash");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh api -X GET search/issues");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("label:plan:ready");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toMatch(/>=120s/);
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("sleep 150");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("WAKE: plan:ready gained #");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gained=$(comm -13");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("always re-seed last-seen = current set");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh issue list --json (GraphQL)");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh pr list (GraphQL)");
+    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh project item-list (GraphQL)");
+  });
+
+  it("the ORCH standing-orders group carries the bash card as an exact copy of the constant", () => {
+    const orch = PROMPTS.find((g) => g.node === "ORCH");
+    expect(orch).toBeDefined();
+    const card = orch!.items.find((i) =>
+      i.label.startsWith("Standing plan:ready poller")
+    );
+    expect(card).toBeDefined();
+    expect(card!.text).toBe(ORCH_PLAN_READY_POLLER_BASH);
+    expect(card!.host).toBeUndefined();
   });
 });

@@ -6,6 +6,37 @@
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
 import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
+/**
+ * Standing needs:plan intake poller -- copy-paste REST bash form of the
+ * Planner intake recipe above (#311). Never gh issue list --json / gh pr
+ * list / gh project item-list on the hot path; gain-only wake sentinel;
+ * cadence >=120s; always re-seed last-seen.
+ */
+export const PLANNER_NEEDS_PLAN_INTAKE_BASH = [
+  "#!/usr/bin/env bash",
+  "# Standing needs:plan intake poller (copy-paste) -- REST-only, gain-only wake sentinel, cadence >=120s (not 60s / not ~90s).",
+  "# Never on this hot path: gh issue list --json (GraphQL) / gh pr list (GraphQL) / gh project item-list (GraphQL).",
+  "set -euo pipefail",
+  "OWNER=\"<owner>\"",
+  "REPO=\"<repo>\"",
+  "STATE=\"/tmp/${REPO}-needs-plan-last-seen.txt\"",
+  "touch \"$STATE\"",
+  "",
+  "while true; do",
+  "  current=$(gh api -X GET search/issues -f q=\"repo:$OWNER/$REPO is:issue is:open label:needs:plan\" --jq \".items[].number\" | sort -n)",
+  "  last_seen=$(cat \"$STATE\")",
+  "  gained=$(comm -13 <(echo \"$last_seen\") <(echo \"$current\"))",
+  "",
+  "  if [ -n \"$gained\" ]; then",
+  "    ids=$(echo \"$gained\" | xargs)",
+  "    echo \"WAKE: needs:plan gained #$ids\"",
+  "  fi",
+  "",
+  "  echo \"$current\" > \"$STATE\"   # always re-seed last-seen = current set, including empty -- never re-announce the same standing set",
+  "  sleep 150                     # cadence >=120s -- not 60s / not ~90s",
+  "done",
+].join("\n");
+
 export const PROMPTS: PromptGroup[] = [
   {
     node: "PLAN",
@@ -24,9 +55,13 @@ For each issue: read the body, linked specs/ADRs, and owning vertical slice — 
 
 Forks while planning: if the plan can finish with open forks for the implementer, still set plan:ready (consult notes included). If the plan cannot finish without an operator call, comment options + recommendation, label needs:decision, move Status to Blocked, keep needs:plan, do not set plan:ready — then take the next queued issue. Investigate-first does not replace ordinary plan:ready planning. Never apply night-shift:ready (night-shift ownership). Daytime may skip Planner when the issue is already clear; night-shift requires plan:ready ∧ night-shift:ready.
 
-When the queue is empty, arm one Planner-owned intake Monitor so a new needs:plan wakes this session — do not wait for an operator ping. Leave that poller running across drains — do not kill/re-arm after every issue just to re-seed. Cursor: background shell + notify_on_output on REST (gh api search/issues for label:needs:plan state:open — never gh project item-list / GraphQL; do not use gh pr list). Claude Code: Monitor tool on the equivalent poll. Cadence ≥120s (not 60s / not ~90s). Every tick: fetch open needs:plan → gains vs last-seen → always set last-seen = current set (including empty); print a wake sentinel only when the set gains an issue. Removals re-seed via the assignment — no process restart. Host shell teardown / re-arm-when-dead is #270 — not this recipe.
+When the queue is empty, arm one Planner-owned intake Monitor so a new needs:plan wakes this session — do not wait for an operator ping. Leave that poller running across drains — do not kill/re-arm after every issue just to re-seed. Cursor: background shell + notify_on_output on REST (gh api search/issues for label:needs:plan state:open — never gh project item-list / GraphQL; do not use gh pr list or gh issue list --json — both are GraphQL). Claude Code: Monitor tool on the equivalent poll. Cadence ≥120s (not 60s / not ~90s). Every tick: fetch open needs:plan → gains vs last-seen → always set last-seen = current set (including empty); print a wake sentinel only when the set gains an issue. Removals re-seed via the assignment — no process restart. Host shell teardown / re-arm-when-dead is #270 — not this recipe.
 
 Completion signal is orchestrator-owned: they arm a standing plan:ready poller (session start / idle; gain-only wake) so this finish wakes them without relying on same-turn enqueue memory; same-turn per-enqueue board Monitor is reinforcement only (#261). On Cursor that standing poller is mortal (host may tear down notify_on_output shells) — re-arm when dead / after long gaps / missing expected signal; do not kill/re-arm every drain (#270 / #267). If this Planner session's own Cursor intake shell dies the same way, re-arm only then — leave it running across drains. Claude Code Monitor path stays host-specific. You arm intake only — never process/completion self-watches; you are not a chip. Standing orders are a menu: this card is for Planner sessions only — pick the one card matching the session's role, never stack cards.`,
+      },
+      {
+        label: "Standing needs:plan intake \u2014 copy-paste REST bash (#311)",
+        text: PLANNER_NEEDS_PLAN_INTAKE_BASH,
       },
     ],
   },

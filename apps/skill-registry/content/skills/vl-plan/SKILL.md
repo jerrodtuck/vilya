@@ -103,7 +103,8 @@ pinged. Follow the Recipe below — one poller, persist across drains, every-tic
    across drains — **do not** kill/re-arm after every drain to reset `last-seen`.
 2. Each tick via REST (`gh api` search/issues with `label:needs:plan state:open`, or
    equivalent) — never `gh project item-list` / GraphQL on the hot path; do not use
-   `gh pr list` (GraphQL):
+   `gh pr list` or `gh issue list --json` (both GraphQL). Copy-paste bash recipe: site
+   `/planner` card "Standing needs:plan intake—copy-paste REST bash":
    - Fetch the open `needs:plan` set.
    - Compute gains vs `last-seen`.
    - **Always set `last-seen = current set`** (including empty). Removals re-seed via
