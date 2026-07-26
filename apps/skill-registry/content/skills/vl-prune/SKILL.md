@@ -61,8 +61,12 @@ likewise pile under `.cursor/worktrees/<repo>/` until prune.
 **Cadence:** with **Auto-archive on PR close** enabled (Claude Code Desktop), a merged
 chip's session archives itself — the process stops and the checkout detaches without you.
 What remains is only folders + local branches, so the intended rhythm is a **periodic
-`--apply` after a merge batch**, not per-merge ceremony. The session-liveness gate (gate 3)
-keeps this safe regardless of timing.
+`--apply` after a merge batch**, not per-merge ceremony. **Threshold for normal hygiene:**
+recommend `/vl-prune --apply` (or even flag a dry-run check) only once a dry-run would show
+**≥5 eligible worktrees/orphans** for this repo. Below 5, leftovers are optional / silent —
+neither `/vl-merge-pr` nor the orch seats should nag per-merge; a dry-run costs nothing and
+may still be run anytime, but it is not "required hygiene" until the count hits 5. The
+session-liveness gate (gate 3) keeps `--apply` safe regardless of timing.
 
 ## 0. Where to run
 
@@ -273,5 +277,6 @@ continue others.
   force-delete.
 - Never claim prune cleans **all** Cursor BoN / Parallel pools — only §3a gated probes
   (`eligible (probe)`); arbitrary pool folders stay skipped.
-- After `/vl-merge-pr`, one `/vl-prune --apply` (or a dry-run the operator reviews) is the
-  normal hygiene step — not an in-place delete from the feature worktree chat.
+- After `/vl-merge-pr`, `/vl-prune --apply` (or a dry-run the operator reviews) is normal
+  hygiene **once eligible rows hit ≥5** — not an in-place delete from the feature worktree
+  chat, and not a per-merge ritual below that threshold.

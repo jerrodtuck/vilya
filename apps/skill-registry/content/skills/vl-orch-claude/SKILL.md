@@ -159,7 +159,8 @@ oldest; enqueue Planner when needed (`needs:plan`); arming the standing
 self-contained chip briefs with verify gates; arming a monitor per chip dispatch,
 verifying chip completion comments, and reviewing each chip's PR; merging reviewed
 chips via [/vl-merge-pr](../vl-merge-pr/SKILL.md) (squash, never delete the
-branch); worktree cleanup via [/vl-prune](../vl-prune/SKILL.md); night-shift
+branch); worktree cleanup via [/vl-prune](../vl-prune/SKILL.md) — `--apply` is normal
+hygiene once a dry-run shows **≥5 eligible rows**, not a per-merge ritual; night-shift
 prep labels.
 
 House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one
