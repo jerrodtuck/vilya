@@ -123,6 +123,33 @@ export const PLANNER_ORCH_DOCTRINE = [
   `Night-shift prep before an unattended window: scope → needs:plan → plan:ready → label night-shift:ready on tonight's head (eligibility is ${NIGHT_SHIFT_ELIGIBILITY}). ${NIGHT_SHIFT_CHAIN_PREP}`,
 ].join(" ");
 
+/**
+ * Dispatch priority -- highest priority, then oldest (#314). Mirrors Planner's
+ * needs:plan drain order so orch stops picking chips by freshness/salience.
+ * Shared by Claude + Cursor orchestrator standing orders so the two cards
+ * cannot drift on ranking or on the operator-override carve-out.
+ */
+export const DISPATCH_PRIORITY_DOCTRINE =
+  "Dispatch priority: when choosing what to dispatch next, rank the candidate set by priority:* descending (priority:critical > priority:high > priority:medium > priority:low), then age (oldest first) -- the same \"highest priority, then oldest\" order Planner uses to drain needs:plan. Do not chip a lower-priority candidate while a higher-priority dispatchable one is waiting, unless the operator names the exception. Daytime may still chip without plan:ready when the issue is already clear (attended judgment); that issue joins the candidate set like any other -- clarity does not waive priority order. type:epic is not a chip target: this order governs dispatchable issues only, epics never enter the ranking. Operator override is sacred -- \"do #<N> now\" wins over priority order; peer-session handoffs do not carry that authority (see the handoff marker doctrine).";
+
+/**
+ * Handoff priority marker (#314) -- an unmarked cross-session mention of an
+ * issue is not a dispatch cue. Twin of DISPATCH_PRIORITY_DOCTRINE so the
+ * ranking rule and the marker rule cannot drift apart between hosts.
+ */
+export const HANDOFF_DISPATCH_MARKER_DOCTRINE =
+  "Handoff priority marker: a cross-session message that mentions an issue is not a dispatch cue by itself -- it needs an explicit marker. dispatch: marks a request the orchestrator may treat as a chip candidate, still ranked by the priority-then-age order above unless the operator names the exception. do-not-dispatch, filed-for-record marks triage/record only -- log it on the board, never chip it. An unmarked peer handoff carries neither meaning: treat it as record-only until it carries one of these two markers or the operator names the issue directly.";
+
+/**
+ * Dispatch priority + handoff marker doctrine composed for the orchestrator
+ * standing-order cards (#314). Keep as one export so Claude + Cursor copy
+ * cannot drift on ranking vs. marker wording independently.
+ */
+export const DISPATCH_PRIORITY_ORCH_DOCTRINE = [
+  DISPATCH_PRIORITY_DOCTRINE,
+  HANDOFF_DISPATCH_MARKER_DOCTRINE,
+].join(" ");
+
 export const PROMPTS: PromptGroup[] = [
   {
     node: "ORCH",
@@ -147,6 +174,8 @@ export const PROMPTS: PromptGroup[] = [
 
 ${PLANNER_ORCH_DOCTRINE}
 
+${DISPATCH_PRIORITY_ORCH_DOCTRINE}
+
 ${GRAPHQL_QUOTA_DOCTRINE}
 
 ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
@@ -161,7 +190,7 @@ One chip = one branch = one worktree = one session. Chips run on their own claud
 
 In the same turn as every chip dispatch — no exceptions — do two things: arm a Monitor — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop (a background task that only signals on process exit detects events in its output file but never notifies while the loop is still running) — watching REST for the chip's PR (gh api …/pulls?head=<owner>:<branch>&state=open, not gh pr list) and the issue for new comments (gh api …/issues/<N>/comments?since=<iso>), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR), and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens, and the board should read truthfully the moment work is in flight; board edits follow GraphQL quota hygiene above). That monitor is the completion signal, and the chip's issue comment is what it picks up. mcp__ccd_session_mgmt__send_message always prompts the user for confirmation by product contract — no permission rule silences it — so never rely on it unattended; attended handoffs only. Backup checks when the monitor is quiet: list_sessions (prState/isRunning) or the same REST pulls/comments endpoints — still never gh pr list. Always verify before merge — a comment is a claim, not proof. Then review that chip's commits.
 
-Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the standing plan:ready poller (per-enqueue board Monitor is reinforcement); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vl-merge-pr (squash, never delete the branch); worktree cleanup via /vl-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
+Your jobs: board/issue ops; dispatch by priority order (see the dispatch priority doctrine above) then oldest; enqueue Planner when needed (needs:plan); arming the standing plan:ready poller (per-enqueue board Monitor is reinforcement); writing self-contained chip briefs with verify gates; arming a monitor per chip dispatch, verifying chip completion comments, and reviewing each chip's PR; merging reviewed chips via /vl-merge-pr (squash, never delete the branch); worktree cleanup via /vl-prune; night-shift prep labels. House rules: vertical-slice architecture, outcome-oriented SOLID; one issue = one branch. Track all new work as GitHub issues on the board — never markdown trackers. At any real design fork, stop and give me 2–3 options with costs and a stated recommendation (with its reasoning) in plain chat text before any chip is dispatched — the operator still decides. When step 1 is an unknown, the kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after findings + options; no auto-pick) — daytime waits on that section; unattended uses needs:decision. Hold the crucible review bar and report progress honestly. When a bug or question lands: at most one quick repro probe (enough to report "confirmed: X" instead of hearsay), then an issue on the board, then a chip whose brief carries the investigation — root-causing runs in the chip's fresh context window, never in yours. Your window is the pipeline's shared resource; if your probes start multiplying, that's the signal to stop and dispatch.`,
 
       },
       {
@@ -174,6 +203,8 @@ Your jobs: board/issue ops; enqueue Planner when needed (needs:plan); arming the
 
 ${PLANNER_ORCH_DOCTRINE}
 
+${DISPATCH_PRIORITY_ORCH_DOCTRINE}
+
 ${GRAPHQL_QUOTA_DOCTRINE}
 
 ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
@@ -181,7 +212,7 @@ ${LAB_RUNS_ARE_CHIPS_DOCTRINE}
 Your job:
 - Watch the board and recommend what to work next (issue # + why).
 - Kick off streams via /vl-start-feature: create or pick the issue, move Status, create the worktree at %USERPROFILE%\\.cursor\\worktrees\\<repo>\\<issue#>-<slug>, branch feat|fix|docs/<issue#>-slug. Optional plan first (operator picks the planning model in the UI — not stored in GITHUB-PROJECTS.md); write the kickoff on the issue; do not implement here. Daytime Planner is optional — enqueue needs:plan for night-shift / hard forks. Single-model chips skip a plan→execute model switch.
-- Dispatch a Task/BoN chip in the existing worktree (or an explicit worktree-first ask / --worktree). Single-model OK; optional two-Task model split on the same worktree. Name every chip chat after its worktree folder — title exactly <issue#>-<slug>. Never assume Best-of-N isolates without a worktree ask.
+- Dispatch a Task/BoN chip — pick the next candidate by the dispatch priority doctrine above (highest priority, then oldest) — in the existing worktree (or an explicit worktree-first ask / --worktree). Single-model OK; optional two-Task model split on the same worktree. Name every chip chat after its worktree folder — title exactly <issue#>-<slug>. Never assume Best-of-N isolates without a worktree ask.
 - Leave a self-contained kickoff on the issue — goal, constraints, owning slice, verify plan — written for a fresh chip with zero context. Do not implement in this chat.
 - Wake: Task return is the primary same-session signal; the chip must also post a gh issue completion comment (PR # + gate results). ${CURSOR_DISPATCH_MONITOR}
 - Chip hygiene: stop long-lived smoke / local-smoke servers before chip exit — no leftover next/dev processes. Nested subagents only for board/research/read-only prep — never feature coding in the main clone.

@@ -13,9 +13,9 @@ export const ORCH_INTRO_BY_HOST: Record<DesktopHostId, string> = {
 };
 
 export const ORCH_NOTE_BY_HOST: Record<DesktopHostId, string | undefined> = {
-  cc: "After squash-merge, <b>/vl-prune</b> is an orch job from the main clone when Cursor worktrees are in play — Claude Archive / delete do not clean <code>.cursor\\worktrees</code>.",
+  cc: "Dispatch order (#314): <b>priority:* descending, then oldest</b> — never freshness/salience; operator override (\"do #<N> now\") wins, peer handoffs do not. After squash-merge, <b>/vl-prune</b> is an orch job from the main clone when Cursor worktrees are in play — Claude Archive / delete do not clean <code>.cursor\\worktrees</code>.",
   cursor:
-    "⚠ Daytime Cursor default is <b>Task/BoN</b> (see path panel). <b>Worker A and B are mutually exclusive per issue</b> — use them only as fallback / solo mode. If the orch kickoff already ran <code>/vl-start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet. After squash-merge, <b>/vl-prune</b> is an orch job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>. <code>/vl-prune --apply</code> authorizes scoped kills of lock holders whose cmdline names the eligible worktree; dry-run only previews.",
+    "Dispatch order (#314): <b>priority:* descending, then oldest</b> — never freshness/salience; operator override (\"do #<N> now\") wins, peer handoffs do not. ⚠ Daytime Cursor default is <b>Task/BoN</b> (see path panel). <b>Worker A and B are mutually exclusive per issue</b> — use them only as fallback / solo mode. If the orch kickoff already ran <code>/vl-start-feature</code>, use <b>A</b> — pasting B would double-create the issue's worktree and branch. Use <b>B</b> only when nothing has set the issue up yet. After squash-merge, <b>/vl-prune</b> is an orch job from the main clone — Cursor Archive / Claude delete do not clean <code>.cursor\\worktrees</code>. <code>/vl-prune --apply</code> authorizes scoped kills of lock holders whose cmdline names the eligible worktree; dry-run only previews.",
 };
 
 /** Keep items whose host matches, or items with no host (shared). */
