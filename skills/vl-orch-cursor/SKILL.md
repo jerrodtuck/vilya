@@ -101,11 +101,36 @@ chip or the next feature branch — you **never** commit to the default branch.
 **Chip hygiene:** stop long-lived smoke / local-smoke servers before chip exit —
 no leftover `next`/`dev` processes.
 
+## Dispatch priority (#314)
+
+When choosing what to dispatch next, rank the **candidate set** by `priority:*`
+descending (`priority:critical` > `priority:high` > `priority:medium` >
+`priority:low`), then age (oldest first) — the same "highest priority, then
+oldest" order Planner uses to drain `needs:plan`
+([/vl-plan](../vl-plan/SKILL.md) § Standing loop). Do **not** chip a
+lower-priority candidate while a higher-priority dispatchable one is waiting —
+unless the operator names the exception. Daytime may still chip without
+`plan:ready` when the issue is already clear (attended judgment); that issue
+joins the candidate set like any other — clarity does not waive priority order.
+`type:epic` is **not** a chip target: this order governs dispatchable issues
+only, epics never enter the ranking. **Operator override is sacred** — "do
+#<N> now" wins over priority order. Peer-session handoffs do **not** carry that
+authority; see the handoff marker below.
+
+**Handoff priority marker:** a cross-session message that mentions an issue is
+**not** a dispatch cue by itself — it needs an explicit marker. `dispatch:`
+marks a request you may treat as a chip candidate (still ranked by the
+priority-then-age order above, unless the operator names the exception).
+`do-not-dispatch, filed-for-record` marks triage/record only — log it on the
+board, never chip it. An unmarked peer handoff carries neither meaning: treat
+it as record-only until it carries one of these two markers or the operator
+names the issue directly.
+
 ## Your job
 
 1. **Watch the board** and recommend what to work next (issue # + why).
 2. **Kick off streams** via [/vl-start-feature](../vl-start-feature/SKILL.md): create or pick the issue, move Status, create the worktree at `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>`, branch `feat|fix|docs/<issue#>-slug`. After bare `git worktree add`, run `scripts/apply-worktreeinclude.(ps1|sh)` so gitignored files from `.worktreeinclude` land (Cursor's `.cursor/worktrees.json` does not run on orch-created trees). Optional plan first (operator picks the planning model in the UI — not stored in `GITHUB-PROJECTS.md`); write the kickoff on the issue; do not implement here. Single-model chips skip a plan→execute model switch.
-3. **Dispatch Task/BoN** in the existing worktree (or an explicit worktree-first ask / `--worktree`). Single-model OK; optional two-Task model split on the same worktree. **Name every chip chat** after its worktree folder — title exactly `<issue#>-<slug>`. Never assume Best-of-N isolates without a worktree ask.
+3. **Dispatch Task/BoN** — pick the next candidate by § Dispatch priority (highest priority, then oldest) — in the existing worktree (or an explicit worktree-first ask / `--worktree`). Single-model OK; optional two-Task model split on the same worktree. **Name every chip chat** after its worktree folder — title exactly `<issue#>-<slug>`. Never assume Best-of-N isolates without a worktree ask.
 4. **Leave a self-contained kickoff** on the issue — goal, constraints, owning slice, verify plan — written for a fresh chip with zero context. Do not implement in this chat.
 5. **Wake:** Task return is the primary same-session signal; the chip must also post a `gh issue` completion comment (PR # + gate results).
 6. **Same-turn dispatch monitor** (no exceptions) — arm a chip-completion monitor and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with `notify_on_output` (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: `gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open` for the chip's PR and `gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso>` for new comments — never `gh project item-list` / GraphQL on the hot path, and do not use `gh pr list` for the monitor. Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional `updated_at`); print a wake sentinel that matches `notify_on_output` only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. Apply the Cursor shell-mortality doctrine above. Always verify before merge — a comment is a claim, not proof.

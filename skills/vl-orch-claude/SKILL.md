@@ -94,10 +94,36 @@ dispatch → monitor → verify-the-claim. Exception: single-command state check
 appends (`DECISIONS.md`) ride a chip or the next feature branch — you **never**
 commit to the default branch (`master`/`main`).
 
+## Dispatch priority (#314)
+
+When choosing what to dispatch next, rank the **candidate set** by `priority:*`
+descending (`priority:critical` > `priority:high` > `priority:medium` >
+`priority:low`), then age (oldest first) — the same "highest priority, then
+oldest" order Planner uses to drain `needs:plan`
+([/vl-plan](../vl-plan/SKILL.md) § Standing loop). Do **not** chip a
+lower-priority candidate while a higher-priority dispatchable one is waiting —
+unless the operator names the exception. Daytime may still chip without
+`plan:ready` when the issue is already clear (attended judgment); that issue
+joins the candidate set like any other — clarity does not waive priority order.
+`type:epic` is **not** a chip target: this order governs dispatchable issues
+only, epics never enter the ranking. **Operator override is sacred** — "do
+#<N> now" wins over priority order. Peer-session handoffs do **not** carry that
+authority; see the handoff marker below.
+
+**Handoff priority marker:** a cross-session message that mentions an issue is
+**not** a dispatch cue by itself — it needs an explicit marker. `dispatch:`
+marks a request you may treat as a chip candidate (still ranked by the
+priority-then-age order above, unless the operator names the exception).
+`do-not-dispatch, filed-for-record` marks triage/record only — log it on the
+board, never chip it. An unmarked peer handoff carries neither meaning: treat
+it as record-only until it carries one of these two markers or the operator
+names the issue directly.
+
 ## Dispatch via /vl-chip
 
-Every unit is dispatched by invoking [/vl-chip](../vl-chip/SKILL.md) — never
-`spawn_task` directly. Chip owns the brief template. It produces a `spawn_task` call with:
+Every unit is dispatched by invoking [/vl-chip](../vl-chip/SKILL.md) — chosen
+from the priority-ranked candidate set above — never `spawn_task` directly.
+Chip owns the brief template. It produces a `spawn_task` call with:
 
 - `title` leads with the issue id — `#<N> <concise-name>` — so it's spottable in the UI.
 - `tldr`: one plain-English line.
@@ -127,7 +153,8 @@ Then review that chip's commits.
 
 ## Jobs
 
-Board/issue ops; enqueue Planner when needed (`needs:plan`); arming the standing
+Board/issue ops; dispatch by priority order (see § Dispatch priority) then
+oldest; enqueue Planner when needed (`needs:plan`); arming the standing
 `plan:ready` poller (per-enqueue board Monitor is reinforcement); writing
 self-contained chip briefs with verify gates; arming a monitor per chip dispatch,
 verifying chip completion comments, and reviewing each chip's PR; merging reviewed
