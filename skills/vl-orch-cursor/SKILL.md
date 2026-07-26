@@ -145,7 +145,7 @@ names the issue directly.
     create` then `gh project item-add <n> --owner <owner> --url "$url"`. A plain `gh issue create`
     succeeds silently even when it never lands on the board — do not rely on catching it later.
 12. One issue = one branch = one worktree; feature logic in its owning vertical slice; shared kernel = contracts/ports only; no ProjectReference into a sibling product.
-13. After [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash: you own [/vl-prune](../vl-prune/SKILL.md) from the main clone (dry-run, then `--apply`). Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean `%USERPROFILE%\.cursor\worktrees\<repo>`.
+13. After [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash: you own [/vl-prune](../vl-prune/SKILL.md) from the main clone. A dry-run is cheap and fine anytime, but `--apply` is normal hygiene only once it would show **≥5 eligible worktrees/orphans** ([/vl-prune](../vl-prune/SKILL.md) Cadence) — do not nag the operator for it after every single merge. Never delete a feature worktree from inside it; Cursor Archive / Claude delete do not clean `%USERPROFILE%\.cursor\worktrees\<repo>`.
 
 ## Honesty bar
 
