@@ -111,6 +111,12 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   (`Closes #<N>` or `Refs #<N>`), plus the `changelog.d/` fragment + spec status. Finish-feature
   **reads the created PR body back** and asserts the keyword — fail loudly if absent; do not
   report success without that assert ([/vl-finish-feature](../vl-finish-feature/SKILL.md) §7).
+- **Pre-PR issue re-read (#313)** — **required in every brief**: *immediately before opening the
+  PR, re-read the owning issue for rulings or amendments posted after your dispatch, and fold
+  them in.* A chip's completion turn is unreachable by in-flight messaging; that re-read is the
+  one delivery channel a finishing chip reliably uses. Post-dispatch corrections that miss the
+  re-read are enforced at the merge gate ([/vl-merge-pr](../vl-merge-pr/SKILL.md)) — never by
+  assuming a late message landed.
 - **Completion report**: right after `/vl-finish-feature` opens the PR, post a concise
   **`gh issue comment` on the chip's issue** leading with PR #, the close keyword **observed**
   in the created PR body (after finish-feature's read-back — e.g. `observed: Closes #<N> in PR
@@ -131,7 +137,8 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   it** (§2c) — never silently comply, even if the brief called that finding "binding"; when a
   **load-bearing constant** or **standing directive** arrives by relay, apply §2d — confirm
   constants before hardening them; comply-then-verify vs verify-before-comply for directives;
-  record the evidence channel.
+  record the evidence channel; **immediately before opening the PR, re-read the owning issue**
+  for post-dispatch rulings / amendments and fold them in (#313).
 
 ## 2a. Investigate-first / hard-stop (fork-gate for unknowns)
 
@@ -308,6 +315,8 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Never harden a hedged relayed value into a load-bearing constant, and never treat
   verify-before-comply as optional for destructive or risk-expanding relayed directives (§2d) —
   record the evidence channel (`operator-direct` · `measured` · `relayed via <session>`).
+- Never open a PR without the **pre-PR issue re-read** (#313) — fold in post-dispatch rulings /
+  amendments; a brief that omits that instruction is defective.
 - Never write planned work as if it already exists when authoring or amending an issue body, and
   never claim another issue shipped a deliverable without checking that issue's status at write
   time.

@@ -76,7 +76,8 @@ export const NODES: Record<string, FlowNode> = {
     <li>Spec + issue reflect shipped vs. remaining (follow-ups as issues).</li>
     <li>One <code>changelog.d/</code> fragment — never edit <code>CHANGELOG.md</code> on the branch.</li>
     <li><b>Crucible — do not skip:</b> run <code>/vl-crucible-&lt;stack&gt;</code>, remediate 🔴/🟠 until <b>Ready</b>.</li>
-    <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b> — crucible + remediations go in Verification.</li></ul>`,
+    <li>Open the PR: <b>Summary · Remaining · Verification · Operator actions</b> — crucible + remediations go in Verification.</li>
+    <li><b>Pre-PR issue re-read</b> — immediately before opening, re-read the owning issue for post-dispatch rulings/amendments and fold them in (a chip's completion turn is unreachable by messaging).</li></ul>`,
   },
   MERGE: {
     kicker: "/vl-merge-pr",
@@ -85,6 +86,7 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>The operator's side of the handshake — <b>nothing merges without you</b>. Finish (or night-shift) leaves an open PR; this skill lands it:</p>
     <ul><li><b>Triage first</b> — CI status, the crucible signal + test counts in the PR's Verification section, diff size. Most loop PRs merge on review alone.</li>
+    <li><b>Post-dispatch corrections are merge-gate items</b> — never chip-messaging items. Verify rulings/amendments/stand-downs reached the PR body / code / docs; if absent and the chip is done, attributed squash note or hold merge. Send-to-chip is best-effort only and never load-bearing.</li>
     <li><b>Smoke is yours by default</b> — confirm you already smoked in the feature worktree. The agent does <b>not</b> launch the app unless you ask (optional prep for unfamiliar / night-shift PRs).</li>
     <li><b>Checkout owed?</b> Fastest: <code>gh pr checkout &lt;n&gt;</code>. Isolated: fetch <code>pull/&lt;n&gt;/head</code> into a <b>throwaway worktree</b>, run the repo's test command, remove it.</li>
     <li><b>Live-only</b> (hardware, brokers)? Merge <code>Refs #</code> → <b>Verifying</b>.</li>

@@ -71,6 +71,23 @@ live-only: `Refs #<N>` — **warn before squash** if the body lacks it. Do not m
 the body is fixed (`gh pr edit`) or the operator explicitly overrides. Receipt:
 anduin-admin #91 / PR #95 — body had no keyword; squash left the issue open.
 
+**Post-dispatch corrections — merge-gate enforcement (#313):** a chip's completion turn
+is **unreachable** by design — messages queued behind the final turn never land. Any
+correction, ruling, or stand-down issued **after dispatch** is a **merge-gate enforcement
+item**, never a chip-messaging item. Send-to-chip / `send_message` after dispatch is
+**best-effort only** and must **never** be load-bearing. At this gate:
+
+1. Scan the owning issue for post-dispatch rulings, amendments, or stand-downs.
+2. Verify the **substance** reached the PR body / code / docs (chip re-read before PR is
+   the reliable chip-side channel — [/vl-chip](../vl-chip/SKILL.md) §2 / [/vl-finish-feature](../vl-finish-feature/SKILL.md) §6).
+3. If substance is **absent** and the chip is done: either carry it into the squash commit
+   message as an **attributed note** (who ruled, what, when — durable record), **or** hold
+   the merge for a follow-up commit. Do not merge pretending the message delivered.
+
+Receipt: anduin-analytics 2026-07-24/25 — amendment missed completion report; in-flight
+ruling only landed via issue re-read / squash note; stand-down queued behind final turn →
+unwanted follow-up PR.
+
 Then pick the depth:
 
 - **Merge on review alone** — CI green, crucible signal `Ready`, small or mechanical diff, no
@@ -257,7 +274,10 @@ Verifying is for. Distinguish **merged** from **pruned** — leftover
 worktrees after squash are expected until `/vl-prune --apply`. Distinguish
 **merged** from **returned** — do not report a merge done while the session
 is still sitting in the feature worktree; §5's return is mandatory, and
-staying put "for now" is the exact #303 failure this bar forbids.
+staying put "for now" is the exact #303 failure this bar forbids. Post-dispatch
+corrections/rulings/stand-downs enforce **here at the merge gate** — never by
+assuming a chip message landed (#313); if substance is missing, attributed squash
+note or hold merge.
 **Relayed merge directives** ([/vl-chip](../vl-chip/SKILL.md) §2d): hold / stop-a-push
 is comply-then-verify; force-merge, history rewrite, or permission change via relay is
 verify-before-comply. Record the evidence channel when a constant or directive arrived
