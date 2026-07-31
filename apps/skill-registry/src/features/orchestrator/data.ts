@@ -28,6 +28,7 @@ export const NODES: Record<string, FlowNode> = {
     <li>Branch <code>feat|fix|docs/&lt;issue#&gt;-slug</code>; one issue = one worktree.</li>
     <li>Non-trivial design → a <code>docs/specs/</code> doc linked from the issue.</li>
     <li>Verify plan on the issue declares the <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code> — finish and merge read it, nobody re-decides at PR time.</li>
+    <li>Prior findings in the kickoff stay <b>priors</b> — never mark them binding against the chip's direct measurement (<code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>).</li>
     <li>Move the issue to <b>In Progress</b>.</li></ul>
     <p>Reads owner / project # / <code>area:*</code> labels from <code>GITHUB-PROJECTS.md</code>.</p>`,
   },
@@ -39,7 +40,8 @@ export const NODES: Record<string, FlowNode> = {
     <p>The VSA non-negotiables while you build:</p>
     <ul><li>Feature logic lives in its <b>owning vertical slice</b> — no app-wide Controllers/Services/Repositories layer-cake.</li>
     <li>Shared kernel = contracts/ports only.</li>
-    <li>No <code>ProjectReference</code> into a sibling product.</li></ul>
+    <li>No <code>ProjectReference</code> into a sibling product.</li>
+    <li>Brief-supplied prior findings are <b>rebuttable by direct measurement</b> — on contradiction, STOP and raise; never silently comply, even if the brief called them binding.</li></ul>
     <p>Surfaced a bug here? → <code>/vl-update-docs</code>, don't derail the branch.</p>`,
   },
   REVIEW: {

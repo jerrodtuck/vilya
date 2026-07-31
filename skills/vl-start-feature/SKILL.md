@@ -148,6 +148,10 @@ in the single-session footnote, this skill writes it.
 - When step 1 is an unknown: the **Investigate-first / hard-stop** section (§4) — non-negotiable
   stop after findings + options; daytime waits for the operator pick; unattended uses
   `needs:decision`.
+- When the kickoff relays a certificate, exclusion list, baseline, or "known" constraint: state it
+  as a **prior** — **never** mark it binding against the implementer's direct measurement.
+  Context order: `direct measurement > dated ruling > record prose > recency/salience`. On
+  contradiction the chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c).
 
 Then build (after the daytime execution-model handoff when it applies — and only after any
 investigate-first pick is recorded). Close path: **tests green → `/vl-crucible-<stack>` → remediate →

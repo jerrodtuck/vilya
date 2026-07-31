@@ -71,6 +71,12 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
   findings + options on the issue, **hard stop** — do not implement and do not
   auto-pick because findings look obvious — until the operator records the pick
   on the issue or relays it here.
+- If this worktree's **direct measurement** contradicts a brief-supplied prior
+  finding (certificate, exclusion list, baseline, "known" constraint): **STOP**,
+  comment the conflict on the issue, and wait — never silently comply, even when
+  the brief called that finding "binding". Context order:
+  `direct measurement > dated ruling > record prose > recency/salience`
+  ([/vl-chip](../vl-chip/SKILL.md) §2c).
 
 ## 3. Gates → close
 
