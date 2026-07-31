@@ -107,12 +107,17 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   probe-never-manage contract in §2b — probe, don't start/kill/restart; a config need discovered
   mid-smoke is a fork on the issue, not a restart.
 - **Close-out**: **`/vl-finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
-  **Ready**, it opens the PR **titled `#<N> <name>`** with **`Closes #<N>`**, plus the `changelog.d/`
-  fragment + spec status.
+  **Ready**, it opens the PR **titled `#<N> <name>`** with the merge-routing keyword
+  (`Closes #<N>` or `Refs #<N>`), plus the `changelog.d/` fragment + spec status. Finish-feature
+  **reads the created PR body back** and asserts the keyword — fail loudly if absent; do not
+  report success without that assert ([/vl-finish-feature](../vl-finish-feature/SKILL.md) §7).
 - **Completion report**: right after `/vl-finish-feature` opens the PR, post a concise
-  **`gh issue comment` on the chip's issue** — PR #, gate results. Stopping at a fork/blocker
-  instead? The **options comment on the issue is the report**. `gh` is already allowed in chips,
-  so the comment lands with no prompt, attended or not.
+  **`gh issue comment` on the chip's issue** leading with PR #, the close keyword **observed**
+  in the created PR body (after finish-feature's read-back — e.g. `observed: Closes #<N> in PR
+  body`), and gate results. **Never** assert `Closes #<N>` / `Refs #<N>` from the brief or
+  template alone. Stopping at a fork/blocker instead? The **options comment on the issue is the
+  report**. `gh` is already allowed in chips, so the comment lands with no prompt, attended or
+  not.
 - **No chip-spawned sessions**: chips **never call `spawn_task`** (or any other session-spawning
   tool). A deferred idea, follow-up, or out-of-scope finding goes **on the issue as a comment** or
   as a **new labeled GitHub issue** — only the orchestrator decides whether and how to chip it.
