@@ -47,6 +47,7 @@ export const NODES: Record<string, FlowNode> = {
     <li>File ownership / out of scope when parallel streams exist.</li>
     <li><b>Verify plan</b> and <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code>.</li>
     <li>When step 1 is an unknown: <b>Investigate-first / hard-stop</b> section — non-negotiable stop after findings + options; no auto-pick.</li>
+    <li>Prior findings (certificate, exclusion list, baseline, "known" constraint) stay <b>priors</b> — never mark them binding against the chip's direct measurement. Context order: <code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>.</li>
     <li>Explicit: chips/workers implement; Planner does not.</li></ul>`,
   },
   FORK: {

@@ -81,6 +81,12 @@ Post on the issue (not a private note). Cover:
   the chip it may auto-pick. Unattended mid-run forks still use `needs:decision` + Blocked
   ([/vl-chip](../vl-chip/SKILL.md) §2a) — that label path is not a substitute for this kickoff
   section on daytime chips. This gate does **not** replace ordinary `plan:ready` planning.
+- **Prior findings vs measurement**: when the kickoff relays a certificate, exclusion list,
+  baseline, or "known" constraint, state it as a **prior** — **never** mark it binding against
+  the chip's direct measurement. Context order:
+  `direct measurement > dated ruling > record prose > recency/salience`. On contradiction the
+  chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c) — briefs must not teach
+  silent compliance.
 - Explicit: chips/workers implement; Planner does not.
 
 ## Intake Monitor (Planner-owned)
@@ -166,3 +172,6 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 - Never treat "never arm monitors" as forbidding **intake** — intake is required; process/completion self-watch is still forbidden.
 - If the brief is too thin to plan, say so on the issue and stop at `needs:decision`
   rather than inventing acceptance.
+- Never mark a brief-supplied prior finding "binding" against the chip's direct measurement —
+  priors are rebuttable; context order is
+  `direct measurement > dated ruling > record prose > recency/salience`.

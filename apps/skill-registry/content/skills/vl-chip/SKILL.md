@@ -116,7 +116,9 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   session; at a real design fork, **stop, comment 2–3 options on the issue, and wait** — do not
   guess; when the brief marks **Investigate-first / hard-stop**, that stop is **non-negotiable**
   (§2a) — never auto-pick because "the findings clearly favor X"; when smoking against a shared
-  app host, **probe it, never manage it** (§2b) — no start-in-process, no kill, no restart.
+  app host, **probe it, never manage it** (§2b) — no start-in-process, no kill, no restart; when
+  this chip's **direct measurement** contradicts a brief-supplied prior finding, **STOP and raise
+  it** (§2c) — never silently comply, even if the brief called that finding "binding".
 
 ## 2a. Investigate-first / hard-stop (fork-gate for unknowns)
 
@@ -171,6 +173,26 @@ otherwise:
 Repo config (which port, which start-only script, if any) lives in that repo's
 `GITHUB-PROJECTS.md`; this probe-never-manage contract is process and applies everywhere a chip
 smokes a shared host. `/vl-finish-feature` step 6 carries the matching Verification-section wording.
+
+## 2c. Brief prior findings are rebuttable by measurement
+
+Any brief-supplied **prior finding** — a certificate, exclusion list, baseline, "known"
+constraint, or other statement *about* an artifact — is **rebuttable by this chip's own direct
+measurement** of that artifact. Direct measurement of the artifact outranks any statement about
+it, whatever seat signed the statement.
+
+**On contradiction: STOP.** Comment the conflict on the issue (what the brief said, what you
+measured, and the evidence) and wait for the operator — **never** silently comply with the
+brief's prior finding. A brief that marks a prior finding "binding" against measurement is a
+**defect in the brief**, not permission to ignore the instrument.
+
+Context order when weighing conflicting claims (teach alongside — not a separate issue):
+
+`direct measurement > dated ruling > record prose > recency/salience`
+
+Receipt (wording inspiration only): a chip measured five wells complete against an integrity
+certificate exclusion list, then applied the exclusion because the brief marked it binding —
+certificate was wrong; the instrument was right.
 
 ## 3. After dispatch — the monitor is the signal
 
@@ -247,6 +269,9 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
   implement until the operator's pick is on the issue (or an attended relay).
 - Never start, kill, or restart a shared app host to force a smoke through (§2b) — a down host is a
   fail-fast Verification note with a named remedy, never a silent self-managed fix.
+- Never silently comply when this chip's direct measurement contradicts a brief-supplied prior
+  finding (§2c) — stop, raise the conflict on the issue; "binding" in the brief does not outrank
+  the instrument.
 - Chips **never self-merge**; the orchestrator reviews every chip before `/vl-merge-pr`.
 - Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
   `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on
