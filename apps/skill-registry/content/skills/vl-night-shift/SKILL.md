@@ -66,8 +66,10 @@ see [/vl-chip](../vl-chip/SKILL.md) §2a.)
 
 ## 3. Never merge — always leave a PR
 
-- Open the PR (`Closes #<n>` if done-done, `Refs #<n>` → **Verifying** if a live retest is owed —
-  read the issue's declared merge routing; never downgrade `live-only` to `Closes #`).
+- Open the PR via `/vl-finish-feature` (`Closes #<n>` if done-done, `Refs #<n>` → **Verifying** if
+  a live retest is owed — read the issue's declared merge routing; never downgrade `live-only` to
+  `Closes #`). Finish-feature reads the created body back and asserts the keyword — fail loudly if
+  absent; morning report / completion comment state the keyword **observed**, not the template.
 - **Never merge, never force-push a shared branch, never push to the default branch.** You open the
   PR; the operator merges in the morning (via `/vl-merge-pr`).
 - **Morning review queue, not chip-style as-they-open review.** Chip PRs are reviewed when each

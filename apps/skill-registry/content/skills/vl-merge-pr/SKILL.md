@@ -62,7 +62,16 @@ gh pr diff <n> --repo <owner>/<repo> --name-only     # full diff only if the fil
 Capture `headRefOid` (reviewed head). Pre-merge `mergeable` / `mergeStateStatus` (REST:
 `mergeable_state`) — including **clean** — are **advisory**; see §3. Read the body's
 **Verification** (exact test counts + crucible merge-readiness signal) and **Operator
-actions** sections. Then pick the depth:
+actions** sections.
+
+**Close-keyword check (pre-merge warn):** the triage fetch already has `body`. For the
+issue's expected close path — done-done (`tests-only` / `local-smoke`): a GitHub
+auto-close form (`clos*` / `fix*` / `resolv*` + `#<N>`, this loop writes `Closes #<N>`);
+live-only: `Refs #<N>` — **warn before squash** if the body lacks it. Do not merge until
+the body is fixed (`gh pr edit`) or the operator explicitly overrides. Receipt:
+anduin-admin #91 / PR #95 — body had no keyword; squash left the issue open.
+
+Then pick the depth:
 
 - **Merge on review alone** — CI green, crucible signal `Ready`, small or mechanical diff, no
   operator actions owed.

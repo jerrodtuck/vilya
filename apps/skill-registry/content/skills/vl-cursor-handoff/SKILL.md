@@ -85,9 +85,12 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
    not optional.
 2. Close with [/vl-finish-feature](../vl-finish-feature/SKILL.md) — PR titled
    `#<N> …` with the merge routing from the verify plan (`Closes #<N>` or
-   `Refs #<N>`).
+   `Refs #<N>`). Finish-feature **reads the created PR body back** and asserts
+   the keyword — fail loudly if absent; do not report success without that
+   assert.
 3. Right after the PR opens (or when stopping at a fork/blocker), post a concise
-   completion comment on the issue leading with PR # and gate results.
+   completion comment on the issue leading with PR #, the close keyword
+   **observed** in the created PR body (not the template), and gate results.
 4. **Never merge. Never push the default branch. Never spawn sessions.**
 
 ## Honesty bar

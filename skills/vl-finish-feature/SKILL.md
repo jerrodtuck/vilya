@@ -68,6 +68,36 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
 - Do not merge from the task branch unless the operator asks — merging is the operator's move,
   via [/vl-merge-pr](../vl-merge-pr/SKILL.md) (which hands worktree cleanup to [/vl-prune](../vl-prune/SKILL.md)).
 
+## 7. Read the PR body back — assert the keyword
+
+After the PR is created, **immediately** read the body back from GitHub — do not treat the text
+you *intended* to pass to `gh pr create` as proof:
+
+```bash
+gh pr view <n> --json body --jq .body
+```
+
+Assert the body contains the **expected keyword for this issue's merge routing**:
+
+| Routing | Required substring in created body |
+|---------|-------------------------------------|
+| `tests-only` / `local-smoke` | `Closes #<N>` |
+| `live-only` | `Refs #<N>` |
+
+**If the keyword is absent: fail loudly.** Do not report success. Fix with
+`gh pr edit <n> --body …` (or recreate), re-read, and re-assert until it passes — or stop and say
+the PR opened without the keyword. Receipt: anduin-admin #91 / PR #95 opened with no clos*
+keyword; squash left the issue open while the chip reported `Closes #91` from the template.
+
+## 8. Completion report — observed, not intended
+
+When this skill opens a PR, the chip/worker completion comment on the issue must state the
+keyword **observed** in the created PR body (after §7), e.g. `observed: Closes #317 in PR body`
+or `observed: Refs #317 in PR body` — **never** the keyword the brief/template intended.
+§7 failed or keyword still absent → do not claim success; say the keyword is missing.
+
 ## Honesty bar
 
-Report failed tests, skipped steps, crucible findings not yet fixed, and "not live-verified" plainly.
+Report failed tests, skipped steps, crucible findings not yet fixed, and "not live-verified"
+plainly. A completion comment that asserts `Closes #<N>` / `Refs #<N>` without a §7 read-back
+is a defect — same bar as "a comment is a claim, not proof," applied to the claim-producing side.
