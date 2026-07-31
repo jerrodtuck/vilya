@@ -53,6 +53,12 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
 
 ## 6. Open the PR
 
+- **Pre-PR issue re-read (#313) — required:** immediately before opening the PR, re-read the
+  owning issue for rulings or amendments posted after your dispatch, and fold them into the PR
+  body / code / docs. A chip's completion turn is unreachable by in-flight messaging; this
+  re-read is the one delivery channel a finishing chip reliably uses. Missed substance is
+  enforced later at [/vl-merge-pr](../vl-merge-pr/SKILL.md) — do not skip the re-read and hope a
+  late message arrives.
 - **`Closes #` vs `Refs #` comes from the issue's declared merge routing** (verify plan from
   `/vl-start-feature` step 5) — don't re-derive it here. No routing on the issue? Decide now, and
   say in the PR that you did.

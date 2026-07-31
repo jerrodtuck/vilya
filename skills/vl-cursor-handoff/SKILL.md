@@ -88,15 +88,19 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
 1. Run the repo's `vl-crucible-<stack>` (from `GITHUB-PROJECTS.md`) on the branch;
    apply top refactors; re-review until the signal reads **Ready**. This gate is
    not optional.
-2. Close with [/vl-finish-feature](../vl-finish-feature/SKILL.md) — PR titled
+2. **Immediately before opening the PR**, re-read the owning issue for rulings or
+   amendments posted after your dispatch, and fold them in (#313) — a chip's
+   completion turn is unreachable by messaging; that re-read is the reliable
+   delivery channel ([/vl-finish-feature](../vl-finish-feature/SKILL.md) §6).
+3. Close with [/vl-finish-feature](../vl-finish-feature/SKILL.md) — PR titled
    `#<N> …` with the merge routing from the verify plan (`Closes #<N>` or
    `Refs #<N>`). Finish-feature **reads the created PR body back** and asserts
    the keyword — fail loudly if absent; do not report success without that
    assert.
-3. Right after the PR opens (or when stopping at a fork/blocker), post a concise
+4. Right after the PR opens (or when stopping at a fork/blocker), post a concise
    completion comment on the issue leading with PR #, the close keyword
    **observed** in the created PR body (not the template), and gate results.
-4. **Never merge. Never push the default branch. Never spawn sessions.**
+5. **Never merge. Never push the default branch. Never spawn sessions.**
 
 ## Honesty bar
 
