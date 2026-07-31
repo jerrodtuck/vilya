@@ -172,7 +172,10 @@ an issue (two commands)": `gh issue create` then `gh project item-add <n> --owne
 <owner> --url "$url"`. A plain `gh issue create` succeeds silently even when it never
 lands on the board — `/vl-chip` §0 also checks board membership before every dispatch
 as a backstop, but that check is not a substitute for creating issues on-board in the
-first place. At any real design fork, stop and give 2–3 options with costs and a stated
+first place. Issue bodies state **present-tense facts with evidence** — planned work is
+scope ("this issue adds X"), never an existing artifact ("X exists" / "#N shipped Y");
+when naming another issue's deliverable, state that issue's **actual current status,
+checked at write time**. At any real design fork, stop and give 2–3 options with costs and a stated
 recommendation (with its reasoning) in plain chat text before any chip is
 dispatched — the operator still decides. When step 1 is an unknown, the
 kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after

@@ -26,6 +26,10 @@ If the repo isn't already known, detect it:
   Use the owner, project number, and `area:*` labels from
   `docs/project-tracking/GITHUB-PROJECTS.md`.
   Defect → `type:bug`; feature → `type:feature`; multi-stream → `type:epic` with sub-issues.
+  **Issue body:** present-tense facts with evidence. Planned work is scope ("this issue adds
+  X"), never an existing artifact ("X exists" / "#N shipped Y"). When naming another issue's
+  deliverable, state that issue's **actual current status, checked at write time**. An
+  aspirational body is a false record the moment it is filed.
 - Extends an in-flight epic → link as **sub-issue** (`addSubIssue`).
 - Ambiguous which issue → ask (unless invoked by [/vl-night-shift](../vl-night-shift/SKILL.md) —
   then skip and take a clearly eligible issue only).
@@ -152,6 +156,8 @@ in the single-session footnote, this skill writes it.
   as a **prior** — **never** mark it binding against the implementer's direct measurement.
   Context order: `direct measurement > dated ruling > record prose > recency/salience`. On
   contradiction the chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c).
+- Kickoff restatements follow the same **present-tense facts** rule as the issue body (§1) —
+  planned work as scope; referenced issues get **actual current status, checked at write time**.
 
 Then build (after the daytime execution-model handoff when it applies — and only after any
 investigate-first pick is recorded). Close path: **tests green → `/vl-crucible-<stack>` → remediate →

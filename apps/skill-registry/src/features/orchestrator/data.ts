@@ -24,7 +24,8 @@ export const NODES: Record<string, FlowNode> = {
     c: "--start",
     bodyHtml: `
     <p>Turns intent into a tracked, branched, ready-to-build unit.</p>
-    <ul><li>The <b>issue is the brief</b> — view it or create + add it to the board.</li>
+    <ul>    <li>The <b>issue is the brief</b> — view it or create + add it to the board.</li>
+    <li>Issue bodies state <b>present-tense facts with evidence</b> — planned work is scope (&quot;this issue adds X&quot;), never an existing artifact; referenced issues get <b>actual current status, checked at write time</b>.</li>
     <li>Branch <code>feat|fix|docs/&lt;issue#&gt;-slug</code>; one issue = one worktree.</li>
     <li>Non-trivial design → a <code>docs/specs/</code> doc linked from the issue.</li>
     <li>Verify plan on the issue declares the <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code> — finish and merge read it, nobody re-decides at PR time.</li>

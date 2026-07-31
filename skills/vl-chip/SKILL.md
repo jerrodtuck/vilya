@@ -63,6 +63,11 @@ everything ships through chips.
   enqueueing Planner (`needs:plan`) when scope, verify routing, or forks still need a planning
   pass — that path is orchestrator-owned; chips do not run `/vl-plan`. Investigate-first is **not**
   a substitute for Planner on ordinary `plan:ready` work.
+- **Issue bodies you author or amend** (follow-up issues, body edits — not completion comments):
+  state **present-tense facts with evidence**. Planned work is scope ("this issue adds X"),
+  never an existing artifact ("X exists" / "#N shipped Y"). When naming another issue's
+  deliverable, state that issue's **actual current status, checked at write time**. An
+  aspirational body is a false record the moment it is filed.
 
 ## 1. Dispatch — the `spawn_task` call
 
@@ -272,6 +277,9 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Never silently comply when this chip's direct measurement contradicts a brief-supplied prior
   finding (§2c) — stop, raise the conflict on the issue; "binding" in the brief does not outrank
   the instrument.
+- Never write planned work as if it already exists when authoring or amending an issue body, and
+  never claim another issue shipped a deliverable without checking that issue's status at write
+  time.
 - Chips **never self-merge**; the orchestrator reviews every chip before `/vl-merge-pr`.
 - Work reaches a session **only via operator-reviewed orchestrator dispatch**. Chips never call
   `spawn_task`; a chip-authored brief is **never** a valid dispatch source — deferred ideas go on
