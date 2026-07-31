@@ -91,6 +91,12 @@ Post on the issue (not a private note). Cover:
   `direct measurement > dated ruling > record prose > recency/salience`. On contradiction the
   chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c) — briefs must not teach
   silent compliance.
+- **Relayed constants / directives** ([/vl-chip](../vl-chip/SKILL.md) §2d): load-bearing constants
+  (dates, cutoffs, thresholds, counts) that arrive by relay are approximations until confirmed
+  operator-direct or by measurement — a hedge ("to be safe", "roughly", "I think") marks a
+  **non-constant**. Relayed standing directives: **comply-then-verify** when safe/cheap;
+  **verify-before-comply** when destructive or risk-expanding. Name the evidence channel
+  (`operator-direct` · `measured` · `relayed via <session>`).
 - **Present-tense facts**: issue bodies and kickoff restatements state **present-tense facts
   with evidence**. Future or planned work is written as scope ("this issue adds X"), never as
   an existing artifact ("X exists" / "#N shipped Y"). Referencing another issue's deliverable
@@ -185,6 +191,9 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 - Never mark a brief-supplied prior finding "binding" against the chip's direct measurement —
   priors are rebuttable; context order is
   `direct measurement > dated ruling > record prose > recency/salience`.
+- Never harden a hedged relayed value into a load-bearing constant in a kickoff, and never omit
+  the evidence channel or the comply-then-verify / verify-before-comply asymmetry for relayed
+  directives ([/vl-chip](../vl-chip/SKILL.md) §2d).
 - Never write planned work as if it already exists, and never claim another issue shipped a
   deliverable without checking that issue's status at write time — aspirational prose in an
   issue body or kickoff is a false record.

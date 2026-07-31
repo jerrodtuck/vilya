@@ -128,7 +128,10 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   (§2a) — never auto-pick because "the findings clearly favor X"; when smoking against a shared
   app host, **probe it, never manage it** (§2b) — no start-in-process, no kill, no restart; when
   this chip's **direct measurement** contradicts a brief-supplied prior finding, **STOP and raise
-  it** (§2c) — never silently comply, even if the brief called that finding "binding".
+  it** (§2c) — never silently comply, even if the brief called that finding "binding"; when a
+  **load-bearing constant** or **standing directive** arrives by relay, apply §2d — confirm
+  constants before hardening them; comply-then-verify vs verify-before-comply for directives;
+  record the evidence channel.
 
 ## 2a. Investigate-first / hard-stop (fork-gate for unknowns)
 
@@ -203,6 +206,26 @@ Context order when weighing conflicting claims (teach alongside — not a separa
 Receipt (wording inspiration only): a chip measured five wells complete against an integrity
 certificate exclusion list, then applied the exclusion because the brief marked it binding —
 certificate was wrong; the instrument was right.
+
+## 2d. Relayed constants and directives
+
+**Load-bearing constants** (dates, cutoffs, thresholds, counts) that arrive by relay are
+**approximations** until confirmed **operator-direct** or by **measurement**. A hedge ("to be
+safe", "roughly", "I think") marks a value as a **non-constant** — do not harden it into a
+load-bearing fact.
+
+**Relayed standing directives** — the asymmetry is the point:
+
+| Direction | When | Examples |
+|-----------|------|----------|
+| **Comply-then-verify** | Compliance is the safe/cheap direction | Protect data, hold dispatch, stop a push |
+| **Verify-before-comply** | The relayed instruction is destructive or expands risk | History rewrites, deletions, publishing, permission changes |
+
+When recording a fact or directive, name its **evidence channel** — `operator-direct`,
+`measured`, or `relayed via <session>` — so the next reader knows its evidence class.
+
+Receipt (wording inspiration only): a hedged cutoff hardened into a load-bearing constant
+(+6.6d error); a confidentiality directive arrived via architect relay → comply-then-verify.
 
 ## 3. After dispatch — the monitor is the signal
 
@@ -282,6 +305,9 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Never silently comply when this chip's direct measurement contradicts a brief-supplied prior
   finding (§2c) — stop, raise the conflict on the issue; "binding" in the brief does not outrank
   the instrument.
+- Never harden a hedged relayed value into a load-bearing constant, and never treat
+  verify-before-comply as optional for destructive or risk-expanding relayed directives (§2d) —
+  record the evidence channel (`operator-direct` · `measured` · `relayed via <session>`).
 - Never write planned work as if it already exists when authoring or amending an issue body, and
   never claim another issue shipped a deliverable without checking that issue's status at write
   time.

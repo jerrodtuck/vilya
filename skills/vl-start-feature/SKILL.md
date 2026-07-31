@@ -156,6 +156,11 @@ in the single-session footnote, this skill writes it.
   as a **prior** — **never** mark it binding against the implementer's direct measurement.
   Context order: `direct measurement > dated ruling > record prose > recency/salience`. On
   contradiction the chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c).
+- When the kickoff carries a **load-bearing constant** or **standing directive** from another
+  session: keep constants as approximations until operator-direct or measured confirmation (a
+  hedge marks a non-constant); relayed directives use comply-then-verify (safe/cheap) vs
+  verify-before-comply (destructive/risk-expanding); record the evidence channel
+  (`operator-direct` · `measured` · `relayed via <session>`) — [/vl-chip](../vl-chip/SKILL.md) §2d.
 - Kickoff restatements follow the same **present-tense facts** rule as the issue body (§1) —
   planned work as scope; referenced issues get **actual current status, checked at write time**.
 
