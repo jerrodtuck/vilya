@@ -30,6 +30,7 @@ export const NODES: Record<string, FlowNode> = {
     <li>Non-trivial design → a <code>docs/specs/</code> doc linked from the issue.</li>
     <li>Verify plan on the issue declares the <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code> — finish and merge read it, nobody re-decides at PR time.</li>
     <li>Prior findings in the kickoff stay <b>priors</b> — never mark them binding against the chip's direct measurement (<code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>).</li>
+    <li><b>Relayed constants / directives</b> — do not harden hedges into load-bearing constants; comply-then-verify (safe/cheap) vs verify-before-comply (destructive); record <code>operator-direct</code> · <code>measured</code> · <code>relayed via &lt;session&gt;</code>.</li>
     <li>Move the issue to <b>In Progress</b>.</li></ul>
     <p>Reads owner / project # / <code>area:*</code> labels from <code>GITHUB-PROJECTS.md</code>.</p>`,
   },
@@ -42,7 +43,8 @@ export const NODES: Record<string, FlowNode> = {
     <ul><li>Feature logic lives in its <b>owning vertical slice</b> — no app-wide Controllers/Services/Repositories layer-cake.</li>
     <li>Shared kernel = contracts/ports only.</li>
     <li>No <code>ProjectReference</code> into a sibling product.</li>
-    <li>Brief-supplied prior findings are <b>rebuttable by direct measurement</b> — on contradiction, STOP and raise; never silently comply, even if the brief called them binding.</li></ul>
+    <li>Brief-supplied prior findings are <b>rebuttable by direct measurement</b> — on contradiction, STOP and raise; never silently comply, even if the brief called them binding.</li>
+    <li>Relayed load-bearing constants need operator-direct or measured confirmation; hedges are non-constants. Relayed directives: comply-then-verify vs verify-before-comply.</li></ul>
     <p>Surfaced a bug here? → <code>/vl-update-docs</code>, don't derail the branch.</p>`,
   },
   REVIEW: {

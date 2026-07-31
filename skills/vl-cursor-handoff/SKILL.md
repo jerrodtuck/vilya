@@ -77,6 +77,11 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
   the brief called that finding "binding". Context order:
   `direct measurement > dated ruling > record prose > recency/salience`
   ([/vl-chip](../vl-chip/SKILL.md) §2c).
+- **Relayed constants / directives** ([/vl-chip](../vl-chip/SKILL.md) §2d): load-bearing
+  constants from relay stay approximations until operator-direct or measured confirmation;
+  a hedge marks a non-constant. Relayed directives: comply-then-verify when safe/cheap;
+  verify-before-comply when destructive or risk-expanding. Record the evidence channel
+  (`operator-direct` · `measured` · `relayed via <session>`).
 
 ## 3. Gates → close
 

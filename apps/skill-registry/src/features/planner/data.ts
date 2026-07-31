@@ -49,6 +49,7 @@ export const NODES: Record<string, FlowNode> = {
     <li><b>Verify plan</b> and <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code>.</li>
     <li>When step 1 is an unknown: <b>Investigate-first / hard-stop</b> section — non-negotiable stop after findings + options; no auto-pick.</li>
     <li>Prior findings (certificate, exclusion list, baseline, "known" constraint) stay <b>priors</b> — never mark them binding against the chip's direct measurement. Context order: <code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>.</li>
+    <li><b>Relayed constants / directives</b> — hedges are non-constants; comply-then-verify (safe/cheap) vs verify-before-comply (destructive); name the evidence channel (<code>operator-direct</code> · <code>measured</code> · <code>relayed via &lt;session&gt;</code>).</li>
     <li><b>Present-tense facts</b> — issue bodies and kickoff restatements state present-tense facts with evidence. Planned work is scope (&quot;this issue adds X&quot;), never an existing artifact (&quot;X exists&quot; / &quot;#N shipped Y&quot;). Referenced issues get <b>actual current status, checked at write time</b>.</li>
     <li>Explicit: chips/workers implement; Planner does not.</li></ul>`,
   },
