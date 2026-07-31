@@ -45,7 +45,11 @@ Opt-in label **`needs:plan`**. Operator or orchestrator applies it. The operator
    operator names an issue, plan that one (apply `needs:plan` if missing so the
    transition is visible).
 2. Read the issue body, linked specs/ADRs, and owning slice. Prefer real architecture
-   in that slice. Do not invent layer-cake dumping grounds.
+   in that slice. Do not invent layer-cake dumping grounds. Treat aspirational
+   "already shipped / X exists" claims in the body as defects — correct them in the
+   kickoff; when the body names another issue's deliverable, check that issue's
+   **actual current status at write time** before restating it (§ Kickoff shape —
+   Present-tense facts).
 3. Write **one kickoff comment** on the issue (§ Kickoff shape). Include the verify
    plan and merge routing. At a real design fork during planning, include 2–3 options
    with costs + your recommendation in that comment (or a follow-up on the same issue).
@@ -87,6 +91,12 @@ Post on the issue (not a private note). Cover:
   `direct measurement > dated ruling > record prose > recency/salience`. On contradiction the
   chip **STOPS** and raises it ([/vl-chip](../vl-chip/SKILL.md) §2c) — briefs must not teach
   silent compliance.
+- **Present-tense facts**: issue bodies and kickoff restatements state **present-tense facts
+  with evidence**. Future or planned work is written as scope ("this issue adds X"), never as
+  an existing artifact ("X exists" / "#N shipped Y"). Referencing another issue's deliverable
+  requires stating that issue's **actual current status, checked at write time**. An issue
+  body is read months later by a session with no context; an aspirational body becomes a
+  false record the moment it is filed.
 - Explicit: chips/workers implement; Planner does not.
 
 ## Intake Monitor (Planner-owned)
@@ -175,3 +185,6 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 - Never mark a brief-supplied prior finding "binding" against the chip's direct measurement —
   priors are rebuttable; context order is
   `direct measurement > dated ruling > record prose > recency/salience`.
+- Never write planned work as if it already exists, and never claim another issue shipped a
+  deliverable without checking that issue's status at write time — aspirational prose in an
+  issue body or kickoff is a false record.

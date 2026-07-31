@@ -43,6 +43,11 @@ gh project item-add <n> --owner <owner> --url "$url"
 
 Owner, project number, and `area:*` labels: `docs/project-tracking/GITHUB-PROJECTS.md`.
 
+**Issue body:** present-tense facts with evidence. Planned work is scope ("this issue adds X"),
+never an existing artifact ("X exists" / "#N shipped Y"). When naming another issue's
+deliverable, state that issue's **actual current status, checked at write time**. An
+aspirational body is a false record the moment it is filed.
+
 ## Files that still go under `docs/`
 
 | Velocity | Files | Dates |
@@ -71,6 +76,8 @@ append on the owning branch (or at merge-boundary).
 - Letting a surfaced bug derail the current branch
 - Editing `CHANGELOG.md` on a feature branch
 - Putting long design only in the issue body (use a spec)
+- Writing planned work as if already shipped, or claiming another issue shipped a deliverable
+  without checking that issue's status at write time
 - Editing `GITHUB-PROJECTS.md` “while here” on an unrelated feature branch
 - Adding feature logic to the shared kernel, or coupling across product/feature boundaries
 - Loading all of `DECISIONS.md` into context when a grep would do
