@@ -12,7 +12,7 @@ const LINKS = [
   { href: "/skills", label: "Skills" },
   { href: "/setup", label: "Setup" },
   { href: "/night-shift", label: "Night shift" },
-  { href: "/differences", label: "Two desktops" },
+  { href: "/differences", label: "Desktop differences" },
 ];
 
 export function SiteNav() {

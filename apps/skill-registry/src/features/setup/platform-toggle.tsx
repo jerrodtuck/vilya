@@ -1,31 +1,17 @@
 // Feature slice: setup — Claude Code ⇄ Cursor install-path toggle (client leaf).
 "use client";
 
-import { useState } from "react";
+import { useDesktopHost, DesktopHostSelector } from "../../shared/ui/desktop-host-selector";
+import { CodexSetup } from "./codex-setup";
 
 export function PlatformToggle() {
-  const [tool, setTool] = useState<"cc" | "cur">("cc");
+  const { host: tool, selectHost } = useDesktopHost();
 
   return (
     <>
-      <div className="toggle" role="tablist">
-        <button
-          type="button"
-          className={tool === "cc" ? "on" : ""}
-          onClick={() => setTool("cc")}
-        >
-          Claude Code
-        </button>
-        <button
-          type="button"
-          className={tool === "cur" ? "on" : ""}
-          onClick={() => setTool("cur")}
-        >
-          Cursor
-        </button>
-      </div>
+      <DesktopHostSelector host={tool} onSelect={selectHost} />
 
-      {tool === "cc" ? (
+      {tool === "codex" ? <CodexSetup /> : tool === "cc" ? (
         <div className="pane on">
           <p>
             Run the install script <b>once per machine</b> — it links every

@@ -4,7 +4,7 @@
 
 **Vilya is the Dev Loop system** — not a product like Anduin or NaryaCommand. It holds the
 canonical skills, the registry/flows site, the prompts, and the tracking template that every
-product repo copies. Built for **Claude Code + Cursor**, with **per-stack crucible dialects**
+product repo copies. Built for **Claude Code + Cursor + Codex desktop**, with **per-stack crucible dialects**
 across frontend (Next.js, .NET/Blazor) and backend/Python (FastAPI, Django, ML) repos.
 
 **Daytime is primary.** You orchestrate with skills; the board is the shared state. Night-shift
@@ -37,7 +37,7 @@ vilya/
 ```
 
 See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live site:
-**https://vilya.jerrodtuck.com** (Overview · Architect · Orchestrator · Skills · Setup · Night shift · Cursor vs Claude Code).
+**https://vilya.jerrodtuck.com** (Overview · Architect · Orchestrator · Skills · Setup · Night shift · Desktop differences).
 
 ## The model
 
@@ -55,6 +55,31 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live si
   `/merge-pr`. `/update-docs` is routing only.
 - **The registry app** reads `skills/` as its source of truth (via `SKILLS_DIR`)
   and surfaces each skill's version history from git.
+
+## Codex desktop
+
+Add the Codex skill target with `pwsh scripts/install-skills.ps1 -IncludeCodex` or
+`bash scripts/install-skills.sh --include-codex`: `$HOME/.agents/skills`, preserving
+the Claude/Cursor default and explicit custom targets. Verify actual discovery and the
+resolved source in the session, then use `$vl-orch-codex` or explicitly read/apply its
+SKILL.md. Installation alone is not invocation evidence.
+
+The Codex orch owns planning; no standing Planner seat is required. It records the accepted
+plan and verification routing on the issue before dispatching implementation in a verified
+isolated worktree. Subagent spawning alone is not isolation. Phase models are configurable:
+resolve current planning/workhorse families from runtime capabilities, honor explicit operator
+pins, and preserve configured defaults without authorized overrides. Both seat entries carry
+trusted human authorization for messaging within the repo/product board.
+
+Start with [Setup](https://vilya.jerrodtuck.com/setup?host=codex),
+[Architect](https://vilya.jerrodtuck.com/architect?host=codex),
+[Orch planning/chips/recovery](https://vilya.jerrodtuck.com/orch?host=codex) and
+[Differences](https://vilya.jerrodtuck.com/differences?host=codex).
+Per-skill applicability is in the registry and
+[coverage audit](docs/design/codex-skill-coverage.md).
+Codex CLI and a new unattended backend are deferred; existing night-shift eligibility stays
+`plan:ready ∧ night-shift:ready`. The full desktop cycle and interruption recovery are
+separate [#329 integration gates](https://github.com/jerrodtuck/vilya/issues/329).
 
 ## Deployment
 

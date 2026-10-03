@@ -1,7 +1,7 @@
 # Vision — Vilya, the Dev Loop
 
 **Created:** 2026-07-18
-**Last updated:** 2026-07-19
+**Last updated:** 2026-10-03
 **Owning issue:** [#142](https://github.com/jerrodtuck/vilya/issues/142)
 
 > **Boundary.** This document carries intent — what the system is for and why it is
@@ -32,8 +32,9 @@ Three commitments define the system:
   stomped the same files. Live coordination moved to the board so sessions stop
   racing through markdown — docs stay append-only history and design intent
   (`changelog.d/`, specs, `DECISIONS.md`), not a parallel status dashboard.
-- **Written once, run anywhere.** One `SKILL.md` standard runs in both Claude Code
-  and Cursor from one user-level install; one canon holds the process; the only
+- **Written once, run anywhere.** One `SKILL.md` standard carries explicit host
+  applicability for Claude Code, Cursor and Codex desktop from user-level installs;
+  one canon holds the process; the only
   per-repo variation is a single config file.
 
 ## Roles
@@ -48,10 +49,13 @@ Seats split into **direction** and **loops**. Each has a hard output boundary.
 
 **Loops** (standing sessions that move work on the board)
 
-- **Planner** — anytime plan loop. One session per repo, launched on Fable. Drains
+- **Planner** — Claude Code standing plan loop, optional for Cursor daytime.
+  When seated, one session per repo, launched on Fable. Codex planning belongs to
+  its orch. The standing Planner drains
   `needs:plan`, writes kickoff + verify plan on the issue, marks `plan:ready`.
   Never implements, dispatches, or merges. Detail: `docs/specs/planner-flow.md`.
-- **Orchestrator** — dispatch. Watches the board, chips work out, arms monitors,
+- **Orchestrator** — dispatch, with planning ownership on Codex desktop.
+  Watches the board, chips work out, follows native host completion signals,
   runs the merge flow the operator authorizes. Never edits feature code itself.
 - **Night-shift** — the same daytime chain, unattended. Opens PRs, stops at real
   forks, never merges. Consumes issues that already carry `plan:ready` ∧
@@ -62,8 +66,9 @@ Seats split into **direction** and **loops**. Each has a hard output boundary.
 - **Chips** — implementation. One chip = one issue = one branch = one worktree =
   one session; each ends in a PR, never a merge.
 
-**Cardinality.** One architect per **product board**; one orchestrator and one
-Planner session per **repo**. The architect's working state is the product's board
+**Cardinality.** One architect per **product board**; one orchestrator per **repo**.
+Claude Code uses one standing Planner per repo; Cursor daytime may omit it; Codex
+gives the planning stage to its orch. The architect's working state is the product's board
 and its repo-local direction artifacts — VISION, DECISIONS, specs — so the seat
 scopes to the product; and since a product may span several repos, its one
 architect spans those repos, with nothing to collide (no branches, no worktrees, no
@@ -72,16 +77,22 @@ product-local, and what *is* shared across products — the process itself — i
 Vilya-the-system's job, not a global seat's. Exactly one orchestrator per repo: the
 orchestrator *is* the repo's dispatch lock, sitting on the main clone's default
 branch and owning worktree lifecycle, monitors, and the merge queue — all
-repo-local state, so it neither forks within a repo nor spans two. Exactly one
-Planner per repo for the same locality reason: planning quality needs a pinned
+repo-local state, so it neither forks within a repo nor spans two. When a standing Planner is used,
+exactly one per repo for the same locality reason: planning quality needs a pinned
 model session that owns that repo's `needs:plan` queue, not a chip and not the
 thin orchestrator.
 
-## Current direction (2026-07-19)
+## Current direction (2026-10-03)
 
 - **Multi-repo products on the config-only contract** — each product repo carries a
   generated, config-only `GITHUB-PROJECTS.md`; process sections live in vilya alone.
-- **Planner makes plan≠execute real.** A standing Fable Planner session plans onto
+- **Codex desktop is a first-class host** (#329): orch-owned planning, explicitly
+  isolated implementation, authorized bidirectional seat messaging and durable issue
+  evidence. Models remain configurable per operator/phase; current capabilities resolve
+  highest-capability planning and balanced workhorse implementation preferences.
+  No standing Codex Planner is required. CLI and a new unattended backend are deferred;
+  the full runtime cycle and recovery must be proven separately from teaching/tests.
+- **Planner makes plan≠execute real on Claude Code.** A standing Fable Planner session plans onto
   the board; Sonnet orchestrator + chips execute. Daytime may chip without
   `plan:ready` when the issue is already clear; night-shift requires both
   `plan:ready` and `night-shift:ready`. This supersedes the older “orchestrator
@@ -95,7 +106,7 @@ thin orchestrator.
   the append-only `DECISIONS.md` via `/vl-adr` — options, costs, the call, consequences.
 - **Night-shift stays conservative.** Actions per product repo, manual-first until a
   run is proven green, PRs only — merge authority never leaves the operator. It runs
-  the daytime chain's *output*, including plans the Planner already wrote.
+  the daytime chain's *output*, including accepted plans already recorded on the issue.
 
 ## Non-goals
 

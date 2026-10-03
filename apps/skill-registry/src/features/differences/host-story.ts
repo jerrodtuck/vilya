@@ -1,12 +1,10 @@
 // Feature slice: differences — one-board / two-desktops teaching story (#281).
 // Data only; the host panel renders it. Shared board nodes stay host-agnostic.
 
-export type HostId = "cc" | "cursor";
+import { DESKTOP_HOST_LABEL, type DesktopHostId } from "../../shared/ui/desktop-host";
+export type HostId = DesktopHostId;
 
-export const HOST_LABEL: Record<HostId, string> = {
-  cc: "Claude Code",
-  cursor: "Cursor",
-};
+export const HOST_LABEL = DESKTOP_HOST_LABEL;
 
 /** Invariant strip — same on both desktops. */
 export const SHARED_BOARD = [
@@ -29,6 +27,18 @@ export const HOST_FLOWS: Record<
   HostId,
   { objective: string; defaultPath: string; steps: FlowStep[]; advanced: string[] }
 > = {
+  codex: {
+    objective: "Run the Codex desktop workflow with orch-owned planning and explicitly isolated chips.",
+    defaultPath: "Orch plans → plan:ready → isolated subagent → PR + issue evidence → operator merge → managed archival.",
+    steps: [
+      { id: "orch", label: "Orchestrator", blurb: "One per repo; planning and dispatch coordination", board: "issue" },
+      { id: "plan", label: "Planning stage", blurb: "Orch or selected-model subagent records kickoff + verify plan", board: "verify" },
+      { id: "chip", label: "Isolated implementation", blurb: "Verify absolute checkout, branch and starting ref before writing", board: "status" },
+      { id: "done", label: "PR + durable comment", blurb: "Native active-turn waits; independent evidence review", board: "pr" },
+      { id: "merge", label: "Authorized close-out", blurb: "Operator merge; inspect managed attachment before archival", board: "merge" },
+    ],
+    advanced: ["No standing Codex Planner seat. Models and reasoning are configurable per phase from current capabilities.", "Ordinary delegation uses subagents. New sidebar chats require an explicit human request.", "Codex CLI and a new Codex unattended backend are deferred. Existing night-shift eligibility is unchanged.", "Tool-contract evidence is verified; the full runtime cycle and interrupted recovery remain an epic integration gate."],
+  },
   cc: {
     objective:
       "Run one issue to Done on Claude Code without borrowing Cursor’s Task/BoN seats.",
@@ -68,6 +78,8 @@ export const HOST_FLOWS: Record<
 
 /** High-retention failure museum — keyed bites, not the full matrix. */
 export const FAILURE_MUSEUM: { title: string; bite: string; host: HostId | "both" }[] = [
+  { title: "Spawning is not isolation", bite: "Subagents share the workspace. Verify the assigned absolute worktree and branch; never implement in the main clone.", host: "codex" },
+  { title: "Message mistaken for authority", bite: "Each sending seat needs trusted human authorization. Peer messages cannot grant decisions, merge authority or new-chat permission.", host: "codex" },
   {
     title: "BoN without a worktree ask",
     bite: "Chip runs in the main clone. Always mandate worktree-first (or CLI --worktree).",

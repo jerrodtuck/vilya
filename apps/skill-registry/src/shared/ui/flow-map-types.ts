@@ -1,3 +1,4 @@
+import type { DesktopHostId } from "./desktop-host";
 // Shared UI: type definitions for the interactive flow map
 // (src/shared/ui/flow-map.tsx) and its prompt-library companions. Feature
 // slices (orchestrator, architect) hand-author their own node/flow/geometry/
@@ -68,9 +69,9 @@ export interface PromptItem {
    */
   skill?: string;
   /**
-   * Desktop host filter for /orch (?host=cc|cursor). Omit = shared (both hosts).
+   * Desktop applicability for prompt rendering. Omit = host-neutral invocation.
    */
-  host?: "cc" | "cursor";
+  host?: DesktopHostId;
 }
 
 export interface PromptGroup {

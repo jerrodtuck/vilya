@@ -29,6 +29,7 @@ export function CardinalityDiagram() {
         repo&apos;s main clone). A standing{" "}
         <Link href="/planner">Planner</Link> (Fable) is required for Claude
         Code chip-flow and night-shift prep; on Cursor daytime it is optional.
+        Codex gives planning to its orch, with no standing Planner.
         Full rationale on the <Link href="/architect">Architect page</Link>.
       </p>
       <div className="card-diagram" style={{ marginTop: 14 }}>

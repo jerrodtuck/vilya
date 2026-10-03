@@ -2,59 +2,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  DESKTOP_HOST_STORAGE_KEY,
-  parseDesktopHost,
-  type DesktopHostId,
-} from "@/shared/ui/desktop-host";
+import { DesktopHostSelector, useDesktopHost } from "@/shared/ui/desktop-host-selector";
 import {
   FAILURE_MUSEUM,
   HOST_FLOWS,
   HOST_LABEL,
   SHARED_BOARD,
 } from "./host-story";
+import { CodexCapabilities } from "./codex-capabilities";
 import { DifferencesMatrix } from "./matrix";
 
 export function HostPanel() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const fromUrl = parseDesktopHost(searchParams.get("host"));
-  const [host, setHost] = useState<DesktopHostId>(fromUrl ?? "cc");
-
-  useEffect(() => {
-    if (fromUrl) {
-      setHost(fromUrl);
-      try {
-        localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, fromUrl);
-      } catch {
-        /* ignore quota / private mode */
-      }
-      return;
-    }
-    try {
-      const stored = parseDesktopHost(
-        localStorage.getItem(DESKTOP_HOST_STORAGE_KEY)
-      );
-      if (stored) setHost(stored);
-    } catch {
-      /* ignore */
-    }
-  }, [fromUrl]);
-
-  function selectHost(next: DesktopHostId) {
-    setHost(next);
-    try {
-      localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("host", next);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }
+  const { host, selectHost } = useDesktopHost();
 
   const flow = HOST_FLOWS[host];
   const museum = FAILURE_MUSEUM.filter((f) => f.host === host || f.host === "both");
@@ -62,33 +21,14 @@ export function HostPanel() {
   return (
     <>
       <div className="diff-host-bar" data-host={host}>
-        <div className="toggle" role="tablist" aria-label="Desktop host">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={host === "cc"}
-            className={host === "cc" ? "on" : ""}
-            onClick={() => selectHost("cc")}
-          >
-            I&apos;m on Claude Code
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={host === "cursor"}
-            className={host === "cursor" ? "on" : ""}
-            onClick={() => selectHost("cursor")}
-          >
-            I&apos;m on Cursor
-          </button>
-        </div>
+        <DesktopHostSelector host={host} onSelect={selectHost} />
         <p className="muted diff-host-objective">{flow.objective}</p>
       </div>
 
       <section className="diff-shared" aria-labelledby="diff-shared-heading">
         <h2 id="diff-shared-heading">Shared board (does not move)</h2>
         <p className="muted">
-          Same outcomes on both desktops. Mechanisms diverge below — never imply
+          Same board contract across desktops. Mechanisms diverge below — never imply
           Cursor is “broken Claude” or Claude is “old Cursor.”
         </p>
         <div className="rolestrip diff-board-strip">
@@ -158,7 +98,7 @@ export function HostPanel() {
           or tested directly. Unconfirmed claims stay{" "}
           <b>unverified</b>, never asserted as fact.
         </p>
-        <DifferencesMatrix />
+        {host === "codex" ? <CodexCapabilities /> : <DifferencesMatrix />}
       </section>
 
       <div className="note teal" style={{ marginTop: 24 }}>

@@ -1,6 +1,8 @@
 // Feature slice: planner — page composition (server component). Same page
 // shape as architect / orchestrator (#134 / #208): header → BoardStrip →
 // interactive map → prompt library, with a cardinality aside.
+import { DesktopHostContent } from "../../shared/ui/desktop-host-selector";
+import { CodexPlanning } from "./codex-planning";
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowMap } from "@/shared/ui/flow-map";
@@ -12,6 +14,7 @@ import { PROMPTS } from "./prompts";
 export function PlannerView() {
   return (
     <>
+      <DesktopHostContent codex={<CodexPlanning />}>
       <header>
         <div className="eyebrow">
           Plan loop · needs:plan → plan:ready · Fable session
@@ -25,7 +28,7 @@ export function PlannerView() {
           slice, and stop at forks that would make the kickoff wrong. Required
           for Claude Code chip-flow and night-shift prep;{" "}
           <b>optional daytime on Cursor</b> (orch or in-session plan may write
-          the kickoff — see <Link href="/differences">Two desktops</Link>).
+          the kickoff — see <Link href="/differences">Desktop differences</Link>).
           Click a <b>flow</b> to light its path, or click any <b>node</b> to see
           what that step does.
         </p>
@@ -127,6 +130,7 @@ export function PlannerView() {
         <Link href="/orch">orch</Link> (and night-shift) to
         pick up.
       </div>
+      </DesktopHostContent>
     </>
   );
 }
