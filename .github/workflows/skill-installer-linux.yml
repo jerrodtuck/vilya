@@ -1,0 +1,43 @@
+name: Skill installer Linux
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'scripts/install-skills.sh'
+      - 'apps/skill-registry/src/shared/skills/install-skills.test.ts'
+      - 'apps/skill-registry/package.json'
+      - 'apps/skill-registry/package-lock.json'
+      - '.github/workflows/skill-installer-linux.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bash-installer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/skill-registry
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - name: Run disposable Bash installer fixtures
+        run: node node_modules/vitest/vitest.mjs run src/shared/skills/install-skills.test.ts --reporter=verbose --reporter=json --outputFile.json="$RUNNER_TEMP/installer-results.json"
+      - name: Require all seven Bash cases to pass
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const result = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/installer-results.json', 'utf8'));
+          if (process.platform !== 'linux' || result.numPassedTests !== 7 || result.numFailedTests !== 0 || result.numPendingTests !== 6) {
+            throw new Error('Expected seven Bash passes and six Windows-only skips on Linux');
+          }
+          console.log('Verified: 7 Bash tests passed; 6 Windows-only tests skipped.');
+          NODE

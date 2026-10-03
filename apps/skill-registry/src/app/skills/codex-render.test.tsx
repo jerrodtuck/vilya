@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { parseFrontmatter } from "../../shared/skills/frontmatter";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Skill } from "../../shared/skills/types";
@@ -53,5 +56,47 @@ describe("Codex registry and skill detail", () => {
     const response = await GET(new Request("http://localhost/skills/vl-example/SKILL.md"), { params: Promise.resolve({ slug: "vl-example" }) });
     expect(await response.text()).toBe(state.raw);
     expect(response.headers.get("content-type")).toBe("text/markdown; charset=utf-8");
+  });
+});
+
+const canonicalRoot = path.resolve("../../skills");
+const canonicalSkills = fs.readdirSync(canonicalRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(canonicalRoot, entry.name, "SKILL.md")))
+  .map((entry): Skill => {
+    const filePath = path.join(canonicalRoot, entry.name, "SKILL.md");
+    const parsed = parseFrontmatter(fs.readFileSync(filePath, "utf8"));
+    return { slug: entry.name, filePath, frontmatter: parsed.data, body: parsed.body };
+  });
+const escaped = (text: string) => renderToStaticMarkup(<span>{text}</span>).slice(6, -7);
+
+describe("integrated canonical Codex catalog", () => {
+  it("includes the complete catalog and the Codex orchestrator", () => {
+    expect(canonicalSkills.length).toBeGreaterThanOrEqual(23);
+    expect(canonicalSkills.some((skill) => skill.slug === "vl-orch-codex")).toBe(true);
+  });
+  it.each(canonicalSkills)("renders complete source metadata for $slug", (skill) => {
+    state.skill = skill;
+    const support = getCodexSkillSupport(skill);
+    expect(support.support).not.toBe("unclassified");
+    expect(support.support).toBe(skill.frontmatter["codex-support"]);
+    for (const field of ["codex-notes", "codex-invocation", "codex-prerequisites"]) {
+      expect(typeof skill.frontmatter[field]).toBe("string");
+      expect(String(skill.frontmatter[field]).trim()).not.toBe("");
+    }
+    const panel = renderToStaticMarkup(<SkillView slug={skill.slug} />)
+      .split("<h2>Codex applicability</h2>")[1].split("<h2>Body</h2>")[0];
+    expect(panel).toContain(escaped(support.label));
+    expect(panel).toContain(escaped(skill.frontmatter["codex-notes"]!));
+    expect(panel).toContain(escaped(skill.frontmatter["codex-prerequisites"]!));
+    const supported = ["shared-compatible", "codex-adapted"].includes(support.support);
+    expect(support.canInvoke).toBe(supported);
+    if (supported) {
+      expect(support.invocation).toBe(skill.frontmatter["codex-invocation"]);
+      expect(panel).toContain("<code>" + escaped(support.invocation!) + "</code>");
+    } else {
+      expect(support.invocation).toBeNull();
+      expect(panel).toContain("No supported Codex invocation.");
+    }
+    expect(renderToStaticMarkup(<RegistryList />)).toContain(escaped(support.label));
   });
 });
