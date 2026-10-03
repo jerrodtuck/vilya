@@ -69,11 +69,18 @@ If the repo isn't already known, detect it:
 - **Arguments name an issue #** → `gh issue view <n> --repo <owner>/<repo>`.
 - **No issue yet** → create it, then add it to the board explicitly:
   ```bash
-  url=$(gh issue create --repo <owner>/<repo> --title "<title>" --body "<context>" \
-    --label type:feature --label priority:high --label area:<slice>)
-  # Read the created issue state/identity successfully; require OPEN before this add.
-  # STOP on failed/unknown/CLOSED response; do not run item-add after a failed check.
-  gh project item-add <n> --owner <owner> --url "$url"
+  owner_repo='<owner>/<repo>'
+  url=$(gh issue create --repo "$owner_repo" --title "<title>" --body "<context>" \
+    --label type:feature --label priority:high --label area:<slice>) || exit 1
+  issue_number=${url##*/}
+  case "$issue_number" in ''|*[!0-9]*) echo 'STOP: invalid created issue number' >&2; exit 1;; esac
+  expected_url="https://github.com/$owner_repo/issues/$issue_number"
+  [ "$url" = "$expected_url" ] || { echo 'STOP: wrong created issue URL' >&2; exit 1; }
+  state_identity=$(gh issue view "$issue_number" --repo "$owner_repo" \
+    --json state,number,url --jq '[ (.state | ascii_upcase), (.number | tostring), .url ] | @tsv') || exit 1
+  expected_identity=$(printf 'OPEN\t%s\t%s' "$issue_number" "$expected_url")
+  [ "$state_identity" = "$expected_identity" ] || { echo 'STOP: issue not confirmed OPEN with exact identity' >&2; exit 1; }
+  gh project item-add <project-number> --owner <owner> --url "$url"
   ```
   Use the owner, project number, and `area:*` labels from
   `docs/project-tracking/GITHUB-PROJECTS.md`.

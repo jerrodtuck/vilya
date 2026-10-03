@@ -7,6 +7,22 @@ import { CODEX_PROMPTS } from "../features/orchestrator/codex-prompts";
 const root = resolve(process.cwd(), "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 describe("fresh dispatch and recovery teaching", () => {
+  it("executable new-issue recipe checks state and identity before board mutation", () => {
+    const source=read("skills/vl-start-feature/SKILL.md");
+    const section=source.slice(source.indexOf("## 1. Get the issue"), source.indexOf("## 2. Set up"));
+    const create=section.indexOf("url=$(gh issue create");
+    const state=section.indexOf("state_identity=$(gh issue view");
+    const guard=section.indexOf('[ "$state_identity" = "$expected_identity" ] ||');
+    const add=section.indexOf("gh project item-add");
+    expect(create).toBeGreaterThan(0);
+    expect(state).toBeGreaterThan(create);
+    expect(guard).toBeGreaterThan(state);
+    expect(add).toBeGreaterThan(guard);
+    expect(section.slice(guard,add)).toContain("exit 1");
+    expect(section).toContain("--json state,number,url");
+    expect(section).toContain("ascii_upcase");
+    expect(section).toContain('"$issue_number" "$expected_url"');
+  });
   it("ships identical helper bytes and declares the manifest-only download limitation", () => {
     expect(read("apps/skill-registry/content/skills/vl-chip/scripts/dispatch-preflight.mjs")).toBe(read("skills/vl-chip/scripts/dispatch-preflight.mjs"));
     const skill=read("skills/vl-chip/SKILL.md");
