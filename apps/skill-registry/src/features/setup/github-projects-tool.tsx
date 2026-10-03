@@ -19,7 +19,7 @@ import { parseConfig } from "./github-projects-parse";
 /** Checklist key → config override. Empty string means "no override". */
 type FieldOverrides = Record<string, string>;
 
-function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsConfig> {
+export function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsConfig> {
   const base = emptyConfig();
   const status = { ...base.statusOptions };
   let areaLabels = base.areaLabels;
@@ -27,7 +27,7 @@ function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsCo
 
   for (const [key, raw] of Object.entries(overrides)) {
     const value = raw.trim();
-    if (value === "") continue;
+    if (value === "" && key !== "componentBaseline" && key !== "customComponentPolicy") continue;
 
     switch (key) {
       case "owner":
@@ -39,6 +39,8 @@ function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsCo
       case "crucibleVariant":
       case "testCommand":
       case "manualSmoke":
+      case "componentBaseline":
+      case "customComponentPolicy":
       case "defaultBranch":
       case "typeFieldLine":
       case "priorityFieldLine":
@@ -140,7 +142,7 @@ export function GithubProjectsTool({
 
   const setOverrideValue = (key: string, value: string) => {
     setOverrides((prev) => {
-      if (value === "") {
+      if (value === "" && key !== "componentBaseline" && key !== "customComponentPolicy") {
         const next = { ...prev };
         delete next[key];
         return next;
@@ -164,6 +166,14 @@ export function GithubProjectsTool({
         a text box; Status option ids and crucible (from stack) use the usual
         shared board defaults. Generated updates live — nothing is pushed to
         GitHub.
+      </p>
+
+      <p className="muted">
+        Component baseline and custom component policy are repo decisions, never
+        stack defaults. Name the library, location and constraints, or explicitly
+        enter <code>none</code>. Name the custom-component rule and its authoritative
+        approval record, or <code>n/a</code> with a reason. Blank means unknown.
+        Keep approved component lists in the product repo or owning issue/PR.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -208,7 +218,8 @@ export function GithubProjectsTool({
         {checklist.map((item) => {
           const draft = overrides[item.key];
           const suggestion = suggestionFor(item.key, merged);
-          const showInput = item.status === "missing" || draft !== undefined;
+          const policyField = item.key === "componentBaseline" || item.key === "customComponentPolicy";
+          const showInput = policyField || item.status === "missing" || draft !== undefined;
           const showStackPicks = item.key === "stack" && showInput;
           const showSuggest =
             showInput &&
@@ -227,7 +238,7 @@ export function GithubProjectsTool({
                   <span className="gpedit">
                     <input
                       className="gpinline"
-                      value={draft ?? ""}
+                      value={draft ?? (policyField ? item.value : "")}
                       onChange={setOverride(item.key)}
                       placeholder={suggestion || "type value"}
                       list={showStackPicks ? "gp-stack-presets" : undefined}

@@ -129,6 +129,8 @@ separate integration gate. Cursor cross-seat messaging absence/parity is not inf
 | **Crucible variant** | `vl-crucible-nextjs` | the review skill installed in this repo |
 | **Test command** | `npm test && npm run build` (in `apps/skill-registry`) | what `/vl-finish-feature` runs in step 1 |
 | **Manual smoke** | `npm run dev` in `apps/skill-registry` → http://localhost:3000 | how to launch the app for a hands-on pre-merge test (`/vl-merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead |
+| **Component baseline** | `none` — no configured external component library | the repo's library/design system, location and constraints, or explicitly `none` |
+| **Custom component policy** | `n/a` — no separate component-approval gate configured; normal architecture/review requirements apply | repo rule and authoritative approval record, or explicitly `n/a` with why no special gate applies |
 | Default branch | `master` | `git remote show origin` |
 
 Status option ids (fill after first setup):

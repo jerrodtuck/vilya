@@ -19,6 +19,8 @@ export interface GithubProjectsConfig {
   crucibleVariant: string;
   testCommand: string;
   manualSmoke: string;
+  componentBaseline: string;
+  customComponentPolicy: string;
   defaultBranch: string;
   statusOptions: StatusOptionIds;
   /** Raw Type field line from the native-fields block (may be empty). */
@@ -56,6 +58,8 @@ export function emptyConfig(): GithubProjectsConfig {
     crucibleVariant: "",
     testCommand: "",
     manualSmoke: "",
+    componentBaseline: "",
+    customComponentPolicy: "",
     defaultBranch: "",
     statusOptions: { ...EMPTY_STATUS_OPTIONS },
     typeFieldLine: "",
@@ -83,6 +87,9 @@ export function mergeConfig(
     crucibleVariant: pick(overrides.crucibleVariant, parsed.crucibleVariant),
     testCommand: pick(overrides.testCommand, parsed.testCommand),
     manualSmoke: pick(overrides.manualSmoke, parsed.manualSmoke),
+    // Explicit empty policy overrides mean unknown; do not resurrect pasted policy.
+    componentBaseline: overrides.componentBaseline?.trim() ?? parsed.componentBaseline,
+    customComponentPolicy: overrides.customComponentPolicy?.trim() ?? parsed.customComponentPolicy,
     defaultBranch: pick(overrides.defaultBranch, parsed.defaultBranch),
     statusOptions: {
       todo: pick(statusOverrides?.todo, parsed.statusOptions.todo),
@@ -136,6 +143,8 @@ export function configChecklist(config: GithubProjectsConfig): ChecklistItem[] {
     item("crucibleVariant", "Crucible variant", config.crucibleVariant),
     item("testCommand", "Test command", config.testCommand),
     item("manualSmoke", "Manual smoke", config.manualSmoke),
+    item("componentBaseline", "Component baseline", config.componentBaseline),
+    item("customComponentPolicy", "Custom component policy", config.customComponentPolicy),
     item("defaultBranch", "Default branch", config.defaultBranch),
     item("status.todo", "Status · Todo", so.todo),
     item("status.inProgress", "Status · In Progress", so.inProgress),

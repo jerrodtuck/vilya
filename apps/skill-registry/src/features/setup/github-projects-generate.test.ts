@@ -19,6 +19,8 @@ const FULL_CONFIG = mergeConfig(emptyConfig(), {
   crucibleVariant: "vl-crucible-blazor",
   testCommand: "dotnet test",
   manualSmoke: "dotnet run",
+  componentBaseline: "none",
+  customComponentPolicy: "n/a — no UI component approval gate",
   defaultBranch: "master",
   statusOptions: {
     todo: "aaa",
