@@ -2,6 +2,26 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-03 — Repo-owned component baselines and approval evidence (#328)
+
+**Decision:** Add a cross-stack check of the repo's configured component baseline and custom-component policy at crucible review, per the architect's [full 2026-10-03 ruling](https://github.com/jerrodtuck/vilya/issues/328#issuecomment-5973370249). The product owns its library, constraints and approval policy; Vilya does not impose anduin-admin's approval-required rule on every repo.
+
+**Options considered:**
+1. Rely only on a chip-brief reminder — low teaching cost, but it does not enforce the check during review, which #328 identifies as the load-bearing point. Not sufficient.
+2. Apply a universal library or custom-component ban — simple global wording, but it imports one product's policy into unrelated stacks, backend-only work and ordinary feature composition. Rejected by the architect ruling.
+3. **Repo config plus actual-UI crucible checks** — costs two preserved config fields, inspection of the applicable catalog/version and traceable approval evidence where the repo requires it. Chosen; product-specific component lists remain in product records.
+
+**Why:** #328 reports hand-rolled breadcrumb/skeleton primitives in a configured shadcn project because the review did not ask about baseline equivalents. The architect requires the common review habit while preserving product policy and stack applicability. The reported product audit is evidence for the request, not an independently rerun audit.
+
+**Consequences:**
+- `Component baseline` records the library/design system, location and constraints, or explicitly `none`. `Custom component policy` records the repo rule and authoritative approval record, or explicitly `n/a` with why no special gate applies. Blank/missing is unknown. `none` does not override another recorded repo policy; `n/a` does not waive ordinary review.
+- Review actual UI/components/templates/dashboards, compare new/touched primitives with applicable library equivalents and flag duplication/policy violations under the existing severity contract with concrete refactors. A missing vendored primitive does not prove the library lacks it: check the applicable catalog/version or label that claim unverified. Backend-only/ML-only changes explicitly report no-UI applicability.
+- Where approval is required, missing qualifying approval blocks the affected primitive. Cite explicit, attributable operator approval scoped to the repo/component or bounded approved set, recorded on the owning issue/PR or named repo record. Chat approval needs durable provenance. Agent proposals, vague claims, unsourced peer relays and a merge alone do not qualify; grandfathered sets qualify only in recorded scope.
+- Distinguish baseline primitives from ordinary feature composition/wrappers; enforce a broader class only when the product records it. Material ambiguity is a bounded fork on the owning product issue, not a new global interpretation.
+- Setup parsing/editing/regeneration preserves both fields, explicit none/n/a and unknown values. Check installation drift before updates; this implementation's preflight found canonical junctions with matching hashes for the existing inspected crucible entries. Their update path is canonical merge/pull; divergent copies elsewhere must be preserved and reconciled before reinstalling.
+
+**Evidence:** [#328 issue and reported product examples](https://github.com/jerrodtuck/vilya/issues/328), [orch kickoff](https://github.com/jerrodtuck/vilya/issues/328#issuecomment-5973367521), [complete architect ruling](https://github.com/jerrodtuck/vilya/issues/328#issuecomment-5973370249), [implementation and verification receipt](https://github.com/jerrodtuck/vilya/issues/328#issuecomment-5973433181), PR #338. This records the bounded policy, not approval of any specific product component or a live product audit.
+
 ## 2026-10-03 — Single filing seat and durable seat handoffs (#326)
 
 **Decision:** Retain exactly one named epic-child filing seat (`arch` or `orch`), and adopt host-specific seat resolution with issue-first decision requests and reply rereads, per the architect's [2026-10-03 ruling](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5973370071). The filing choice remains the [2026-08-01 lock](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5149229141).
