@@ -19,7 +19,7 @@ export function ClaudeDispatchPath() {
         Daytime default on Claude Code: seat the orch, enqueue Planner when owed,
         dispatch via <code>{SKILL_INVOKES.chip}</code> (<code>spawn_task</code>).
         Wake is Monitor + the chip&apos;s issue completion comment. Why seats
-        diverge: <Link href="/differences">Two desktops</Link>.
+        diverge: <Link href="/differences">Three desktops</Link>.
       </p>
       <div className="setupsteps" style={{ marginTop: 12 }}>
         <div className="step">
