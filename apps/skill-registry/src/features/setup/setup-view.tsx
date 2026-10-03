@@ -1,4 +1,5 @@
 // Feature slice: setup — install + per-repo guide (server component).
+import { Suspense } from "react";
 import { BoardGuide } from "./board-guide";
 import { GithubProjectsTool } from "./github-projects-tool";
 import { loadGithubProjectsTemplate } from "./load-github-projects-template";
@@ -67,7 +68,7 @@ const STEPS: SetupStep[] = [
   {
     text: (
       <>
-        Add the autonomy labels: <code>{needsPlan}</code> (enqueue for Planner),{" "}
+        Add the autonomy labels: <code>{needsPlan}</code> (enqueue for planning; Codex orch owns the stage),{" "}
         <code>{planReady}</code> (kickoff + verify plan on the issue),{" "}
         <code>{nightShiftReady}</code> (safe for unattended night-shift), and{" "}
         <code>{needsDecision}</code> (the loop sets this at a fork).
@@ -184,10 +185,10 @@ export function SetupView() {
       </div>
 
       <h2>Install the skills — pick your tool</h2>
-      <PlatformToggle />
+      <Suspense fallback={<p>Loading desktop setup…</p>}><PlatformToggle /></Suspense>
 
       <div className="note">
-        <b>One body, both tools, one install root — linked, not copied.</b>{" "}
+        <b>Claude Code + Cursor share their install root.</b>{" "}
         The frontmatter that matters is shared, and Cursor scans{" "}
         <code>~/.claude/skills</code> itself — so{" "}
         <code>scripts/install-skills.(sh|ps1)</code> links each{" "}
@@ -218,7 +219,7 @@ export function SetupView() {
       </p>
       <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
       <p className="muted">
-        One destination is enough — Cursor scans <code>~/.claude/skills</code>{" "}
+        For Claude Code and Cursor, one destination is enough — Cursor scans <code>~/.claude/skills</code>{" "}
         as a compatibility root, so both tools see it. This is the one{" "}
         <b>copy-mode exception</b>: a curl&apos;d file is a plain copy, not a
         link, so it only updates when you re-curl it (or clone the repo and run
@@ -243,9 +244,11 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         test command both go in the repo&apos;s config block.
       </div>
 
+      <p>Codex model routing is in the host-specific setup above; the following model/Planner instructions apply to Claude Code and Cursor.</p>
       <PlanExecuteSection />
 
-      <h2>Background sessions (chips) — one-time setup</h2>
+      <h2>Claude Code / Cursor background sessions — one-time setup</h2>
+      <p>Codex uses the host-specific setup above and the <a href="/orch?host=codex">Codex lifecycle cards</a>.</p>
       <p className="muted">
         One contract to know (completion reports as issue comments + a
         same-turn dispatch monitor) and two Claude Code Desktop switches

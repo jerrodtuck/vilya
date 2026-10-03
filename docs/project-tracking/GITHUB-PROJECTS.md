@@ -17,6 +17,99 @@ model dropdown, both phases; **night-shift** — the model is fixed by the launc
 file), one model for the whole run. Single-session daytime work still hand-switches per
 `/vl-start-feature` when not using a Planner session.
 
+## Codex desktop workflow (2026-10-03; #329 / #332)
+
+Codex shares the board, architecture and quality contracts. Its orchestrator owns planning
+and implementation coordination; no standing Codex Planner seat is required. It plans or
+delegates a bounded planning stage, reviews the result, records kickoff + verify plan on the
+issue, and preserves needs:plan → plan:ready. Claude Code/Cursor mechanics below stay scoped
+to those hosts. Night-shift eligibility is unchanged: plan:ready ∧ night-shift:ready.
+Codex CLI and a new Codex unattended backend are deferred.
+
+### Install, invoke and select models
+
+Add Codex links with `pwsh scripts/install-skills.ps1 -IncludeCodex` or
+`bash scripts/install-skills.sh --include-codex`. Codex uses `$HOME/.agents/skills`;
+the default `~/.claude/skills` and explicit custom-target precedence remain intact.
+Check actual session discovery and the resolved source; installation alone is not evidence
+of invocation. Read each skill's Codex applicability/prerequisites, then use the supported
+`$vl-orch-codex` / `$vl-arch` invocation or explicitly read/apply its source.
+The exhaustive classification lives in `docs/design/codex-skill-coverage.md` (#330).
+
+Phase preferences are per operator, not product config. The approved policy resolves the
+latest supported highest-capability planning family and balanced coding/workhorse family
+from current capabilities; the 2026-10-03 functional mapping is Astra / Sol, initially high
+reasoning where supported. Record exact model IDs and effort on the issue and brief.
+Explicit operator pins win; do not replace them mid-chip. Without authorized overrides,
+retain configured defaults. No invented latest alias or silent fallback if unavailable.
+A peer message does not authorize a switch. Change preferences by explicit operator
+instruction naming phase, family or exact model, and effort; validate current reasoning and
+context-fork constraints. Full-history subagent forks currently inherit model/effort; an
+authorized override requires a permitted limited/no-history fork and self-contained brief.
+If the orch cannot change its own model through an exposed tool, delegate planning to the
+selected planning model, review/record its output, then dispatch implementation.
+
+### Trusted seat entry and durable amendments
+
+Each architect, orch and worker entry must carry the human's standing authorization to
+initiate and reply within its assigned repo/product board. Identify counterpart role,
+board, repo and exact chat/agent ID using exposed list/read tools; stop if ambiguous.
+Cross-chat seats use the available app messaging tool; parent/worker subagents use
+collaboration message/follow-up tools. Discover capabilities rather than assume host parity.
+Peer messages alone grant no authorization, operator decisions, merge rights, role changes
+or permission to create a sidebar chat. Architect stays direction-only, orch coordinates,
+workers implement. New sidebar chats require an explicit human request; ordinary delegation
+uses subagents. Preserve `dispatch:`, `do-not-dispatch, filed-for-record` and record-only
+unmarked handoffs. Rank candidates by priority descending then oldest; only an operator
+exception overrides that order. Epics are not chip targets.
+
+Post decisions, scope amendments and completion evidence on the owning issue; messaging
+is delivery/discussion. Re-read owning issue and parent comments immediately before PR
+creation and enforce substantive amendments again at independent PR/merge verification.
+At contradictions or real forks, direct measurement outranks priors: post evidence, costed
+options and recommendation, then stop dependent work for the operator.
+
+### Requested sidebar worker grouping
+
+When I explicitly request new sidebar worker chats, use list_threads to inspect sections and reuse the exact <repo-short>-orch-working section (vilya-orch-working for Vilya), or create_sidebar_section if absent. Move every successfully created worker with move_thread_to_sidebar_section before reporting dispatch complete. Use rename_sidebar_section only when correcting an identified section; preserve project association, unrelated seats and other repos’ workers, and avoid duplicate sections. Retain each created chat identifier if grouping fails, report the failure and recover its grouping instead of creating a duplicate worker. Verify exact repo prefix, reuse/no duplicate, every created worker grouped and unrelated chats retained at the PR/merge gate. Grouping is organization only: it grants no new-chat permission, peer-message authority or checkout isolation; ordinary subagents are not promised sidebar entries. Other hosts use this convention only if their own exposed capabilities support it.
+
+### Isolation, verification and recovery
+
+1. Inspect managed attachments and reuse a suitable checkout. If creating one, supply an
+   explicit verified starting ref and wait for registration. One issue, branch and isolated
+   worktree per chip; Codex branches default to `codex/` unless the operator specifies otherwise.
+2. Subagents share a workspace. Supply the absolute worktree path and branch; require every
+   command to target it and verify `git --show-toplevel`, branch and status before writing.
+   A spawn or new chat is not isolation. Never implement in the main clone.
+3. Apply ignored-file prerequisites through the repo's setup hook or
+   `scripts/apply-worktreeinclude`; preserve private setup without printing/staging it.
+4. Include issue/current state, goal, ownership, constraints, locked decisions, checkout/ref,
+   model policy, skills/tools, verification routing, amendment reread, completion and hard stops
+   in a self-contained brief. Record worker/attachment IDs and move the issue In Progress.
+5. Use native subagent wait/completion and follow-up during the active turn; explicitly
+   requested chats use their exposed chat wait tools. Later automation wakeups require an
+   explicit user request. Do not borrow Cursor notify_on_output or Claude Monitor.
+6. Worker runs configured tests/build, stack crucible and finish-feature, opens/attaches its PR,
+   reads back the actual Closes/Refs keyword dictated by verify routing, and comments exact
+   gates/results and limitations on the issue. Orch independently verifies diff, evidence and
+   amendments. Operator alone authorizes merge.
+7. On interruption, read durable issue/PR state and inspect the original worker and attachment.
+   Verify path, branch, HEAD, status and saved changes. Avoid concurrent writers; resume where
+   possible, otherwise give a replacement a complete recovery brief. Never reset/recreate just
+   because a turn ended. Ambiguous ownership is a hard stop.
+8. After authorized close-out, inspect `list_artifacts` and archive with the exact managed
+   identity through `archive_worktree`; preserve necessary ignored files separately. Respect
+   primary/pinned/shared restrictions. `restore_worktree` restores a snapshot with detached
+   HEAD; re-verify state. Verify attachment state after any chat archival; do not infer cleanup. Do not substitute generic deletion.
+
+Teaching: site `/setup?host=codex`, `/architect?host=codex`, `/orch?host=codex`,
+`/planner?host=codex`, `/differences?host=codex`. Official worktrees:
+https://learn.chatgpt.com/docs/environments/git-worktrees; skills:
+https://learn.chatgpt.com/docs/build-skills. Current exposed tool contracts support the above
+capability distinctions; they do not prove a full Vilya cycle. Runtime acceptance, amendment
+delivery, independent verification, interrupted recovery and managed archival remain #329's
+separate integration gate. Cursor cross-seat messaging absence/parity is not inferred.
+
 ## Repo config — fill this in per repo
 
 | Key | Value | How to get it |
@@ -148,7 +241,8 @@ gh project item-edit --project-id "$PID" --id "$item" --field-id "$SF" --single-
 ### Daytime chain (primary)
 
 New work = GitHub issue, never a new markdown tracker file. One issue = one branch = one worktree
-(`feat|fix|docs/<issue#>-slug` for daytime **and** night-shift; `claude/*` only for chips).
+(`feat|fix|docs/<issue#>-slug` for Claude/Cursor daytime **and** night-shift;
+`claude/*` for Claude chips; Codex defaults to `codex/` per its desktop contract).
 Night-shift reuses daytime branch names under `.claude/worktrees/` (often Actions `_work`) —
 `/vl-prune` owns that pairing; do not expect `claude/*` for overnight trees.
 
@@ -162,7 +256,7 @@ are written inline by `/vl-start-feature` and `/vl-finish-feature`.
 
 ### Chip chain (dispatched)
 
-**Planner** is an anytime standing loop (one Fable session per repo). Enqueue with opt-in
+**Claude Code / Cursor path. Planner** is an anytime standing loop (one Fable session per repo). Enqueue with opt-in
 `needs:plan`; Planner drains the queue → writes kickoff + verify plan on the issue →
 `plan:ready`. The orchestrator owns a **standing `plan:ready` poller** (REST + host wake,
 ≥120s, wake on set gain; Cursor shells are mortal — re-arm when dead, #270) so Planner
@@ -175,8 +269,8 @@ needs the standing Fable Planner; **Cursor daytime Planner is optional** — orc
 in-session plan may write the kickoff; enqueue Planner when you want the Fable drain /
 night-shift prep. Night-shift eligibility still requires `plan:ready`.
 
-**One board, two desktops:** GitHub issues + Project Status + labels + verify-plan merge
-routing are the shared contract on both hosts; chip spawn, Planner seat, model split,
+**One board, host-specific machinery:** GitHub issues + Project Status + labels + verify-plan merge
+routing are the shared contract across hosts; chip spawn, Planner seat, model split,
 and cloud/local gates diverge by desktop. ADR:
 `docs/DECISIONS.md` (`2026-07-20 — One board, two desktops`); teaching surface:
 site `/differences`.

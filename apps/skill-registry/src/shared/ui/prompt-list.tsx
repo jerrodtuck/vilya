@@ -28,7 +28,7 @@ export function PromptList({ group }: { group: PromptGroup }) {
           <span className="plead">{it.label}</span>
           {it.skill ? (
             <p className="pskill">
-              {SKILL_AFFORDANCE_LEAD} <code>{skillInvoke(it.skill)}</code>.
+              {SKILL_AFFORDANCE_LEAD} <code>{it.host === "codex" ? "$" + it.skill : skillInvoke(it.skill)}</code>.
             </p>
           ) : null}
           <span className="ptext">{it.text}</span>

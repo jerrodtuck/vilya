@@ -1,11 +1,11 @@
-// Feature slice: differences — one board, two desktops (#281).
+// Feature slice: differences — one board, three desktops (#281).
 import { Suspense } from "react";
 import { HostPanel } from "./host-panel";
 
 export function DifferencesView() {
   return (
     <>
-      <div className="eyebrow">One board · two desktops</div>
+      <div className="eyebrow">One board · three desktops</div>
       <h1>Same board. Different desktop machinery.</h1>
       <p className="lead">
         After this page you can run one issue to Done on <b>your</b>

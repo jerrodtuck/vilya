@@ -3,6 +3,8 @@
 // server. Same page shape as the orchestrator page (#134): header →
 // BoardStrip → interactive map → prompt library, with an aside slot
 // (cardinality summary here; #135 fills it further).
+import { DesktopHostContent } from "../../shared/ui/desktop-host-selector";
+import { CodexArchitect } from "./codex-architect";
 import Link from "next/link";
 import { BoardStrip } from "@/shared/ui/board-strip";
 import { FlowMap } from "@/shared/ui/flow-map";
@@ -16,7 +18,7 @@ export function ArchitectView() {
     <>
       <header>
         <div className="eyebrow">
-          Direction · ADRs · specs · Claude Code + Cursor
+          Direction · ADRs · specs · Claude Code + Cursor + Codex
         </div>
         <h1>
           <span className="you">You</span> are the architect
@@ -45,6 +47,7 @@ export function ArchitectView() {
         }
       />
 
+      <DesktopHostContent codex={<CodexArchitect />}>
       <FlowMap
         nodes={NODES}
         flows={FLOWS}
@@ -119,6 +122,7 @@ export function ArchitectView() {
         </div>
       </div>
 
+      </DesktopHostContent>
       <div className="pagefoot">
         The architect never implements, dispatches, or merges — output is{" "}
         <b>issues · ADRs · specs</b> on the board, for the{" "}

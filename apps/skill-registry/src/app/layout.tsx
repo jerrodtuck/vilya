@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "The Dev Loop",
   description:
-    "SOLID skill orchestration for Claude Code + Cursor — per-stack crucible reviews (one method, frontend and backend dialects), the role maps, the skills, and the git-native registry.",
+    "SOLID skill orchestration for Claude Code + Cursor + Codex desktop — per-stack crucible reviews (one method, frontend and backend dialects), the role maps, the skills, and the git-native registry.",
 };
 
 export default function RootLayout({

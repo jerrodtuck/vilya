@@ -2,17 +2,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { SKILL_INVOKES } from "@/shared/skills/invokes";
-import {
-  DESKTOP_HOST_LABEL,
-  DESKTOP_HOST_STORAGE_KEY,
-  parseDesktopHost,
-  type DesktopHostId,
-} from "@/shared/ui/desktop-host";
+import { DESKTOP_HOST_LABEL } from "@/shared/ui/desktop-host";
+import { DesktopHostSelector, useDesktopHost } from "@/shared/ui/desktop-host-selector";
 import { FlowMap } from "@/shared/ui/flow-map";
 import { PromptList } from "@/shared/ui/prompt-list";
+import { CodexOrchestration } from "./codex-orchestration";
+import { CODEX_ORCH_INVOKE } from "./codex-prompts";
 import { ClaudeDispatchPath } from "./claude-dispatch-path";
 import { CursorDispatchPath } from "./cursor-dispatch-path";
 import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
@@ -21,80 +18,28 @@ import { filterPromptsForHost } from "./orch-host";
 import { LAB_RUNS_ARE_CHIPS_ASIDE, PROMPTS } from "./prompts";
 
 export function OrchHostPanel() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const fromUrl = parseDesktopHost(searchParams.get("host"));
-  const [host, setHost] = useState<DesktopHostId>(fromUrl ?? "cc");
-
-  useEffect(() => {
-    if (fromUrl) {
-      setHost(fromUrl);
-      try {
-        localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, fromUrl);
-      } catch {
-        /* ignore quota / private mode */
-      }
-      return;
-    }
-    try {
-      const stored = parseDesktopHost(localStorage.getItem(DESKTOP_HOST_STORAGE_KEY));
-      if (stored) setHost(stored);
-    } catch {
-      /* ignore */
-    }
-  }, [fromUrl]);
-
-  function selectHost(next: DesktopHostId) {
-    setHost(next);
-    try {
-      localStorage.setItem(DESKTOP_HOST_STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("host", next);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }
+  const { host, selectHost } = useDesktopHost();
 
   const prompts = useMemo(() => filterPromptsForHost(PROMPTS, host), [host]);
   const seatInvoke =
-    host === "cc" ? SKILL_INVOKES.orchestrator : SKILL_INVOKES.orchestratorCursor;
+    host === "codex" ? CODEX_ORCH_INVOKE : host === "cc" ? SKILL_INVOKES.orchestrator : SKILL_INVOKES.orchestratorCursor;
 
   return (
     <>
       <div className="diff-host-bar" data-host={host} style={{ marginTop: 16 }}>
-        <div className="toggle" role="tablist" aria-label="Desktop host">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={host === "cc"}
-            className={host === "cc" ? "on" : ""}
-            onClick={() => selectHost("cc")}
-          >
-            I&apos;m on Claude Code
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={host === "cursor"}
-            className={host === "cursor" ? "on" : ""}
-            onClick={() => selectHost("cursor")}
-          >
-            I&apos;m on Cursor
-          </button>
-        </div>
+        <DesktopHostSelector host={host} onSelect={selectHost} />
         <p className="muted diff-host-objective" style={{ marginTop: 10 }}>
           Seat this desktop: <code>{seatInvoke}</code>
           {" — "}
           {DESKTOP_HOST_LABEL[host]} orch skill.{" "}
           <b>Orchestrator</b> is the seat/job;{" "}
-          <code>/vl-orch-claude</code> / <code>/vl-orch-cursor</code> are
+          <code>/vl-orch-claude</code> / <code>/vl-orch-cursor</code> / <code>{CODEX_ORCH_INVOKE}</code> are
           which desktop skill. Host story:{" "}
-          <Link href="/differences">Two desktops</Link>.
+          <Link href="/differences">Desktop differences</Link>.
         </p>
       </div>
 
+      {host === "codex" ? <CodexOrchestration /> : <>
       <FlowMap
         nodes={NODES}
         flows={FLOWS}
@@ -189,6 +134,7 @@ export function OrchHostPanel() {
           ))}
         </div>
       </div>
+      </>}
     </>
   );
 }

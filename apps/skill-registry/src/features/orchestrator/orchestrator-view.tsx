@@ -16,7 +16,7 @@ export function OrchestratorView() {
         </h1>
         <p className="lead">
           <b>Orchestrator</b> is the seat/job — dispatch, monitor, merge, prune.{" "}
-          <code>/vl-orch-claude</code> and <code>/vl-orch-cursor</code> are
+          <code>/vl-orch-claude</code>, <code>/vl-orch-cursor</code> and <code>$vl-orch-codex</code> are
           which desktop skill. Pick your host below; the skills are your
           instruments. Everything reports into one shared state: the GitHub
           Projects board. Click a <b>flow</b> to light its path, or click any{" "}
@@ -51,7 +51,7 @@ export function OrchestratorView() {
         <p className="muted" style={{ margin: "6px 0 12px", lineHeight: 1.55 }}>
           Full setup lives on the{" "}
           <Link href="/night-shift">Night shift</Link> page (Actions or Desktop
-          routines). Short version: prep with Planner to <code>plan:ready</code>,
+          routines; no new Codex unattended backend in this release). Short version: prep with Planner to <code>plan:ready</code>,
           label <code>night-shift:ready</code>, fire the launcher, wake to PRs —
           never auto-merge. Actions path: self-hosted runner +{" "}
           <code>CLAUDE_CODE_OAUTH_TOKEN</code>; Bypass rides in workflow{" "}

@@ -2,6 +2,66 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-03 — Approved Codex model operating policy — 2026-10-03
+
+The operator requires the same role split as latest Fable planning followed by latest Sonnet implementation: use the current highest-capability OpenAI planning family for planning and the current balanced coding/workhorse family for spawned implementation chips. The functional OpenAI mapping recommended on 2026-10-03 is Astra for planning and Sol for implementation; this is a role mapping, not a claim of identical cross-vendor performance.
+
+Current verified session availability: `gpt-6-astra` and `gpt-6.1-sol`. Recommended initial effort is high for each, configurable by the operator and validated against the runtime. Resolve the latest supported model in the chosen role family at session setup/dispatch and record the exact selection in issue artifacts/briefs. Do not invent a latest alias or silently fall back if unavailable; surface the limitation and retain explicit operator overrides. Do not automatically replace pinned choices mid-chip.
+
+The preferred orch chat runs on the planning model and spawns implementation on the workhorse model. If the orch is currently on another model and cannot change its own model through exposed tools, delegate the planning stage to the chosen planning model, then record/review that output and spawn the implementation chip; no separate standing Planner chat is needed. Model override authorization and context-fork restrictions must be respected. The policy is configurable and must survive new model releases.
+
+Sources: current session model/tool metadata (verified availability, not an end-to-end test); official model-selection guidance https://developers.openai.com/api/docs/guides/model-selection and model catalog https://developers.openai.com/api/docs/models (Astra highest capability, Sol balanced coding/work). The full Vilya recipe remains unverified until the required acceptance cycle is exercised.
+
+**Attribution:** Mirrored from jerrodtuck’s [owning issue record](https://github.com/jerrodtuck/vilya/issues/329#issuecomment-5972773318), posted 2026-10-03T19:36:20Z. Evidence classes and runtime limitations are those of the source.
+
+## 2026-10-03 — Seat messaging clarification — approved 2026-10-03
+
+The operator explicitly authorizes Codex seats working on the same product board to message one another and reply, within their assigned roles. Include this standing human authorization in **each seat's own entry instructions**, not only in a central document or a peer message. The Codex orch owns planning; no standing Codex Planner seat is introduced.
+
+Each applicable seat/worker entry must explain:
+- Which exposed messaging mechanism applies: cross-chat seat communication versus parent/worker subagent communication; discover current tools rather than assume identical APIs.
+- How to identify the correct counterpart by role, product board and repo, using the chat/agent identifier. Do not guess an ambiguous destination or contact unrelated product seats.
+- Its standing permission to initiate and reply within that scope, including architect-to-orch direction handoffs, orch-to-architect design questions and worker reports/questions to the owning orch.
+- A message does not change seat ownership, authorize implementation in the architect, grant operator decision/merge authority, or authorize creating a new sidebar chat. Preserve dispatch markers and priority rules.
+- Decisions, scope amendments and completion evidence are recorded on the owning issue; messaging provides delivery and discussion. Verify substantive changes at the PR/merge gate.
+
+Acceptance: both architect and orch can initiate and reply without repeated human permission prompts when their own trusted entry context contains this authorization. Applicable workers can communicate with the owning orch through their exposed tools. Verify destination selection and durable issue recording, while preserving role boundaries and scope.
+
+**Attribution:** Mirrored from jerrodtuck’s [owning issue record](https://github.com/jerrodtuck/vilya/issues/329#issuecomment-5972758188), posted 2026-10-03T19:34:21Z. Evidence classes and runtime limitations are those of the source.
+
+## 2026-10-03 — Approved scope expansion — 2026-10-03
+
+The operator approved complete skill coverage and Codex-specific teaching in the architect chat ("ok, make it happening"). This expands the original scope; implementation remains orchestrator-owned.
+
+- Audit **every shipped Vilya skill**, with a coverage table recording shared-compatible, Codex-adapted, other-host-only, or unsupported/deferred, plus the evidence and reason for each classification. Do not assume that adapting the chip and orch skills covers the remaining catalog.
+- Adapt every host-dependent skill that is supported in this release, including planning/routing, dispatch, architect messaging, monitoring, worktree setup, review/crucible invocation, finish, merge and prune. Preserve shared architecture/quality contracts and existing Claude Code/Cursor behavior. Clearly explain other-host-only and deferred workflows, including the new Codex unattended backend outside this release.
+- Provide complete Codex-specific site instructions: Setup, Orchestrator, chips, authorized seat messaging, recovery and Differences. Every skill detail page must identify Codex applicability and show its correct invocation, prerequisites and host-dependent behavior. Prefer shared pages with host-specific views; use separate Codex pages where the workflow materially differs. No blanket duplication of the catalog is required.
+- Keep model choices configurable per operator and phase. Discover available models/reasoning settings from current capabilities, validate explicit overrides, preserve configured defaults when no override is authorized, and document how to change preferences. Do not bind the process to today's preferred model or infer permission to switch from a peer message.
+- Cursor is a reference workflow, not proof of Codex parity. Verify capability claims per host; the claim that current Cursor cannot message between seats remains unverified and must not become teaching without evidence.
+
+Acceptance adds: an exhaustive skill coverage table; no unclassified shipped skill; verified Codex discovery/invocation and appropriate workflow checks for adapted skills; complete linked Codex teaching; explicit unsupported/deferred boundaries; configurable model selection; and existing-host regression checks. The previously required full Codex cycle and interruption recovery remain required.
+
+Record this approved expansion alongside the original ADR on the owning feature branch. The Vilya orchestrator is the single owner of implementation decomposition and dispatch.
+
+**Attribution:** Mirrored from jerrodtuck’s [owning issue record](https://github.com/jerrodtuck/vilya/issues/329#issuecomment-5972645954), posted 2026-10-03T19:19:44Z. Evidence classes and runtime limitations are those of the source.
+
+## 2026-10-03 — Codex desktop support with orchestrator-owned planning
+
+**Decision:** Add Codex desktop as a first-class Vilya host. The Codex orch owns planning, optionally delegating to a selected-model subagent, then dispatches isolated implementation chips. No standing Codex Planner seat is required. Authorize architect ↔ orch messaging explicitly in each seat's operator-facing entry prompt. Decided by the operator, 2026-10-03: “lock scope.”
+
+**Options considered:**
+1. Reuse the Claude/Cursor seat machinery unchanged — cost: standing Planner overhead and host/tool assumptions that contradict the current Codex contracts.
+2. **Codex-specific orchestration over shared board and worker contracts** — cost: a new orch adapter, capability-aware dispatch, installation and teaching updates, and end-to-end verification. Chosen.
+3. Expand desktop, CLI and a Codex unattended backend together — cost: broader runtime, setup and recovery validation; deferred beyond this release.
+
+**Why:** Verified direct reads show two-host site routing, a Claude-targeted installer default, `spawn_task` chip assumptions and universal standing-Planner language in VISION. Current session contracts verify model-selectable subagents, explicit worktree management and cross-chat messaging, but subagents share the workspace and chat messaging requires human authorization in each sending seat. Separate host machinery therefore fits the existing one-board principle better than pretending all desktops behave alike. The proposed end-to-end Codex recipe remains unverified until exercised.
+
+**Consequences:** Implement the locked scope in the owning issue. Preserve other host workflows, board artifacts, seat boundaries and unattended eligibility. Record decisions and amendments durably on issues; messages do not grant operator authority. Validate planning, isolated implementation, amendment delivery, PR evidence, interruption recovery and worktree archival. Mirror this entry on the owning feature branch, not directly on master.
+
+**Evidence:** Operator instructions in this architect session (2026-10-03); source paths and current tool-contract evidence listed in the owning issue; official worktree documentation https://learn.chatgpt.com/docs/environments/git-worktrees; prior ADR `2026-07-20 — One board, two desktops` (#281/#280), Planner ADR (#203), seat boundaries (#306/#308). This supersedes the universal Planner requirement for Codex desktop only.
+
+**Attribution:** Mirrored from jerrodtuck’s [owning issue record](https://github.com/jerrodtuck/vilya/issues/329#issuecomment-5968209218), posted 2026-10-03T10:20:21Z. Evidence classes and runtime limitations are those of the source.
+
 ## 2026-07-22 — Desktop session titles + harden arch refuse-implement (#308)
 
 **Decision:** (A) Standing seats on **Claude Code Desktop UI** title chats `<repo-short>-orch` /

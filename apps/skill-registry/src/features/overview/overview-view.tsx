@@ -23,11 +23,13 @@ export function OverviewView() {
         <b>orchestrator</b> who dispatches it: one architect seat per product
         board, one orchestrator per repo, and one Planner per repo on Claude
         Code chip-flow (Cursor daytime Planner is optional — see{" "}
-        <Link href="/differences">Two desktops</Link>). You point them by day,
+        <Link href="/differences">Desktop differences</Link>). You point them by day,
         decide at the forks, and keep the board honest. Night-shift runs that{" "}
         <b>same</b> chain unattended. One <code>GITHUB-PROJECTS.md</code> per
-        repo; Claude Code and Cursor both speak the same skills.
+        repo; Claude Code, Cursor and Codex share the board and quality contracts.
       </p>
+
+      <p className="note">On <Link href="/orch?host=codex">Codex desktop</Link>, the orch owns planning and dispatches explicitly isolated implementation chips; no standing Planner is required. Start with <Link href="/setup?host=codex">Codex setup</Link> and <Link href="/architect?host=codex">architect entry</Link>. Codex CLI and a new unattended backend are deferred.</p>
 
       <div className="rolestrip" aria-label="Role order">
         <span className="rolechip" style={{ ["--rc" as string]: "var(--arch)" }}>
@@ -171,11 +173,11 @@ export function OverviewView() {
       </div>
 
       <div className="callout">
-        <b>One board, two desktops.</b> Cursor and Claude Code share the board
+        <b>One board, three desktops.</b> Cursor and Claude Code share the board
         contract (issues, Status, verify plan, merge routing) and the{" "}
         SKILL.md body — skills are authored <b>once</b>. Chip spawn, Planner
         seat, and cloud/local gates diverge by host; learn the paths on{" "}
-        <Link href="/differences">Two desktops</Link>. Per-repo variation lives
+        <Link href="/differences">Desktop differences</Link>. Per-repo variation lives
         in each repo&apos;s <code>GITHUB-PROJECTS.md</code>.
       </div>
 
