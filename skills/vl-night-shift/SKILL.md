@@ -30,9 +30,18 @@ Before touching any issue, confirm you can actually do the work:
 - If any of these is missing, **do not fake progress.** Post one report ("night shift could not
   start: <reason>") and stop. A no-op is fine; a fabricated "done" is not.
 
+## Dispatch preflight — fail closed
+
+Before any brief, board mutation, checkout creation (including managed create_worktree), or spawn, require a fresh successful issue read with exact intended repo/number/URL and OPEN state (normalize CLI/REST casing). Reuse the current same-attempt read; extend existing reads with state/identity rather than duplicate API calls. CLOSED, unknown/malformed/wrong identity, auth or network failure stops before mutations. Queue filters, ready labels, board Status and priority overrides never substitute. Do not auto-reopen: the operator must reopen intentional closed work or use a new issue. Revalidate after pauses, handoffs and resumes. Workers recheck before implementation.
+
+Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe) and carry the recorded issue identity, base and original-start evidence into the worker brief. Before implementation, resolve the brief base and record the actual original starting commit as full immutable SHAs. Check equality/ancestry against that original start, not a later worker HEAD. If the base is missing, diverged, history is incomplete or Git errors, stop and reconcile. For an ancestor base inspect full messages in brief-base..original-start, bounded to 256 commits; larger ranges stop for a scoped reconciliation. Exact local #N, owner/repo#N or matching GitHub issue URL references are possible duplicate signals: reconcile delivered substance, never assume shipped from a number alone. Do not match #690/#169 for #69 or another repo's reference. Resume with the recorded original start so worker commits are not misclassified as pre-existing shipped work.
+
 ## 1. Pick ONE eligible issue
 
 Eligible = **all** of:
+
+- Fresh successful intended-issue identity and OPEN state, before setup or mutation;
+  queue results alone are not current dispatch evidence.
 
 - Labeled `night-shift:ready` (operator opt-in: safe to execute unattended).
 - Labeled `plan:ready` (kickoff + verify plan already on the issue — unattended does not skip planning).

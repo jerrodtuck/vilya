@@ -9,6 +9,12 @@ codex-prerequisites: "Repo config, issue and plan, git/GitHub access and managed
 
 # Start Feature (any stack)
 
+## Dispatch preflight — fail closed
+
+Before any brief, board mutation, checkout creation (including managed create_worktree), or spawn, require a fresh successful issue read with exact intended repo/number/URL and OPEN state (normalize CLI/REST casing). Reuse the current same-attempt read; extend existing reads with state/identity rather than duplicate API calls. CLOSED, unknown/malformed/wrong identity, auth or network failure stops before mutations. Queue filters, ready labels, board Status and priority overrides never substitute. Do not auto-reopen: the operator must reopen intentional closed work or use a new issue. Revalidate after pauses, handoffs and resumes. Workers recheck before implementation.
+
+Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe) and carry the recorded issue identity, base and original-start evidence into the worker brief. Before implementation, resolve the brief base and record the actual original starting commit as full immutable SHAs. Check equality/ancestry against that original start, not a later worker HEAD. If the base is missing, diverged, history is incomplete or Git errors, stop and reconcile. For an ancestor base inspect full messages in brief-base..original-start, bounded to 256 commits; larger ranges stop for a scoped reconciliation. Exact local #N, owner/repo#N or matching GitHub issue URL references are possible duplicate signals: reconcile delivered substance, never assume shipped from a number alone. Do not match #690/#169 for #69 or another repo's reference. Resume with the recorded original start so worker commits are not misclassified as pre-existing shipped work.
+
 ## Codex desktop path
 
 Use `$vl-start-feature` or read/apply this source. Architect/router/worker seats
@@ -17,7 +23,8 @@ its assigned checkout and follows its settled brief; do not create another tree 
 re-plan. Codex orch follows shared issue/board rules (§1), architecture/fork/working
 rules (§4–§5) and verify-routing content (§6), with these host replacements:
 
-1. The orch owns planning, optionally a bounded read-only delegate. Follow
+1. Complete the fresh OPEN/identity preflight above before board writes or managed
+   checkout creation. The orch owns planning, optionally a bounded read-only delegate. Follow
    [vl-orch-codex model policy](../vl-orch-codex/SKILL.md#model-policy).
    Record kickoff + verify plan + settled forks on the issue before implementation;
    remove `needs:plan` and add `plan:ready` only when ready. No standing Planner,
@@ -62,9 +69,18 @@ If the repo isn't already known, detect it:
 - **Arguments name an issue #** → `gh issue view <n> --repo <owner>/<repo>`.
 - **No issue yet** → create it, then add it to the board explicitly:
   ```bash
-  url=$(gh issue create --repo <owner>/<repo> --title "<title>" --body "<context>" \
-    --label type:feature --label priority:high --label area:<slice>)
-  gh project item-add <n> --owner <owner> --url "$url"
+  owner_repo='<owner>/<repo>'
+  url=$(gh issue create --repo "$owner_repo" --title "<title>" --body "<context>" \
+    --label type:feature --label priority:high --label area:<slice>) || exit 1
+  issue_number=${url##*/}
+  case "$issue_number" in ''|*[!0-9]*) echo 'STOP: invalid created issue number' >&2; exit 1;; esac
+  expected_url="https://github.com/$owner_repo/issues/$issue_number"
+  [ "$url" = "$expected_url" ] || { echo 'STOP: wrong created issue URL' >&2; exit 1; }
+  state_identity=$(gh issue view "$issue_number" --repo "$owner_repo" \
+    --json state,number,url --jq '[ (.state | ascii_upcase), (.number | tostring), .url ] | @tsv') || exit 1
+  expected_identity=$(printf 'OPEN\t%s\t%s' "$issue_number" "$expected_url")
+  [ "$state_identity" = "$expected_identity" ] || { echo 'STOP: issue not confirmed OPEN with exact identity' >&2; exit 1; }
+  gh project item-add <project-number> --owner <owner> --url "$url"
   ```
   Use the owner, project number, and `area:*` labels from
   `docs/project-tracking/GITHUB-PROJECTS.md`.
@@ -76,7 +92,7 @@ If the repo isn't already known, detect it:
 - Extends an in-flight epic → link as **sub-issue** (`addSubIssue`).
 - Ambiguous which issue → ask (unless invoked by [/vl-night-shift](../vl-night-shift/SKILL.md) —
   then skip and take a clearly eligible issue only).
-- Move to **In Progress** (or **Blocked** if kickoff is stuck on an external dependency).
+- Only after the fresh OPEN/identity gate, move to **In Progress** (or **Blocked** if kickoff is stuck on an external dependency).
   Board Status edits are **best-effort / rate-limit aware** — when `graphql.remaining == 0`,
   skip the project edit and note status on the issue instead (see GraphQL quota note in
   `GITHUB-PROJECTS.md`).

@@ -1,0 +1,1 @@
+#327 — Require fresh intended-issue OPEN evidence before brief, board writes, checkout creation and spawn across supported direct entries. Add a tested read-only preflight recipe with exact issue-reference matching and original-start stale-base reconciliation, including resumed workers.

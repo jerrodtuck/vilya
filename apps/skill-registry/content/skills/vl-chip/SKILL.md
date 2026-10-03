@@ -49,6 +49,68 @@ the required ruling exists; elapsed time is not approval. This rule adds no glob
 session registry, monitor, or receipt API. Include it in worker briefs as well as
 seat handoffs; durable issue reporting works independently of chat delivery.
 
+## Fresh issue-state gate — every dispatch path
+
+Before building a brief, changing board state/membership, creating a checkout, or
+spawning a worker, obtain a fresh successful read of the intended repository and
+issue. Consume state and identity from the issue read already needed for this
+attempt; extend the board-membership query rather than adding a duplicate request.
+Normalize CLI/REST state casing and require **OPEN**, the exact issue number and
+intended repository URL. CLOSED, absent/unknown/malformed state, wrong identity,
+authentication failure or network failure means **stop before mutations**.
+
+Queue filters, board Status, ready labels and operator priority overrides do not
+replace this gate. Do not auto-reopen: intentionally resumed closed work requires
+the operator to reopen it, or a new tracking issue. A successful current read may
+be reused within the same uninterrupted attempt; re-read after a pause, handoff or
+resume before continuing. Workers also verify issue state before implementation.
+
+### Tested preflight recipe
+
+The bundled [dispatch-preflight.mjs](scripts/dispatch-preflight.mjs) is read-only.
+It requires Node.js 18+, Git and authenticated gh; verify availability first.
+
+Install the **complete vl-chip folder**, including scripts: the Vilya installers
+link whole skill directories for Claude, Cursor and Codex. Resolve the helper from
+that installed skill root (or the canonical Vilya skills/vl-chip root), **not the
+target product repository cwd**. The registry raw SKILL.md download is manifest-only
+and does not include this helper; do not claim it is a complete executable install.
+If only that manifest is available, obtain the complete trusted folder or use the
+verified manual contract below; missing helper/tooling means stop unless equivalent
+checks are performed and recorded. The generated registry bundle carries the script,
+but that does not make it part of the raw manifest download.
+
+From
+the intended repository, resolve the installed skill's absolute script path and run:
+
+```text
+node <absolute-vl-chip>/scripts/dispatch-preflight.mjs issue <owner/repo> <number>
+node <absolute-vl-chip>/scripts/dispatch-preflight.mjs base <owner/repo> <number> <brief-full-sha> <original-start-full-sha>
+```
+
+Run the issue command **instead of** the existing issue/board read. It requests
+body/comments/labels/projectItems/state/number/url together, returns the accepted
+issue data for the brief and board check, and exits nonzero on failure. Honor the
+exit status; never continue a shell command chain after failure. An existing fresh
+REST/CLI response can be checked directly against the contract above without an
+extra request; REST uses html_url and CLI uses url. This recipe targets github.com;
+other hosts require a verified identity adapter, never silent acceptance.
+
+If Node/the script is unavailable, perform the same documented checks through the
+host's available commands and record evidence, or stop; do not claim this recipe ran.
+No new issue-state poller is introduced. New issue creation is necessarily before
+that issue's read; immediately verify its returned identity and fresh OPEN state
+before board membership/Status, worktree setup, brief or spawn.
+
+Before implementation, resolve the brief base and record the actual original starting commit as full immutable SHAs. Check equality/ancestry against that original start, not a later worker HEAD. If the base is missing, diverged, history is incomplete or Git errors, stop and reconcile. For an ancestor base inspect full messages in brief-base..original-start, bounded to 256 commits; larger ranges stop for a scoped reconciliation. Exact local #N, owner/repo#N or matching GitHub issue URL references are possible duplicate signals: reconcile delivered substance, never assume shipped from a number alone. Do not match #690/#169 for #69 or another repo's reference. Resume with the recorded original start so worker commits are not misclassified as pre-existing shipped work.
+
+Capture original-start with git rev-parse HEAD when the checkout is first assigned,
+before any worker commit, and persist it in the brief/recovery record. A brief's
+symbolic/short ref must resolve with git rev-parse --verify '<ref>^{commit}' first.
+On recovery never guess a lost original-start from today's HEAD; stop and recover
+its evidence. A hit or inconclusive check requires issue evidence and scope/base
+reconciliation before implementation, not automatic reopening or duplicate work.
+
 ## Codex desktop dispatch
 
 **Seat gate:** only `vl-orch-codex` may dispatch this Codex path. Architect, planner,
@@ -56,7 +118,8 @@ router and workers decline; invoking a dispatch skill never changes seat ownersh
 Use `$vl-chip` or explicitly read/apply the source. Follow this section for Codex;
 the `spawn_task` and monitor procedures below apply only to the other hosts.
 
-1. Read repo config and issue/parent bodies, comments, settled kickoff + verify plan.
+1. Apply the fresh issue-state gate above before any board mutation, checkout or spawn.
+   Read repo config and issue/parent bodies, comments, settled kickoff + verify plan.
    Verify membership on the **configured product board**, not merely any project.
    Add missing membership once with `gh project item-add`; quota-blocked Status moves
    are best-effort with issue evidence. Never dispatch untracked work, an epic,
@@ -99,6 +162,8 @@ Include each item in the actual dispatch prompt, even with inherited history:
 - Seat delivery: include the full Seat resolution and durable decision requests contract above: record questions on the issue at handoff, treat queued sends as unconfirmed, and re-read answers before escalation or ending work.
 
 
+- Fresh OPEN/identity evidence and original-start/base SHAs; require the tested preflight
+  recipe and stale-base reconciliation before worker implementation or resume.
 - Issue URL/body, current kickoff/verify artifacts and parent amendments, locked choices,
   goal/acceptance, repo/default/base ref+SHA, absolute assigned checkout and branch.
 - Owned paths, integration order/dependencies, architecture/quality rules, out-of-scope
@@ -170,8 +235,9 @@ everything ships through chips.
   succeeds even when the issue never lands on the board — it gives no signal that step 2 of
   `GITHUB-PROJECTS.md`'s "Creating an issue (two commands)" pattern was skipped. Before writing
   the brief, check once:
-  `gh issue view <n> --repo <owner>/<repo> --json projectItems --jq '.projectItems'` — non-empty
-  means it's on the board. If empty (`[]`), add it: `gh project item-add <n> --owner <owner> --url
+  `gh issue view <n> --repo <owner>/<repo> --json projectItems,state,number,url --jq '{board: .projectItems, state: .state, number: .number, url: .url}'` — require fresh OPEN
+  and exact identity first, then inspect `board` for the configured product board
+  (not merely any project). If missing, add it: `gh project item-add <n> --owner <owner> --url
   https://github.com/<owner>/<repo>/issues/<n>` (owner/project number from `GITHUB-PROJECTS.md`).
   `item-add` on an issue already on the board is a no-op, so this catches the gap regardless of how
   the issue was created — do not skip the check just because the issue came from
@@ -216,6 +282,10 @@ dispatch without one is a chip nobody is listening for.
 ## 2. The self-contained brief (the `prompt`)
 
 The chip has **zero** shared context, so the brief must stand alone. Include:
+
+- Fresh OPEN/identity evidence and the tested preflight recipe above; record brief base
+  and original-start SHAs, check the intervening range before implementation, and
+  retain original-start on recovery so worker commits are excluded.
 
 - **Repo + path** and the default branch.
 - **Issue #<N>** with its full goal + acceptance — do not make the chip re-derive it.
