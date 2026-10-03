@@ -24,6 +24,7 @@ export const NODES: Record<string, FlowNode> = {
     c: "--start",
     bodyHtml: `
     <p>Turns intent into a tracked, branched, ready-to-build unit.</p>
+    <p>First require fresh successful intended-repo/issue identity and <b>OPEN</b> state before brief, board mutation, checkout creation or spawn. CLOSED/unknown/errors stop; labels and priority overrides cannot waive it. Revalidate after pauses/resume; never auto-reopen.</p>
     <ul>    <li>The <b>issue is the brief</b> — view it or create + add it to the board.</li>
     <li>Issue bodies state <b>present-tense facts with evidence</b> — planned work is scope (&quot;this issue adds X&quot;), never an existing artifact; referenced issues get <b>actual current status, checked at write time</b>.</li>
     <li>Branch <code>feat|fix|docs/&lt;issue#&gt;-slug</code>; one issue = one worktree.</li>
@@ -39,6 +40,7 @@ export const NODES: Record<string, FlowNode> = {
     title: "Build in the slice",
     c: "--impl",
     bodyHtml: `
+    <p>Recheck issue OPEN state before implementation. Resolve brief base against the recorded original starting commit, not later worker HEAD; reconcile divergence/errors or exact issue references in intervening full commit messages before duplicating shipped work.</p>
     <p>The VSA non-negotiables while you build:</p>
     <ul><li>Feature logic lives in its <b>owning vertical slice</b> — no app-wide Controllers/Services/Repositories layer-cake.</li>
     <li>Shared kernel = contracts/ports only.</li>

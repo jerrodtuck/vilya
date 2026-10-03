@@ -83,6 +83,14 @@ jobs:
             /start-feature → implement → /<Crucible variant from that file> →
             remediate → /finish-feature (use that Test command).
 
+            Before brief, board mutation, checkout creation or spawn, require a fresh
+            successful intended-repo/issue identity and OPEN read. CLOSED, unknown,
+            malformed, wrong identity or read failures stop; ready labels never substitute.
+            Revalidate after pauses/resume. Never auto-reopen closed work.
+            Before implementation, reconcile the brief base against the recorded original
+            starting commit; inspect full intervening messages for exact issue references.
+            On recovery exclude the worker's later commits; never replace original-start with HEAD.
+
             Open PRs only — never merge, never push to the default branch.
             At a real design fork: comment recommendation, label needs:decision,
             Blocked, next issue. Finish with the morning report per the skill.
