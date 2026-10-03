@@ -68,7 +68,19 @@ resume before continuing. Workers also verify issue state before implementation.
 ### Tested preflight recipe
 
 The bundled [dispatch-preflight.mjs](scripts/dispatch-preflight.mjs) is read-only.
-It requires Node.js 18+, Git and authenticated gh; verify availability first. From
+It requires Node.js 18+, Git and authenticated gh; verify availability first.
+
+Install the **complete vl-chip folder**, including scripts: the Vilya installers
+link whole skill directories for Claude, Cursor and Codex. Resolve the helper from
+that installed skill root (or the canonical Vilya skills/vl-chip root), **not the
+target product repository cwd**. The registry raw SKILL.md download is manifest-only
+and does not include this helper; do not claim it is a complete executable install.
+If only that manifest is available, obtain the complete trusted folder or use the
+verified manual contract below; missing helper/tooling means stop unless equivalent
+checks are performed and recorded. The generated registry bundle carries the script,
+but that does not make it part of the raw manifest download.
+
+From
 the intended repository, resolve the installed skill's absolute script path and run:
 
 ```text

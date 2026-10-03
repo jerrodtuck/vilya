@@ -7,6 +7,13 @@ import { CODEX_PROMPTS } from "../features/orchestrator/codex-prompts";
 const root = resolve(process.cwd(), "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 describe("fresh dispatch and recovery teaching", () => {
+  it("ships identical helper bytes and declares the manifest-only download limitation", () => {
+    expect(read("apps/skill-registry/content/skills/vl-chip/scripts/dispatch-preflight.mjs")).toBe(read("skills/vl-chip/scripts/dispatch-preflight.mjs"));
+    const skill=read("skills/vl-chip/SKILL.md");
+    expect(skill).toContain("complete vl-chip folder");
+    expect(skill).toContain("raw SKILL.md download is manifest-only");
+    expect(skill).toContain("target product repository cwd");
+  });
   it.each(["vl-chip", "vl-orch-claude", "vl-orch-cursor", "vl-orch-codex", "vl-start-feature", "vl-cursor-handoff", "vl-night-shift"])("%s carries pre-mutation fail-closed checks", seat => {
     const text=read(`skills/${seat}/SKILL.md`);
     expect(text).toMatch(/OPEN/);
