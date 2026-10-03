@@ -7,6 +7,7 @@ import {
   stackOf,
   invocationOf,
   levelOf,
+  getCodexSkillSupport,
 } from "@/shared/skills/meta";
 
 export function RegistryList() {
@@ -42,6 +43,7 @@ export function RegistryList() {
                   <div className="metarow">
                     <span className="tag level">{levelOf(skill)}-level</span>
                     <span className="tag">{invocationOf(skill)}</span>
+                    <span className="tag">Codex: {getCodexSkillSupport(skill).label}</span>
                     {skill.frontmatter["disable-model-invocation"] ? (
                       <span className="tag manual">disable-model-invocation</span>
                     ) : null}

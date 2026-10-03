@@ -8,3 +8,8 @@ export const SKILL_AFFORDANCE_LEAD = "Apply prompt below — or run";
 export function skillInvoke(slug: string): string {
   return `/${slug}`;
 }
+
+/** Explicit Codex skill mention; legacy slash invokes remain unchanged. */
+export function codexSkillInvoke(slug: string): string {
+  return `$${slug}`;
+}

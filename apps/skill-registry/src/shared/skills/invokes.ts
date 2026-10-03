@@ -14,6 +14,7 @@ export const SKILL_SLUGS = {
   architect: "vl-arch",
   orchestrator: "vl-orch-claude",
   orchestratorCursor: "vl-orch-cursor",
+  orchestratorCodex: "vl-orch-codex",
   askVilya: "vl-ask",
   history: "vl-history",
   productMap: "vl-product-map",
@@ -36,6 +37,7 @@ export const SKILL_INVOKES = {
   architect: `/${SKILL_SLUGS.architect}`,
   orchestrator: `/${SKILL_SLUGS.orchestrator}`,
   orchestratorCursor: `/${SKILL_SLUGS.orchestratorCursor}`,
+  orchestratorCodex: "$" + SKILL_SLUGS.orchestratorCodex,
   askVilya: `/${SKILL_SLUGS.askVilya}`,
   history: `/${SKILL_SLUGS.history}`,
   productMap: `/${SKILL_SLUGS.productMap}`,
@@ -59,6 +61,7 @@ export const STANDING_SESSION_SLUGS = new Set<string>([
   SKILL_SLUGS.architect,
   SKILL_SLUGS.orchestrator,
   SKILL_SLUGS.orchestratorCursor,
+  SKILL_SLUGS.orchestratorCodex,
 ]);
 
 export function isCrucibleSlug(slug: string): boolean {

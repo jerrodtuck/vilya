@@ -1,6 +1,17 @@
 // Shared kernel: skill domain types. No feature logic here.
 
+export type CodexSupport =
+  | "shared-compatible"
+  | "codex-adapted"
+  | "other-host-only"
+  | "unsupported-deferred";
+
 export interface SkillFrontmatter {
+  /** Vilya display metadata; validated at runtime, not a host invocation policy. */
+  "codex-support"?: CodexSupport;
+  "codex-notes"?: string;
+  "codex-invocation"?: string;
+  "codex-prerequisites"?: string;
   name?: string;
   description?: string;
   "disable-model-invocation"?: boolean;

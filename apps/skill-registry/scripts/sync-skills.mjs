@@ -20,9 +20,6 @@ if (!fs.existsSync(source)) {
   process.exit(1);
 }
 
-fs.rmSync(dest, { recursive: true, force: true });
-fs.mkdirSync(dest, { recursive: true });
-
 const slugs = fs
   .readdirSync(source, { withFileTypes: true })
   .filter(
@@ -31,12 +28,27 @@ const slugs = fs
   .map((d) => d.name)
   .sort();
 
+// Reject links before replacing the bundle: resources must stay inside the source tree.
+// This avoids copying private external files or following cycles during recursive copy.
+function checkTree(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) throw new Error(`sync-skills: linked resource is not portable: ${file}`);
+    if (entry.isDirectory()) checkTree(file);
+    else if (!entry.isFile()) throw new Error(`sync-skills: unsupported resource: ${file}`);
+  }
+}
+for (const slug of slugs) checkTree(path.join(source, slug));
+// Do not traverse a redirected content directory or bundle root during replacement.
+for (const directory of [path.dirname(dest), dest]) {
+  if (fs.existsSync(directory) && fs.lstatSync(directory).isSymbolicLink()) {
+    throw new Error(`sync-skills: refusing linked destination: ${directory}`);
+  }
+}
+fs.rmSync(dest, { recursive: true, force: true });
+fs.mkdirSync(dest, { recursive: true });
 for (const slug of slugs) {
-  fs.mkdirSync(path.join(dest, slug), { recursive: true });
-  fs.copyFileSync(
-    path.join(source, slug, "SKILL.md"),
-    path.join(dest, slug, "SKILL.md")
-  );
+  fs.cpSync(path.join(source, slug), path.join(dest, slug), { recursive: true });
 }
 
 console.log(
