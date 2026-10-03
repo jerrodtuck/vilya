@@ -9,7 +9,6 @@ import { DesktopHostSelector, useDesktopHost } from "@/shared/ui/desktop-host-se
 import { FlowMap } from "@/shared/ui/flow-map";
 import { PromptList } from "@/shared/ui/prompt-list";
 import { CodexOrchestration } from "./codex-orchestration";
-import { CODEX_ORCH_INVOKE } from "./codex-prompts";
 import { ClaudeDispatchPath } from "./claude-dispatch-path";
 import { CursorDispatchPath } from "./cursor-dispatch-path";
 import { DEFAULT_DRAWER, FLOWS, FLOW_COLORS, NODES } from "./data";
@@ -22,7 +21,7 @@ export function OrchHostPanel() {
 
   const prompts = useMemo(() => filterPromptsForHost(PROMPTS, host), [host]);
   const seatInvoke =
-    host === "codex" ? CODEX_ORCH_INVOKE : host === "cc" ? SKILL_INVOKES.orchestrator : SKILL_INVOKES.orchestratorCursor;
+    host === "codex" ? SKILL_INVOKES.orchestratorCodex : host === "cc" ? SKILL_INVOKES.orchestrator : SKILL_INVOKES.orchestratorCursor;
 
   return (
     <>
@@ -33,7 +32,7 @@ export function OrchHostPanel() {
           {" — "}
           {DESKTOP_HOST_LABEL[host]} orch skill.{" "}
           <b>Orchestrator</b> is the seat/job;{" "}
-          <code>/vl-orch-claude</code> / <code>/vl-orch-cursor</code> / <code>{CODEX_ORCH_INVOKE}</code> are
+          <code>/vl-orch-claude</code> / <code>/vl-orch-cursor</code> / <code>{SKILL_INVOKES.orchestratorCodex}</code> are
           which desktop skill. Host story:{" "}
           <Link href="/differences">Desktop differences</Link>.
         </p>

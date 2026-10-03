@@ -5,6 +5,7 @@
 import {
   SKILL_AFFORDANCE_LEAD,
   skillInvoke,
+  codexSkillInvoke,
 } from "../skills/skill-affordance";
 import { CopyButton } from "./copy-button";
 import type { PromptGroup } from "./flow-map-types";
@@ -28,7 +29,7 @@ export function PromptList({ group }: { group: PromptGroup }) {
           <span className="plead">{it.label}</span>
           {it.skill ? (
             <p className="pskill">
-              {SKILL_AFFORDANCE_LEAD} <code>{it.host === "codex" ? "$" + it.skill : skillInvoke(it.skill)}</code>.
+              {SKILL_AFFORDANCE_LEAD} <code>{it.host === "codex" ? codexSkillInvoke(it.skill) : skillInvoke(it.skill)}</code>.
             </p>
           ) : null}
           <span className="ptext">{it.text}</span>

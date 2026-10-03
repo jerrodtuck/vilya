@@ -1,5 +1,6 @@
 // Feature slice: orchestrator — page composition (server component). The
 // host toggle + map + path + prompt library live in OrchHostPanel (client).
+import { SKILL_INVOKES } from "../../shared/skills/invokes";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BoardStrip } from "@/shared/ui/board-strip";
@@ -16,7 +17,7 @@ export function OrchestratorView() {
         </h1>
         <p className="lead">
           <b>Orchestrator</b> is the seat/job — dispatch, monitor, merge, prune.{" "}
-          <code>/vl-orch-claude</code>, <code>/vl-orch-cursor</code> and <code>$vl-orch-codex</code> are
+          <code>/vl-orch-claude</code>, <code>/vl-orch-cursor</code> and <code>{SKILL_INVOKES.orchestratorCodex}</code> are
           which desktop skill. Pick your host below; the skills are your
           instruments. Everything reports into one shared state: the GitHub
           Projects board. Click a <b>flow</b> to light its path, or click any{" "}

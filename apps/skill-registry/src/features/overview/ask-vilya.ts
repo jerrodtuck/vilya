@@ -5,7 +5,7 @@
 // Planner lane added in #208 (anytime plan loop between direction and dispatch).
 
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
-import { SKILL_SLUGS } from "../../shared/skills/invokes";
+import { SKILL_SLUGS, SKILL_INVOKES } from "../../shared/skills/invokes";
 
 export const ASK_VILYA: PromptGroup = {
   node: "ASK",
@@ -20,14 +20,14 @@ export const ASK_VILYA: PromptGroup = {
       skill: SKILL_SLUGS.askVilya,
       text: `Ask Vilya — route me: <what you want to do, or the question you have>
 
-First identify the desktop. On Codex, use supported dollar skill invocation or read/apply its source. Codex planning belongs to $vl-orch-codex (no standing Planner); its workflow is /orch?host=codex. Existing host routing follows below.
+First identify the desktop. On Codex, use supported dollar skill invocation or read/apply its source. Codex planning belongs to ${SKILL_INVOKES.orchestratorCodex} (no standing Planner); its workflow is /orch?host=codex. Existing host routing follows below.
 
 Apply the routing test: does this change what we intended, or only what we'll do next?
 
 1. Changes intent (vision, design, architecture, a prior call) → /vl-arch — ADR/spec first, then issues.
 2. Needs a planning pass (scope, verify plan, or forks unclear) → enqueue needs:plan → standing Planner (Fable) drains to plan:ready — then Orchestrator. On Cursor daytime, orch/in-session plan may suffice — skip standing Planner and go to orch when the brief is already clear enough to dispatch.
 3. New work, intent unchanged and already clear (tweaks, polish, bugs) → issue on the board (/vl-update-docs routing) → Orchestrator dispatches (daytime may skip Planner; Cursor default chip is Task/BoN worktree-first).
-4. About in-flight work (a PR, a chip, merge, prune, board hygiene) → Orchestrator (/vl-orch-claude, /vl-orch-cursor, or $vl-orch-codex for Codex).
+4. About in-flight work (a PR, a chip, merge, prune, board hygiene) → Orchestrator (/vl-orch-claude, /vl-orch-cursor, or ${SKILL_INVOKES.orchestratorCodex} for Codex).
 5. Operator-owned (merge authority, smoke, fork decisions) → me — name the exact command or skill.
 6. Pure process/canon question → answer directly, citing GITHUB-PROJECTS.md, the SKILL.md, or the site page.
 
