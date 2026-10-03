@@ -6,9 +6,24 @@ description: >-
   in a fixed shape. Stateless and read-only; never creates issues, dispatches,
   or writes the board. Use when the operator says "/vl-ask", "Ask
   Vilya", or "who handles this".
+codex-support: "codex-adapted"
+codex-notes: "Routes Codex planning and coordination to vl-orch-codex; remains read-only."
+codex-invocation: "$vl-ask"
+codex-prerequisites: "Known target host and repo or product board; readable process canon."
 ---
 
 # Ask Vilya (any stack)
+
+## Codex routing
+
+Use `$vl-ask` or read/apply this source. Preserve the fixed lane · prompt · why
+format and read-only boundary below. For Codex, a planning pass routes to
+`$vl-orch-codex` with `needs:plan`; that orch produces kickoff + verify artifacts
+and `plan:ready`. In-flight work also routes to that orch. Direction still routes
+to `$vl-arch`; operator decisions remain operator-owned. Do not activate a
+standing Planner or any seat in this router. Steps naming Fable or the two other
+orch seats below describe their own hosts only. Use `$vl-*` for supported Codex
+companions, or explicitly read/apply source; never claim slash-command parity.
 
 > Front-door companion to the role seats — not a seat itself.
 > [/vl-arch](../vl-arch/SKILL.md) ·

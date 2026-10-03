@@ -1,9 +1,20 @@
 ---
 name: vl-history
 description: Reconstruct the full history of an issue, feature, or topic — what we've tried, in order, and what happened each time. Use when the user asks "what did we do last on X", "what have we tried on <issue/topic>", "history of #N", "previous attempts", "catch me up on <area>", or points at an issue and wants the backstory.
+codex-support: "shared-compatible"
+codex-notes: "Read-only issue and code history; no host lifecycle calls."
+codex-invocation: "$vl-history"
+codex-prerequisites: "Repo config, git and authenticated GitHub read access."
 ---
 
 # History — what have we done on this?
+
+## Codex invocation
+
+Use $vl-history when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 > **Scope:** Internal dev-process skill, **read-only** — it reconstructs and reports, never writes.
 > Companion to [/vl-start-feature](../vl-start-feature/SKILL.md) · [/vl-finish-feature](../vl-finish-feature/SKILL.md) ·

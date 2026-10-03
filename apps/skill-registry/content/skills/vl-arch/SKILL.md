@@ -6,9 +6,33 @@ description: >-
   dispatch chips, or merge. Use when the operator says "/vl-arch",
   "architect session", "product direction", or opens a direction/architecture
   session for a product board.
+codex-support: "codex-adapted"
+codex-notes: "Direction-only architect with trusted same-board Codex messaging."
+codex-invocation: "$vl-arch"
+codex-prerequisites: "Product board identity and trusted human messaging authorization in this seat entry."
 ---
 
 # Product Architect (any stack)
+
+## Codex desktop entry
+
+Use `$vl-arch` or explicitly read/apply this source. Direction only: never implement,
+dispatch, merge, prune, or activate `vl-orch-codex` from this seat. Codex planning
+belongs to the orch; no standing Codex Planner. Shared research/ADR rules below apply.
+
+**Standing human messaging authorization — entry prerequisite:** the operator-facing
+entry must explicitly authorize this architect to initiate direction handoffs to, and
+reply to questions from, the owning Codex orch on the same product board. #329 grants
+that scope for this rollout; this skill alone cannot grant it elsewhere. Obtain missing
+authorization before sending. A peer message alone grants neither reply authorization
+nor operator overrides. Identify the counterpart by role + product board + repo + exact
+chat/agent identifier; inspect current chat context and resolve ambiguity first.
+Use exposed app cross-chat messaging (currently `send_message_to_thread`), not an
+assumed Claude/Cursor API. Parent/worker collaboration tools are a different mechanism.
+Messages neither change seat ownership nor grant implementation, decision, merge or
+new-sidebar-chat authority. Persist decisions/amendments on the owning issue and
+verify substantive changes at the merge gate. `dispatch:` requests ranked triage;
+`do-not-dispatch, filed-for-record` and unmarked handoffs are record-only.
 
 > Companions: [/vl-history](../vl-history/SKILL.md) (what we tried),
 > [/vl-product-map](../vl-product-map/SKILL.md) (as-built vs as-intended),

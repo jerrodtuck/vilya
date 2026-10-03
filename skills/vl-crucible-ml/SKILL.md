@@ -1,9 +1,20 @@
 ---
 name: vl-crucible-ml
 description: Unusually strict, refactor-oriented code-quality review for Python ML/data projects — src-layout slice packages, import-linter boundary contracts, the notebook-promotion rule, outcome-oriented SOLID, serving/training separation, data-provenance guidance. Use for PR review, "crucible", or when enforcing slice structure on a Python ML/data repo. Install one crucible variant per repo, matched to its stack (siblings: vl-crucible-nextjs, vl-crucible-blazor).
+codex-support: "shared-compatible"
+codex-notes: "Unchanged ml architecture, quality and remediation contract; read and apply directly."
+codex-invocation: "$vl-crucible-ml"
+codex-prerequisites: "Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority."
 ---
 
 # Crucible Code Quality Review — Python ML / Data
+
+## Codex invocation
+
+Use $vl-crucible-ml when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 Strict, **refactor-oriented** review of the current branch's changes. **Not a pass/fail gate** —
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves

@@ -6,9 +6,19 @@ description: >-
   /vl-chip, arm monitors, merge with /vl-merge-pr, prune with /vl-prune.
   Use when the operator says "/vl-orch-claude", "orchestrator session", or
   seats the Claude Code orchestrator standing orders.
+codex-support: "other-host-only"
+codex-notes: "Claude orchestrator stays distinct; Codex uses vl-orch-codex."
+codex-invocation: "Not applicable in Codex; use $vl-orch-codex."
+codex-prerequisites: "Claude Code host and its documented session/monitor capabilities."
 ---
 
 # Orchestrator — Claude Code (any stack)
+
+## Codex boundary — stop here
+
+Claude orchestrator stays distinct; Codex uses vl-orch-codex.
+Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
+The remaining instructions apply only to the existing supported host.
 
 > Companions: [/vl-chip](../vl-chip/SKILL.md) (dispatch — **not** this seat),
 > [/vl-plan](../vl-plan/SKILL.md) (Fable plan loop),

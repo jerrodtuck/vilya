@@ -7,9 +7,19 @@ description: >-
   /vl-start-feature; arm mortal REST notify_on_output monitors; merge and
   prune from the main clone. Use when the operator says "/vl-orch-cursor",
   "Cursor orchestrator", or seats the Cursor orchestrator standing orders.
+codex-support: "other-host-only"
+codex-notes: "Cursor orchestrator stays distinct; Codex uses vl-orch-codex."
+codex-invocation: "Not applicable in Codex; use $vl-orch-codex."
+codex-prerequisites: "Cursor host and its documented Task/worktree/monitor capabilities."
 ---
 
 # Orchestrator — Cursor (any stack)
+
+## Codex boundary — stop here
+
+Cursor orchestrator stays distinct; Codex uses vl-orch-codex.
+Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
+The remaining instructions apply only to the existing supported host.
 
 > Companions: [/vl-start-feature](../vl-start-feature/SKILL.md) (issue +
 > worktree + kickoff), [/vl-cursor-handoff](../vl-cursor-handoff/SKILL.md)
