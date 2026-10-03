@@ -183,6 +183,49 @@ layer-cake, or everything hanging off one `main.py`) and is being migrated incre
 
 ---
 
+## Component baseline — review the repo policy
+
+Apply this check to actual UI: components, rendered templates, dashboards and their
+primitives. For backend-only or ML-only changes, report **not applicable — no UI
+changed**; do not impose a UI library or approval gate on unrelated code.
+
+1. Read **Component baseline** and **Custom component policy** in the repo's
+   `docs/project-tracking/GITHUB-PROJECTS.md`, then the referenced local rules and
+   approval records. Blank/missing means **unknown**, not `none` or `n/a`: report the
+   missing config and resolve it before accepting affected custom primitives.
+   Explicit `none` means no configured library, not permission to ignore another
+   recorded repo policy. Explicit `n/a` must explain why no special approval gate
+   applies; ordinary architecture and quality review still apply.
+2. Inspect the configured library/design system, location and constraints. Compare
+   new or touched custom primitives with its available equivalents before accepting
+   them. Absence from the checkout is not proof the library lacks a primitive:
+   check the applicable catalog/version, or label that claim unverified. Flag
+   duplication and policy violations under the existing severity contract, with a
+   concrete refactor to the baseline primitive or a scoped policy resolution.
+3. Distinguish **baseline primitives** from **feature composition/wrappers**. Follow
+   the repo's declared boundary; ordinary feature composition is not automatically
+   a prohibited custom primitive. Enforce a broader ban only when recorded by that
+   repo. A materially ambiguous boundary is a bounded fork on the owning product
+   issue, not permission to invent a global rule.
+4. Where the repo requires operator approval, **missing qualifying approval blocks
+   the affected custom primitive**. Cite explicit, attributable operator approval
+   scoped to the repo/component or bounded approved set, durably recorded on the
+   owning issue/PR or named repo record (for example `AGENTS.md` / `CLAUDE.md`).
+   Human chat approval needs a durable record with provenance before acceptance.
+   An agent proposal, vague “approved” claim, peer relay without source or a merge
+   alone is not approval. Grandfathered sets qualify only within recorded scope.
+   Vilya does not impose approval on repos whose policy does not require it.
+
+Report applicability, config/approval evidence and the concrete refactor with the
+findings. A chip-brief reminder supplements this review; it never replaces it.
+**Acceptance case:** in a repo configured for shadcn, hand-rolled `breadcrumb.tsx`
+and `skeleton.tsx` must trigger an equivalent-primitive check. If the applicable
+catalog provides them, flag duplication; under a recorded approval-required policy,
+unapproved replacements block. For a no-UI change with explicit `none` / explained
+`n/a`, report the UI check not applicable while retaining normal review.
+
+---
+
 ## Primary review questions
 
 - Is there a code-judo move that deletes a whole *category* of complexity?

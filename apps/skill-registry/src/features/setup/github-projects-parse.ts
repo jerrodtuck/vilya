@@ -280,6 +280,8 @@ export function parseConfig(markdown: string): GithubProjectsConfig {
       get(repo, "manual smoke"),
       prose.manualSmoke ?? ""
     ),
+    componentBaseline: get(repo, "component baseline"),
+    customComponentPolicy: get(repo, "custom component policy"),
     defaultBranch: firstNonEmpty(
       get(repo, "default branch"),
       prose.defaultBranch ?? ""

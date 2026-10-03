@@ -121,6 +121,17 @@ function buildConfigSections(config: GithubProjectsConfig): string {
       orPlaceholder(config.manualSmoke, PLACEHOLDER.manualSmoke),
       "how to launch the app for a hands-on pre-merge test (`/vl-merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead",
     ],
+    // Keep unknown policy cells empty: regeneration must not invent none/n/a.
+    [
+      "**Component baseline**",
+      config.componentBaseline.trim(),
+      "library/design system, location and constraints (e.g. shadcn in src/components/ui); explicitly `none` if absent",
+    ],
+    [
+      "**Custom component policy**",
+      config.customComponentPolicy.trim(),
+      "repo rule and authoritative approval record; explicitly `n/a` with why no special approval gate applies",
+    ],
     [
       "Default branch",
       backtick(orPlaceholder(config.defaultBranch, PLACEHOLDER.defaultBranch)),
