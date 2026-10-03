@@ -26,7 +26,7 @@ export function CursorDispatchPath() {
         <b>Task/BoN worktree-first</b> chip. Wake is Task return + the issue
         completion comment (mortal REST <code>notify_on_output</code> is backup).
         Board/PR remain the durable channel. Why seats diverge:{" "}
-        <Link href="/differences">Two desktops</Link>.
+        <Link href="/differences">Three desktops</Link>.
       </p>
       <div className="setupsteps" style={{ marginTop: 12 }}>
         <div className="step">
