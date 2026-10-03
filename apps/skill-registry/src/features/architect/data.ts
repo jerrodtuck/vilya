@@ -83,6 +83,7 @@ export const NODES: Record<string, FlowNode> = {
     title: "Epic + sub-issues",
     c: "--epic",
     bodyHtml: `
+    <p>Before filing, name exactly one seat: <b>arch or orch</b>. Unnamed/dual ownership is a kickoff defect; its author fixes it first. Only the named filer searches existing open/closed children, reuses prior filings and creates missing agreed children.</p>
     <p>A multi-stream initiative becomes an <b>Epic</b> with sub-issues — but the fan-out <b>stops at the board</b>.</p>
     <p>Dispatch is the orchestrator's job, not yours; you hand off a scoped set of issues, not a running build.</p>`,
   },

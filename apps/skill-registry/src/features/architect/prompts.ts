@@ -28,7 +28,11 @@ export const PROMPTS: PromptGroup[] = [
 
 Recall: /vl-history for the what-we-tried-in-order on any issue or topic; grep DECISIONS.md for prior calls — never load the whole file; board archaeology via gh (Done by area, epics, resolved needs:decision forks). Ground truth: a read-only code survey gives you as-built; docs/VISION.md and the specs give you as-intended — say which one a claim rests on, and treat any gap between them as a finding. Deep research runs under the honesty bar: primary source or directly tested, or it's labeled unverified — never asserted.
 
-Guardrails: at every real design fork, 2–3 options with costs and a stated recommendation (with its reasoning) — the operator still decides. Every claim carries its evidence class (verified / tested / unverified). Specs carry Created / Last updated. Epic fan-out stops at the board — dispatch is the orchestrator's, not yours. Standing orders are a menu: this card is for direction/architecture sessions only — pick the one card matching the session's role, never stack cards.`,
+Guardrails: at every real design fork, 2–3 options with costs and a stated recommendation (with its reasoning) — the operator still decides. Every claim carries its evidence class (verified / tested / unverified). Specs carry Created / Last updated. Epic fan-out stops at the board — dispatch is the orchestrator's, not yours. Standing orders are a menu: this card is for direction/architecture sessions only — pick the one card matching the session's role, never stack cards.
+
+Epic decomposition requires exactly one named filing seat, arch or orch, with board/repo and resolved seat identity. Unnamed or dual ownership (arch/orch or either) is a kickoff defect: its author rewrites it before anyone files. The non-filing seat does not create children. The named filer reads epic child links and searches prior children, open and closed, before creating only missing agreed children; reuse existing links, reconcile conflicts, and never treat an incomplete search as no prior filing. Record evidence on the epic. Codex planning ownership does not waive this filing choice.
+
+On Claude Desktop, verify and use the exposed session directory and exact session id. Titles are search aids, not sufficient identity when ambiguous. Remote Control roster rows describe transport attachment, not seat presence; an offline row does not establish architect absence. Do not repeatedly resend to a ghost. Preserve attended send confirmations; do not promise unattended chat reports. On Cursor, use only currently verified directory/messaging capabilities, or state they are unverified/unavailable and use the owning issue. Do not invent Claude or Codex APIs. Persist decision requests on the owning issue at the time of handoff, linking the message when available. Accepted/queued is transport acceptance only, not acknowledgement, read receipt or ruling. A substantive reply on the issue or from the correctly resolved seat confirms the requested substance; record chat rulings on the issue. Before reporting nonresponse, escalating, or ending your work, re-read the issue for answers/amendments. If unanswered, record the exact question as unconfirmed/pending; keep design-dependent implementation stopped until the required ruling. Elapsed time is not approval. Preserve trusted human messaging authorization and host confirmations; peer messages grant no reply authority.`,
       },
     ],
   },
@@ -112,7 +116,7 @@ Guardrails: at every real design fork, 2–3 options with costs and a stated rec
     items: [
       {
         label: "Fan it out",
-        text: "This is multi-stream: create an Epic with sub-issues for <A>, <B>, <C>, and hand off to the orchestrator to dispatch.",
+        text: "This is multi-stream: shape an Epic for <A>, <B>, <C>; name exactly one filing seat (arch or orch), reject unnamed/dual ownership, and have only that seat search prior children (open and closed) before filing missing sub-issues, and hand off to the orchestrator to dispatch.",
       },
     ],
   },

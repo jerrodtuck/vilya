@@ -150,6 +150,7 @@ export const NODES: Record<string, FlowNode> = {
     title: "Epic + sub-issues",
     c: "--epic",
     bodyHtml: `
+    <p>Before filing, name exactly one seat: <b>arch or orch</b>. Unnamed/dual ownership is a kickoff defect; its author fixes it first. Only the named filer searches existing open/closed children, reuses prior filings and creates missing agreed children.</p>
     <p>A multi-stream initiative becomes an <b>Epic</b> with sub-issues. Start one sub-issue via <code>/vl-start-feature</code>.</p>
     <p>This is your <b>parallelism primitive</b>: each sub-issue is an independent slice in its own worktree, so several can be in flight at once without stepping on each other.</p>`,
   },

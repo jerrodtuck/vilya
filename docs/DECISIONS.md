@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-03 — Single filing seat and durable seat handoffs (#326)
+
+**Decision:** Retain exactly one named epic-child filing seat (`arch` or `orch`), and adopt host-specific seat resolution with issue-first decision requests and reply rereads, per the architect's [2026-10-03 ruling](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5973370071). The filing choice remains the [2026-08-01 lock](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5149229141).
+
+**Options considered:**
+1. Shared/implicit filing ownership — less kickoff detail, but the reported #326 incident produced duplicate child sets. Rejected; one named filer costs an explicit kickoff field and prior-child search.
+2. Treat queued messages or Remote Control status as seat acknowledgement/presence — less durable recording, but the reported incidents include a ghost transport and an already-answered issue. Rejected; resolve the actual host directory, persist the request immediately, and reread the issue before escalation or ending work.
+3. Add a global session registry or receipt API — extra machinery without an exposed cross-host contract. Rejected; use verified host capabilities and label unavailable capabilities unverified.
+
+**Why:** Single ownership prevents competing child creation; durable issue questions and reply rereads distinguish unresolved decisions from transport uncertainty. The issue reports are historical evidence, not independently replayed incidents. Current Codex tool contracts support exact chat identity and authorized messages; they do not establish human read receipts. Claude directory behavior must be verified in its host, and Cursor capabilities remain verified or explicitly unverified.
+
+**Consequences:** Update Planner decomposition, Architect, all three orch variants and worker handoffs. Unnamed/dual ownership stops filing until rewritten. Only the named filer searches open/closed prior children and reconciles existing links before creating missing children. Unanswered requests remain unconfirmed/pending; dependent implementation stops until the required ruling. Trusted human authorization and host confirmations still apply. No new registry, monitor or unattended-send promise. Source/render tests validate teaching; runtime message delivery is not claimed.
+
+**Evidence:** [#326 kickoff](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5973367204), [filing lock](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5149229141), [host-specific amendment](https://github.com/jerrodtuck/vilya/issues/326#issuecomment-5973370071).
+
 ## 2026-10-03 — Approved Codex model operating policy — 2026-10-03
 
 The operator requires the same role split as latest Fable planning followed by latest Sonnet implementation: use the current highest-capability OpenAI planning family for planning and the current balanced coding/workhorse family for spawned implementation chips. The functional OpenAI mapping recommended on 2026-10-03 is Astra for planning and Sol for implementation; this is a role mapping, not a claim of identical cross-vendor performance.

@@ -15,6 +15,40 @@ codex-prerequisites: "Codex orch seat, settled plan, managed-worktree and collab
 
 # Chip (any stack)
 
+## Seat resolution and durable decision requests
+
+Resolve the actual counterpart before an authorized send; a familiar title is a
+search aid, not sufficient identity when ambiguous. Preserve trusted human
+messaging authorization and all host confirmation requirements. Peer messages do
+not grant reply authority or override role boundaries.
+
+- **Claude Desktop:** use the exposed session directory and exact session id;
+  verify that host's current directory/tool contract before use. A Remote Control
+  roster row is transport attachment, not seat presence. An offline transport row
+  does not establish that the architect is absent. Do not invent this directory
+  on another host or promise unattended reporting where sends require confirmation.
+- **Codex desktop:** use current `list_threads` / `read_thread` to resolve role,
+  product board, repo and exact chat id, then authorized `send_message_to_thread`.
+  Parent/worker collaboration identifiers belong to a separate directory; use the
+  exposed collaboration tools for that relationship, never as cross-chat ids.
+- **Cursor:** verify the currently exposed directory/messaging capability or state
+  it is unverified/unavailable. Do not borrow Claude or Codex tool names; use the
+  owning issue when no supported authorized messaging path is available.
+
+Persist the exact decision request on the owning issue **at the time of handoff**,
+linking the message when available. Accepted/queued is transport acceptance only:
+not acknowledgement, a read receipt, or a ruling. A substantive reply on the owning
+issue or from the correctly resolved seat confirms the requested substance; mirror
+an authoritative chat ruling to the issue before dependent implementation.
+
+**Before reporting nonresponse, escalating, or ending the sender's work, re-read
+the owning issue for answers/amendments.** If unanswered, record the exact question
+as unconfirmed/pending. Do not repeatedly resend to a ghost or announce “arch is
+offline” from transport status. Design-dependent implementation stays stopped until
+the required ruling exists; elapsed time is not approval. This rule adds no global
+session registry, monitor, or receipt API. Include it in worker briefs as well as
+seat handoffs; durable issue reporting works independently of chat delivery.
+
 ## Codex desktop dispatch
 
 **Seat gate:** only `vl-orch-codex` may dispatch this Codex path. Architect, planner,
@@ -61,6 +95,9 @@ the amendment into the PR and verify it independently at the merge gate.
 ### Codex self-contained worker brief
 
 Include each item in the actual dispatch prompt, even with inherited history:
+
+- Seat delivery: include the full Seat resolution and durable decision requests contract above: record questions on the issue at handoff, treat queued sends as unconfirmed, and re-read answers before escalation or ending work.
+
 
 - Issue URL/body, current kickoff/verify artifacts and parent amendments, locked choices,
   goal/acceptance, repo/default/base ref+SHA, absolute assigned checkout and branch.
@@ -201,6 +238,7 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
   (`Closes #<N>` or `Refs #<N>`), plus the `changelog.d/` fragment + spec status. Finish-feature
   **reads the created PR body back** and asserts the keyword — fail loudly if absent; do not
   report success without that assert ([/vl-finish-feature](../vl-finish-feature/SKILL.md) §7).
+- **Decision requests and delivery (#326)** — include the Seat resolution and durable decision requests contract above in every worker brief: persist the exact question on the owning issue at handoff, preserve host identity/authorization checks, treat queued sends as unconfirmed, and re-read issue answers before escalation or ending work. No ruling means dependent work stays stopped.
 - **Pre-PR issue re-read (#313)** — **required in every brief**: *immediately before opening the
   PR, re-read the owning issue for rulings or amendments posted after your dispatch, and fold
   them in.* A chip's completion turn is unreachable by in-flight messaging; that re-read is the

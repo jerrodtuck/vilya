@@ -1,0 +1,1 @@
+#326 — Lock epic decomposition to one named arch/orch filing seat, require prior-child search, and teach host-aware seat resolution plus durable decision requests and reply rereads across Planner, Architect, orch variants and worker handoffs. Preserve host authorization and confirmation boundaries.
