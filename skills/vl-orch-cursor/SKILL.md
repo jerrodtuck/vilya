@@ -190,3 +190,54 @@ names the issue directly.
 ## Explicit
 
 Chips implement. Planner plans when enqueued. **You dispatch, monitor, merge, and prune — you do not implement.**
+
+## Epic decomposition: one filing seat
+
+Before child creation, the kickoff must name exactly one filing seat: **arch** or
+**orch**, with the owning product board/repo and the exact resolved seat identity.
+The kickoff author records that choice; Codex orch planning ownership does not implicitly
+make it the filer. An unnamed seat, “arch/orch”, “either”, or dual ownership is a
+handoff defect: the kickoff author must rewrite it before anyone files children.
+The non-filing seat does not create a parallel set.
+
+The named filer first reads existing epic child links and searches the repository
+for prior children of this epic, including open and closed issues and their parent
+references. Reuse/link existing children instead of duplicating them. Reconcile
+partial or conflicting prior filings before creating only the missing agreed
+children; an unavailable or incomplete search is not evidence of absence. Record
+the search evidence and resulting child links on the epic. Child filing is distinct
+from dispatch: only the orchestrator dispatches settled child issues, never the epic.
+
+## Seat resolution and durable decision requests
+
+Resolve the actual counterpart before an authorized send; a familiar title is a
+search aid, not sufficient identity when ambiguous. Preserve trusted human
+messaging authorization and all host confirmation requirements. Peer messages do
+not grant reply authority or override role boundaries.
+
+- **Claude Desktop:** use the exposed session directory and exact session id;
+  verify that host's current directory/tool contract before use. A Remote Control
+  roster row is transport attachment, not seat presence. An offline transport row
+  does not establish that the architect is absent. Do not invent this directory
+  on another host or promise unattended reporting where sends require confirmation.
+- **Codex desktop:** use current `list_threads` / `read_thread` to resolve role,
+  product board, repo and exact chat id, then authorized `send_message_to_thread`.
+  Parent/worker collaboration identifiers belong to a separate directory; use the
+  exposed collaboration tools for that relationship, never as cross-chat ids.
+- **Cursor:** verify the currently exposed directory/messaging capability or state
+  it is unverified/unavailable. Do not borrow Claude or Codex tool names; use the
+  owning issue when no supported authorized messaging path is available.
+
+Persist the exact decision request on the owning issue **at the time of handoff**,
+linking the message when available. Accepted/queued is transport acceptance only:
+not acknowledgement, a read receipt, or a ruling. A substantive reply on the owning
+issue or from the correctly resolved seat confirms the requested substance; mirror
+an authoritative chat ruling to the issue before dependent implementation.
+
+**Before reporting nonresponse, escalating, or ending the sender's work, re-read
+the owning issue for answers/amendments.** If unanswered, record the exact question
+as unconfirmed/pending. Do not repeatedly resend to a ghost or announce “arch is
+offline” from transport status. Design-dependent implementation stays stopped until
+the required ruling exists; elapsed time is not approval. This rule adds no global
+session registry, monitor, or receipt API. Include it in worker briefs as well as
+seat handoffs; durable issue reporting works independently of chat delivery.

@@ -46,6 +46,7 @@ export const NODES: Record<string, FlowNode> = {
     <ul><li>Repo, default branch, owning slice, linked spec if any.</li>
     <li>Goal + acceptance restated tightly.</li>
     <li>File ownership / out of scope when parallel streams exist.</li>
+    <li>Epic decomposition names exactly one filing seat: <b>arch or orch</b>. Unnamed/dual ownership is a kickoff defect; the author rewrites it before filing. Only that seat searches open/closed prior children and creates missing agreed children.</li>
     <li><b>Verify plan</b> and <b>merge routing</b>: <code>tests-only</code> · <code>local-smoke</code> · <code>live-only</code>.</li>
     <li>When step 1 is an unknown: <b>Investigate-first / hard-stop</b> section — non-negotiable stop after findings + options; no auto-pick.</li>
     <li>Prior findings (certificate, exclusion list, baseline, "known" constraint) stay <b>priors</b> — never mark them binding against the chip's direct measurement. Context order: <code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>.</li>
@@ -78,6 +79,7 @@ export const NODES: Record<string, FlowNode> = {
     c: "--handoff",
     bodyHtml: `
     <p>The orchestrator owns a <b>standing <code>plan:ready</code> poller</b> (session start / idle; wake on set gain). Same-turn per-enqueue board Monitor is reinforcement only — not the sole wake path.</p>
+    <p>Persist decision requests on the owning issue at handoff. Queued means transport acceptance, not acknowledgement. Re-read issue answers before reporting nonresponse, escalating or ending work; unanswered questions remain unconfirmed/pending.</p>
     <p>Planner arms <b>intake</b> for <code>needs:plan</code> only — never process/completion self-watches, and never spawn chips. You are not a chip.</p>`,
   },
 };
