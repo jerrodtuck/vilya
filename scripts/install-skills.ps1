@@ -13,21 +13,32 @@
 # in Cursor's slash menu. Pass -IncludeCursor only for older Cursor builds that
 # read ~/.cursor/skills exclusively.
 #
+# -IncludeCodex additionally links ~/.agents/skills (Codex local discovery).
+# https://learn.chatgpt.com/docs/build-skills (verified 2026-10-03).
 # -TargetRoot <dir> overrides the target root (for testing against a temp dir);
 # it replaces the default roots entirely.
 param(
   [switch]$IncludeCursor,
-  [string]$TargetRoot
+  [string]$TargetRoot,
+  [switch]$IncludeCodex
 )
 $ErrorActionPreference = "Stop"
 
-$src = (Resolve-Path (Join-Path $PSScriptRoot "..\skills")).Path
+# Resolve ancestor junctions too: an alias to the repo must not bypass overlap checks.
+function Resolve-PhysicalDirectory([string]$Path) {
+  $item = Get-Item -LiteralPath $Path -Force
+  if ($item.LinkType) { return Resolve-PhysicalDirectory ($item.ResolveLinkTarget($true).FullName) }
+  if ($null -eq $item.Parent) { return $item.FullName }
+  return Join-Path (Resolve-PhysicalDirectory $item.Parent.FullName) $item.Name
+}
+$src = Resolve-PhysicalDirectory (Join-Path $PSScriptRoot "..\skills")
 
 $targets = @()
 if ($TargetRoot) {
   $targets += $TargetRoot
 } else {
   $targets += (Join-Path $HOME ".claude\skills")
+  if ($IncludeCodex) { $targets += (Join-Path $HOME ".agents\skills") }
   if ($IncludeCursor) { $targets += (Join-Path $HOME ".cursor\skills") }
 }
 
@@ -35,12 +46,23 @@ $linked = 0; $migrated = 0; $skipped = 0
 
 foreach ($t in $targets) {
   New-Item -ItemType Directory -Force -Path $t | Out-Null
-  $t = (Resolve-Path $t).Path
-  foreach ($s in Get-ChildItem -Directory $src) {
+  $t = Resolve-PhysicalDirectory $t
+  $sourcePrefix = $src.TrimEnd('\') + '\'
+  $targetPrefix = $t.TrimEnd('\') + '\'
+  if ($sourcePrefix.StartsWith($targetPrefix, [StringComparison]::OrdinalIgnoreCase) -or
+      $targetPrefix.StartsWith($sourcePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Source and target roots must not overlap: $t"
+  }
+  foreach ($s in Get-ChildItem -Directory $src | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "SKILL.md") -PathType Leaf }) {
     $dest = Join-Path $t $s.Name
     $srcPath = $s.FullName
-    if (Test-Path -LiteralPath $dest) {
-      $item = Get-Item -LiteralPath $dest -Force
+    # Validate the lexical entry path; never resolve through a destination link.
+    $dest = [IO.Path]::GetFullPath($dest)
+    if ([IO.Path]::GetDirectoryName($dest) -ne $t.TrimEnd([IO.Path]::DirectorySeparatorChar)) {
+      throw "Destination escapes target root: $dest"
+    }
+    $item = Get-Item -LiteralPath $dest -Force -ErrorAction SilentlyContinue
+    if ($null -ne $item) {
       if ($item.LinkType) {
         $current = @($item.Target)[0]
         if ($current -and ($current.TrimEnd('\') -ieq $srcPath.TrimEnd('\'))) {

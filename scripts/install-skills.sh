@@ -14,18 +14,23 @@
 # in Cursor's slash menu. Pass --include-cursor only for older Cursor builds that
 # read ~/.cursor/skills exclusively.
 #
+# --include-codex additionally links ~/.agents/skills (Codex local discovery).
+# https://learn.chatgpt.com/docs/build-skills (verified 2026-10-03).
 # --target-root <dir> (or INSTALL_SKILLS_TARGET env) overrides the target root
 # (for testing against a temp dir); it replaces the default roots entirely.
 set -euo pipefail
 
-src="$(cd "$(dirname "$0")/../skills" && pwd)"
+src="$(cd "$(dirname "$0")/../skills" && pwd -P)"
 
 include_cursor=0
+include_codex=0
 target_root="${INSTALL_SKILLS_TARGET:-}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --include-codex) include_codex=1; shift ;;
+    --help|-h) echo "Usage: install-skills.sh [--include-cursor] [--include-codex] [--target-root DIR]"; exit 0 ;;
     --include-cursor) include_cursor=1; shift ;;
-    --target-root) target_root="$2"; shift 2 ;;
+    --target-root) [[ $# -ge 2 && -n "$2" ]] || { echo "--target-root requires a directory" >&2; exit 2; }; target_root="$2"; shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -42,6 +47,7 @@ if [[ -n "$target_root" ]]; then
   targets+=("$target_root")
 else
   targets+=("$HOME/.claude/skills")
+  if [[ $include_codex -eq 1 ]]; then targets+=("$HOME/.agents/skills"); fi
   if [[ $include_cursor -eq 1 ]]; then
     targets+=("$HOME/.cursor/skills")
   fi
@@ -51,10 +57,15 @@ linked=0 migrated=0 skipped=0
 
 for t in "${targets[@]}"; do
   mkdir -p "$t"
+  t="$(cd "$t" && pwd -P)"
+  case "$t/" in "$src/"*) echo "source and target roots must not overlap" >&2; exit 1 ;; esac
+  case "$src/" in "$t/"*) echo "source and target roots must not overlap" >&2; exit 1 ;; esac
   for d in "$src"/*/; do
+    [[ -f "$d/SKILL.md" ]] || continue
     name="$(basename "$d")"
     src_path="$src/$name"
     dest="$t/$name"
+    [[ "$(dirname "$dest")" == "$t" && "$dest" != "$t" ]] || { echo "unsafe destination: $dest" >&2; exit 1; }
     if [[ -L "$dest" ]]; then
       current="$(readlink "$dest")"
       if [[ "$current" == "$src_path" ]]; then

@@ -37,6 +37,7 @@ function readBlockScalar(
       continue;
     }
     const indent = line.match(/^ */)?.[0].length ?? 0;
+    if (indent === 0) break; // An empty block must not swallow the next top-level field.
     if (baseIndent === null) baseIndent = indent;
     if (indent < baseIndent) break;
     collected.push(line.slice(baseIndent));

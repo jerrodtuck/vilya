@@ -1,5 +1,6 @@
 // Feature slice: skill-detail UI (server component).
 import Link from "next/link";
+import { SKILL_SLUGS } from "@/shared/skills/invokes";
 import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { getSkillDetail } from "./skill-detail";
@@ -8,13 +9,14 @@ import {
   SKILL_AFFORDANCE_LEAD,
   skillInvoke,
 } from "@/shared/skills/skill-affordance";
-import { stackOf, invocationOf, levelOf } from "@/shared/skills/meta";
+import { stackOf, invocationOf, levelOf, getCodexSkillSupport } from "@/shared/skills/meta";
 
 export function SkillView({ slug }: { slug: string }) {
   const detail = getSkillDetail(slug);
   if (!detail) notFound();
   const { skill, history } = detail;
   const fm = skill.frontmatter;
+  const codex = getCodexSkillSupport(skill);
   const bodyHtml = rewriteSkillLinks(
     marked.parse(skill.body, { async: false }) as string
   );
@@ -33,13 +35,17 @@ export function SkillView({ slug }: { slug: string }) {
 
       <div className="fmpanel">
         <div className="fmrow">
-          <span className="k">run</span>
+          <span className="k">Claude / Cursor run</span>
           <span className="v">
-            {SKILL_AFFORDANCE_LEAD} <code>{skillInvoke(skill.slug)}</code>.
+            {skill.slug === SKILL_SLUGS.orchestratorCodex ? (
+              "Codex desktop seat — use its Codex invocation below."
+            ) : (
+              <>{SKILL_AFFORDANCE_LEAD} <code>{skillInvoke(skill.slug)}</code>.</>
+            )}
           </span>
         </div>
         <div className="fmrow">
-          <span className="k">invocation</span>
+          <span className="k">Claude / Cursor invocation</span>
           <span className="v">{invocationOf(skill)}</span>
         </div>
         <div className="fmrow">
@@ -80,7 +86,7 @@ export function SkillView({ slug }: { slug: string }) {
           </span>
         </div>
         <div className="fmrow">
-          <span className="k">install (this skill)</span>
+          <span className="k">Claude / Cursor single-file download</span>
           <span className="v">
             <code>{curlCmd}</code>
           </span>
@@ -96,6 +102,26 @@ export function SkillView({ slug }: { slug: string }) {
           </div>
         ) : null}
       </div>
+
+      <h2>Codex applicability</h2>
+      <div className="fmpanel">
+        <div className="fmrow"><span className="k">support</span><span className="v">{codex.label}</span></div>
+        <div className="fmrow"><span className="k">host behavior</span><span className="v">{codex.notes}</span></div>
+        <div className="fmrow"><span className="k">prerequisites</span><span className="v">{codex.prerequisites}</span></div>
+        <div className="fmrow"><span className="k">Codex invocation</span><span className="v">
+          {codex.canInvoke ? <code>{codex.invocation}</code> : "No supported Codex invocation."}
+        </span></div>
+        <div className="fmrow"><span className="k">Codex install</span><span className="v">
+          Link the complete skill folder with <code>pwsh scripts/install-skills.ps1 -IncludeCodex</code>{" "}
+          or <code>bash scripts/install-skills.sh --include-codex</code>. Codex discovers user skills in{" "}
+          <code>~/.agents/skills</code> and repo skills in <code>.agents/skills</code> from the working directory
+          through the repo root. Duplicate names may both appear; they are not merged.
+        </span></div>
+      </div>
+      <p className="muted">These Vilya metadata fields describe compatibility; they do not enforce host policy.
+        Claude&apos;s <code>disable-model-invocation</code> does not establish Codex behavior. See{" "}
+        <a href="https://learn.chatgpt.com/docs/build-skills">official skill discovery and invocation documentation</a>.
+      </p>
 
       <h2>Body</h2>
       <article className="md" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
