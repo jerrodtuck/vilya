@@ -1,5 +1,6 @@
 // Feature slice: setup — install + per-repo guide (server component).
 import { Suspense } from "react";
+import { SkillDownload } from "./skill-download";
 import { BoardGuide } from "./board-guide";
 import { GithubProjectsTool } from "./github-projects-tool";
 import { loadGithubProjectsTemplate } from "./load-github-projects-template";
@@ -210,21 +211,7 @@ export function SetupView() {
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
       <GithubProjectsTool canonMarkdown={canonMarkdown} />
 
-      <h2>Grab skills straight from this site</h2>
-      <p className="muted">
-        Every skill&apos;s canonical <code>SKILL.md</code> is served raw at{" "}
-        <code>/skills/&lt;name&gt;/SKILL.md</code> — each skill&apos;s page has
-        the download link and a ready-made one-liner. To pull one skill without
-        cloning the repo:
-      </p>
-      <pre>{`curl -fLo ~/.claude/skills/<name>/SKILL.md --create-dirs https://vilya.jerrodtuck.com/skills/<name>/SKILL.md`}</pre>
-      <p className="muted">
-        For Claude Code and Cursor, one destination is enough — Cursor scans <code>~/.claude/skills</code>{" "}
-        as a compatibility root, so both tools see it. This is the one{" "}
-        <b>copy-mode exception</b>: a curl&apos;d file is a plain copy, not a
-        link, so it only updates when you re-curl it (or clone the repo and run
-        the install script, which migrates the copy to a link).
-      </p>
+      <Suspense fallback={<p>Loading download recipe…</p>}><SkillDownload /></Suspense>
 
       <h2>How skills find the config at runtime</h2>
       <p className="muted">
