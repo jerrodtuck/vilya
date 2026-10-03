@@ -1,9 +1,52 @@
 ---
 name: vl-start-feature
 description: Kick off a new feature or work stream on any repo's GitHub Projects board. Use when the user says "start on <feature/brief>", "pick up issue #N", "begin the <X> work", "work the next thing", or points at an issue. Sets up the issue, branch, and consult-first flow; pairs with /vl-finish-feature.
+codex-support: "codex-adapted"
+codex-notes: "Codex orch owns kickoff planning; managed setup precedes implementation."
+codex-invocation: "$vl-start-feature"
+codex-prerequisites: "Repo config, issue and plan, git/GitHub access and managed-worktree tools."
 ---
 
 # Start Feature (any stack)
+
+## Codex desktop path
+
+Use `$vl-start-feature` or read/apply this source. Architect/router/worker seats
+do not acquire orch authority by invoking it. An already-dispatched worker verifies
+its assigned checkout and follows its settled brief; do not create another tree or
+re-plan. Codex orch follows shared issue/board rules (§1), architecture/fork/working
+rules (§4–§5) and verify-routing content (§6), with these host replacements:
+
+1. The orch owns planning, optionally a bounded read-only delegate. Follow
+   [vl-orch-codex model policy](../vl-orch-codex/SKILL.md#model-policy).
+   Record kickoff + verify plan + settled forks on the issue before implementation;
+   remove `needs:plan` and add `plan:ready` only when ready. No standing Planner,
+   mandatory UI model-switch ritual, or other-host monitor. Reuse settled plans.
+2. Inspect `list_artifacts` for a suitable existing managed worktree. Otherwise
+   fetch/resolve the intended base and call exposed `create_worktree` with an
+   **explicit starting ref** and `allowAsync: true`. The default is not necessarily
+   the current branch. Await readiness with `get_worktree_creation_status`. If
+   registration fails, use `attach_worktree` on the returned workspace directory.
+   Never recreate or delete a possibly viable checkout to evade registration.
+3. At the returned absolute path verify `git rev-parse --show-toplevel`, HEAD,
+   branch and status. Create `codex/<issue>-<slug>` from that explicit base if new;
+   reuse the assigned branch when resuming. Record base SHA and path in the private
+   brief, not public issue comments containing local user paths.
+4. Verify ignored setup. Local managed creation may apply `.worktreeinclude`; do
+   not assume it happened. Where needed, use the repo's existing
+   `scripts/apply-worktreeinclude.ps1 -Source <main-clone> -Dest <worktree>` or
+   `scripts/apply-worktreeinclude.sh --source <main-clone> --dest <worktree>`.
+   Use explicit absolute source/destination. The existing helper can overwrite
+   destination files: inspect its dry-run and compare planned targets first. Run it
+   only when targets are absent or verified identical; otherwise preserve the
+   existing setup and report the conflict instead of overwriting. Never expose
+   or stage private settings/secrets. Do not infer Codex models from Claude settings.
+5. Dispatch through [vl-chip Codex path](../vl-chip/SKILL.md#codex-desktop-dispatch).
+   Subagents share the workspace: every worker command/read/write must explicitly
+   target the assigned worktree. Spawning alone provides no checkout isolation.
+
+Do not execute the other-host worktree/model/monitor procedures in §2–§3 below.
+Existing unattended eligibility is unchanged; Codex unattended execution is deferred.
 
 > **Scope:** Internal dev-process skill for a VSA-structured product repo. Companion:
 > [/vl-finish-feature](../vl-finish-feature/SKILL.md). Plan loop for chip-flow:

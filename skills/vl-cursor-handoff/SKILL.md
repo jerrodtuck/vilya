@@ -7,9 +7,19 @@ description: >-
   teach a three-step paste ritual. Name is /vl-cursor-handoff — not /chip-cursor.
   Pairs with /vl-start-feature, /vl-finish-feature, /vl-prune; Claude Code chips use /vl-chip
   instead.
+codex-support: "other-host-only"
+codex-notes: "Cursor Worker A only; Codex workers use their self-contained vl-chip brief."
+codex-invocation: "Not applicable in Codex; use the assigned Codex worker brief."
+codex-prerequisites: "Cursor worker already rooted in its assigned worktree."
 ---
 
 # Cursor handoff (Worker A)
+
+## Codex boundary — stop here
+
+Cursor Worker A only; Codex workers use their self-contained vl-chip brief.
+Do not execute the procedure below in Codex. Not applicable in Codex; use the assigned Codex worker brief.
+The remaining instructions apply only to the existing supported host.
 
 > **Invoke only after** this window is already rooted at
 > `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>`.
@@ -28,8 +38,9 @@ description: >-
 
 ## Why this exists
 
-Cursor agent sessions **cannot talk to each other** — the Projects board, issues,
-and PRs are the only coordination channel. The orchestrator leaves a self-contained
+This Worker A flow uses the Projects board, issues and PRs as its durable
+coordination channel. Cross-session messaging availability is host-dependent and
+unverified here; do not infer that Cursor can never message between seats. The orchestrator leaves a self-contained
 kickoff on the issue; you run this skill **in the worktree** to execute it. There
 is **no auto-handoff**. Seating the orchestrator and arming monitors belong on the
 **orchestrator** skill/card — not here.

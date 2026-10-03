@@ -1,9 +1,20 @@
 ---
 name: vl-product-map
 description: Survey the product's as-built architecture against its as-intended direction and emit the diff — a divergence list where every entry cites both sides (issue #s, commit shas, file paths, section names) with an evidence class per claim. Use when the user says "product map", "as-built vs as-intended", "ground truth check", "survey the architecture", "is the vision still true", or a /vl-arch session needs the gap list before proposing direction.
+codex-support: "shared-compatible"
+codex-notes: "Read-only evidence survey; only caller-named issue comments are an exception."
+codex-invocation: "$vl-product-map"
+codex-prerequisites: "Repo sources, intended design and authenticated GitHub read access."
 ---
 
 # Product map — as-built vs as-intended (any stack)
+
+## Codex invocation
+
+Use $vl-product-map when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 > **Scope:** [/vl-arch](../vl-arch/SKILL.md)'s ground-truth instrument, **read-only** — it surveys and reports,
 > never writes files, never files issues, never mutates the board. Companion to

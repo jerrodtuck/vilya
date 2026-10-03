@@ -7,9 +7,19 @@ description: >-
   /vl-start-feature; arm mortal REST notify_on_output monitors; merge and
   prune from the main clone. Use when the operator says "/vl-orch-cursor",
   "Cursor orchestrator", or seats the Cursor orchestrator standing orders.
+codex-support: "other-host-only"
+codex-notes: "Cursor orchestrator stays distinct; Codex uses vl-orch-codex."
+codex-invocation: "Not applicable in Codex; use $vl-orch-codex."
+codex-prerequisites: "Cursor host and its documented Task/worktree/monitor capabilities."
 ---
 
 # Orchestrator — Cursor (any stack)
+
+## Codex boundary — stop here
+
+Cursor orchestrator stays distinct; Codex uses vl-orch-codex.
+Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
+The remaining instructions apply only to the existing supported host.
 
 > Companions: [/vl-start-feature](../vl-start-feature/SKILL.md) (issue +
 > worktree + kickoff), [/vl-cursor-handoff](../vl-cursor-handoff/SKILL.md)
@@ -46,6 +56,19 @@ absolute path **before** the next orch action — board move, merge, prune, or k
 
 **Chat title (optional, human scanning only):** Cursor chats may use `<repo-short>-orch` (same pattern as Claude Desktop standing seats) for easy scanning — there is **no** `ccd_session_mgmt` on Cursor; titles do not drive cross-session targeting.
 
+
+## Sidebar worker grouping — capability-gated
+
+When the operator explicitly requests sidebar worker chats and this host exposes
+equivalent section/list/move capabilities, reuse or create exactly
+`<repo-short>-orch-working` and group every successfully created worker before
+reporting dispatch complete. Verify repo identity, exact section reuse/no duplicate,
+preserved project association and unrelated chats retained. If grouping fails, retain
+the created worker and report the pending organization; never spawn a replacement.
+Use only this host's exposed tools; do not assume Codex section APIs exist in
+Claude Code or Cursor. If unsupported, report that limitation. Ordinary subagents
+are not promised sidebar entries. Grouping grants no chat-creation or messaging
+authority and provides no worktree isolation.
 
 ## Kickoff
 

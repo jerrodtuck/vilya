@@ -6,9 +6,38 @@ description: >-
   /vl-prune. Use when the user says "merge PR #N", "review and merge", "process the
   review queue", or the morning after /vl-night-shift leaves PRs. Pairs with
   /vl-finish-feature and /vl-prune.
+codex-support: "codex-adapted"
+codex-notes: "Codex orch verifies amendments/head/gates and preserves managed worktree lifecycle."
+codex-invocation: "$vl-merge-pr"
+codex-prerequisites: "Codex orch seat, operator merge authorization, GitHub and attachment tools."
 ---
 
 # Merge PR (any stack)
+
+## Codex desktop merge adapter
+
+Only the `vl-orch-codex` seat may run this path, with operator merge authorization;
+architect, router, planner and workers decline. Use `$vl-merge-pr` or read/apply
+source. Apply shared squash policy, triage, routing, reviewed-head checks and board
+verification below. Attach the reviewed PR with `attach_artifact`. Independently
+read owning issue and parent amendments, actual PR body/head and gates. A worker
+message is a claim. Missing substantive behavior/docs require a follow-up commit;
+an attributed squash note is only for record corrections, never a substitute for code.
+Verify the sidebar-grouping amendment independently: exact repo-prefixed section,
+reuse/no duplicate, all created workers grouped, project association preserved and
+unrelated chats retained; tool failures remain reported, not silently waived.
+
+For owed checkout checks prefer an existing suitable managed attachment; otherwise
+use the Codex worktree path in [vl-start-feature](../vl-start-feature/SKILL.md) with
+an explicit reviewed ref. Do not use §2's bare-git throwaway creation/removal for a
+managed tree. Tests-only needs no invented smoke; local-smoke remains operator-owned
+unless requested, and live-only remains Refs → Verifying until actual confirmation.
+After merge, target the main clone explicitly for all commands; verify its default
+branch/status without resetting work. The app does not promise a current-chat move
+API: never borrow Cursor `move_agent_to_root`. If UI attachment cannot return, report
+it and keep all subsequent orch operations explicitly rooted at main. Cleanup is
+[vl-prune Codex archival](../vl-prune/SKILL.md#codex-managed-worktree-path), not §5's
+legacy removal/kill advice. Sidebar chat archival does not archive a worktree.
 
 > Companion: [/vl-finish-feature](../vl-finish-feature/SKILL.md) opens PRs; [/vl-night-shift](../vl-night-shift/SKILL.md)
 > leaves them overnight **unreviewed** (morning batch — not chip as-they-open review);
@@ -21,8 +50,8 @@ description: >-
 ## Seat check — read before §0
 
 `/vl-merge-pr` is **orchestrator-only**. If this session is seated as `/vl-arch`, `/vl-plan`,
-`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline** — one line:
-"merge-pr is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` session" — and
+`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex`, **decline** — one line:
+"merge-pr is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex` session" — and
 stop. Do not triage, smoke, or merge from here. This file's steps below do not outrank the
 seat's Never list just because they're written down (the #306 failure: a `/vl-arch` session ran
 `/vl-merge-pr` and `/vl-prune --apply` because this skill's body read like license to proceed).

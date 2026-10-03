@@ -7,9 +7,20 @@ description: >-
   /vl-ask) load and apply this for replies to the operator; the operator
   does not invoke it in normal flow. Use when the operator says
   "/vl-adhd" — a one-time fallback if a host skipped the load.
+codex-support: "shared-compatible"
+codex-notes: "Operator-chat voice; evidence and long-form artifacts stay unchanged."
+codex-invocation: "$vl-adhd"
+codex-prerequisites: "Readable skill and current seat context."
 ---
 
 # ADHD-friendly operator chat (any stack)
+
+## Codex invocation
+
+Use $vl-adhd when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 > Credit: adapted from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)
 > (MIT, © Ayoub Ghriss) for the Dev Loop. Not a seat — a voice/format policy

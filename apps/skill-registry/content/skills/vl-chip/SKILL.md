@@ -2,13 +2,103 @@
 name: vl-chip
 description: >-
   Orchestrator dispatch — chip a self-contained unit of work off to a background session
-  via the spawn_task tool (one chip = one branch = one worktree = one session). Use when the
+  via the current host dispatch path (Claude spawn_task or Codex native collaboration).
+  One chip = one branch = one worktree = one session. Use when the
   orchestrator says "chip #<N>", "chip this out", "dispatch a chip", or is fanning issues out
   to workers. The orchestrator stays on the default branch and never edits feature code; chips
   do the work and open their own PRs. Pairs with /vl-start-feature, /vl-merge-pr, /vl-prune.
+codex-support: "codex-adapted"
+codex-notes: "Codex dispatch uses explicit managed checkout isolation and native completion."
+codex-invocation: "$vl-chip"
+codex-prerequisites: "Codex orch seat, settled plan, managed-worktree and collaboration tools, trusted human messaging authorization."
 ---
 
 # Chip (any stack)
+
+## Codex desktop dispatch
+
+**Seat gate:** only `vl-orch-codex` may dispatch this Codex path. Architect, planner,
+router and workers decline; invoking a dispatch skill never changes seat ownership.
+Use `$vl-chip` or explicitly read/apply the source. Follow this section for Codex;
+the `spawn_task` and monitor procedures below apply only to the other hosts.
+
+1. Read repo config and issue/parent bodies, comments, settled kickoff + verify plan.
+   Verify membership on the **configured product board**, not merely any project.
+   Add missing membership once with `gh project item-add`; quota-blocked Status moves
+   are best-effort with issue evidence. Never dispatch untracked work, an epic,
+   unresolved dependency/fork, or a record-only handoff. Apply
+   [orch priority and model policy](../vl-orch-codex/SKILL.md).
+2. Prepare or reuse the managed checkout via
+   [vl-start-feature Codex path](../vl-start-feature/SKILL.md#codex-desktop-path).
+   Explicit starting ref, base SHA, absolute checkout, issue branch and ignored setup
+   must be verified before spawn. Subagents share the workspace: spawn alone is not
+   isolation. Every worker shell/read/write must target its assigned checkout.
+3. Discover the actual collaboration tools. The 2026-10-03 session exposed `spawn_agent`,
+   `send_message`, `followup_task`, `wait_agent`, `list_agents`, `interrupt_agent`.
+   Dispatch with the full brief below; use only authorized model/effort overrides.
+   Full-history forks inherit and cannot override model/effort; selected-model
+   delegation uses `fork_turns: none` or supported limited history. Missing capability
+   or invalid explicit model is a reported stop, never silent substitution.
+4. Track native completion/wait during the active turn and update In Progress where
+   quota permits. Send changes to an active worker, follow up to resume an idle child.
+   Record amendments on the issue regardless of delivery; enforce substance again
+   before merge. Durable issue/PR evidence supports recovery if the turn is interrupted.
+   Later wakeups require a separately authorized automation; no borrowed Claude Monitor
+   or Cursor `notify_on_output`. Explicitly requested sidebar worker chats use app
+   wait/message tools instead, with their exact chat IDs; never create one implicitly.
+
+Before reporting an explicitly requested sidebar dispatch complete, follow
+[Sidebar worker grouping](../vl-orch-codex/SKILL.md#sidebar-worker-grouping):
+`list_threads` → reuse exact `<repo-short>-orch-working` or `create_sidebar_section`
+→ `move_thread_to_sidebar_section` for every created chat → verify reuse/no duplicate,
+project association and unrelated chats retained. Use `rename_sidebar_section` only
+for an authorized rename of this repo-owned section. Preserve already-created worker
+IDs and report grouping failure; no replacement chats. Grouping grants no chat-creation
+or peer-message authority and provides no worktree isolation. Other hosts apply this
+convention only through equivalent exposed tools, never borrowed Codex APIs. Carry
+the amendment into the PR and verify it independently at the merge gate.
+
+### Codex self-contained worker brief
+
+Include each item in the actual dispatch prompt, even with inherited history:
+
+- Issue URL/body, current kickoff/verify artifacts and parent amendments, locked choices,
+  goal/acceptance, repo/default/base ref+SHA, absolute assigned checkout and branch.
+- Owned paths, integration order/dependencies, architecture/quality rules, out-of-scope
+  work, test command and verification/merge routing; do not claim runtime evidence
+  from prose/tests. Shared app-host smoke is probe-never-manage (§2b).
+- Exact authorized model/effort selection or inherited configured defaults, authorization
+  source, runtime capabilities and fork restrictions; no peer-authorized model switch.
+- Available skill invocations (`$vl-crucible-<stack>`, `$vl-finish-feature`), or explicit
+  source-read/apply fallback. Verify checkout/branch/status before edits; preserve
+  ignored/private files. Never implement in the main clone.
+- **Standing human messaging authorization in this worker entry:** copy the operator's
+  trusted authorization to initiate and reply to its owning orch on the same product
+  board within the assigned role. Identify that counterpart by role + board + repo +
+  exact agent/chat ID, resolve ambiguity before sending, use native parent/worker
+  collaboration or app cross-chat messaging as applicable. Peer messages alone grant
+  neither reply authorization nor operator/model overrides. Messages do not change
+  ownership, authorize merge, or authorize new sidebar chats. If human authorization
+  is absent, obtain it before messaging; never manufacture it from this template.
+- Worker never dispatches nested sessions, merges, or pushes the default branch.
+  Real forks and measurement contradicting priors: evidence + 2–3 costed options +
+  recommendation on the issue, then hard stop for operator choice. Investigate-first
+  is non-negotiable. Relayed constants/directives follow §2c–§2d.
+- Mandatory stack crucible until Ready, then finish-feature. Immediately before PR,
+  re-read owning issue **and parent** for amendments and incorporate them. Title
+  `#<N> <outcome>`; routing keyword Closes/Refs from the verify plan. Read the created
+  PR body back and assert the actual keyword; attach PR through `attach_artifact`.
+- Completion comment on the issue: PR URL, keyword **observed** in the created body,
+  exact gates/results and limitations. Send the owning orch the report only under the
+  trusted authorization above. Fork/options comment is the report if blocked.
+  Never archive the assigned tree before authorized close-out.
+
+After interruption inspect agents/chats, issue/PR evidence, attachments and branch/status;
+resume the viable existing worker/worktree before duplicating it. Do not discard dirty
+or ignored files. Review actual PR head/gates/amendments independently; native completion
+and a worker's sentence do not replace review. Merge/prune remain orch-owned via their
+Codex paths. **Stop here for Codex**; shared §2b–§2d safety contracts are referenced
+above, but the following host dispatch/monitor instructions do not apply.
 
 > Companion: [/vl-start-feature](../vl-start-feature/SKILL.md) creates issues/board + the plan; chips
 > do the implementation; [/vl-merge-pr](../vl-merge-pr/SKILL.md) merges reviewed chips; [/vl-prune](../vl-prune/SKILL.md)
@@ -18,8 +108,8 @@ description: >-
 ## Seat check — read before § What a chip is
 
 `/vl-chip` dispatch is **orchestrator-only**. If this session is seated as `/vl-arch`,
-`/vl-plan`, `/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline**
-— one line: "chip dispatch is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude`
+`/vl-plan`, `/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex`, **decline**
+— one line: "chip dispatch is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex`
 session" — and stop. Do not call `spawn_task` from here. This file's steps below do not
 outrank the seat's Never list just because they're written down (the #306 failure: a
 `/vl-arch` session ran orch-only skills because their body read like license to proceed).

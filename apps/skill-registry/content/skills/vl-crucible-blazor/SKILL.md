@@ -1,9 +1,20 @@
 ---
 name: vl-crucible-blazor
 description: Unusually strict, refactor-oriented code-quality review for .NET / Blazor projects — vertical-slice architecture, outcome-oriented SOLID, structural simplification, Blazor component-layer guidance. Use for PR review, "crucible", or when enforcing VSA on a Blazor/.NET repo. Install one crucible variant per repo, matched to its stack (sibling: vl-crucible-nextjs).
+codex-support: "shared-compatible"
+codex-notes: "Unchanged blazor architecture, quality and remediation contract; read and apply directly."
+codex-invocation: "$vl-crucible-blazor"
+codex-prerequisites: "Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority."
 ---
 
 # Crucible Code Quality Review — Blazor / .NET
+
+## Codex invocation
+
+Use $vl-crucible-blazor when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 Strict, **refactor-oriented** review of the current branch's changes. **Not a pass/fail gate** —
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves

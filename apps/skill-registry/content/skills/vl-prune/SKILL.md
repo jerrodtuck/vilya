@@ -9,9 +9,39 @@ description: >-
   cmdline names that worktree. Use when the user says "prune", "prune worktrees",
   "/vl-prune", or after /vl-merge-pr hands off cleanup. Run from the main clone —
   never from inside a worktree being removed.
+codex-support: "codex-adapted"
+codex-notes: "Codex managed trees use archival by attachment identity; no filesystem deletion."
+codex-invocation: "$vl-prune"
+codex-prerequisites: "Codex orch seat, authorized close-out and managed attachment/archive tools."
 ---
 
 # Prune (any stack)
+
+## Codex managed-worktree path
+
+Only `vl-orch-codex` may use this path; architect, router, planner and workers
+decline. Use `$vl-prune` for dry-run, `$vl-prune --apply` for authorized close-out.
+For Codex-managed trees follow this section and **stop**; never fall through to the
+legacy filesystem removal, orphan scans, branch deletion or process-kill flow below.
+
+1. Discover attached trees via `list_artifacts` in the owning chat. Use the exact
+   returned worktree `identityKey`, not a guessed directory or branch glob. If the
+   attachment belongs to the parent orch, that chat owns archival.
+2. Dry-run reports identity, branch, PR/close-out evidence, dirty/ignored work and
+   eligibility. Verify no active worker still needs it and authorized close-out is
+   complete; an open PR or idle worker alone is not abandonment. Preserve needed
+   ignored files separately because the recovery snapshot excludes them.
+3. On `--apply` re-check eligibility and call `archive_worktree` with the exact
+   identity as `root` (and attached PR identity keys when required). The app saves
+   recoverable commits/local changes/non-ignored untracked files before removal.
+   Primary, pinned or shared checkouts and initialized submodules/embedded Git
+   repositories can be ineligible; honor the current tool restriction and report
+   refusal. No manual deletion, force removal, or lock-holder kills as fallback.
+4. Verify archive result. For recovery use `restore_worktree` with that archived
+   identity; inspect the returned path/status/HEAD before resuming (saved changes
+   may be snapshot commits, not unstaged files). Registration failure uses
+   `attach_worktree` with the returned workspace path. Chat `set_thread_archived`
+   is a separate UI action and does not prove worktree cleanup.
 
 > Companion: [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash-merges and **hands off** here;
 > [/vl-start-feature](../vl-start-feature/SKILL.md) creates the worktrees this skill removes;
@@ -22,8 +52,8 @@ description: >-
 ## Seat check — read before § Why this exists
 
 `/vl-prune` is **orchestrator-only**. If this session is seated as `/vl-arch`, `/vl-plan`,
-`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude`, **decline** — one line:
-"prune is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` session" — and stop.
+`/vl-ask`, or any seat that is not `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex`, **decline** — one line:
+"prune is orch-owned; run it from the `/vl-orch-cursor` / `/vl-orch-claude` / `$vl-orch-codex` session" — and stop.
 Do not discover candidates, remove worktrees, or kill processes from here. This file's steps
 below do not outrank the seat's Never list just because they're written down (the #306 failure:
 a `/vl-arch` session ran `/vl-merge-pr` and `/vl-prune --apply` because this skill's body read

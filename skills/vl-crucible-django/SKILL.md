@@ -1,9 +1,20 @@
 ---
 name: vl-crucible-django
 description: Unusually strict, refactor-oriented code-quality review for Django / Python projects — vertical-slice (apps-as-slices) architecture per the HackSoft Django Styleguide, outcome-oriented SOLID, structural simplification, services/selectors and Django layer guidance. Use for PR review, "crucible", or when enforcing app-slice + services/selectors structure on a Django repo. Install one crucible variant per repo, matched to its stack (siblings: vl-crucible-nextjs, vl-crucible-blazor).
+codex-support: "shared-compatible"
+codex-notes: "Unchanged django architecture, quality and remediation contract; read and apply directly."
+codex-invocation: "$vl-crucible-django"
+codex-prerequisites: "Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority."
 ---
 
 # Crucible Code Quality Review — Django / Python
+
+## Codex invocation
+
+Use $vl-crucible-django when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 Strict, **refactor-oriented** review of the current branch's changes. **Not a pass/fail gate** —
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves

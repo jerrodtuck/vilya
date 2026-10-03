@@ -1,9 +1,41 @@
 ---
 name: vl-finish-feature
 description: Close out a feature branch on any stack — tests green, PR that Closes the issue, spec status, changelog fragment. Use when the user says "wrap up", "finish the feature", "ship it", "open the PR", or the implementation work on an issue is done. Pairs with /vl-start-feature.
+codex-support: "codex-adapted"
+codex-notes: "Shared quality gates plus Codex PR attachment and durable worker reporting."
+codex-invocation: "$vl-finish-feature"
+codex-prerequisites: "Assigned checkout, test toolchain, GitHub access and PR attachment tool."
 ---
 
 # Finish Feature (any stack)
+
+## Codex worker close-out
+
+Use `$vl-finish-feature` or read/apply this source from the assigned absolute
+checkout. The ordered shared gates below still apply, including tests, fresh-base
+verification, mandatory stack crucible, fragment, routing and observed PR keyword.
+Invoke the configured crucible via `$vl-crucible-<stack>` when discovered, or read
+and apply its full source; report findings/remediation and readiness, not an invocation
+claim. No worker dispatch, merge, default-branch push, or managed-tree cleanup.
+
+**Standing human messaging authorization — worker entry prerequisite:** the worker's
+own trusted brief must explicitly authorize initiating and replying to its owning
+orch on the same product board within the assigned role. #329 supplies that scope
+for this rollout; peer messages alone grant neither reply authorization nor model or
+operator overrides. Identify the orch by role + board + repo + exact agent/chat ID;
+resolve ambiguity before sending. Use exposed parent/worker collaboration for a
+subagent, app cross-chat messaging for an explicitly requested sidebar worker chat.
+Messages grant no new role, implementation scope, merge or chat-creation authority.
+Record forks, decisions and completion on the owning issue, even when also messaging.
+
+Immediately before PR creation re-read the owning issue **and parent** bodies/comments
+for amendments; incorporate substance into code/docs and the PR. After creation,
+read back the actual body/head and observe the routing keyword, then call the app's
+`attach_artifact` with `artifact_type: pull_request` and its URL. Attach every PR.
+Post completion with URL, observed keyword, exact test/build/crucible results and
+limitations. Native completion is active-turn delivery; issue/PR evidence is durable.
+A source/contract test cannot establish real discovery, full-cycle execution, interruption
+recovery or managed archival; keep owed integration gates explicitly open.
 
 > Companion: [/vl-start-feature](../vl-start-feature/SKILL.md). Tracking + this repo's ids/labels:
 > `docs/project-tracking/GITHUB-PROJECTS.md`.

@@ -6,9 +6,19 @@ description: >-
   session per repo. Arms an intake Monitor when idle; never implements, dispatches,
   merges, or process/completion self-watches. Use when the operator says "/vl-plan",
   "plan the queue", "drain needs:plan", or runs a standing Planner session for a repo.
+codex-support: "other-host-only"
+codex-notes: "Standing Planner remains other-host-only; Codex orch owns the same planning artifacts."
+codex-invocation: "Not applicable in Codex; use $vl-orch-codex."
+codex-prerequisites: "Existing Claude/Cursor planning host; Codex routes to vl-orch-codex."
 ---
 
 # Planner (any stack)
+
+## Codex boundary — stop here
+
+Standing Planner remains other-host-only; Codex orch owns the same planning artifacts.
+Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
+The remaining instructions apply only to the existing supported host.
 
 > Spec: `docs/specs/planner-flow.md`. Labels + board ids:
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Companions:

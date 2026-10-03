@@ -1,9 +1,19 @@
 ---
 name: vl-night-shift
 description: Autonomous overnight loop — pick the next eligible board issue and drive the daytime chain (start-feature → implement → crucible → finish-feature) without a human, stopping at any real decision fork. Meant to be launched by GitHub Actions while you sleep. Opens PRs, never merges. Leaves a morning report.
+codex-support: "unsupported-deferred"
+codex-notes: "Existing unattended behavior is preserved; a new Codex backend is deferred."
+codex-invocation: "Not applicable in Codex; Codex unattended execution is deferred."
+codex-prerequisites: "Existing supported unattended launcher; no Codex executor in this release."
 ---
 
 # Night Shift — autonomous loop
+
+## Codex boundary — stop here
+
+Existing unattended behavior is preserved; a new Codex backend is deferred.
+Do not execute the procedure below in Codex. Not applicable in Codex; Codex unattended execution is deferred.
+The remaining instructions apply only to the existing supported host.
 
 You are running **unattended** (GitHub Actions / headless Claude; the operator is asleep). Your job:
 move one or more **eligible** issues as far toward a mergeable PR as you honestly can, then leave a

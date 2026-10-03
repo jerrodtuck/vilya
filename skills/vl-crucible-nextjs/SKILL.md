@@ -1,9 +1,20 @@
 ---
 name: vl-crucible-nextjs
 description: Unusually strict, refactor-oriented code-quality review for Next.js / React / TypeScript projects — vertical-slice (feature-folder) architecture, outcome-oriented SOLID, structural simplification, server/client-boundary and RSC guidance. Use for PR review, "crucible", or when enforcing feature-slice structure on a Next.js repo. Install one crucible variant per repo, matched to its stack (sibling: vl-crucible-blazor).
+codex-support: "shared-compatible"
+codex-notes: "Unchanged nextjs architecture, quality and remediation contract; read and apply directly."
+codex-invocation: "$vl-crucible-nextjs"
+codex-prerequisites: "Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority."
 ---
 
 # Crucible Code Quality Review — Next.js / React
+
+## Codex invocation
+
+Use $vl-crucible-nextjs when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 Strict, **refactor-oriented** review of the current branch's changes. **Not a pass/fail gate** —
 every finding names a concrete refactor. Be **ambitious** about structure: hunt for code-judo moves

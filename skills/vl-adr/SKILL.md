@@ -1,9 +1,20 @@
 ---
 name: vl-adr
 description: Capture an architecture/product decision as a dated ADR — options with costs, the decision, consequences, evidence — appended newest-at-top to docs/DECISIONS.md and mirrored on the owning issue. Use when the user says "log a decision", "ADR", "record why we chose", "write up that decision", or a fork has just been decided and needs recording.
+codex-support: "shared-compatible"
+codex-notes: "Issue-first decision capture and single-writer history apply unchanged."
+codex-invocation: "$vl-adr"
+codex-prerequisites: "Repo config, owning issue, authorized decision and GitHub write access."
 ---
 
 # ADR — decision capture (any stack)
+
+## Codex invocation
+
+Use $vl-adr when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 > Routing companion: [/vl-update-docs](../vl-update-docs/SKILL.md) sends "log a decision" here.
 > Owner / repo come from this repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block —

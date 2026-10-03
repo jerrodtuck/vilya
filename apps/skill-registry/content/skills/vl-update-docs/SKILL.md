@@ -1,9 +1,20 @@
 ---
 name: vl-update-docs
 description: Route new work and doc changes — GitHub issues for live work; files only for design docs and history. Use when the user says "track this", "capture that bug/idea", "where does this go", "log a decision", "add a spec", or describes work that needs recording.
+codex-support: "shared-compatible"
+codex-notes: "Shared issue-versus-document routing; preserve file ownership."
+codex-invocation: "$vl-update-docs"
+codex-prerequisites: "Repo config and authorization for requested issue or document writes."
 ---
 
 # Update Docs (any stack) — where does this go?
+
+## Codex invocation
+
+Use $vl-update-docs when discovered, or explicitly read and apply this SKILL.md.
+Slash examples below name companion skills; in Codex use their $vl-* invocation
+or read/apply source. This does not activate another seat or expand authority.
+The shared procedure and quality bar below apply unchanged.
 
 > Tracking + this repo's ids/labels:
 > `docs/project-tracking/GITHUB-PROJECTS.md`.
