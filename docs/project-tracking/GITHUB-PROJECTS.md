@@ -71,7 +71,7 @@ options and recommendation, then stop dependent work for the operator.
 
 ### Requested sidebar worker grouping
 
-When I explicitly request new sidebar worker chats, use list_threads to inspect sections and reuse the exact <repo-short>-orch-working section (vilya-orch-working for Vilya), or create_sidebar_section if absent. Move every successfully created worker with move_thread_to_sidebar_section before reporting dispatch complete. Use rename_sidebar_section only when correcting an identified section; preserve project association, unrelated seats and other repos’ workers, and avoid duplicate sections. Retain each created chat identifier if grouping fails, report the failure and recover its grouping instead of creating a duplicate worker. Verify exact repo prefix, reuse/no duplicate, every created worker grouped and unrelated chats retained at the PR/merge gate. Grouping is organization only: it grants no new-chat permission, peer-message authority or checkout isolation; ordinary subagents are not promised sidebar entries. Other hosts use this convention only if their own exposed capabilities support it.
+When I explicitly request new sidebar worker chats, derive repo-short from the verified repository identity, then use list_threads to inspect sections and reuse the exact <repo-short>-orch-working section (vilya-orch-working for Vilya), or create_sidebar_section if absent. Move every successfully created worker with move_thread_to_sidebar_section before reporting dispatch complete. If same-name sections are ambiguous, stop before moving. Use rename_sidebar_section only for a verified repo-owned section within the operator’s requested rename; preserve project association, unrelated seats and other repos’ workers, and avoid duplicate sections. Retain each created chat identifier if grouping fails, report the failure and recover its grouping instead of creating a duplicate worker. Re-read list_threads to verify exact repo prefix, reuse/no duplicate, every created worker grouped and unrelated chats retained at the PR/merge gate. Grouping is organization only: it grants no new-chat permission, peer-message authority or checkout isolation; ordinary subagents are not promised sidebar entries. Other hosts use this convention only if their own exposed capabilities support it.
 
 ### Isolation, verification and recovery
 
@@ -79,7 +79,7 @@ When I explicitly request new sidebar worker chats, use list_threads to inspect 
    explicit verified starting ref and wait for registration. One issue, branch and isolated
    worktree per chip; Codex branches default to `codex/` unless the operator specifies otherwise.
 2. Subagents share a workspace. Supply the absolute worktree path and branch; require every
-   command to target it and verify `git --show-toplevel`, branch and status before writing.
+   command to target it and verify `git rev-parse --show-toplevel`, branch and status before writing.
    A spawn or new chat is not isolation. Never implement in the main clone.
 3. Apply ignored-file prerequisites through the repo's setup hook or
    `scripts/apply-worktreeinclude`; preserve private setup without printing/staging it.

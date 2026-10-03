@@ -38,7 +38,7 @@ describe("Codex orchestration teaching", () => {
     for (const term of ["<repo-short>-orch-working", "vilya-orch-working", "list_threads", "create_sidebar_section", "move_thread_to_sidebar_section", "rename_sidebar_section", "preserve project association", "every created worker grouped", "ordinary subagents are not promised sidebar entries"]) expect(text).toContain(term);
   });
   it("requires isolation, amendment read-back, independent evidence and safe recovery", () => {
-    for (const term of ["absolute", "git --show-toplevel", ".worktreeinclude", "Immediately before opening a PR", "actual keyword", "Attach every created PR", "independently verify", "never run two writers", "archive_worktree", "restore_worktree", "ignored files"]) expect(text).toContain(term);
+    for (const term of ["absolute", "git rev-parse --show-toplevel", ".worktreeinclude", "Immediately before opening a PR", "actual keyword", "Attach every created PR", "independently verify", "never run two writers", "archive_worktree", "restore_worktree", "ignored files"]) expect(text).toContain(term);
     expect(text).toContain("Only create a later automation when explicitly requested");
   });
 });
