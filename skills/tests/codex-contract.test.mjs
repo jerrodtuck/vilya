@@ -126,3 +126,17 @@ test('all crucible variants retain identical core prompt and severity contract',
   assert.ok(cores.length > 1);
   for (const core of cores) assert.equal(core, cores[0]);
 });
+
+test('sidebar grouping is explicit, repo-scoped, capability-gated and independently verified', () => {
+  for (const slug of ['vl-orch-codex','vl-chip']) {
+    for (const term of ['<repo-short>-orch-working','list_threads','create_sidebar_section','move_thread_to_sidebar_section','rename_sidebar_section']) assert.ok(skills[slug].includes(term), slug + ': ' + term);
+    assert.match(skills[slug], /unrelated chats/);
+    assert.match(skills[slug], /duplicate/);
+  }
+  for (const slug of ['vl-orch-claude','vl-orch-cursor']) {
+    assert.match(skills[slug], /Sidebar worker grouping — capability-gated/);
+    assert.match(skills[slug], /do not assume Codex section APIs/);
+  }
+  assert.match(skills['vl-orch-codex'], /On tool failure retain and report the already-created worker ID/);
+  assert.match(skills['vl-merge-pr'], /Verify the sidebar-grouping amendment independently/);
+});

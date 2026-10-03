@@ -89,6 +89,16 @@ Source tests and registry gate results are recorded in the owning PR/issue.
   requirements. Codex may read/apply these sources directly; source reading is not a
   claim that a native slash chain or another host's skill runner exists.
 
+## Sidebar grouping amendment
+
+The 2026-10-03 operator amendment requires explicitly requested sidebar workers in
+exactly `<repo-short>-orch-working`. The Codex orch and chip contract name native
+list/create/move/rename tools, require section reuse and final verification, and
+preserve created workers on tool failure. Claude/Cursor seats apply the convention
+only with equivalent exposed capabilities. Organization grants no creation/messaging
+authority or checkout isolation. Actual grouping execution remains runtime evidence
+on #329; the source suite checks the required contract and merge-gate enforcement.
+
 ## Verification boundary and remaining integration
 
 Child routing is **tests-only** for source/contracts. Run

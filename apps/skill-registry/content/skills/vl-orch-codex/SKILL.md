@@ -119,6 +119,30 @@ Existing night-shift eligibility stays `night-shift:ready ∧ plan:ready ∧ ¬n
 ∧ ¬epic`; chain promotion remains workflow-owned. Codex planning may prepare the same
 artifacts; it does not make Codex a night-shift executor.
 
+## Sidebar worker grouping
+
+When the operator explicitly requests new sidebar worker chats, group each successfully
+created worker under the exact section `<repo-short>-orch-working` (for Vilya,
+`vilya-orch-working`) before reporting dispatch complete. Derive repo-short from the
+verified repository identity, not a guessed chat title. Ordinary subagents remain
+distinct and are not promised sidebar entries.
+
+Use current native tools: `list_threads` to inspect sections and worker/project
+identities; reuse the exact matching section. If absent, `create_sidebar_section` with
+that exact name. Never create a duplicate; ambiguous same-name sections require
+resolution before moving. Use `rename_sidebar_section` only for a verified existing
+section belonging to this repo's workers and within the operator's requested rename,
+not an unrelated section. Then `move_thread_to_sidebar_section` for **every** created
+worker chat ID, preserving its project association. Re-read `list_threads` to verify
+exact repo prefix, one reused/created section, every created worker grouped, and
+unrelated chats/seats/other repos' workers retained.
+
+On tool failure retain and report the already-created worker ID and pending grouping;
+do not create replacement chats or claim dispatch organization completed. Record grouping
+as a PR amendment/merge-gate item and verify independently at review. Grouping is
+organization only: it does not authorize chat creation, grant peer-message authority,
+or establish worktree isolation.
+
 ## Interruption recovery and close-out
 
 On recovery, inspect native agent/chat state, issue/parent comments, PR body/head/checks,

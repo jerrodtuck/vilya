@@ -47,6 +47,17 @@ the `spawn_task` and monitor procedures below apply only to the other hosts.
    or Cursor `notify_on_output`. Explicitly requested sidebar worker chats use app
    wait/message tools instead, with their exact chat IDs; never create one implicitly.
 
+Before reporting an explicitly requested sidebar dispatch complete, follow
+[Sidebar worker grouping](../vl-orch-codex/SKILL.md#sidebar-worker-grouping):
+`list_threads` → reuse exact `<repo-short>-orch-working` or `create_sidebar_section`
+→ `move_thread_to_sidebar_section` for every created chat → verify reuse/no duplicate,
+project association and unrelated chats retained. Use `rename_sidebar_section` only
+for an authorized rename of this repo-owned section. Preserve already-created worker
+IDs and report grouping failure; no replacement chats. Grouping grants no chat-creation
+or peer-message authority and provides no worktree isolation. Other hosts apply this
+convention only through equivalent exposed tools, never borrowed Codex APIs. Carry
+the amendment into the PR and verify it independently at the merge gate.
+
 ### Codex self-contained worker brief
 
 Include each item in the actual dispatch prompt, even with inherited history:

@@ -23,6 +23,9 @@ verification below. Attach the reviewed PR with `attach_artifact`. Independently
 read owning issue and parent amendments, actual PR body/head and gates. A worker
 message is a claim. Missing substantive behavior/docs require a follow-up commit;
 an attributed squash note is only for record corrections, never a substitute for code.
+Verify the sidebar-grouping amendment independently: exact repo-prefixed section,
+reuse/no duplicate, all created workers grouped, project association preserved and
+unrelated chats retained; tool failures remain reported, not silently waived.
 
 For owed checkout checks prefer an existing suitable managed attachment; otherwise
 use the Codex worktree path in [vl-start-feature](../vl-start-feature/SKILL.md) with

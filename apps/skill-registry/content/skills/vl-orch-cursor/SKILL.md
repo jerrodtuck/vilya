@@ -57,6 +57,19 @@ absolute path **before** the next orch action — board move, merge, prune, or k
 **Chat title (optional, human scanning only):** Cursor chats may use `<repo-short>-orch` (same pattern as Claude Desktop standing seats) for easy scanning — there is **no** `ccd_session_mgmt` on Cursor; titles do not drive cross-session targeting.
 
 
+## Sidebar worker grouping — capability-gated
+
+When the operator explicitly requests sidebar worker chats and this host exposes
+equivalent section/list/move capabilities, reuse or create exactly
+`<repo-short>-orch-working` and group every successfully created worker before
+reporting dispatch complete. Verify repo identity, exact section reuse/no duplicate,
+preserved project association and unrelated chats retained. If grouping fails, retain
+the created worker and report the pending organization; never spawn a replacement.
+Use only this host's exposed tools; do not assume Codex section APIs exist in
+Claude Code or Cursor. If unsupported, report that limitation. Ordinary subagents
+are not promised sidebar entries. Grouping grants no chat-creation or messaging
+authority and provides no worktree isolation.
+
 ## Kickoff
 
 Read owner, repo, project number, labels, stack, and crucible/test config from
