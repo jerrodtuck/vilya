@@ -9,6 +9,18 @@ codex-prerequisites: "Repo config, issue and plan, git/GitHub access and managed
 
 # Start Feature (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Dispatch preflight — fail closed
 
 Before any brief, board mutation, checkout creation (including managed create_worktree), or spawn, require a fresh successful issue read with exact intended repo/number/URL and OPEN state (normalize CLI/REST casing). Reuse the current same-attempt read; extend existing reads with state/identity rather than duplicate API calls. CLOSED, unknown/malformed/wrong identity, auth or network failure stops before mutations. Queue filters, ready labels, board Status and priority overrides never substitute. Do not auto-reopen: the operator must reopen intentional closed work or use a new issue. Revalidate after pauses, handoffs and resumes. Workers recheck before implementation.

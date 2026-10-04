@@ -10,15 +10,15 @@ export function PlatformToggle() {
   return (
     <>
       <DesktopHostSelector host={tool} onSelect={selectHost} />
+      <p>Existing linked folders reflect reviewed changes after pulling their canonical checkout. New folders require rerunning the intended-host installer. Copies need the complete folder and resources. Refresh/open a supported session and inspect resolved vl-adhd and vl-present sources; installation alone does not prove adoption. Preserve divergent copies before reinstalling.</p>
 
       {tool === "codex" ? <CodexSetup /> : tool === "cc" ? (
         <div className="pane on">
           <p>
-            Run the install script <b>once per machine</b> — it links every
+            Run the install script to link every
             skill into your user-level directory (junctions on Windows,
             symlinks elsewhere), so skill merges are live on{" "}
-            <code>git pull</code> with nothing to re-run. Re-run only if the
-            repo moves on disk.
+            <code>git pull</code> for changed files. Re-run with the intended host options for new skill folders such as vl-present, or when the repo moves.
           </p>
           <pre>{`pwsh scripts/install-skills.ps1        # Windows (or plain PowerShell)
 bash scripts/install-skills.sh         # macOS / Linux / Git Bash`}</pre>

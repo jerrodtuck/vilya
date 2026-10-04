@@ -9,6 +9,18 @@ codex-prerequisites: "Existing supported unattended launcher; no Codex executor 
 
 # Night Shift — autonomous loop
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex boundary — stop here
 
 Existing unattended behavior is preserved; a new Codex backend is deferred.

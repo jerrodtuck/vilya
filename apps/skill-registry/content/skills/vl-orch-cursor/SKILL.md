@@ -15,6 +15,18 @@ codex-prerequisites: "Cursor host and its documented Task/worktree/monitor capab
 
 # Orchestrator — Cursor (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex boundary — stop here
 
 Cursor orchestrator stays distinct; Codex uses vl-orch-codex.
@@ -27,7 +39,7 @@ The remaining instructions apply only to the existing supported host.
 > [/vl-plan](../vl-plan/SKILL.md) (optional daytime; required for
 > night-shift prep), [/vl-merge-pr](../vl-merge-pr/SKILL.md),
 > [/vl-prune](../vl-prune/SKILL.md), [/vl-adhd](../vl-adhd/SKILL.md)
-> (operator-chat voice — load it). Repo / owner / project / labels /
+> (shared writing policy — load it). Repo / owner / project / labels /
 > stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Claude host seat:
 > [/vl-orch-claude](../vl-orch-claude/SKILL.md). Chip dispatch
@@ -174,8 +186,7 @@ names the issue directly.
 
 ## Honesty bar
 
-- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
-  — load it at session start; chip briefs, kickoffs, and ADRs stay long-form.
+- Apply shared clear writing to updates and complete durable records; preserve all required substance.
 - Standing orders are a menu: this skill is the Cursor orch seat only — never stack seats.
 - Do **not** teach three-step Worker A as the daytime default — Task/BoN is primary.
 - Worker A and B are mutually exclusive per issue. If this seat already ran `/vl-start-feature`, the fallback worker uses A — never B.

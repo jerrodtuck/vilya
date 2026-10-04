@@ -18,7 +18,10 @@ export const ASK_VILYA: PromptGroup = {
     {
       label: "Route me",
       skill: SKILL_SLUGS.askVilya,
-      text: `Ask Vilya — route me: <what you want to do, or the question you have>
+      text: `Identify the actual host. Read and apply the full vl-adhd writing policy and vl-present presentation contract from their resolved complete skill folders. On Codex use $vl-adhd / $vl-present when discovered; on Claude Code/Cursor use supported /vl-adhd / /vl-present, or explicitly read/apply source. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.
+Keep exactly lane · exact next prompt/command · one-line why with canon citation; no visual, heading or extra line.
+
+Ask Vilya — route me: <what you want to do, or the question you have>
 
 First identify the desktop. On Codex, use supported dollar skill invocation or read/apply its source. Codex planning belongs to ${SKILL_INVOKES.orchestratorCodex} (no standing Planner); its workflow is /orch?host=codex. Existing host routing follows below.
 

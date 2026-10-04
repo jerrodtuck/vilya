@@ -1,7 +1,7 @@
 import { SKILL_INVOKES } from "../../shared/skills/invokes";
 import { CopyButton } from "../../shared/ui/copy-button";
 
-const VERIFY_DISCOVERY = "In this Codex desktop session, discover the installed vl-orch-codex and vl-arch skills. Report the exact resolved source paths and their Codex support, invocation and prerequisites. Read the intended skill source and perform a read-only invocation check without seating another role or dispatching work. If missing, shadowed, stale or unsupported, stop and report the evidence; installation success alone is not discovery proof.";
+const VERIFY_DISCOVERY = "In this Codex desktop session, discover the installed vl-orch-codex, vl-arch, vl-adhd and vl-present skills. Report the exact resolved source paths and their Codex support, invocation and prerequisites. Read/apply the full vl-adhd writing policy and vl-present presentation contract through supported $vl-adhd / $vl-present invocation or explicit resolved source fallback. Read the intended skill source and perform a read-only invocation check without seating another role or dispatching work. If missing, shadowed, stale or unsupported, stop and report the evidence; installation success alone is not discovery proof.";
 
 export function CodexSetup() {
   return <section className="panel" id="codex-setup" data-host="codex">
@@ -10,6 +10,7 @@ export function CodexSetup() {
     <pre>{"pwsh scripts/install-skills.ps1 -IncludeCodex\nbash scripts/install-skills.sh --include-codex"}</pre>
     <p>Codex uses <code>$HOME/.agents/skills</code>. The existing default remains <code>~/.claude/skills</code>; an explicit custom target takes precedence. Keep links pointing at the canonical source. Avoid duplicate or shadowing installations.</p>
     <p>To update verified whole-folder junctions, merge/pull the reviewed change into their canonical Vilya source, reload the session and read the resolved current SKILL.md plus <code>vl-orch-codex/references/model-routing.md</code>. Preserve and reconcile divergent copies before reinstalling. Install complete folders including references; a raw registry SKILL.md is not a complete bundle. Existing loaded instructions do not refresh merely because the source changed.</p>
+    <p>Existing links reflect changed files after pull. Newly added folders such as vl-present require rerunning the installer with -IncludeCodex or --include-codex. Copies require the whole folder and resources. Refresh through a supported session surface and inspect both resolved shared contracts separately from installer/build success.</p>
     <h3>Discovery is a separate check</h3>
     <p>Open or refresh a Codex desktop session and inspect its available skills. Use the supported dollar invocation, such as <code>{SKILL_INVOKES.orchestratorCodex}</code>, or explicitly read and apply the resolved SKILL.md source when native invocation is unavailable. Check the skill detail page for applicability, prerequisites and host behavior before use.</p>
     <p>{VERIFY_DISCOVERY}</p><CopyButton text={VERIFY_DISCOVERY} />

@@ -15,6 +15,18 @@ codex-prerequisites: "Codex orch seat, settled plan, managed-worktree and collab
 
 # Chip (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Seat resolution and durable decision requests
 
 Resolve the actual counterpart before an authorized send; a familiar title is a
@@ -185,6 +197,8 @@ files and exact pins; earlier hard stops apply immediately.
 
 Include each item in the actual dispatch prompt, even with inherited history:
 
+- Require the worker to read/apply full vl-adhd and vl-present from the resolved complete folders; Codex uses $vl-adhd / $vl-present or explicit source fallback. Preserve the full brief, literals, evidence, authority and stops.
+
 - Seat delivery: include the full Seat resolution and durable decision requests contract above: record questions on the issue at handoff, treat queued sends as unconfirmed, and re-read answers before escalation or ending work.
 
 
@@ -274,7 +288,7 @@ everything ships through chips.
   `/vl-start-feature` or `/vl-update-docs`.
 - Read repo/owner/project/labels/**stack**/**crucible variant**/test command from
   `docs/project-tracking/GITHUB-PROJECTS.md`.
-- At a **real design fork**, stop and give the operator **2–3 options with costs** in plain chat —
+- At a **real design fork**, stop and give the operator **2–3 options with costs** in the task-appropriate presentation —
   **before** any chip is dispatched.
 - When the issue's step 1 is an **unknown** (SDK surface, third-party behavior), the kickoff must
   carry an **Investigate-first / hard-stop** section (see §2a) — copy that section into the brief
@@ -312,6 +326,8 @@ dispatch without one is a chip nobody is listening for.
 ## 2. The self-contained brief (the `prompt`)
 
 The chip has **zero** shared context, so the brief must stand alone. Include:
+
+- Require the worker to read/apply full vl-adhd and vl-present from their resolved complete folders; identify host, use supported /vl-adhd / /vl-present on Claude Code/Cursor or explicit source fallback. Preserve the full brief, literals, evidence, authority and stops.
 
 - Fresh OPEN/identity evidence and the tested preflight recipe above; record brief base
   and original-start SHAs, check the intervening range before implementation, and

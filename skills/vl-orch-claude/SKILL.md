@@ -14,6 +14,18 @@ codex-prerequisites: "Claude Code host and its documented session/monitor capabi
 
 # Orchestrator — Claude Code (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex boundary — stop here
 
 Claude orchestrator stays distinct; Codex uses vl-orch-codex.
@@ -24,7 +36,7 @@ The remaining instructions apply only to the existing supported host.
 > [/vl-plan](../vl-plan/SKILL.md) (Fable plan loop),
 > [/vl-merge-pr](../vl-merge-pr/SKILL.md), [/vl-prune](../vl-prune/SKILL.md),
 > [/vl-start-feature](../vl-start-feature/SKILL.md),
-> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it). Repo /
+> [/vl-adhd](../vl-adhd/SKILL.md) (shared writing policy — load it). Repo /
 > owner / project / labels / stack / crucible / test command from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. Cursor host seat:
 > [/vl-orch-cursor](../vl-orch-cursor/SKILL.md).
@@ -199,7 +211,7 @@ first place. Issue bodies state **present-tense facts with evidence** — planne
 scope ("this issue adds X"), never an existing artifact ("X exists" / "#N shipped Y");
 when naming another issue's deliverable, state that issue's **actual current status,
 checked at write time**. At any real design fork, stop and give 2–3 options with costs and a stated
-recommendation (with its reasoning) in plain chat text before any chip is
+recommendation (with its reasoning) in the task-appropriate presentation before any chip is
 dispatched — the operator still decides. When step 1 is an unknown, the
 kickoff/brief must carry Investigate-first / hard-stop (non-negotiable stop after
 findings + options; no auto-pick) — daytime waits on that section; unattended uses
@@ -213,8 +225,7 @@ probes start multiplying, that's the signal to stop and dispatch.
 
 ## Honesty bar
 
-- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
-  — load it at session start; chip briefs, kickoffs, and ADRs stay long-form.
+- Apply shared clear writing to updates and complete durable records; preserve all required substance.
 - Standing orders are a menu: this skill is the Claude orch seat only — never stack seats.
 - Chip is dispatch. This skill is the seat. Do not teach "run `/vl-chip`" as the orch kickoff.
 - Never claim Cursor sessions share a comms layer with Claude Code chips.

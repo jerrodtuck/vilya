@@ -44,6 +44,23 @@ for (const shell of ["ps1", "sh"] as const) {
       expect(fs.existsSync(path.join(f.user, ".cursor/skills/example"))).toBe(flags.includes("cursor"));
       expect(fs.existsSync(path.join(f.user, ".claude/skills/not-a-skill"))).toBe(false);
     }, 30000);
+    it("adds a new complete companion on rerun without touching the real home", () => {
+      const f = fixture(shell);
+      f.run([flag("codex")]);
+      const companion = path.join(f.repo, "skills", "vl-present");
+      fs.mkdirSync(path.join(companion, "references"), { recursive: true });
+      fs.writeFileSync(path.join(companion, "SKILL.md"), "companion");
+      fs.writeFileSync(path.join(companion, "references", "examples.md"), "complete resource");
+      expect(fs.existsSync(path.join(f.user, ".agents/skills/vl-present"))).toBe(false);
+      f.run([flag("codex")]);
+      for (const hostRoot of [".claude/skills", ".agents/skills"]) {
+        const linked = path.join(f.user, hostRoot, "vl-present");
+        expect(fs.realpathSync(linked)).toBe(fs.realpathSync(companion));
+        expect(fs.readFileSync(path.join(linked, "references/examples.md"), "utf8")).toBe("complete resource");
+      }
+      fs.writeFileSync(path.join(companion, "references/examples.md"), "reviewed update");
+      expect(fs.readFileSync(path.join(f.user, ".agents/skills/vl-present/references/examples.md"), "utf8")).toBe("reviewed update");
+    }, 30000);
     it("refuses source overlap even through an ancestor directory alias", () => {
       const f = fixture(shell);
       expect(() => f.run([flag("target"), path.join(f.repo, "skills")])).toThrow();

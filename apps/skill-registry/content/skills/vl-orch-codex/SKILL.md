@@ -9,13 +9,25 @@ codex-prerequisites: "Main/default checkout, repo config, runtime capabilities a
 
 # Orchestrator — Codex desktop
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 Invoke $vl-orch-codex when discovered, or explicitly read and apply this source.
 
 One orchestrator per repo, in the main clone on its default branch. The architect is
 one per product board and owns direction. You own planning and coordination; workers
 implement. Never activate another seat, implement feature code, push the default
 branch, or root-cause beyond one quick repro. Dispatch investigation/remediation as
-a tracked chip. Load [vl-adhd](../vl-adhd/SKILL.md) for operator chat.
+a tracked chip. Apply the shared contracts below to all authored prose.
 
 ## Entry and authority
 
