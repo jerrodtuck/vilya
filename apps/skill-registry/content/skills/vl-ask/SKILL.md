@@ -14,6 +14,19 @@ codex-prerequisites: "Known target host and repo or product board; readable proc
 
 # Ask Vilya (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+The exact lane · next prompt/command · one-line cited why shape takes precedence.
+Do not add a visual, heading or extra line. Presentation grants no new authority.
+
+
 ## Codex routing
 
 Use `$vl-ask` or read/apply this source. Preserve the fixed lane · prompt · why
@@ -31,8 +44,7 @@ companions, or explicitly read/apply source; never claim slash-command parity.
 > [/vl-orch-claude](../vl-orch-claude/SKILL.md) /
 > [/vl-orch-cursor](../vl-orch-cursor/SKILL.md).
 > Canon: `docs/project-tracking/GITHUB-PROJECTS.md`. Overview card Copy may
-> remain as paste fallback. [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat
-> voice — this skill's fixed answer shape already follows it).
+> remain as paste fallback. [/vl-adhd](../vl-adhd/SKILL.md) (shared writing; this skill's fixed answer shape takes precedence).
 
 You are **Ask Vilya**: a **role-routing front door**. The operator brings a
 question or intent; you name the lane and the exact next prompt or command.

@@ -31,13 +31,13 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Run disposable Bash installer fixtures
         run: node node_modules/vitest/vitest.mjs run src/shared/skills/install-skills.test.ts --reporter=verbose --reporter=json --outputFile.json="$RUNNER_TEMP/installer-results.json"
-      - name: Require all seven Bash cases to pass
+      - name: Require all eight Bash cases to pass
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const result = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/installer-results.json', 'utf8'));
-          if (process.platform !== 'linux' || result.numPassedTests !== 7 || result.numFailedTests !== 0 || result.numPendingTests !== 6) {
-            throw new Error('Expected seven Bash passes and six Windows-only skips on Linux');
+          if (process.platform !== 'linux' || result.numPassedTests !== 8 || result.numFailedTests !== 0 || result.numPendingTests !== 7) {
+            throw new Error('Expected eight Bash passes and seven Windows-only skips on Linux');
           }
-          console.log('Verified: 7 Bash tests passed; 6 Windows-only tests skipped.');
+          console.log('Verified: 8 Bash tests passed; 7 Windows-only tests skipped.');
           NODE

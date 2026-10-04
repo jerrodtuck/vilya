@@ -14,7 +14,7 @@
 import type { PromptGroup } from "@/shared/ui/flow-map-types";
 import { SKILL_SLUGS } from "../../shared/skills/invokes";
 
-export const PROMPTS: PromptGroup[] = [
+export const PROMPTS: PromptGroup[] = ([
   {
     node: "ARCH",
     group: "Standing orders — paste once per session",
@@ -131,4 +131,10 @@ On Claude Desktop, verify and use the exposed session directory and exact sessio
       },
     ],
   },
-];
+] satisfies PromptGroup[]).map(group => ({
+  ...group,
+  items: group.items.map(item => ({
+    ...item,
+    text: item.text.startsWith("#!/") || item.text.startsWith("gh workflow run") ? item.text : item.text.replace(/(\n\n|$)/, "\n\nIdentify the actual host. Read and apply the full vl-adhd writing policy and vl-present presentation contract from their resolved complete skill folders. On Codex use $vl-adhd / $vl-present when discovered; on Claude Code/Cursor use supported /vl-adhd / /vl-present, or explicitly read/apply source. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.\n\n")
+  })),
+}));

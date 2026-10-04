@@ -14,6 +14,18 @@ codex-prerequisites: "Codex orch seat, operator merge authorization, GitHub and 
 
 # Merge PR (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex desktop merge adapter
 
 Only the `vl-orch-codex` seat may run this path, with operator merge authorization;
@@ -45,7 +57,7 @@ legacy removal/kill advice. Sidebar chat archival does not archive a worktree.
 > `feat|fix|docs/*`) worktrees after squash. This skill is the operator's side of the
 > handshake — **nothing merges without it**. Repo / test command / default branch come from
 > this repo's `docs/project-tracking/GITHUB-PROJECTS.md` config block.
-> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it).
+> [/vl-adhd](../vl-adhd/SKILL.md) (shared writing policy — load it).
 
 ## Seat check — read before §0
 
@@ -294,9 +306,8 @@ substitute for returning.
 
 ## Honesty bar
 
-Operator-facing chat (triage calls, merge confirmations) follows
-[/vl-adhd](../vl-adhd/SKILL.md) — load it at session start; PR Verification
-sections stay long-form. Never merge over red checks silently. Name any
+Shared clear writing applies to triage, merge confirmations and complete PR Verification
+sections. Never merge over red checks silently. Name any
 verification you skipped ("merged on review alone, no local run").
 Distinguish **merged** from **merged and live-verified** — that's what
 Verifying is for. Distinguish **merged** from **pruned** — leftover

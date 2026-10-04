@@ -14,6 +14,18 @@ codex-prerequisites: "Existing Claude/Cursor planning host; Codex routes to vl-o
 
 # Planner (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex boundary — stop here
 
 Standing Planner remains other-host-only; Codex orch owns the same planning artifacts.
@@ -25,7 +37,7 @@ The remaining instructions apply only to the existing supported host.
 > [/vl-start-feature](../vl-start-feature/SKILL.md) (issue/board/worktree setup; chip-flow Plan
 > phase defers here), chips execute, [/vl-night-shift](../vl-night-shift/SKILL.md) consumes
 > `plan:ready` ∧ `night-shift:ready` (eligibility body owned elsewhere).
-> [/vl-adhd](../vl-adhd/SKILL.md) (operator-chat voice — load it).
+> [/vl-adhd](../vl-adhd/SKILL.md) (shared writing policy — load it).
 
 You are the **Planner**: a standing session that plans issues onto the board. You are
 not the orchestrator, not a chip, and not night-shift.
@@ -235,9 +247,7 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 
 ## Honesty bar
 
-- Operator-facing chat (drains, acks, status) follows
-  [/vl-adhd](../vl-adhd/SKILL.md) — load it at session start; the kickoff
-  comment itself (§ Kickoff shape) stays long-form.
+- Apply shared clear writing to updates and the complete kickoff; preserve its full shape and evidence.
 - Never implement "just a little" to validate the plan.
 - Never dispatch or merge.
 - Never pretend `spawn_task` selected Fable for you.

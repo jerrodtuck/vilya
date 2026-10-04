@@ -8,6 +8,7 @@ import { ASK_VILYA } from "./ask-vilya";
 import { BoardMoverMap } from "./board-mover-map";
 import { BoardScreenshot } from "./board-screenshot";
 import { CardinalityDiagram } from "./cardinality-diagram";
+import { CommunicationGuide } from "./communication-guide";
 import { FoundingWhy } from "./founding-why";
 
 export function OverviewView() {
@@ -74,6 +75,8 @@ export function OverviewView() {
 
       <FoundingWhy />
 
+      <CommunicationGuide />
+
       <BoardStrip
         moversHref="#movers"
         orchestratorHref="/orch"
@@ -104,9 +107,7 @@ export function OverviewView() {
           citation. It routes — it never creates issues or dispatches.
         </p>
         <p className="muted" style={{ margin: "8px 0 0", lineHeight: 1.5 }}>
-          Standing seats also load <code>{SKILL_INVOKES.adhd}</code> — action
-          first, restate state, visible wins — for replies to you; you invoke
-          it yourself only as a one-time fallback if a host skipped the load.
+          Seats and workers load <code>{SKILL_INVOKES.adhd}</code> and <code>{SKILL_INVOKES.present}</code> for clear writing and useful presentation. Complete records and this router’s fixed answer shape remain intact.
         </p>
         <div
           className="libcard"

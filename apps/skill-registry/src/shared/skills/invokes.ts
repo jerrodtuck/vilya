@@ -20,6 +20,7 @@ export const SKILL_SLUGS = {
   productMap: "vl-product-map",
   adr: "vl-adr",
   adhd: "vl-adhd",
+  present: "vl-present",
 } as const;
 
 export type SkillSlug = (typeof SKILL_SLUGS)[keyof typeof SKILL_SLUGS];
@@ -43,6 +44,7 @@ export const SKILL_INVOKES = {
   productMap: `/${SKILL_SLUGS.productMap}`,
   adr: `/${SKILL_SLUGS.adr}`,
   adhd: `/${SKILL_SLUGS.adhd}`,
+  present: `/${SKILL_SLUGS.present}`,
 } as const;
 
 export const AUTONOMOUS_SLUGS = new Set<string>([

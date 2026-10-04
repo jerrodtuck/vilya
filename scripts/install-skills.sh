@@ -3,7 +3,9 @@
 # Run from anywhere: bash scripts/install-skills.sh
 #
 # Link mode: ~/.claude/skills/<name> IS <repo>/skills/<name>, so skill merges are
-# live on `git pull` — run this ONCE per machine (re-run only if the repo moves).
+# changed files are live on `git pull`; rerun with intended-host options for NEW
+# skill folders or a moved repo. Copy installs need whole folders/resources. Refresh
+# a supported session and inspect resolved sources separately from installation.
 # Existing plain-directory copies from the old copy mode are migrated in place.
 # Entries under the target root with no matching skills/<name> in this repo are
 # never touched.

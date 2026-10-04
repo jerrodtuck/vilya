@@ -41,10 +41,11 @@ test('reference has one phase table and distinct reviewable acceptance dispositi
   assert.doesNotMatch(contract, /gpt-[0-9]/); // resolve current IDs at dispatch, not a permanent catalog
 });
 
-test('ADR preserves heading example in preamble and places refinement first', () => {
+test('ADR preserves heading example and routing refinement history', () => {
   const adr = read('docs/DECISIONS.md');
   assert.ok(adr.startsWith('# Decisions\n\nAppend-only ADR log — newest at top, \x60## YYYY-MM-DD — Title\x60. Grep by topic or issue #; captured via /vl-adr.\n\n'));
   const headings = [...adr.matchAll(/^## (\d{4}-\d{2}-\d{2}) — (.*)$/gm)];
-  assert.ok(headings[0][2].includes('Codex routing by phase, uncertainty and consequence (#347)'));
-  assert.ok(headings[1][2].includes('Repo-owned component baselines'));
+  const routing = headings.findIndex(heading => heading[2].includes('Codex routing by phase, uncertainty and consequence (#347)'));
+  assert.ok(routing >= 0);
+  assert.ok(headings[routing + 1][2].includes('Repo-owned component baselines'));
 });

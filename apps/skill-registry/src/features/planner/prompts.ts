@@ -14,6 +14,7 @@ import { SKILL_SLUGS } from "../../shared/skills/invokes";
  */
 export const PLANNER_NEEDS_PLAN_INTAKE_BASH = [
   "#!/usr/bin/env bash",
+  "# Agent companion instructions: read/apply full vl-adhd and vl-present from resolved folders before interpreting output; preserve facts, authority and fixed contracts.",
   "# Standing needs:plan intake poller (copy-paste) -- REST-only, gain-only wake sentinel, cadence >=120s (not 60s / not ~90s).",
   "# Never on this hot path: gh issue list --json (GraphQL) / gh pr list (GraphQL) / gh project item-list (GraphQL).",
   "set -euo pipefail",
@@ -37,7 +38,7 @@ export const PLANNER_NEEDS_PLAN_INTAKE_BASH = [
   "done",
 ].join("\n");
 
-export const PROMPTS: PromptGroup[] = [
+export const PROMPTS: PromptGroup[] = ([
   {
     node: "PLAN",
     group: "Standing orders — paste once per session",
@@ -113,4 +114,10 @@ On Claude Desktop, verify and use the exposed session directory and exact sessio
       },
     ],
   },
-];
+] satisfies PromptGroup[]).map(group => ({
+  ...group,
+  items: group.items.map(item => ({
+    ...item,
+    text: item.text.startsWith("#!/") || item.text.startsWith("gh workflow run") ? item.text : item.text.replace(/(\n\n|$)/, "\n\nIdentify the actual host. Read and apply the full vl-adhd writing policy and vl-present presentation contract from their resolved complete skill folders. On Codex use $vl-adhd / $vl-present when discovered; on Claude Code/Cursor use supported /vl-adhd / /vl-present, or explicitly read/apply source. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.\n\n")
+  })),
+}));

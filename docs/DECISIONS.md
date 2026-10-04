@@ -2,6 +2,20 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-03 — Shared clear writing and automatic presentation (#341)
+
+**Decision:** The operator approved evolving vl-adhd into a shared STE-inspired communication policy, with a companion visual capability. Seats select prose, tables, editable diagrams or interactive output according to the task; explicit operator direction overrides defaults. Ask only when a material usability/delivery choice cannot be inferred.
+
+**Options considered:** Strict ASD-STE100 everywhere (cost: restrictive vocabulary and compliance verification); **STE-inspired clarity plus adaptive formats, chosen** (cost: explicit selection guidance and capability-aware examples); HTML for all substantial explanations (cost: generation/review/maintenance even when text suffices).
+
+**Why:** Operator prefers the clarity subset and automatic task-guided visuals. STE includes rules and a controlled dictionary; appearance does not prove conformance. Keep full evidence and constraints in worker briefs, ADRs and verification records. This was cross-host design intent, not a tested recipe or a new Codex feature requirement.
+
+**Consequences:** #342 owns writing policy, #343 owns companion visual procedures, #344 owns seat/site adoption. One authoritative policy, readable host fallbacks and no parallel tracker. Architect filed these once; orch alone owns later decomposition and implementation. No files were edited or implementation dispatched in the original decision.
+
+**Original evidence:** Explicit operator approvals in the architect chat, 2026-10-03; [owning ADR](https://github.com/jerrodtuck/vilya/issues/341#issuecomment-5974655990); [official STE description](https://www.asd-ste100.org/faq.html); vl-adhd scope read in that planning session. Before/after acceptance examples were untested at decision time. Preserve that evidence limit.
+
+**Implementation evidence, separate from design intent:** Merged #342/#343 contracts are adopted under [#344 settled plan](https://github.com/jerrodtuck/vilya/issues/344#issuecomment-5974738218) and [operator dispatch](https://github.com/jerrodtuck/vilya/issues/344#issuecomment-5975441367). Source, exported prompt, render, bundle and disposable-home installer checks validate delivery; they do not prove live session/model adoption, host-wide rendering or savings. Runtime results and precise limits are recorded on #344 and its PR.
+
 ## 2026-10-03 — Codex routing by phase, uncertainty and consequence (#347)
 
 **Decision:** Operator approved latest supported Astra/high normal planning, Astra/xhigh justified hard planning, Sol/medium settled implementation, Luna/low ONLY bounded enumerated mechanical operations with objective verification, separate Sol/high independent review, and Astra/high or justified xhigh consequential design/security review. Preserve configurable capability-validated exact choices, scoped explicit overrides and active/resumed pins. This explicitly supersedes the earlier two-tier #329/#345 policy as the complete routing table and the historical high/high initial recommendation; historical records below remain intact. Other operators retain configured defaults without their own authorization.

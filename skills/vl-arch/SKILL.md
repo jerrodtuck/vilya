@@ -14,6 +14,18 @@ codex-prerequisites: "Product board identity and trusted human messaging authori
 
 # Product Architect (any stack)
 
+## Shared communication
+
+Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
+[vl-present presentation contract](../vl-present/SKILL.md) at entry. On Codex use
+`$vl-adhd` / `$vl-present` when discovered; on Claude Code or Cursor use their
+supported `/vl-adhd` / `/vl-present` invocation, or explicitly read/apply these
+resolved sources. Identify an unknown host before choosing syntax. Apply them to
+all authored prose, including complete briefs, ADRs, specs and PR evidence.
+Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
+Explicit formats and fixed output contracts win; presentation grants no new authority.
+
+
 ## Codex desktop entry
 
 Use `$vl-arch` or explicitly read/apply this source. Direction only: never implement,
@@ -37,7 +49,7 @@ verify substantive changes at the merge gate. `dispatch:` requests ranked triage
 > Companions: [/vl-history](../vl-history/SKILL.md) (what we tried),
 > [/vl-product-map](../vl-product-map/SKILL.md) (as-built vs as-intended),
 > [/vl-adr](../vl-adr/SKILL.md) (log the call), [/vl-adhd](../vl-adhd/SKILL.md)
-> (operator-chat voice — load it). Board / labels / owner from
+> (shared writing policy — load it). Board / labels / owner from
 > `docs/project-tracking/GITHUB-PROJECTS.md`. You are **not** the Planner,
 > orchestrator, or a chip.
 
@@ -69,8 +81,7 @@ as fallback.
 
 ## Honesty bar
 
-- Operator-facing chat in this session follows [/vl-adhd](../vl-adhd/SKILL.md)
-  — load it at session start; ADRs and specs stay long-form.
+- Apply shared clear writing to updates and complete durable records; preserve all required substance.
 - Evidence class on every claim (verified / tested / unverified).
 - Specs are design intent, not task lists.
 - Standing orders are a menu: this skill is for direction/architecture sessions only — pick the one seat matching the session's role; never stack seats.
