@@ -130,13 +130,23 @@ the `spawn_task` and monitor procedures below apply only to the other hosts.
    Explicit starting ref, base SHA, absolute checkout, issue branch and ignored setup
    must be verified before spawn. Subagents share the workspace: spawn alone is not
    isolation. Every worker shell/read/write must target its assigned checkout.
-3. Discover the actual collaboration tools. The 2026-10-03 session exposed `spawn_agent`,
+3. Apply the [Codex phase policy](../vl-orch-codex/SKILL.md#model-policy): for the
+   operator who adopted #329 on 2026-10-03, select the latest supported Astra/high
+   planning model and latest supported Sol/medium implementation model. Other
+   operators keep configured defaults absent their own authorization. A scoped
+   explicit override wins only in scope; prior #330–#332 Astra implementation pins
+   are historical, not a standing change. Validate exact model/effort against
+   current capabilities and record selection, phase, date, authorization source
+   and override scope. Preserve active and resumed worker pins. Ambiguous or
+   conflicting scope, or an unavailable combination, stops dispatch without
+   aliases, substitution or a silent effort increase.
+4. Discover the actual collaboration tools. The 2026-10-03 session exposed `spawn_agent`,
    `send_message`, `followup_task`, `wait_agent`, `list_agents`, `interrupt_agent`.
    Dispatch with the full brief below; use only authorized model/effort overrides.
    Full-history forks inherit and cannot override model/effort; selected-model
    delegation uses `fork_turns: none` or supported limited history. Missing capability
    or invalid explicit model is a reported stop, never silent substitution.
-4. Track native completion/wait during the active turn and update In Progress where
+5. Track native completion/wait during the active turn and update In Progress where
    quota permits. Send changes to an active worker, follow up to resume an idle child.
    Record amendments on the issue regardless of delivery; enforce substance again
    before merge. Durable issue/PR evidence supports recovery if the turn is interrupted.
@@ -169,8 +179,12 @@ Include each item in the actual dispatch prompt, even with inherited history:
 - Owned paths, integration order/dependencies, architecture/quality rules, out-of-scope
   work, test command and verification/merge routing; do not claim runtime evidence
   from prose/tests. Shared app-host smoke is probe-never-manage (§2b).
-- Exact authorized model/effort selection or inherited configured defaults, authorization
-  source, runtime capabilities and fork restrictions; no peer-authorized model switch.
+- Exact authorized model/effort selection or inherited configured defaults, phase,
+  date, authorization source, override scope, runtime capabilities and fork
+  restrictions; no peer-authorized model switch. Carry settled planning decisions,
+  ownership, constraints, verification and stop gates. Medium effort does not
+  weaken checks; surface investigation/effort needs, return real forks to planning,
+  and never silently increase effort. Token saving is a goal, not measured proof.
 - Available skill invocations (`$vl-crucible-<stack>`, `$vl-finish-feature`), or explicit
   source-read/apply fallback. Verify checkout/branch/status before edits; preserve
   ignored/private files. Never implement in the main clone.

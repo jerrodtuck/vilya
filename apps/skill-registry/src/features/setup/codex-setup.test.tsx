@@ -9,6 +9,10 @@ describe("Codex setup and canon", () => {
     const html = renderToStaticMarkup(<CodexSetup />);
     for (const value of ["-IncludeCodex", "--include-codex", "$HOME/.agents/skills", "~/.claude/skills", "$vl-orch-codex", "installation success alone", "resolved source", "/orch?host=codex", "/architect?host=codex", "/differences?host=codex", "Codex CLI", "plan:ready ∧ night-shift:ready"]) expect(html).toContain(value);
   });
+  it("teaches the scoped standing model preference and verification hold", () => {
+    const html = renderToStaticMarkup(<CodexSetup />);
+    for (const value of ["Astra/high planning", "Sol/medium implementation", "override scope", "active and resumed worker pins", "Other operators keep configured defaults", "medium effort never weakens checks", "return real forks to planning"]) expect(html).toContain(value);
+  });
   it("keeps the bundled canon equal to source and preserves attributed ADR amendments", () => {
     const canon = fs.readFileSync(path.resolve("../../docs/project-tracking/GITHUB-PROJECTS.md"), "utf8");
     expect(fs.readFileSync("content/GITHUB-PROJECTS.md", "utf8")).toBe(canon);

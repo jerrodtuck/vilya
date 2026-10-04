@@ -1,0 +1,1 @@
+Codex desktop guidance now records this operator's adopted #329 phase preference: latest supported Astra/high planning, then latest supported Sol/medium implementation. Dispatch validates current capabilities and scoped overrides, preserves active worker pins, and carries full verification into implementation.
