@@ -60,6 +60,7 @@ describe("rendered teaching preserves facts and precise evidence limits", () => 
     for (const fact of ["Goal:", "Owner:", "Scope/ownership:", "Dependencies:", "Exclusions:", "Decision:", "Model:", "Verification:", "Stops:", "Repairs:", "Close-out:", "second consecutive unsuccessful", "2–3 options with costs", "PR number is not supplied", "Source tests do not prove runtime acceptance"]) expect(WORKER_BRIEF).toContain(fact);
     const html = renderToStaticMarkup(<CommunicationGuide />);
     expect(html).toContain('role="img"'); expect(html).toContain("task-flow-desc");
+    expect(html).toContain('href="https://github.com/jerrodtuck/vilya/blob/master/skills/vl-present/references/examples.md">vl-present’s illustrative examples</a>');
     expect(html).toContain("Explain the flow in text only"); expect(html).toContain("Will teammates use this in chat, or need a portable file?");
   });
   it.each(["codex", "cc", "cursor"])("renders whole-folder update and separate adoption guidance for %s", host => {
