@@ -109,10 +109,20 @@ test('managed isolation and archive contracts cannot borrow legacy cleanup', () 
 
 test('Codex models, active-turn recovery and completion stay capability-bound', () => {
   const orch = skills['vl-orch-codex'];
-  for (const term of ['human-authorized override','Astra / Sol','full-history','fork_turns: none','followup_task','wait_agent','list_agents','separately authorized automation','Resume the viable existing worker','uncommitted and ignored files']) assert.ok(orch.includes(term), term);
+  for (const term of ['human-authorized override','Astra / high','Sol / medium','full-history','fork_turns: none','followup_task','wait_agent','list_agents','separately authorized automation','Resume the viable existing worker','uncommitted and ignored files']) assert.ok(orch.includes(term), term);
   assert.match(orch, /cannot override/);
   assert.match(orch, /Explicit operator choices/);
   assert.match(orch, /New sidebar chats require explicit human request/);
+  for (const text of [orch, skills['vl-chip']]) {
+    assert.match(text, /Astra\s*\/\s*high|Astra\/high/);
+    assert.match(text, /Sol\s*\/\s*medium|Sol\/medium/);
+    assert.match(text, /operators without a human-authorized override|Other\n   operators/);
+    assert.match(text, /override scope|stated scope/);
+    assert.match(text, /active and resumed worker/);
+    assert.match(text, /stop/);
+  }
+  assert.match(orch, /Medium effort never relaxes tests/);
+  assert.match(skills['vl-chip'], /Medium effort does not\n  weaken checks/);
   const finish = skills['vl-finish-feature'];
   assert.match(finish, /owning issue \*\*and parent\*\*/);
   assert.match(finish, /attach_artifact/);

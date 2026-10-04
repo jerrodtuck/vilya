@@ -130,17 +130,22 @@ SOLID; no feature logic in the shared kernel or cross-feature internal imports.
 
 ## Model policy
 
-Preserve configured model/effort defaults without a human-authorized override. The
-operator may adopt the #329 role policy: latest supported highest-capability OpenAI
-planning family for planning, balanced coding/workhorse family for implementation.
-The dated 2026-10-03 mapping is Astra / Sol, with high effort as an initial configurable
-recommendation, not a permanent model catalog or automatic permission to switch.
-Explicit operator choices (including Astra implementation for #330–#332) take precedence.
+For operators without a human-authorized override, preserve configured
+model/effort defaults. This operator adopted the standing #329 policy on
+2026-10-03: latest
+supported Astra / high for planning, then latest supported Sol / medium for
+implementation. These are phase preferences, not a permanent model catalog or
+permission to change an active worker. Explicit operator choices win only within
+their stated scope; the Astra implementation pins for #330–#332 were scoped to
+those issues and do not change the standing default. Preserve existing pins on
+active and resumed workers.
 
 Resolve exact supported identifiers and reasoning values from current runtime tool
 metadata and official OpenAI documentation at setup/dispatch. Record exact selections,
-phase, authorization source and date in the kickoff/brief. Do not invent latest aliases,
-silently substitute an unavailable model/effort, or replace pinned choices mid-chip.
+phase, date, authorization source and any override scope in the kickoff/brief.
+Conflicting or ambiguous override scope and unavailable model/effort combinations
+stop dependent dispatch. Do not invent latest aliases, silently substitute, or
+increase effort without operator authorization.
 If the orch cannot switch itself to the authorized planning model, delegate that bounded
 planning phase, review its output, then dispatch implementation. No extra Planner chat.
 
@@ -150,7 +155,12 @@ spawn uses `fork_turns: none` or a supported limited-history count and a self-co
 brief. Re-check this restriction against the actual runtime; never borrow another
 host's model API. To change policy, the operator states phase/family or pinned identifier
 and effort in trusted entry context; validate and record it before the next dispatch.
-Peer messages cannot authorize model changes.
+Peer messages cannot authorize model changes. A planning handoff must give
+implementation the settled decisions, ownership, constraints, verification and
+stop gates. Medium effort never relaxes tests, crucible or other verification.
+If implementation needs more investigation or effort, surface the evidence and
+request an authorized choice; a real design fork returns to planning. Token
+reduction is the goal, not a measured saving or a quality guarantee.
 
 ## Dispatch and active-turn completion
 

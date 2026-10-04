@@ -56,7 +56,10 @@ describe("Codex orchestration teaching", () => {
     expect(text).toContain("do-not-dispatch, filed-for-record"); expect(text).toContain("priority:critical > priority:high");
   });
   it("keeps model selection configurable and explicitly bounded by runtime contracts", () => {
-    for (const term of ["configured defaults", "Explicit operator pins", "Do not invent a latest alias", "full-history forks", "limited or no-history", "Astra planning / Sol implementation", "delegate only the planning stage"]) expect(text).toContain(term);
+    for (const term of ["configured defaults", "latest supported Astra/high", "latest supported Sol/medium", "override scope", "#330–#332", "active and resumed workers", "Do not invent a latest alias", "full-history forks", "limited or no-history", "delegate only the planning stage", "Medium effort never weakens verification", "return real design forks to planning"]) expect(text).toContain(term);
+    expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain(`Load ${SKILL_INVOKES.orchestratorCodex}'s Model policy`);
+    expect(cards.find(card => card.label === "Worker entry — include in every brief")!.text).toContain(`Load ${SKILL_INVOKES.chip}'s Codex phase policy`);
+    expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain("Astra/high planning, then latest supported Sol/medium implementation");
   });
   it("requires requested sidebar workers to be grouped without granting chat creation", () => {
     for (const term of ["<repo-short>-orch-working", "vilya-orch-working", "list_threads", "create_sidebar_section", "move_thread_to_sidebar_section", "rename_sidebar_section", "preserve project association", "every created worker grouped", "ordinary subagents are not promised sidebar entries"]) expect(text).toContain(term);

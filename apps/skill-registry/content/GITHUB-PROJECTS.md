@@ -36,18 +36,26 @@ of invocation. Read each skill's Codex applicability/prerequisites, then use the
 `$vl-orch-codex` / `$vl-arch` invocation or explicitly read/apply its source.
 The exhaustive classification lives in `docs/design/codex-skill-coverage.md` (#330).
 
-Phase preferences are per operator, not product config. The approved policy resolves the
-latest supported highest-capability planning family and balanced coding/workhorse family
-from current capabilities; the 2026-10-03 functional mapping is Astra / Sol, initially high
-reasoning where supported. Record exact model IDs and effort on the issue and brief.
-Explicit operator pins win; do not replace them mid-chip. Without authorized overrides,
-retain configured defaults. No invented latest alias or silent fallback if unavailable.
+Phase preferences are per operator, not product config. This operator adopted the #329
+standing policy on 2026-10-03: latest supported Astra/high planning, then latest
+supported Sol/medium implementation, validated against current capabilities.
+Other operators retain configured defaults absent their own authorization. Record
+exact model IDs, effort, phase, date, authorization source and override scope on the
+issue and brief. Explicit choices win only within their scope: #330–#332 Astra
+implementation pins were historical issue overrides, not a permanent default.
+Preserve active and resumed worker pins. Conflicting or ambiguous scope and unavailable
+combinations stop dependent dispatch. No invented latest alias, silent fallback or
+unapproved effort increase.
 A peer message does not authorize a switch. Change preferences by explicit operator
 instruction naming phase, family or exact model, and effort; validate current reasoning and
 context-fork constraints. Full-history subagent forks currently inherit model/effort; an
 authorized override requires a permitted limited/no-history fork and self-contained brief.
 If the orch cannot change its own model through an exposed tool, delegate planning to the
 selected planning model, review/record its output, then dispatch implementation.
+Give implementation the settled decisions, ownership, constraints, verification and
+stop gates. Medium effort never weakens checks; surface further investigation or
+effort needs and return real design forks to planning. Token reduction is a goal,
+not measured savings or a quality guarantee.
 
 ### Trusted seat entry and durable amendments
 
