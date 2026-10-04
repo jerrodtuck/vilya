@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { SkillDownload } from "./skill-download";
 import { BoardGuide } from "./board-guide";
 import { GithubProjectsTool } from "./github-projects-tool";
+import { MigrationConfigGuide } from "./migration-config-guide";
 import { loadGithubProjectsTemplate } from "./load-github-projects-template";
 import { AUTONOMY_LABELS } from "./plan-execute-routing";
 import { PlanExecuteSection } from "./plan-execute-section";
@@ -210,6 +211,7 @@ export function SetupView() {
 
       <h2>Regenerate GITHUB-PROJECTS.md</h2>
       <GithubProjectsTool canonMarkdown={canonMarkdown} />
+      <MigrationConfigGuide />
 
       <Suspense fallback={<p>Loading download recipe…</p>}><SkillDownload /></Suspense>
 

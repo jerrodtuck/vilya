@@ -175,6 +175,42 @@ App Router) and is being migrated incrementally:
 
 ---
 
+## Database/schema migrations — conditional review
+
+Limit this review to touched schema, migration/history and database-affecting
+deployment paths. Record applicability and evidence; Next.js does not imply Drizzle.
+Read **Migration tool**, **Migration command** and **Migration status** from the
+product's `docs/project-tracking/GITHUB-PROJECTS.md`. Inspect its actual repo policy,
+scripts, installed framework version, relevant schema/history and owning issue evidence.
+Blank means unknown; a proposed command is not a verified runner.
+
+- **Verified no application database:** report not applicable with the evidence.
+  Explicit `none` / explained `n/a` records that decision; do not infer it from blanks.
+- **Database present, unrelated UI/docs diff:** explain why no database-affecting path
+  changed. Missing optional migration fields do not globally block unrelated acceptance.
+- **Relevant Drizzle change:** require committed generated/custom SQL and the journal,
+  snapshots and other metadata required by the installed version. Verify the configured
+  application runner and preserve immutable applied history; subsequent changes belong
+  in a new migration, not a rewrite of applied SQL or metadata.
+- **Relevant other-framework change:** inspect that configured framework's conventions,
+  required artifacts/history and actual runner. Do not demand Drizzle artifacts or an ORM
+  replacement. Apply the repo's existing safety policy to the affected change.
+- **Relevant change with missing, conflicting or pending settings/evidence:** keep the
+  affected gate unresolved and unready. Inspect actual sources and the real owning
+  runner/baseline follow-up; never invent `none`, a runner or readiness to pass review.
+
+Read the existing [database migration policy](https://github.com/jerrodtuck/vilya/blob/master/docs/project-tracking/GITHUB-PROJECTS.md#database-migrations)
+and applicable product evidence for baseline, target, backup integrity, restoration,
+restored-state upgrade/reapplication checks and recovery. Do not duplicate or relax
+those procedures. Unsafe history bypass, missing required artifacts, changed applied
+history, production push/ad hoc migration SQL, or unsatisfied applicable baseline,
+target/backup/restore safety proof are **Blockers** on affected acceptance. Name the
+concrete fix: add the missing reviewed artifacts/runner/evidence, restore immutable
+history and use a new migration, or complete the owning baseline/safety follow-up.
+Report findings under the existing severity/refactor shape. Review neither executes
+migrations nor grants database/production execution authority.
+
+---
 ## Component baseline — review the repo policy
 
 Apply this check to actual UI: components, rendered templates, dashboards and their
