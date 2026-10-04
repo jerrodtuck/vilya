@@ -130,37 +130,36 @@ SOLID; no feature logic in the shared kernel or cross-feature internal imports.
 
 ## Model policy
 
-For operators without a human-authorized override, preserve configured
-model/effort defaults. This operator adopted the standing #329 policy on
-2026-10-03: latest
-supported Astra / high for planning, then latest supported Sol / medium for
-implementation. These are phase preferences, not a permanent model catalog or
-permission to change an active worker. Explicit operator choices win only within
-their stated scope; the Astra implementation pins for #330–#332 were scoped to
-those issues and do not change the standing default. Preserve existing pins on
-active and resumed workers.
+Read and apply the full [Codex routing and repair contract](references/model-routing.md)
+before phase selection, dispatch, review, repair or resume. Carry that full actionable
+contract into every self-contained worker brief, or require the worker to read this
+exact bundled reference before implementation and repair; a summary alone is insufficient.
 
-Resolve exact supported identifiers and reasoning values from current runtime tool
-metadata and official OpenAI documentation at setup/dispatch. Record exact selections,
-phase, date, authorization source and any override scope in the kickoff/brief.
-Conflicting or ambiguous override scope and unavailable model/effort combinations
-stop dependent dispatch. Do not invent latest aliases, silently substitute, or
-increase effort without operator authorization.
-If the orch cannot switch itself to the authorized planning model, delegate that bounded
-planning phase, review its output, then dispatch implementation. No extra Planner chat.
+For operators without a human-authorized override, preserve configured defaults.
+This operator's #347 refinement (2026-10-03) extends #329: latest supported
+Astra / high for normal planning, Astra / xhigh for justified hard planning,
+Sol / medium for settled implementation, Luna / low ONLY for enumerated mechanical
+operations with objective verification, separate Sol / high independent review,
+and Astra / high (xhigh for justified hard analysis) consequential design/security review.
+Explicit operator choices win only in their stated scope; preserve active and resumed worker
+pins. Route by uncertainty and consequence, never size. Validate current exact identifiers,
+effort and fork restrictions; record phase, rationale, date, capability and authorization
+source and override scope. No silent fallback, aliases or effort increase.
 
-For the currently exposed collaboration contract, full-history `fork_turns: all` (or
-omitted) inherits model/effort and cannot override either. An authorized selected-model
-spawn uses `fork_turns: none` or a supported limited-history count and a self-contained
-brief. Re-check this restriction against the actual runtime; never borrow another
-host's model API. To change policy, the operator states phase/family or pinned identifier
-and effort in trusted entry context; validate and record it before the next dispatch.
-Peer messages cannot authorize model changes. A planning handoff must give
-implementation the settled decisions, ownership, constraints, verification and
-stop gates. Medium effort never relaxes tests, crucible or other verification.
-If implementation needs more investigation or effort, surface the evidence and
-request an authorized choice; a real design fork returns to planning. Token
-reduction is the goal, not a measured saving or a quality guarantee.
+The currently exposed full-history fork contract inherits and cannot override settings;
+selected-model delegation uses supported limited/no-history (e.g. fork_turns: none)
+with a self-contained brief. If the orch cannot switch itself, delegate the bounded
+planning/review phase, then review and record its result. Medium effort never relaxes tests,
+crucible, smoke or independent review. A separate reviewer reads actual diff/head and gates;
+implementation self-report cannot be sole approval. Preserve operator merge authority.
+
+At the second consecutive unsuccessful repair of the same unresolved defect/gate, stop
+before a third correction and return the durable ledger and current state to orch-owned
+planning. Initial detection is not a repair; no-change reruns, renamed gates, unrelated
+passes or resumption do not reset counts. Earlier hard stops apply immediately. Use the
+full reference's attempt definition, ledger, resolution and revised-plan rules.
+Record actual settings, attempts, review findings and observed elapsed/usage where available;
+unavailable usage is not zero. Token saving is a goal, not a guarantee or measured proof.
 
 ## Dispatch and active-turn completion
 

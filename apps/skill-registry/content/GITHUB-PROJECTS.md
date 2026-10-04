@@ -9,8 +9,9 @@ from their own SKILL.md.
 
 Skills (`vl-start-feature` / `vl-finish-feature` / `vl-update-docs` /
 `vl-night-shift` / `/vl-plan` / …) read owner, project, labels, stack, test command,
-and crucible variant from here. Planning vs execution **models** are per-operator, never stored
-in this file: **Planner session = Fable** (`claude --model fable`); **orchestrator + chips =
+and crucible variant from here. **Model selections are per operator, never product config.**
+This Vilya process canon records approved policy; downstream config-only files must not
+copy phase choices. Claude Code: **Planner session = Fable** (`claude --model fable`); **orchestrator + chips =
 Sonnet** via `model` in `.claude/settings.local.json` (gitignored; chips inherit it via
 `.worktreeinclude`) — **not** orchestrator `/model` as the planner. **Cursor** — per-conversation
 model dropdown, both phases; **night-shift** — the model is fixed by the launcher (workflow
@@ -38,9 +39,16 @@ The exhaustive classification lives in `docs/design/codex-skill-coverage.md` (#3
 
 Phase preferences are per operator, not product config. This operator adopted the #329
 standing policy on 2026-10-03: latest supported Astra/high planning, then latest
-supported Sol/medium implementation, validated against current capabilities.
+supported Sol/medium implementation, validated against current capabilities. #347
+extends this to Astra/xhigh justified hard planning, Luna/low ONLY explicitly
+enumerated mechanical operations with objective verification, separate Sol/high
+independent review, and Astra/high (justified xhigh) consequential design/security
+review. Route by uncertainty and consequence, never line count; small behavior
+changes are not Luna-eligible. Read and apply the full
+[Codex routing and repair contract](../../skills/vl-orch-codex/references/model-routing.md)
+before selecting phases, dispatching, repairing or resuming.
 Other operators retain configured defaults absent their own authorization. Record
-exact model IDs, effort, phase, date, authorization source and override scope on the
+exact model IDs, effort, phase, rationale, date, capability evidence, authorization source and override scope on the
 issue and brief. Explicit choices win only within their scope: #330–#332 Astra
 implementation pins were historical issue overrides, not a permanent default.
 Preserve active and resumed worker pins. Conflicting or ambiguous scope and unavailable
@@ -55,7 +63,15 @@ selected planning model, review/record its output, then dispatch implementation.
 Give implementation the settled decisions, ownership, constraints, verification and
 stop gates. Medium effort never weakens checks; surface further investigation or
 effort needs and return real design forks to planning. Token reduction is a goal,
-not measured savings or a quality guarantee.
+not measured savings or a quality guarantee. At the second consecutive unsuccessful
+corrective change plus targeted verification of the same unresolved defect/gate,
+stop before a third correction and return the stable ledger/HEAD/diff/ownership to
+orch-owned planning. Initial detection is not a repair; reruns, renames, unrelated
+passes or new workers/resumes/branches do not reset counts. Earlier hard stops apply.
+Preserve files and exact pins; apply the full contract for resolution/revised-plan rules.
+Independent review reads actual head/diff and meaningful gates; implementer self-report
+cannot be sole approval. Keep lightweight issue/PR actual settings, attempt counts,
+review findings and elapsed/usage evidence where available; unavailable usage is not zero.
 
 ### Trusted seat entry and durable amendments
 

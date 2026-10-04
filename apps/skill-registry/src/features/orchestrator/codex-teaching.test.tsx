@@ -72,3 +72,25 @@ describe("Codex orchestration teaching", () => {
     expect(text).toContain("Only create a later automation when explicitly requested");
   });
 });
+
+
+describe("#347 full contract delivery", () => {
+  const cards = CODEX_PROMPTS.flatMap(group => group.items);
+  const required = ["Codex — Orchestrator", "Set phase preferences", "Prepare checkout and dispatch", "Worker entry — include in every brief", "Follow a running chip", "Interrupted worker / restart"];
+  it.each(required)("%s carries routing and repair instructions when copied alone", label => {
+    const entry = cards.find(card => card.label === label)!.text;
+    expect(entry).toContain("Read and apply the full resolved vl-orch-codex/references/model-routing.md");
+    for (const route of ["Astra/high", "Astra/xhigh", "Sol/medium", "Luna/low ONLY", "Sol/high independent review"]) expect(entry).toContain(route);
+    for (const rule of ["small behavior change", "Initial detection/reproduction is not a repair attempt", "targeted verification is one attempt", "No-change reruns", "second consecutive unsuccessful repair attempt STOP before a third correction", "current HEAD/diff", "earlier hard stops", "unavailable usage is not zero"]) expect(entry.toLowerCase()).toContain(rule.toLowerCase());
+    expect(entry).toContain("implementer cannot be sole approval");
+    expect(entry).toContain("preserving history");
+    // This checks the exported entry, not neighboring page text or an aggregate of cards.
+    const resource = fs.readFileSync("content/skills/vl-orch-codex/references/model-routing.md", "utf8");
+    expect(resource).toContain("## Repair ledger and stop");
+    expect(resource).toContain("## Acceptance examples");
+  });
+  it("renders the expanded phases and bounded repairs on the Codex page", () => {
+    const html = renderToStaticMarkup(<CodexOrchestration />);
+    for (const term of ["Luna/low", "Sol/high", "Astra/xhigh", "third correction", "renames and resumes"]) expect(html).toContain(term);
+  });
+});

@@ -11,7 +11,7 @@ describe("Codex setup and canon", () => {
   });
   it("teaches the scoped standing model preference and verification hold", () => {
     const html = renderToStaticMarkup(<CodexSetup />);
-    for (const value of ["Astra/high planning", "Sol/medium implementation", "override scope", "active and resumed worker pins", "Other operators keep configured defaults", "medium effort never weakens checks", "return real forks to planning"]) expect(html).toContain(value);
+    for (const value of ["Astra/high planning", "Sol/medium implementation", "override scope", "active and resumed worker pins", "Other operators keep configured defaults", "medium effort never weakens checks", "return real forks to planning", "Luna/low ONLY", "Astra/xhigh", "Sol/high independent review", "second consecutive unsuccessful", "unavailable usage is not zero", "merge/pull", "reload the session", "divergent copies", "references/model-routing.md"]) expect(html).toContain(value);
   });
   it("keeps the bundled canon equal to source and preserves attributed ADR amendments", () => {
     const canon = fs.readFileSync(path.resolve("../../docs/project-tracking/GITHUB-PROJECTS.md"), "utf8");

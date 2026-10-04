@@ -2,6 +2,18 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-03 — Codex routing by phase, uncertainty and consequence (#347)
+
+**Decision:** Operator approved latest supported Astra/high normal planning, Astra/xhigh justified hard planning, Sol/medium settled implementation, Luna/low ONLY bounded enumerated mechanical operations with objective verification, separate Sol/high independent review, and Astra/high or justified xhigh consequential design/security review. Preserve configurable capability-validated exact choices, scoped explicit overrides and active/resumed pins. This explicitly supersedes the earlier two-tier #329/#345 policy as the complete routing table and the historical high/high initial recommendation; historical records below remain intact. Other operators retain configured defaults without their own authorization.
+
+**Options:** (1) Prior two-tier Astra/high → Sol/medium — cost: no mechanical eligibility or explicit review allocation; (2) **phase-aware tiers and bounded repairs, chosen** — cost: eligibility rules and durable exact-setting/repair bookkeeping; (3) automatic cheapest-first — cost: uncertainty and consequence shifted into rework.
+
+**Why:** Operator wants reasoning budget invested in plans and lighter implementation. Complete plans, objective verification and independent review are the mechanism; model labels do not guarantee savings. Official model-selection guidance supports role allocation, not observed Vilya outcomes. No Vilya savings measurements are claimed.
+
+**Consequences:** #347 owns Codex skill/entry/site teaching and bundled contract. Initial failure is detection, not repair. A repair is a corrective change plus targeted verification; failed/inconclusive checks are unsuccessful. At the second consecutive unsuccessful repair of the same unresolved defect/gate, stop before a third and return stable ledger, exact gate, changes, HEAD/diff, ownership and hypothesis to orch planning. Reruns, renames, unrelated passes, workers/resumes/branches do not reset counts. Meaningful targeted resolution closes an entry; regressions retain linked history. Revised allowances require explicit recorded authorized planning decisions. Earlier hard stops apply immediately. Keep full quality gates, independent review and operator merge authority. Capture lightweight actual phase/attempt/review/elapsed/usage evidence where available; missing usage is unavailable, not zero.
+
+**Evidence:** [Operator-approved direction and ADR](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975011992), [settled implementation plan](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975070688), [#329 budget clarification](https://github.com/jerrodtuck/vilya/issues/329#issuecomment-5974775376), [official model-selection guidance](https://developers.openai.com/api/docs/guides/model-selection). Approved 2026-10-03; mirror on the owning feature branch. Source/packaging and teaching tests do not prove runtime routing, subscription savings or full #329 acceptance. Orch owns subsequent filing and dispatch; no new runtime router, telemetry or product-config model catalog.
+
 ## 2026-10-03 — Repo-owned component baselines and approval evidence (#328)
 
 **Decision:** Add a cross-stack check of the repo's configured component baseline and custom-component policy at crucible review, per the architect's [full 2026-10-03 ruling](https://github.com/jerrodtuck/vilya/issues/328#issuecomment-5973370249). The product owns its library, constraints and approval policy; Vilya does not impose anduin-admin's approval-required rule on every repo.
