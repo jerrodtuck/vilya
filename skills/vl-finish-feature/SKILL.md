@@ -18,6 +18,17 @@ Invoke the configured crucible via `$vl-crucible-<stack>` when discovered, or re
 and apply its full source; report findings/remediation and readiness, not an invocation
 claim. No worker dispatch, merge, default-branch push, or managed-tree cleanup.
 
+Read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
+before review, corrective work or resumption. Preserve exact worker pins and the same
+defect's repair ledger. At the second consecutive unsuccessful corrective attempt,
+stop before a third and return issue evidence/HEAD/diff/ownership to orch-owned planning;
+no-change reruns or resumption do not reset the count. Earlier hard stops still apply.
+Record actual phase settings, attempts, review findings and elapsed/usage where available;
+unavailable usage is not zero. A separate Sol/high reviewer (Astra/high or justified
+xhigh for consequential design/security) inspects the actual head/diff and meaningful
+verification. Implementer self-report cannot be sole approval; existing mandatory
+crucible, smoke and operator merge authority remain intact.
+
 **Standing human messaging authorization — worker entry prerequisite:** the worker's
 own trusted brief must explicitly authorize initiating and replying to its owning
 orch on the same product board within the assigned role. #329 supplies that scope

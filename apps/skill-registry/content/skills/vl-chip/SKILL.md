@@ -130,9 +130,15 @@ the `spawn_task` and monitor procedures below apply only to the other hosts.
    Explicit starting ref, base SHA, absolute checkout, issue branch and ignored setup
    must be verified before spawn. Subagents share the workspace: spawn alone is not
    isolation. Every worker shell/read/write must target its assigned checkout.
-3. Apply the [Codex phase policy](../vl-orch-codex/SKILL.md#model-policy): for the
+3. Read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
+   before selection, implementation, review, repair or resume; require every worker
+   to load it from the resolved complete skill folder. Apply the [Codex phase policy](../vl-orch-codex/SKILL.md#model-policy): for the
    operator who adopted #329 on 2026-10-03, select the latest supported Astra/high
-   planning model and latest supported Sol/medium implementation model. Other
+   planning model and latest supported Sol/medium implementation model. #347 extends
+   this with Astra/xhigh justified hard planning, Luna/low ONLY enumerated mechanical
+   work with objective verification, separate Sol/high independent review, and
+   Astra/high (justified xhigh) consequential design/security review. Route by
+   uncertainty and consequence; small behavior changes are not Luna-eligible. Other
    operators keep configured defaults absent their own authorization. A scoped
    explicit override wins only in scope; prior #330–#332 Astra implementation pins
    are historical, not a standing change. Validate exact model/effort against
@@ -166,6 +172,16 @@ convention only through equivalent exposed tools, never borrowed Codex APIs. Car
 the amendment into the PR and verify it independently at the merge gate.
 
 ### Codex self-contained worker brief
+
+Require the worker to read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
+before implementation, repair or resume, from the resolved canonical/installed complete
+folder. Include its routing, eligibility, independent-review and repair-ledger rules in
+the actual entry; a bare model pin or optional link does not deliver the contract.
+Initial detection is not a repair attempt; at the second consecutive unsuccessful
+corrective change plus targeted verification of the same unresolved defect, STOP before
+a third correction and persist the ledger/HEAD/diff/ownership/hypothesis for orch planning.
+Renames, no-change reruns, unrelated passes and resumes do not reset the count. Preserve
+files and exact pins; earlier hard stops apply immediately.
 
 Include each item in the actual dispatch prompt, even with inherited history:
 
