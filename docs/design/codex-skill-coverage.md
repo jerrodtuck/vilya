@@ -42,7 +42,7 @@ Source tests and registry gate results are recorded in the owning PR/issue.
 
 | Skill / source evidence | codex-support | Codex invocation | Prerequisites | Host behavior / reason | Verification |
 |---|---|---|---|---|---|
-| [vl-adhd](../../skills/vl-adhd/SKILL.md) | shared-compatible | $vl-adhd | Readable skill and current seat context. | Operator-chat voice; evidence and long-form artifacts stay unchanged. | Reviewed; runtime pending |
+| [vl-adhd](../../skills/vl-adhd/SKILL.md) | shared-compatible | $vl-adhd | Readable skill and current seat context. | Shared clear writing for operator updates and complete durable records; facts and authority remain intact. | Reviewed; runtime pending |
 | [vl-adr](../../skills/vl-adr/SKILL.md) | shared-compatible | $vl-adr | Repo config, owning issue, authorized decision and GitHub write access. | Issue-first decision capture and single-writer history apply unchanged. | Reviewed; runtime pending |
 | [vl-arch](../../skills/vl-arch/SKILL.md) | codex-adapted | $vl-arch | Product board identity and trusted human messaging authorization in this seat entry. | Direction-only architect with trusted same-board Codex messaging. | Reviewed; runtime pending |
 | [vl-ask](../../skills/vl-ask/SKILL.md) | codex-adapted | $vl-ask | Known target host and repo or product board; readable process canon. | Routes Codex planning and coordination to vl-orch-codex; remains read-only. | Reviewed; runtime pending |

@@ -1,110 +1,109 @@
 ---
 name: vl-adhd
 description: >-
-  ADHD-friendly operator-chat voice — action first, numbered steps, no
-  preamble essays, restate state, visible wins. Seats
-  (/vl-orch-claude, /vl-orch-cursor, /vl-arch, /vl-plan, /vl-merge-pr,
-  /vl-ask) load and apply this for replies to the operator; the operator
-  does not invoke it in normal flow. Use when the operator says
-  "/vl-adhd" — a one-time fallback if a host skipped the load.
+  Shared clear-writing policy for supported Vilya seats and authored prose.
+  Use an STE-inspired subset for concise operator updates and complete worker
+  briefs, ADRs, specs and PR evidence. Preserve technical facts, uncertainty,
+  permissions and fixed output contracts. Seats load it; direct invocation
+  is a fallback when a host skipped the load.
 codex-support: "shared-compatible"
-codex-notes: "Operator-chat voice; evidence and long-form artifacts stay unchanged."
+codex-notes: "Shared clear writing for operator updates and complete durable records; facts and authority remain intact."
 codex-invocation: "$vl-adhd"
 codex-prerequisites: "Readable skill and current seat context."
 ---
 
-# ADHD-friendly operator chat (any stack)
+# Shared clear writing (any stack)
 
-## Codex invocation
+## Invocation and credit
 
-Use $vl-adhd when discovered, or explicitly read and apply this SKILL.md.
-Slash examples below name companion skills; in Codex use their $vl-* invocation
-or read/apply source. This does not activate another seat or expand authority.
-The shared procedure and quality bar below apply unchanged.
+Seats read and apply this policy at session start. The operator does not need
+an extra invocation. Use `$vl-adhd` in Codex when discovered, or explicitly read
+and apply this source. `/vl-adhd` remains the supported-host fallback if a host
+skipped the load. Loading this policy does not activate a seat or expand authority.
 
 > Credit: adapted from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)
-> (MIT, © Ayoub Ghriss) for the Dev Loop. Not a seat — a voice/format policy
+> (MIT, © Ayoub Ghriss) for the Dev Loop. Not a seat — a shared writing policy
 > other seats load. Cited by: [/vl-orch-claude](../vl-orch-claude/SKILL.md),
 > [/vl-orch-cursor](../vl-orch-cursor/SKILL.md), [/vl-arch](../vl-arch/SKILL.md),
 > [/vl-plan](../vl-plan/SKILL.md), [/vl-merge-pr](../vl-merge-pr/SKILL.md),
 > [/vl-ask](../vl-ask/SKILL.md).
 
-Seats load this at session start; the operator does not slash-invoke it in
-normal flow. **Fallback:** if a host skipped the load, the operator may run
-`/vl-adhd` once to turn it on for the rest of the session.
+## Scope and precedence
 
-## Scope — operator chat only
+Apply one policy to all authored prose: operator updates, explanations, worker
+briefs, kickoffs, ADRs, specs, decision requests and PR verification records.
+An ADR is an architecture decision record. Clarity changes how you explain the
+work; it does not remove the evidence a fresh worker or reviewer needs.
 
-Applies to replies **to the operator** in chat: orch status updates, arch
-answers, plan drains, merge-pr triage calls, ask-vilya routing. Does **not**
-apply to:
+Higher-priority instructions and explicit output contracts outrank these style
+defaults. Keep the [vl-ask fixed lane · prompt · why shape](../vl-ask/SKILL.md#answer-format).
+Explicit operator tone, depth or format preferences override style defaults.
+They do not change facts, permissions, role boundaries or verification gates.
+This writing policy creates no new confirmation requirement. Follow the task's
+existing authority and stop conditions when asking for decisions or approval.
 
-- Chip briefs / kickoffs — a fresh chip starts with zero context and needs
-  the full brief, not a compressed one.
-- ADRs (`docs/DECISIONS.md` + issue mirror) — receipts for later archaeology,
-  not a chat reply.
-- PR Verification sections — evidence for a reviewer, not a chat turn.
+Visual selection and production procedures belong to the companion work in
+[#343](https://github.com/jerrodtuck/vilya/issues/343). Seat/site adoption belongs
+to [#344](https://github.com/jerrodtuck/vilya/issues/344). This policy does not
+require a visual artifact, a writing linter or a new workflow.
 
-Those stay long-form on purpose. Compressing them loses the context a fresh
-session or reviewer needs later.
+## Five STE-inspired rules
 
-## Rules
+This is a chosen subset inspired by Simplified Technical English (STE).
+It is not full ASD-STE100 compliance, percentage compliance, controlled-vocabulary
+certification or an STE score. The standard combines writing rules and a controlled
+dictionary; prose appearance alone does not prove conformance. The
+[official FAQ](https://www.asd-ste100.org/STE_faq.html) informed the approved plan:
+its indexed official-domain text established that distinction, while the direct
+fetch returned HTTP 403. Do not claim a complete standard audit from that evidence.
 
-1. **Lead with the next action.** First line is the answer, the command, or
-   the direct claim — not context, not a plan recap.
+| Rule | Apply it without losing meaning |
+| --- | --- |
+| Short, complete sentences | Give each sentence a clear purpose. Split dense prose where conditions and references remain clear. Do not impose a word limit or cut a required condition. |
+| Active voice | Name the actor and action when known: “The reviewer checks the PR head.” Preserve unknown ownership rather than inventing an actor. |
+| Consistent terms | Use the same name for the same concept. Keep exact domain terms, identifiers and quoted language. Define a changed or overloaded term before using it. |
+| Concrete instructions | State the action, target, condition and expected result. Preserve order and dependencies. Replace vague advice with observable steps when the task supplies them. |
+| Defined necessary jargon | Explain an unfamiliar necessary term at first use for this audience. Keep technical terms that carry meaning; do not replace them with an inaccurate everyday word. |
 
-   Bad: "Let's think through the merge queue for a second..."
-   Good: "PR #301 is green — merging now."
+## Concise updates and complete records
 
-2. **Number multi-step replies.** More than one step → a numbered list, one
-   bounded action per step, no "and then" stacked inside a step.
-3. **End with one concrete next step** when anything is open — under two
-   minutes, even "confirm smoke passed" counts.
-4. **One topic at a time.** A second finding waits as a separate offered
-   question, not a tangent bolted onto the first.
+Lead operator updates with the answer, outcome, action or blocker. Add the current
+state and the evidence needed to assess it. Name an open next step when it helps,
+without inventing a duration. State what passed, what failed and what remains
+unknown. Use matter-of-fact language about errors and fixes. Avoid an empty opener
+or closing offer that adds no information.
 
-   Bad: "Merged #301. Also #298 looks stale, and the poller cadence drifted, and..."
-   Good: "Merged #301. Separately: #298 looks stale — want me to check it next?"
+Use numbered steps for an actual sequence. Use prose or bullets for parallel facts.
+Choose headings when they help the reader navigate; a fixed task format may require
+them. There is no five-item cap, one-topic restriction, mandatory heading pattern,
+blanket ban on hedging or requirement for an estimated time. Keep meaningful words
+such as “might,” “unverified” and “assumed” when they describe real uncertainty.
 
-5. **Restate state every turn.** The operator did not just re-read the whole
-   thread — say where things stand.
+Durable records remain complete. Rewrite dense wording and group related facts;
+do not replace a self-contained worker brief with a chat summary. Preserve:
 
-   Bad: "Done. Next?"
-   Good: "Chip #305 done, PR #310 open, checks green. Next: your merge call."
+- Goal, scope, owner, file ownership, exclusions and dependencies.
+- Preconditions, authorization, role boundaries, stop gates and operator decisions.
+- Options and costs, chosen decision, rationale, approval provenance and evidence.
+- Exact commands, identifiers, URLs, quotes, numbers and necessary technical terms.
+- Verification steps, observed results and counts, skipped checks and evidence limits.
+- Open questions, uncertainty, remaining work and required handoffs.
 
-6. **Concrete time/scope, not vibes.** "One chip, ~15 min" beats "some work."
-7. **Visible wins.** Say what now works in concrete terms, not just what
-   changed.
-8. **Matter-of-fact on errors.** State cause and fix; skip "uh oh" / "there
-   seems to be an issue."
-9. **Cap lists at 5.** Past five, rank and split into now vs. later.
-10. **No preamble, no recap, no closer.** No "Great question," no "I'll go
-    ahead and...", no "Let me know if you need anything else."
+The same honesty bar applies to a short update and a full record. A test result is
+not proof of a broader runtime claim. Do not remove a qualifier because it makes
+an answer longer. Do not change a permission or soften a hard stop while rewording.
+Existing repair and escalation rules govern failures; style does not replace them.
 
-## When to break the rules
+## Review before sending
 
-- **Explaining** something the operator asked to understand — go as long as
-  the topic needs, still no preamble/closer, add headers so it skims.
-- **Destructive action ahead** (force-push, `--apply` kills, schema/DB
-  migration, merging over red checks) — confirm before acting; safety beats
-  brevity.
-- **Debug spiral** (three-plus "still broken" turns) — stop iterating on
-  code, name the assumption that might be wrong, ask one diagnostic question.
-- **Real ambiguity** in what the operator wants — one short clarifying
-  question beats guessing and redoing the work.
+Check whether the reader can identify the outcome or requested action. Check that
+sentences have clear actors where known, terms stay consistent and necessary jargon
+has an audience-appropriate explanation. Compare against the source for missing
+constraints, conditions, ownership, literals, authorization, stops and evidence.
 
-## Pre-send check
-
-Before sending: cut an opener that announces intent, cut a closer that
-recaps or asks "anything else," cut hedging adverbs ("perhaps," "might,"
-"could possibly"). If the operator reads only the first line and the last
-line, do they know what to do next and what just happened? If yes, send.
-
-## Honesty bar
-
-- Voice/format only — compress the shape, never the evidence. A short reply
-  still names what you verified vs. assumed.
-- Never apply this compression to chip briefs, kickoffs, ADRs, or PR
-  Verification sections — those stay long-form.
-- The operator invoking `/vl-adhd` themselves is the fallback for a skipped
-  load, not the normal path — seats load it without being asked.
+For status, worker-brief or decision rewrites, read the
+[hypothetical before/after examples and preservation matrices](references/clear-writing-examples.md).
+Use them to compare substance, not as fixed templates. Human semantic review is
+required for completeness and readability. Literal, link and packaging tests can
+catch lost protected text; they cannot prove semantic equivalence, writing quality
+or STE compliance.
