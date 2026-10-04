@@ -20,7 +20,7 @@ app/runtime changes stay out of scope and token usage is unavailable, not zero.
 
 ### After
 
-PR #742 needs separate review before the operator decides on merge. The docs-only
+Issue #742’s PR needs separate review before the operator decides on merge. The docs-only
 worker owns `docs/help.md`. The exact head is `1111111111111111111111111111111111111111`.
 
 `node --test skills/tests/help-copy.test.mjs` reported 4 passed and 2 skipped on
@@ -34,7 +34,7 @@ There is still no merge authorization.
 | --- | --- |
 | Scope, owner and exclusions | Docs-only worker for #742 owns `docs/help.md`; app/runtime changes stay out of scope. |
 | Conditions, dependencies, authority and stops | Separate review of that exact head precedes the operator's merge decision; no merge authorization. |
-| Exact technical literals | PR #742, `docs/help.md`, full 40-character head, exact targeted command and Windows environment. |
+| Exact technical literals | Issue #742 (PR number not supplied), `docs/help.md`, full 40-character head, exact targeted command and Windows environment. |
 | Options, costs, decision, approval, rationale and evidence | No options or approval are claimed; the pending decision belongs to the operator. The targeted result supports review, not merge permission. |
 | Verification, results, skips and limits | 4 passed, 2 skipped; skipped Bash cases unverified; no runtime smoke; usage unavailable, not zero. |
 

@@ -115,3 +115,17 @@ test('complete generated folder and nested links are portable; coverage agrees w
   assert.ok(examples.includes('These examples are hypothetical fixtures'));
   assert.ok(examples.includes('not instructions, actual permissions'));
 });
+
+test('status preserves artifact type and issue identity without inventing a PR number', () => {
+  const { before, after, matrix } = pair('Status update');
+  const identities = text => [...text.matchAll(/\b(issue|PR|pull request)\s+#(\d+)\b/gi)]
+    .map(([, kind, number]) => ({ kind: kind.toLowerCase() === 'issue' ? 'issue' : 'pr', number: Number(number) }))
+    .sort((a, b) => a.kind.localeCompare(b.kind) || a.number - b.number);
+  const preserve = rewritten => assert.deepEqual(identities(rewritten), identities(before));
+  assert.deepEqual(identities(before), [{ kind: 'issue', number: 742 }]);
+  preserve(after);
+  preserve(matrix);
+  // A matching numeric literal with a different artifact kind must be rejected.
+  assert.throws(() => preserve(after.replace('Issue #742’s PR', 'PR #742')), { code: 'ERR_ASSERTION' });
+  assert.equal(identities(after).filter(ref => ref.kind === 'pr').length, 0);
+});
