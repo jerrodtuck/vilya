@@ -19,6 +19,9 @@ export interface GithubProjectsConfig {
   crucibleVariant: string;
   testCommand: string;
   manualSmoke: string;
+  migrationTool: string;
+  migrationCommand: string;
+  migrationStatus: string;
   componentBaseline: string;
   customComponentPolicy: string;
   defaultBranch: string;
@@ -58,6 +61,9 @@ export function emptyConfig(): GithubProjectsConfig {
     crucibleVariant: "",
     testCommand: "",
     manualSmoke: "",
+    migrationTool: "",
+    migrationCommand: "",
+    migrationStatus: "",
     componentBaseline: "",
     customComponentPolicy: "",
     defaultBranch: "",
@@ -88,6 +94,9 @@ export function mergeConfig(
     testCommand: pick(overrides.testCommand, parsed.testCommand),
     manualSmoke: pick(overrides.manualSmoke, parsed.manualSmoke),
     // Explicit empty policy overrides mean unknown; do not resurrect pasted policy.
+    migrationTool: overrides.migrationTool?.trim() ?? parsed.migrationTool,
+    migrationCommand: overrides.migrationCommand?.trim() ?? parsed.migrationCommand,
+    migrationStatus: overrides.migrationStatus?.trim() ?? parsed.migrationStatus,
     componentBaseline: overrides.componentBaseline?.trim() ?? parsed.componentBaseline,
     customComponentPolicy: overrides.customComponentPolicy?.trim() ?? parsed.customComponentPolicy,
     defaultBranch: pick(overrides.defaultBranch, parsed.defaultBranch),
@@ -143,6 +152,9 @@ export function configChecklist(config: GithubProjectsConfig): ChecklistItem[] {
     item("crucibleVariant", "Crucible variant", config.crucibleVariant),
     item("testCommand", "Test command", config.testCommand),
     item("manualSmoke", "Manual smoke", config.manualSmoke),
+    item("migrationTool", "Migration tool", config.migrationTool),
+    item("migrationCommand", "Migration command", config.migrationCommand),
+    item("migrationStatus", "Migration status", config.migrationStatus),
     item("componentBaseline", "Component baseline", config.componentBaseline),
     item("customComponentPolicy", "Custom component policy", config.customComponentPolicy),
     item("defaultBranch", "Default branch", config.defaultBranch),

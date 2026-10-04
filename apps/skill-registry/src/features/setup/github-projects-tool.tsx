@@ -16,7 +16,13 @@ import {
 import { generateSlim } from "./github-projects-generate";
 import { parseConfig } from "./github-projects-parse";
 
-/** Checklist key → config override. Empty string means "no override". */
+/** Policy fields remain editable; clearing them explicitly records an unknown value. */
+function isPolicyField(key: string): boolean {
+  return ["componentBaseline", "customComponentPolicy",
+    "migrationTool", "migrationCommand", "migrationStatus"].includes(key);
+}
+
+/** Checklist key → config override. Empty non-policy fields mean "no override". */
 type FieldOverrides = Record<string, string>;
 
 export function overridesToPartial(overrides: FieldOverrides): Partial<GithubProjectsConfig> {
@@ -27,7 +33,7 @@ export function overridesToPartial(overrides: FieldOverrides): Partial<GithubPro
 
   for (const [key, raw] of Object.entries(overrides)) {
     const value = raw.trim();
-    if (value === "" && key !== "componentBaseline" && key !== "customComponentPolicy") continue;
+    if (value === "" && !isPolicyField(key)) continue;
 
     switch (key) {
       case "owner":
@@ -39,6 +45,9 @@ export function overridesToPartial(overrides: FieldOverrides): Partial<GithubPro
       case "crucibleVariant":
       case "testCommand":
       case "manualSmoke":
+      case "migrationTool":
+      case "migrationCommand":
+      case "migrationStatus":
       case "componentBaseline":
       case "customComponentPolicy":
       case "defaultBranch":
@@ -142,7 +151,7 @@ export function GithubProjectsTool({
 
   const setOverrideValue = (key: string, value: string) => {
     setOverrides((prev) => {
-      if (value === "" && key !== "componentBaseline" && key !== "customComponentPolicy") {
+      if (value === "" && !isPolicyField(key)) {
         const next = { ...prev };
         delete next[key];
         return next;
@@ -174,6 +183,14 @@ export function GithubProjectsTool({
         enter <code>none</code>. Name the custom-component rule and its authoritative
         approval record, or <code>n/a</code> with a reason. Blank means unknown.
         Keep approved component lists in the product repo or owning issue/PR.
+      </p>
+
+      <p className="muted">
+        Migration fields are optional repo settings, never stack defaults. Blank
+        means unknown. Record the actual tool and verified application command;
+        if the runner is missing, mark it pending and link its follow-up issue in
+        Migration status. See the <a href="https://github.com/jerrodtuck/vilya/blob/master/docs/project-tracking/GITHUB-PROJECTS.md#database-migrations">database migration policy</a>
+        {" "}in the process canon.
       </p>
 
       <label className="gplabel" htmlFor="gp-paste">
@@ -218,7 +235,7 @@ export function GithubProjectsTool({
         {checklist.map((item) => {
           const draft = overrides[item.key];
           const suggestion = suggestionFor(item.key, merged);
-          const policyField = item.key === "componentBaseline" || item.key === "customComponentPolicy";
+          const policyField = isPolicyField(item.key);
           const showInput = policyField || item.status === "missing" || draft !== undefined;
           const showStackPicks = item.key === "stack" && showInput;
           const showSuggest =
