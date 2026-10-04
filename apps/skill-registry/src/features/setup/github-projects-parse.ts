@@ -280,6 +280,9 @@ export function parseConfig(markdown: string): GithubProjectsConfig {
       get(repo, "manual smoke"),
       prose.manualSmoke ?? ""
     ),
+    migrationTool: get(repo, "migration tool"),
+    migrationCommand: get(repo, "migration command"),
+    migrationStatus: get(repo, "migration status"),
     componentBaseline: get(repo, "component baseline"),
     customComponentPolicy: get(repo, "custom component policy"),
     defaultBranch: firstNonEmpty(

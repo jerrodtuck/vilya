@@ -121,7 +121,23 @@ function buildConfigSections(config: GithubProjectsConfig): string {
       orPlaceholder(config.manualSmoke, PLACEHOLDER.manualSmoke),
       "how to launch the app for a hands-on pre-merge test (`/vl-merge-pr`); for hardware/live-only checks write `live-only` — those go through Verifying instead",
     ],
-    // Keep unknown policy cells empty: regeneration must not invent none/n/a.
+    // Keep unknown policy cells empty: regeneration must not invent tools or commands.
+    [
+      "**Migration tool**",
+      config.migrationTool.trim(),
+      "optional; the repo's migration tool, not a stack default",
+    ],
+    [
+      "**Migration command**",
+      config.migrationCommand.trim(),
+      "optional; verified application command, or explicitly pending if not implemented",
+    ],
+    [
+      "**Migration status**",
+      config.migrationStatus.trim(),
+      "optional; readiness, baseline constraints and owning follow-up issue",
+    ],
+    // Regeneration must not invent none/n/a for component policy either.
     [
       "**Component baseline**",
       config.componentBaseline.trim(),

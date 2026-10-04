@@ -358,6 +358,45 @@ monitors. Mid-window drain: measure rate (ambient ~2/min vs hot loop) before bla
 specific orchestrator. Do **not** kill the main-clone `cursor-agent-worker` as a leftover
 board-watch script — that process is the live orchestrator worker.
 
+### Database migrations
+
+Each database-backed product records **Migration tool**, **Migration command** and
+**Migration status** in its config-only file. These are repo decisions, not stack
+defaults. Use the project's migration tool; this policy does not require Drizzle
+for unrelated stacks. Blank means unknown. If an application command is not yet
+implemented, mark it **pending** and link the owning follow-up issue. Do not present
+a proposed `npm run db:migrate` command as working.
+
+For Drizzle projects, generate SQL migrations with `drizzle-kit generate`; use
+custom migrations for SQL that the schema generator does not express, including
+functions, triggers and data changes. Commit the reviewed SQL and the journal,
+snapshots and other migration metadata required by the repo's installed version.
+Keep applied migration history immutable; make subsequent changes in a new
+migration. See the official [generation and custom SQL documentation](https://orm.drizzle.team/docs/drizzle-kit-generate).
+
+Apply committed migrations through the repo's configured, reviewed application
+command, normally `npm run db:migrate`, backed by Drizzle's migration runner.
+Verify that the script exists and selects the intended environment, host and
+database before executing it. Keep credentials out of output and committed files.
+**Production `drizzle-kit push` and ad hoc migration SQL are prohibited.** A missing
+runner is work to track and complete, not permission to bypass migration history.
+See the official [migration application documentation](https://orm.drizzle.team/docs/drizzle-kit-migrate).
+
+For a database that already contains applied changes, first compare its actual
+schema and migration state with the committed history. Use a reviewed,
+version-compatible baseline procedure that records only verified applied changes
+without replaying their SQL. Prove the baseline on a restored copy before using it
+on production. Stop on a mismatch; do not guess journal entries or silently mark
+unverified changes applied. Preserve tables, data, functions, triggers, constraints
+and other database objects when establishing the baseline.
+
+Migration tooling does not replace the deployment safety gates. Verify the target,
+retain a restricted full backup and its integrity evidence, and prove restoration
+before an authorized production upgrade. Test the upgrade on that restored state,
+compare schema and data semantically, and verify that applying the same committed
+history again is safe. Record the recovery plan and results on the owning issue/PR.
+Production execution remains a separately authorized operation.
+
 ### Shared files / worktrees
 
 | File | Parallel rule |
