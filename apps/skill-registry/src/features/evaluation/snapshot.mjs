@@ -54,6 +54,8 @@ const schema = { schemaVersion: enumeration(1), generatedAt: time, campaignId: e
     reconciledCostMicrodollars: numberOrNull, heldReservationMicrodollars: numberOrNull, accountedExposureMicrodollars: numberOrNull, availableCapacityMicrodollars: numberOrNull,
     pricingDate: nullable({ pattern: /^\d{4}-\d{2}-\d{2}$/, max: 10 }), countBillingInterpretation: enumeration('published-zero-count-fee', 'unavailable') },
   overhead: { setupRequests: array(request, 64), finalRequests: array(request, 64), nativePreparation: array(native, 32) }, runs: array(run, 12), limitations: array(enumeration('historical-replay','not-held-out','oracle-access-not-enforced','small-sample','cache-uncontrolled','incomplete-history','missing-native-evidence','unresolved-funds','environment-differences','pricing-unavailable','live-not-run','full-gates-unverified'), 64) };
+const recoverySchema = { ...schema, schemaVersion: enumeration(2), campaignId: enumeration('357-screening-2'),
+  priorCampaign: { campaignId: enumeration('357-screening-1'), runs: array(run, 1), overhead: schema.overhead } };
 function invalid() { throw new Error('Invalid evaluation snapshot'); }
 function project(value, spec) {
   if (spec.nullable) return value === null ? null : project(value, spec.nullable);
@@ -85,16 +87,25 @@ function usageChecks(item) {
 }
 /** Validate and project an exact public DTO. Errors never contain input data. */
 export function validateSnapshot(candidate) {
-  const result = project(candidate, schema);
-  const ids = []; const receipts = [];
-  for (const r of result.runs) {
+  const result = project(candidate, candidate?.schemaVersion === 2 ? recoverySchema : schema);
+  const priorRuns = result.schemaVersion === 2 ? result.priorCampaign.runs : [];
+  if (result.schemaVersion === 2) {
+    if (result.runs.length !== 12 || priorRuns.length !== 1) invalid();
+    const prior = priorRuns[0];
+    if (prior.runId !== 'api_behavior_1_A' || prior.status !== 'failed' || prior.quality.accepted !== false || prior.evidenceStatus !== 'partial' || prior.quality.attemptHistoryComplete || prior.attempts.length || prior.environmentEvidence.controllerHead !== 'f8ff32bf73433e37e97c00f52dc043501cba453b' || prior.requests.length !== 1) invalid();
+    const request = prior.requests[0];
+    if (request.requestId !== 'api_behavior_1_A_planning_1' || request.status !== 'unknown' || request.reservationMicrodollars !== 42730 || request.costMicrodollars !== null || request.usage !== null) invalid();
+    if (result.priorCampaign.overhead.setupRequests.length || result.priorCampaign.overhead.finalRequests.length) invalid();
+    if ([...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.runs.flatMap(r => r.requests)].some(p => !p.requestId.startsWith('fresh1_'))) invalid();
+  }
+  const receipts = [];
+  for (const r of [...result.runs, ...priorRuns]) {
     chronological(r);
     if (r.seed !== FIXTURES[r.fixture] || r.orderIndex < 1 || r.orderIndex > 2) invalid();
     const repetition = r.environment === 'api' ? 1 : 2;
     const order = r.fixture === 'instruction' ? ['B', 'A'] : ['A', 'B'];
     if (r.environment === 'native') order.reverse();
     if (r.arm !== order[r.orderIndex - 1] || r.runId !== `${r.environment}_${r.fixture}_${repetition}_${r.arm}` || r.pairId !== `${r.environment}_${r.fixture}_${repetition}`) invalid();
-    ids.push(r.runId);
     if (r.environmentEvidence.runtime !== (r.environment === 'api' ? 'openai-responses' : 'codex-desktop')) invalid();
     if ((r.environment === 'api' && r.nativePhases.length) || (r.environment === 'native' && r.requests.length)) invalid();
     unique(r.quality.requiredGateIds); unique(r.provenance.receiptIds); unique(r.provenance.digests);
@@ -118,20 +129,23 @@ export function validateSnapshot(candidate) {
       if (r.quality.requiredGateIds.some((id) => !last.gates.some((g) => g.id === id && g.status === 'passed' && g.exitCode === 0))) invalid();
     }
   }
-  unique(ids);
-  const requests = [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.runs.flatMap((r) => r.requests)];
+  unique(result.runs.map(r => r.runId)); unique(priorRuns.map(r => r.runId));
+  const requests = [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.runs.flatMap((r) => r.requests), ...priorRuns.flatMap(r => r.requests)];
   unique(requests.map((p) => p.requestId));
-  const phases = [...result.overhead.nativePreparation, ...result.runs.flatMap((r) => r.nativePhases)];
-  for (const p of [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.overhead.nativePreparation]) usageChecks(p);
+  const priorPreparation = result.schemaVersion === 2 ? result.priorCampaign.overhead.nativePreparation : [];
+  const phases = [...result.overhead.nativePreparation, ...priorPreparation, ...result.runs.flatMap((r) => r.nativePhases)];
+  for (const p of [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.overhead.nativePreparation, ...priorPreparation]) usageChecks(p);
   for (const p of phases) { receipts.push(p.receiptId); if (p.status === 'observed' && (p.attribution !== 'verified' || p.disjointnessVerified !== true || p.usage === null)) invalid(); }
   unique(receipts);
+  if (result.schemaVersion === 2 && requests.some(p => p.status !== 'complete' && (p.costMicrodollars !== null || p.usage !== null))) invalid();
   const b = result.budget;
+  if (result.schemaVersion === 2 && [b.reconciledCostMicrodollars, b.heldReservationMicrodollars, b.accountedExposureMicrodollars, b.availableCapacityMicrodollars].some(v => v === null)) invalid();
   if ([b.reconciledCostMicrodollars, b.heldReservationMicrodollars, b.accountedExposureMicrodollars, b.availableCapacityMicrodollars].every((v) => v !== null)) {
     if (b.accountedExposureMicrodollars !== b.reconciledCostMicrodollars + b.heldReservationMicrodollars || b.availableCapacityMicrodollars !== b.totalCapMicrodollars - b.accountedExposureMicrodollars) invalid();
     if (requests.some((p) => p.status === 'complete' ? p.costMicrodollars === null : p.reservationMicrodollars === null)) invalid();
     const costs = requests.reduce((n, p) => n + (p.costMicrodollars ?? 0), 0);
     const held = requests.filter((p) => p.status !== 'complete').reduce((n, p) => n + (p.reservationMicrodollars ?? 0), 0);
-    if (costs !== b.reconciledCostMicrodollars || held !== b.heldReservationMicrodollars) invalid();
+    if (costs !== b.reconciledCostMicrodollars || held !== b.heldReservationMicrodollars || b.accountedExposureMicrodollars > b.totalCapMicrodollars) invalid();
   }
   const exposure = (items) => items.reduce((sum, p) => sum + (p.status === 'complete' ? (p.costMicrodollars ?? 0) : (p.reservationMicrodollars ?? 0)), 0);
   if (exposure([...result.overhead.setupRequests, ...result.overhead.finalRequests]) > b.overheadCapMicrodollars) invalid();
