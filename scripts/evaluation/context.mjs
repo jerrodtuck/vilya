@@ -1,6 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {safeFile} from './paths.mjs';
 export const CONTEXT_VERSION='scoped-search-replace-1';
 export const sha256=text=>crypto.createHash('sha256').update(text).digest('hex');
+export class EditContractError extends Error {constructor(message,kind='semantic'){super(message);this.name='EditContractError';this.kind=kind;}}
 const owned=manifest=>manifest.fileOwnership.map(p=>p.replace(/ \((generated|new)\)$/,''));
 export function scopedContext(root,manifest){
  const files=owned(manifest).map(path=>{const file=safeFile(root,path);const content=fs.existsSync(file)?fs.readFileSync(file,'utf8'):null;return {path,sha256:content===null?null:sha256(content),content};});
@@ -10,12 +11,12 @@ if(file.path.endsWith('github-projects-parse.ts')){const start=file.content.inde
  return {version:CONTEXT_VERSION,files};
 }
 export function boundedPacket(value){const text=JSON.stringify(value);if(Buffer.byteLength(text)>32000)throw Error('Phase context exceeds 32000 UTF8 bytes');return text;}
-export function applyEdits(root,manifest,text){const patch=JSON.parse(text),allowed=new Set(owned(manifest));if(!patch||Object.keys(patch).join()!=='files'||!Array.isArray(patch.files)||!patch.files.length||patch.files.length>allowed.size)throw Error('Invalid edits');const seen=new Set();
- const changes=patch.files.map(item=>{if(!item||!allowed.has(item.path)||seen.has(item.path))throw Error('Edit ownership');seen.add(item.path);const file=safeFile(root,item.path),exists=fs.existsSync(file),before=exists?fs.readFileSync(file,'utf8'):null;
- if(item.sha256!==(before===null?null:sha256(before)))throw Error('Edit hash mismatch');let after;
- if(before===null){if(Object.keys(item).sort().join()!=='content,path,sha256'||typeof item.content!=='string'||Buffer.byteLength(item.content)>8000)throw Error('Invalid new test');after=item.content;}
- else{if(Object.keys(item).sort().join()!=='edits,path,sha256'||!Array.isArray(item.edits)||!item.edits.length||item.edits.length>12)throw Error('Invalid replacement');after=before;for(const edit of item.edits){if(!edit||Object.keys(edit).sort().join()!=='new,old'||typeof edit.old!=='string'||!edit.old||typeof edit.new!=='string'||Buffer.byteLength(edit.old)+Buffer.byteLength(edit.new)>16000||after.split(edit.old).length!==2)throw Error('Replacement must match exactly once');after=after.replace(edit.old,edit.new);}}
- if(after===before)throw Error('No corrective change');return {file,after};});
+export function applyEdits(root,manifest,text){let patch;try{patch=JSON.parse(text);}catch(error){throw new EditContractError(error.message);}const allowed=new Set(owned(manifest));if(!patch||Object.keys(patch).join()!=='files'||!Array.isArray(patch.files)||!patch.files.length||patch.files.length>allowed.size)throw new EditContractError('Invalid edits');const seen=new Set();
+ const changes=patch.files.map(item=>{if(!item||!allowed.has(item.path)||seen.has(item.path))throw new EditContractError('Edit ownership');seen.add(item.path);const file=safeFile(root,item.path),exists=fs.existsSync(file),before=exists?fs.readFileSync(file,'utf8'):null;
+ if(item.sha256!==(before===null?null:sha256(before)))throw new EditContractError('Edit hash mismatch','source');let after;
+ if(before===null){if(Object.keys(item).sort().join()!=='content,path,sha256'||typeof item.content!=='string')throw new EditContractError('Invalid new test');if(Buffer.byteLength(item.content)>8000)throw new EditContractError('Invalid new test','bound');after=item.content;}
+ else{if(Object.keys(item).sort().join()!=='edits,path,sha256'||!Array.isArray(item.edits)||!item.edits.length||item.edits.length>12)throw new EditContractError('Invalid replacement');after=before;for(const edit of item.edits){if(!edit||Object.keys(edit).sort().join()!=='new,old'||typeof edit.old!=='string'||!edit.old||typeof edit.new!=='string')throw new EditContractError('Replacement must match exactly once');if(Buffer.byteLength(edit.old)+Buffer.byteLength(edit.new)>16000)throw new EditContractError('Replacement must match exactly once','bound');if(after.split(edit.old).length!==2)throw new EditContractError('Replacement must match exactly once');after=after.replace(edit.old,edit.new);}}
+ if(after===before)throw new EditContractError('No corrective change');return {file,after};});
  for(const change of changes)fs.mkdirSync(path.dirname(change.file),{recursive:true});
  for(const change of changes)fs.writeFileSync(change.file,change.after);return true;
 }

@@ -63,3 +63,16 @@ steps remain incomplete or fail snapshot validation. Terminal failure evidence
 cannot appear on an accepted run. Native records retain observed tokens and time
 without dollar estimates; private outputs and provider/session identifiers stay
 outside the public snapshot.
+
+Resource and controller guards remain incomparable even when earlier calls have
+complete usage: deadlines, token or byte bounds, source integrity changes,
+filesystem failures, unresolved usage and sandbox cleanup failures export partial
+evidence. A successful planning receipt followed by an implementation packet
+overflow does not form a complete workflow. The exporter ignores an erroneous
+complete flag on these outcomes, and snapshot validation rejects a complete claim.
+
+Edit validation distinguishes semantic shape and replacement-contract errors
+from stale source hashes, byte limits and filesystem errors. Only typed semantic
+edit errors enter `terminalFailure`; filesystem errors use the finite sanitized
+`filesystem-unavailable` code. Planning contract failures currently remain partial
+because this protocol does not represent them as measured terminal outcomes.

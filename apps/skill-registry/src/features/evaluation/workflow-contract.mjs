@@ -18,6 +18,7 @@ export function assertWorkflowEvidence(run){
  if((step.outputBytes===null)!==(step.outputDigest===null))fail();if(step.status==='complete'&&(step.endedAt===null||run.status==='accepted'&&step.outputDigest===null))fail();previous=step;
  }
  if(used.size!==phases.length)fail();
+ if(run.status==='failed'&&(run.quality.attemptHistoryComplete||run.evidenceStatus==='complete')&&!run.terminalFailure&&run.failureCode!==null&&run.failureCode!=='acceptance-failed')fail();
  if(run.terminalFailure)assertTerminalFailure(run,fail);
  if(run.quality.attemptHistoryComplete&&['accepted','failed'].includes(run.status))assertAttemptRoute(run,planning,fail);
  if(run.status==='accepted'){const expected=[...planning,'implementation'];for(let i=0;i<run.attempts.length;i++){if(i)expected.push('repair');if(['ready','changes-required'].includes(run.attempts[i].review.status))expected.push('review');}if(!implementation||JSON.stringify(steps.map(s=>s.stepId))!==JSON.stringify(expected)||steps.some(s=>s.status!=='complete'))fail();}
@@ -32,7 +33,7 @@ export const REQUIRED_GATE_IDS = Object.freeze({
 });
 function assertTerminalFailure(run,fail){const tf=run.terminalFailure,last=run.workflowSteps.at(-1),phases=run.environment==='api'?run.requests:run.nativePhases;if(run.status!=='failed'||run.quality.accepted!==false||!run.quality.attemptHistoryComplete||run.evidenceStatus!=='complete'||run.failureCode!==tf.code||tf.code!=='invalid-'+tf.phase+'-output'||!last||last.phase!==tf.phase||last.phaseId!==tf.phaseId||last.receiptId!==tf.receiptId||last.status!=='complete'||last.outputDigest===null||last.outputBytes===null||last.endedAt===null||phases.some(p=>!p.usage||['inputTokens','outputTokens','totalTokens'].some(k=>!Number.isSafeInteger(p.usage[k]))||p.elapsedMs===null||(run.environment==='api'?p.status!=='complete'||p.costMicrodollars===null:p.status!=='observed'||p.attribution!=='verified'||p.disjointnessVerified!==true)))fail();}
 function assertAttemptRoute(run,planning,fail){const steps=run.workflowSteps,tf=run.terminalFailure;let cursor=planning.length;
- if(steps.length<=cursor){if(run.attempts.length||run.status==='accepted'||tf)fail();return;}
+ if(steps.length<=cursor){fail();return;}
  if((!run.attempts.length&&tf?.phase!=='implementation')||run.attempts.length>3)fail();
  for(let i=0;i<run.attempts.length;i++){const a=run.attempts[i],step=steps[cursor++],ids=REQUIRED_GATE_IDS[run.fixture];if(a.ordinal!==i+1||a.kind!==(i?'repair':'initial')||!step||step.stepId!==(i?'repair':'implementation')||Date.parse(step.endedAt)>Date.parse(a.startedAt)||a.gates.length!==ids.length||ids.some(id=>!a.gates.some(g=>g.id===id)))fail();
  if(i){const prior=run.attempts[i-1];if(Date.parse(step.startedAt)<Date.parse(prior.endedAt)||prior.outcome==='passed')fail();}
