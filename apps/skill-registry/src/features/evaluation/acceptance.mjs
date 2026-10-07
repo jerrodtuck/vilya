@@ -1,11 +1,8 @@
 import {assertWorkflowEvidence,workflowPlanningSteps} from './workflow-contract.mjs';
 import { createHash } from 'node:crypto';
 // Immutable acceptance gates at the three fixture seeds; never supplied by a result.
-export const REQUIRED_GATE_IDS = Object.freeze({
-  behavior: Object.freeze(['focused','oracle','sync-projects','sync-skills','tests','build','spacing']),
-  instruction: Object.freeze(['setup-sync-skills','focused','regression','oracle','sync-projects','sync-night-shift','sync-skills','tests','build','spacing']),
-  migration: Object.freeze(['focused','oracle','sync-projects','sync-night-shift','sync-skills','tests','build','spacing']),
-});
+import {REQUIRED_GATE_IDS} from './workflow-contract.mjs';
+export {REQUIRED_GATE_IDS};
 export const receiptIdForRequest = (id) => `receipt_${createHash('sha256').update(JSON.stringify(id)).digest('hex').slice(0,32)}`;
 const fail = () => { throw new Error('Invalid evaluation snapshot'); };
 const within = (item, start, end) => item.startedAt !== null && item.endedAt !== null && item.elapsedMs !== null && Date.parse(item.startedAt) >= Date.parse(start) && Date.parse(item.endedAt) <= Date.parse(end);

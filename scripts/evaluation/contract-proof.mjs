@@ -48,8 +48,8 @@ function verifyReview(packet,root,manifest) {
   assert.equal(metadata.includes('if (skill.slug === "night-shift") return "scheduler-fired";'),true);
 }
 /** Scripted control-plane fixture. No model, transport, API credential or network lookup. */
-export function scriptedProvider({root,manifest,arm,scenario='accept',workflowProtocolVersion=1}) {
-  const calls=[];let reviews=0,repairs=0;
+export function scriptedProvider({root,manifest,arm,scenario='accept',workflowProtocolVersion=1,initialReviews=0,initialRepairs=0}) {
+  const calls=[];let reviews=initialReviews,repairs=initialRepairs;
   return {kind:'fake',calls,inputBound:()=>SCRIPTED_USAGE.input,
     async send(request) {
       const phase=request.reservation.phase;

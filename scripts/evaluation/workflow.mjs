@@ -135,6 +135,6 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
   finally { ledger.close(trial); }
   const state = ledger.read();
   return { fixture: manifest.name, seed: manifest.seed, trial, arm, started, ended: ledger.clock(), accepted,
-    failure, environment, attempts, historyComplete:failure===null, contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
+    failure, environment, attempts, historyComplete:failure===null||!!workflowProtocol&&failure!=='sandbox-cleanup-unresolved'&&workflowSteps.length>0&&workflowSteps.every(s=>s.status==='complete'&&s.ended!==null)&&workflowSteps.filter(s=>['implementation','repair'].includes(s.phase)).length===attempts.length&&workflowSteps.filter(s=>s.phase==='review').length===attempts.filter(a=>a.review).length, contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
     repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial),...(workflowProtocol?{workflowProtocol,workflowSteps}:{}) };
 }
