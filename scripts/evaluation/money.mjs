@@ -66,4 +66,3 @@ export function apiConfig() {
   config.models = Object.fromEntries(Object.entries(catalog.models).map(([id, rate]) => [id, { pricingKind: 'verified-api', verifiedAt: catalog.verifiedAt, ...rate, maxFees: 0 }]));
   config.bounds.requestMs = 60000; return config;
 }
-

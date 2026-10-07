@@ -177,5 +177,3 @@ export class BudgetLedger {
     return Math.min(state.overheadStart[phase] + (phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs), phase === 'final' && state.trialStart !== null ? state.trialStart + LIMITS.dispatchMs + LIMITS.finalMs : Infinity);
   }
 }
-
-

@@ -109,4 +109,3 @@ export function createOpenAITransport({ fetchImpl, env = process.env, liveEnable
     }
   };
 }
-

@@ -1,8 +1,8 @@
 # API workflow adapter for the model comparison pilot
 
-Created: 2026-10-06  
-Last updated: 2026-10-06  
-Issue: [#357](https://github.com/jerrodtuck/vilya/issues/357)  
+Created: 2026-10-06
+Last updated: 2026-10-06
+Issue: [#357](https://github.com/jerrodtuck/vilya/issues/357)
 Kickoff: [settled offline-first harness](https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6028353155)
 
 The operator selected an API comparison first to keep experimental calls separate

@@ -136,5 +136,3 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
     failure, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
     repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial) };
 }
-
-

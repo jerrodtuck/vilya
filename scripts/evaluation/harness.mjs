@@ -113,5 +113,3 @@ async function runAPI(args, output) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try { await cli(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-
-
