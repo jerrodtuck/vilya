@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { evidenceSummary, FILTERS, filterRuns, normalizeFilters } from './evidence.mjs';
-import type { Run, Snapshot, Usage } from './types';
+import type { DiagnosticObservation, Run, Snapshot, Usage } from './types';
 import styles from './evaluation.module.css';
 const money = (n: number | null) => n === null ? 'Unavailable' : `$${(n / 1000000).toFixed(4)}`;
 const duration = (n: number | null) => n === null ? 'Unavailable' : `${(n / 1000).toFixed(1)} s`;
@@ -19,6 +19,9 @@ export function NoResults({ invalid = false }: { invalid?: boolean }) {
 }
 function UsageView({ usage }: { usage: Usage | null }) {
   return usage === null ? <span>Usage unavailable</span> : <span>Input {usage.inputTokens ?? 'unknown'}; cached {usage.cachedInputTokens ?? 'unknown'}; cache write {usage.cacheWriteInputTokens ?? 'unknown'}; output {usage.outputTokens ?? 'unknown'}; reasoning {usage.reasoningOutputTokens ?? 'unknown'} (included in output)</span>;
+}
+function DiagnosticObservationView({ observation }: { observation: DiagnosticObservation }) {
+  return <><p>Observed tokens; billing scope not validated. Response {observation.responseStatus}; observed {observation.observedAt}.</p><UsageView usage={observation.usage} /><p>Total {observation.usage.totalTokens}. These observations do not establish billed usage, cost or acceptance.</p></>;
 }
 function PriorCampaignView({ prior }: { prior: NonNullable<Snapshot['priorCampaign']> }) {
   return <>
@@ -42,6 +45,7 @@ function PriorCampaignView({ prior }: { prior: NonNullable<Snapshot['priorCampai
 export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query: Record<string, string | string[] | undefined> }) {
   const filters = normalizeFilters(query); const runs: Run[] = filterRuns(snapshot.runs, filters.values);
   const summary = evidenceSummary(snapshot);
+  const diagnosticRequests = snapshot.runs.flatMap(run => run.requests.filter(request => request.diagnosticObservation).map(request => ({run,request})));
   const prior = snapshot.priorCampaign;
   const unresolvedProviderRequests = [...snapshot.overhead.setupRequests, ...snapshot.overhead.finalRequests, ...snapshot.runs.flatMap((run) => run.requests)].some((request) => request.status === 'pending' || request.status === 'unknown');
   return <section className={styles.evaluation}>
@@ -60,6 +64,7 @@ export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query:
       <div className={styles.card}><h3>Held reservations</h3>{money(snapshot.budget.heldReservationMicrodollars)}<p>Unresolved requests remain reserved.</p></div>
       <div className={styles.card}><h3>Available capacity</h3>{money(snapshot.budget.availableCapacityMicrodollars)}<p>Cap {money(snapshot.budget.totalCapMicrodollars)}; shared overhead cap {money(snapshot.budget.overheadCapMicrodollars)}.</p></div>
     </div>
+    {diagnosticRequests.length > 0 && <><h2>Observed provider tokens</h2><p>Billing scope was not validated. Canonical usage and actual cost remain unavailable; held reservations and failed results are unchanged.</p>{diagnosticRequests.map(({run,request}) => <article key={request.requestId} className={styles.card}><h3><Link href={`/evaluation/${run.runId}`}>{run.fixture} · {run.arm} · {request.phase}</Link></h3>{request.diagnosticObservation && <DiagnosticObservationView observation={request.diagnosticObservation} />}</article>)}</>}
     <h2>Native preparation and orchestration usage</h2>
     {snapshot.overhead.nativePreparation.length === 0 ? <p>Native preparation usage has not been imported; it is unavailable, not zero. Trial totals do not include orchestration/setup allowance.</p> : <><p>These preparation and orchestration receipts are separate from trial populations. They have no dollar value and are excluded from trial totals.</p>{snapshot.overhead.nativePreparation.map((p) => <article key={p.receiptId} className={styles.card}><h3>{p.phase} · {p.model} / {p.effort}</h3><p>{p.status}; attribution {p.attribution}; elapsed {duration(p.elapsedMs)}.</p><UsageView usage={p.usage} /><p className={styles.codes}>{p.receiptId}</p>{p.reasonCodes.length > 0 && <p>{p.reasonCodes.join(', ')}</p>}</article>)}</>}
     <h2>Evidence and model selection</h2><p>{summary.observedLowerCostArm ? `Workflow ${summary.observedLowerCostArm} had lower observed ${prior ? 'fresh campaign ' : ''}API cost with equal accepted quality, and native trials confirmed accepted quality for these three fixtures. This descriptive result supports further replication; it does not establish a universal winner or change production routing.` : 'Insufficient evidence for a production recommendation. Missing, unresolved or discordant pairs retain the current baseline. Repeated native comparisons must confirm any API hypothesis at the same acceptance standard.'}</p>
@@ -75,7 +80,7 @@ export function TrialDetail({ run, generatedAt }: { run: Run; generatedAt: strin
   const e = run.environmentEvidence;
   return <section className={styles.evaluation}><p><Link href="/evaluation">All evaluation results</Link></p><h1>{run.fixture} · {run.arm}</h1><p className={styles.codes}>{run.runId}</p><p>Status {run.status}; evidence {run.evidenceStatus}; adjudication {run.quality.adjudicationStatus}; elapsed {duration(run.elapsedMs)}.</p><p>Snapshot {generatedAt} · <Link href={`/evaluation/${run.runId}`}>Refresh trial</Link></p><p>Failure code: {run.failureCode ?? 'None recorded'}. Accepted: {run.quality.accepted === null ? 'Unadjudicated' : String(run.quality.accepted)}. Attempt history {run.quality.attemptHistoryComplete ? 'complete' : 'incomplete'}.</p>
     <h2>Attempt history</h2>{run.attempts.length === 0 && <p>No attempts recorded.</p>}{run.attempts.map((a) => <article key={a.ordinal} className={styles.card}><h3>Attempt {a.ordinal} · {a.kind} · {a.outcome}</h3><p>Defect {a.defectId ?? 'unavailable'}; elapsed {duration(a.elapsedMs)}.</p><ul>{a.gates.map((g) => <li key={g.id}>{g.id}: {g.status}; exit {g.exitCode ?? 'unknown'}; {duration(g.elapsedMs)}</li>)}</ul><p>Review {a.review.status}; findings {a.review.findingCount ?? 'unknown'}; independent {a.review.independent === null ? 'unknown' : String(a.review.independent)}; {a.review.model ?? 'unknown model'} / {a.review.effort ?? 'unknown effort'}.</p></article>)}
-    <h2>Observed model and usage receipts</h2>{run.requests.map((p) => <article className={styles.card} key={p.requestId}><h3>{p.phase} · {p.model} / {p.effort}</h3><p>{p.status}; {duration(p.elapsedMs)}; cost {money(p.costMicrodollars)}; reservation {money(p.reservationMicrodollars)}</p><UsageView usage={p.usage} /></article>)}{run.nativePhases.map((p) => <article className={styles.card} key={p.receiptId}><h3>{p.phase} · {p.model} / {p.effort}</h3><p>{p.status}; attribution {p.attribution}; {duration(p.elapsedMs)}; disjointness {String(p.disjointnessVerified)}.</p><UsageView usage={p.usage} /><p>{p.reasonCodes.join(', ')}</p></article>)}
+    <h2>Observed model and usage receipts</h2>{run.requests.map((p) => <article className={styles.card} key={p.requestId}><h3>{p.phase} · {p.model} / {p.effort}</h3><p>{p.status}; {duration(p.elapsedMs)}; cost {money(p.costMicrodollars)}; reservation {money(p.reservationMicrodollars)}</p><UsageView usage={p.usage} />{p.diagnosticObservation && <DiagnosticObservationView observation={p.diagnosticObservation} />}</article>)}{run.nativePhases.map((p) => <article className={styles.card} key={p.receiptId}><h3>{p.phase} · {p.model} / {p.effort}</h3><p>{p.status}; attribution {p.attribution}; {duration(p.elapsedMs)}; disjointness {String(p.disjointnessVerified)}.</p><UsageView usage={p.usage} /><p>{p.reasonCodes.join(', ')}</p></article>)}
     <h2>Environment and provenance</h2><p>{e.runtime}; gates {e.gateRuntime}; Node {e.nodeVersion ?? 'unknown'}; context {e.contextMode}; tools {e.toolsMode}; cache {e.cacheControl}.</p><p className={styles.codes}>Controller {e.controllerHead ?? 'unknown'}<br />Image {e.imageDigest ?? 'unknown'}<br />Lock {e.lockDigest ?? 'unknown'}<br />Skills {e.skillsDigest ?? 'unknown'}<br />Seed {run.seed}</p><p>Differences: {e.differences.join(', ') || 'None recorded'}</p><p>Required gates: {run.quality.requiredGateIds.join(', ') || 'Unavailable'}. Independent review required.</p><p className={styles.codes}>Receipts: {run.provenance.receiptIds.join(', ') || 'Unavailable'}<br />Digests: {run.provenance.digests.join(', ') || 'Unavailable'}</p>
   </section>;
 }

@@ -24,9 +24,12 @@ const effort = enumeration('medium', 'high');
 const phase = enumeration('planning', 'implementation', 'review', 'repair', 'setup-review', 'final-review', 'preparation');
 const usage = nullable({ inputTokens: numberOrNull, cachedInputTokens: numberOrNull, cacheWriteInputTokens: numberOrNull,
   outputTokens: numberOrNull, reasoningOutputTokens: numberOrNull, totalTokens: numberOrNull, reasoningIsOutputSubset: enumeration(true) });
+const diagnosticObservation = { source: enumeration('provider-response-metadata'), billingValidation: enumeration('not-validated'),
+  responseStatus: enumeration('completed','incomplete','failed','cancelled','queued','in_progress'), observedAt: time,
+  usage: { inputTokens:integer,cachedInputTokens:integer,cacheWriteInputTokens:integer,outputTokens:integer,reasoningOutputTokens:integer,totalTokens:integer,reasoningIsOutputSubset:enumeration(true) } };
 const request = { requestId: identifier, phase, model, effort, status: enumeration('pending', 'unknown', 'complete'),
   startedAt: optionalTime, endedAt: optionalTime, elapsedMs: numberOrNull,
-  reservationMicrodollars: numberOrNull, costMicrodollars: numberOrNull, usage };
+  reservationMicrodollars: numberOrNull, costMicrodollars: numberOrNull, usage, diagnosticObservation: { optional: diagnosticObservation } };
 const native = { receiptId: receiptIdentifier, phase, model, effort, status: enumeration('observed', 'unavailable'),
   attribution: enumeration('verified', 'unavailable', 'blocked'), startedAt: optionalTime, endedAt: optionalTime,
   elapsedMs: numberOrNull, usage, reasonCodes: array(enumeration('attribution-unavailable','missing-completion','missing-terminal','mixed-phase','counter-reset','session-mismatch','fork-overlap','missing-independence'), 32), disjointnessVerified: enumeration(true, false, null) };
@@ -66,8 +69,8 @@ function project(value, spec) {
   if (spec.array) { if (!Array.isArray(value) || value.length > spec.max) invalid(); return value.map((item) => project(item, spec.array)); }
   if (!value || typeof value !== 'object' || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) invalid();
   const keys = Object.keys(spec);
-  if (Object.keys(value).length !== keys.length || Object.keys(value).some((key) => !Object.hasOwn(spec, key))) invalid();
-  return Object.fromEntries(keys.map((key) => [key, project(value[key], spec[key])]));
+  if (Object.keys(value).some(key => !Object.hasOwn(spec,key)) || keys.some(key => !Object.hasOwn(value,key) && !spec[key].optional)) invalid();
+  return Object.fromEntries(keys.filter(key => Object.hasOwn(value,key)).map(key => [key, project(value[key],spec[key].optional ?? spec[key])]));
 }
 function unique(values) { if (new Set(values).size !== values.length) invalid(); }
 function chronological(item) {
@@ -77,6 +80,12 @@ function chronological(item) {
 }
 function usageChecks(item) {
   chronological(item);
+  if (item.diagnosticObservation) {
+    if (item.status !== 'unknown' || item.costMicrodollars !== null || item.usage !== null) invalid();
+    const observed = item.diagnosticObservation;
+    if (item.startedAt === null || Date.parse(observed.observedAt) < Date.parse(item.startedAt)) invalid();
+    usageChecks({startedAt:null,endedAt:null,elapsedMs:null,usage:observed.usage});
+  }
   const u = item.usage;
   if (u === null) return;
   if (u.cachedInputTokens !== null && u.inputTokens !== null && u.cachedInputTokens > u.inputTokens) invalid();
@@ -132,6 +141,7 @@ export function validateSnapshot(candidate) {
   unique(result.runs.map(r => r.runId)); unique(priorRuns.map(r => r.runId));
   const requests = [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.runs.flatMap((r) => r.requests), ...priorRuns.flatMap(r => r.requests)];
   unique(requests.map((p) => p.requestId));
+  if (requests.some(p => p.diagnosticObservation && Date.parse(p.diagnosticObservation.observedAt) > Date.parse(result.generatedAt))) invalid();
   const priorPreparation = result.schemaVersion === 2 ? result.priorCampaign.overhead.nativePreparation : [];
   const phases = [...result.overhead.nativePreparation, ...priorPreparation, ...result.runs.flatMap((r) => r.nativePhases)];
   for (const p of [...result.overhead.setupRequests, ...result.overhead.finalRequests, ...result.overhead.nativePreparation, ...priorPreparation]) usageChecks(p);
