@@ -34,7 +34,7 @@ test('reference has one phase table and distinct reviewable acceptance dispositi
   assert.equal(phaseRows.length, 8); // header + separator + six authorized initial routes
   assert.equal(phaseRows.filter(line => line.includes('Luna')).length, 1);
   const examples = contract.split('## Acceptance examples')[1].split('## Installed update route')[0].split('\n').filter(line => line.startsWith('|')).slice(2);
-  assert.equal(examples.length, 16);
+  assert.equal(examples.length, 22);
   assert.equal(new Set(examples.map(row => row.split('|')[1].trim())).size, examples.length);
   // Instruction/content integrity only; independent semantic review remains required.
   for (const phrase of ['Initial detection/reproduction is not a repair attempt', 'no-change rerun', 'STOP before a third correction', 'unavailable, not zero', 'preserving history', 'actual PR head/diff', 'reload', 'raw SKILL.md']) assert.ok(contract.toLowerCase().includes(phrase.toLowerCase()), phrase);

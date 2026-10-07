@@ -87,17 +87,31 @@ authority and provides no worktree isolation.
 Read owner, repo, project number, labels, stack, and crucible/test config from
 `docs/project-tracking/GITHUB-PROJECTS.md`.
 
+## Efficient orchestration (#356)
+
+For the operator who adopted #356, reuse a sufficient settled issue plan without a
+planning delegate. Orch fills routine bounded gaps; delegate only a necessary bounded
+question. Read and apply the full [efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356)
+for compact complete source-linked briefs, initial full review versus repair delta plus
+affected boundaries, exact head/gate provenance, required gates once with justified
+repeats, bounded output and quiet waits/backoff with active-task persistence.
+It preserves all identity/base, authority, smoke, independent-review and repair stops.
+Other operators retain configured defaults; host model choices and active/resumed pins
+change only through scoped human authorization, never by importing another host's tier.
+Astra escalation requires a named unresolved consequential architecture/security question
+and concrete uncertainty/risk rationale, not a topic label; xhigh also needs hard-analysis
+justification. Ordinary Codex initial review remains a separate Sol/high reviewer.
+
 ## Planner + standing plan:ready poller
 
-You are **not** the Planner. Do not plan on the orchestrator model — when a
-planning pass is owed, enqueue opt-in `needs:plan` for a standing Fable
-[/vl-plan](../vl-plan/SKILL.md) session (or plan in-session / on the orch
-kickoff for clear daytime work). Planner drains the queue to `plan:ready`
-(kickoff + verify plan on the issue).
-
-**Daytime Planner is optional on Cursor** — required for Claude Code chip-flow
-and for night-shift prep (`plan:ready` ∧ `night-shift:ready`). When
-`plan:ready` is on, the brief must carry those plan artifacts.
+Reuse sufficient settled plans. For the operator who adopted #356, orch resolves
+routine bounded gaps rather than automatically creating a planning agent. If a separate
+planning pass is necessary, preserve the host's supported configured model and explicit
+operator choices; Codex Sol/Astra names do not silently replace Fable/Sonnet settings.
+Other operators retain their existing standing Fable [/vl-plan](../vl-plan/SKILL.md)
+route. Enqueue opt-in needs:plan only when that route is needed; preserve kickoff + verify
+plan and plan:ready artifacts. Never activate another seat by invoking its skill.
+Night-shift prep still requires plan:ready and night-shift:ready; no eligibility waiver.
 
 **At session start and when idle**, arm **one** standing `plan:ready` poller (if
 none is running) so Planner finish wakes this session without relying on
@@ -200,7 +214,7 @@ names the issue directly.
 
 ## Explicit
 
-Chips implement. Planner plans when enqueued. **You dispatch, monitor, merge, and prune — you do not implement.**
+Chips implement. Orch fills routine bounded gaps under #356; Planner plans when enqueued. **You dispatch, monitor, merge, and prune — you do not implement.**
 
 ## Dispatch preflight — fail closed
 

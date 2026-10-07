@@ -36,7 +36,8 @@ re-plan. Codex orch follows shared issue/board rules (§1), architecture/fork/wo
 rules (§4–§5) and verify-routing content (§6), with these host replacements:
 
 1. Complete the fresh OPEN/identity preflight above before board writes or managed
-   checkout creation. The orch owns planning, optionally a bounded read-only delegate. Follow
+   checkout creation. Reuse sufficient settled plans; orch fills routine bounded gaps.
+   Do not automatically create a planning delegate; necessary bounded delegation follows
    [vl-orch-codex model policy](../vl-orch-codex/SKILL.md#model-policy).
    Record kickoff + verify plan + settled forks on the issue before implementation;
    remove `needs:plan` and add `plan:ready` only when ready. No standing Planner,
@@ -128,15 +129,32 @@ If the repo isn't already known, detect it:
    invent layer-cake or dumping-ground folders (.NET `Controllers/`·`Services/`·`Repositories/`, or
    a flat `components/`·`utils/` in JS/TS) for a feature.
 
+## Efficient orchestration (#356)
+
+For the operator who adopted #356, reuse a sufficient settled issue plan without a
+planning delegate. Orch fills routine bounded gaps; delegate only a necessary bounded
+question. Read and apply the full [efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356)
+for compact complete source-linked briefs, initial full review versus repair delta plus
+affected boundaries, exact head/gate provenance, required gates once with justified
+repeats, bounded output and quiet waits/backoff with active-task persistence.
+It preserves all identity/base, authority, smoke, independent-review and repair stops.
+Other operators retain configured defaults; host model choices and active/resumed pins
+change only through scoped human authorization, never by importing another host's tier.
+Astra escalation requires a named unresolved consequential architecture/security question
+and concrete uncertainty/risk rationale, not a topic label; xhigh also needs hard-analysis
+justification. Ordinary Codex initial review remains a separate Sol/high reviewer.
+
 ## 3. Plan phase → then execute phase
 
-**Chip-flow / multi-session (default):** Plan phase belongs to **[/vl-plan](../vl-plan/SKILL.md)**,
-not the orchestrator session pretending to `/model` plan.
+**Chip-flow / multi-session:** For the operator who adopted #356, reuse settled plans
+and let orch fill routine bounded gaps without another planning agent. Other operators
+retain their existing **[/vl-plan](../vl-plan/SKILL.md)** route and configured host models;
+no orchestrator `/model` ritual is introduced.
 
 1. Sections 1–2 still run here: issue, board Status, worktree, branch.
 2. If the issue needs a planning pass, enqueue **`needs:plan`** (or invoke `/vl-plan` on a
-   named issue). Do **not** write the kickoff + verify plan in the orchestrator as a
-   substitute for Planner when chip-flow is in use.
+   named issue) only when that separate route is necessary. Under #356 orch may record
+   routine bounded detail directly, retaining the same kickoff/verify artifacts and gates.
 3. When you enqueue `needs:plan`, arm a **board Monitor** for that issue watching
    `plan:ready` and/or the plan kickoff comment. Same doctrine as chips (side channel +
    host monitor — Claude **Monitor tool**, or Cursor background shell with
