@@ -98,7 +98,7 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
   ledger.begin(trial); const started = ledger.clock(); const baseline = scopedContext(root, manifest);const fullBaseline=context(root,manifest); let accepted = false, failure = null, gates = [], review = null;
   const attempts=[]; let ordinal = 0;
   const call = (phase, prompt, extras = {}) => generate(ledger, provider, {
-    prompt, requestId: `${trial}_${phase}_${++ordinal}`, trial, phase,
+    prompt, requestId: ledger.requestId(`${trial}_${phase}_${++ordinal}`), trial, phase,
     model: phase === 'planning' && arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol', effort: phase === 'review' ? 'high' : phase === 'planning' && arm === 'B' ? 'high' : 'medium',
     maxOutputTokens: phaseOutput ?? (phase === 'planning' || phase === 'review' ? 4000 : 8000), ...extras
   });

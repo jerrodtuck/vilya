@@ -1,3 +1,4 @@
+import {RECOVERY_PATHS,claimFreshCampaign,readPriorCampaign,requireRecoveryExecution} from './recovery.mjs';
 import {recordDiagnostic} from './diagnostics.mjs';
 import { pathToFileURL } from 'node:url';
 import { BudgetLedger } from './ledger.mjs';
@@ -9,6 +10,7 @@ import { exampleConfig, apiConfig } from './money.mjs';
 import {generate,fakeProvider} from './generation.mjs';
 export {generate,fakeProvider} from './generation.mjs';
 export async function cli(args, output = console.log) {
+  if(args.length===1&&args[0]==='--initialize-fresh-campaign'){const ledger=new BudgetLedger(RECOVERY_PATHS.destination,apiConfig());ledger.initializeRecovery(claimFreshCampaign());output(JSON.stringify({status:'fresh-campaign-initialized',campaignId:'357-screening-2',carriedUnknownMicrodollars:42730,paidRequests:0}));return;}
   if (args.length === 1 && args[0] === '--api-preflight') {
     output(JSON.stringify({ status: 'blocked-live', modelRates: 'verified-2026-10-06', credentialPresent: Boolean(process.env.OPENAI_API_KEY), reason: LIVE_BLOCK_REASON, paidRequests: 0 })); return;
   }
@@ -33,8 +35,9 @@ export async function cli(args, output = console.log) {
     fakeMicrodollars: ledger.sum(final), trialCount: Object.keys(final.trials).length }));
 }
 
-async function exportPublic(args,output){const values={};for(let i=0;i<args.length;i++){if(!['--ledger','--workspace','--readiness'].includes(args[i])||!args[i+1])throw Error('Unsupported export option');values[args[i]]=args[++i];}const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./paths.mjs');for(const value of Object.values(values)){if(!path.isAbsolute(value)||!path.resolve(value).startsWith(repo+path.sep))throw Error('Export input outside pilot');safeFile(repo,path.relative(repo,value).split(path.sep).join('/'));}const {publicSnapshot}=await import('./public-results.mjs');const {exportSnapshot}=await import('./export-results.mjs');const {loadFixtures,initialAllocation}=await import('./workflow.mjs');const {execFileSync}=await import('node:child_process');const sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();const state=values['--ledger']?new BudgetLedger(values['--ledger'],apiConfig()).read():null;const images=values['--readiness']?JSON.parse(fs.readFileSync(values['--readiness'])).images:{};const receipts=[];if(values['--workspace'])for(const item of Object.values(initialAllocation(loadFixtures())).flat()){const file=safeFile(values['--workspace'],item.trial+(item.environment==='api'?'.receipt.json':'.native-state.json'));if(fs.existsSync(file))receipts.push(JSON.parse(fs.readFileSync(file)));}const result=await exportSnapshot(publicSnapshot({state,receipts,sourceHead,images}));output(JSON.stringify({status:'public-evidence-exported',runCount:result.runCount}));}
+async function exportPublic(args,output){const values={};for(let i=0;i<args.length;i++){if(!['--ledger','--workspace','--readiness'].includes(args[i])||!args[i+1])throw Error('Unsupported export option');values[args[i]]=args[++i];}const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./paths.mjs');for(const value of Object.values(values)){if(!path.isAbsolute(value)||!path.resolve(value).startsWith(repo+path.sep))throw Error('Export input outside pilot');safeFile(repo,path.relative(repo,value).split(path.sep).join('/'));}const {publicSnapshot}=await import('./public-results.mjs');const {exportSnapshot}=await import('./export-results.mjs');const {loadFixtures,initialAllocation}=await import('./workflow.mjs');const {execFileSync}=await import('node:child_process');const sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();const state=values['--ledger']?new BudgetLedger(values['--ledger'],apiConfig()).read():null;const images=values['--readiness']?JSON.parse(fs.readFileSync(values['--readiness'])).images:{};const receipts=[];if(values['--workspace'])for(const item of Object.values(initialAllocation(loadFixtures())).flat()){const file=safeFile(values['--workspace'],item.trial+(item.environment==='api'?'.receipt.json':'.native-state.json'));if(fs.existsSync(file))receipts.push(JSON.parse(fs.readFileSync(file)));}const result=await exportSnapshot(publicSnapshot({state,receipts,sourceHead,images,...(state?.version===3?readPriorCampaign():{})}));output(JSON.stringify({status:'public-evidence-exported',runCount:result.runCount}));}
 export function guardedTransport(budget) {
+  requireRecoveryExecution(budget);
   return createOpenAITransport({ liveEnabled: true, diagnosticGuard:event=>recordDiagnostic(budget,event), countBillingInterpretation: COUNT_BILLING_INTERPRETATION, preflightGuard: {
     begin: meta => budget.beginPreflight(meta), complete: (id, result) => budget.completePreflight(id, result), hold: id => budget.holdPreflight(id)
   }, reservationGuard: request => {
@@ -49,9 +52,9 @@ async function setupReview(args, output) {
   for(const k of ['--ledger','--prompt']){if(!path.resolve(values[k]).startsWith(repo+path.sep))throw Error('Review path outside pilot');safeFile(repo,path.relative(repo,values[k]).split(path.sep).join('/'));}
   if(!['setup_cost_review_1','setup_sandbox_review_1','setup_final_review_1','setup_product_plan_1'].includes(values['--review-id']))throw Error('Explicit review request ID required');
   const prompt=fs.readFileSync(values['--prompt'],'utf8');if(Buffer.byteLength(prompt)>32000)throw Error('Review context bound');
-  if(!process.env.OPENAI_API_KEY)throw Error('Missing controller credential');const budget=new BudgetLedger(values['--ledger'],apiConfig());if(values['--initialize'])budget.initialize();else budget.read();
-  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--review-id'],phase:'setup',model:values['--review-id']==='setup_product_plan_1'?'gpt-6-astra':'gpt-6.1-sol',effort:'high',maxOutputTokens:values['--review-id']==='setup_product_plan_1'?4000:8000});
-  output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--review-id'])}));
+  if(!process.env.OPENAI_API_KEY)throw Error('Missing controller credential');const budget=new BudgetLedger(values['--ledger'],apiConfig());if(values['--initialize'])throw Error('Live recovery cannot initialize through setup');requireRecoveryExecution(budget);
+  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:budget.requestId(values['--review-id']),phase:'setup',model:values['--review-id']==='setup_product_plan_1'?'gpt-6-astra':'gpt-6.1-sol',effort:'high',maxOutputTokens:values['--review-id']==='setup_product_plan_1'?4000:8000});
+  output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===budget.requestId(values['--review-id']))}));
 }
 async function runAPI(args, output) {
   const flags = new Set(['--live', '--initialize','--first-pair']); const values = {};
@@ -72,11 +75,12 @@ async function runAPI(args, output) {
   const readiness=JSON.parse(fs.readFileSync(values['--readiness'],'utf8'));if(readiness.schemaVersion!==1||readiness.fullBaselines!==true||readiness.referenceAcceptance!==true||readiness.negativeOracles!==true||readiness.cleanupNegativeProof!==true)throw Error('Fixture readiness unresolved');
   if (!process.env.OPENAI_API_KEY) throw Error('blocked-live: OPENAI_API_KEY is absent; no request sent');
   const budget = new BudgetLedger(values['--ledger'], apiConfig());
+  if(values['--initialize'])throw Error('Use the explicit fixed recovery initializer');const stateBefore=requireRecoveryExecution(budget);if(workspace!==path.dirname(RECOVERY_PATHS.destination))throw Error('Fixed successor workspace required');
   const provider = guardedTransport(budget);
   // Exact counting is durably recorded inside each actual phase; no paid generation preflight probe.
   const { loadFixtures, schedule, archiveFixture, runTrial } = await import('./workflow.mjs');
   const manifests = loadFixtures(); const order = schedule(manifests, { environment: 'api' });const {buildSandboxImage}=await import('./sandbox.mjs');for(const m of manifests){const observed=buildSandboxImage({repo,seed:m.seed,runtimeRoot:path.dirname(values['--readiness'])});const supplied=readiness.images[m.name];if(!supplied||observed.image!==supplied.image||observed.volume!==supplied.volume||observed.lockSha256!==supplied.lockSha256||observed.runnerSha256!==supplied.runnerSha256)throw Error('Immutable image readiness mismatch');}
-  if (values['--initialize']) { fs.mkdirSync(workspace, { recursive: true }); budget.initialize(); } else budget.read();
+  budget.read();
   const {sharedSkillsDigest}=await import('./context.mjs');const skillsDigest=sharedSkillsDigest(repo);
   const receipts = [];
   for (const item of order) {

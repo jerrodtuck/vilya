@@ -1,3 +1,4 @@
+import {guardLedgerOperation,consumeFreshInitialization} from './recovery.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -12,14 +13,17 @@ export class BudgetLedger {
     validateConfig(config);
     this.file = path.resolve(file); this.config = structuredClone(config); this.clock = clock;
   }
+  initializeRecovery(token){const recovery=consumeFreshInitialization(this.file,token);fs.mkdirSync(path.dirname(this.file),{recursive:true});return this.transaction(()=>({version:3,recovery,configHash:hash(this.config),lastTime:integer(this.clock(),'clock'),overheadStart:{setup:null,final:null},trialStart:null,blocked:false,pairs:[],trials:{},requests:[],preflights:[]}),true,true);}
+  requestId(local){id(local);const state=this.read();return id((state.recovery?.namespace??'')+local);}
   initialize() {
     if (fs.existsSync(this.file)) throw Error('Ledger already exists; resume it');
     return this.transaction(() => ({ version: 2, configHash: hash(this.config), lastTime: integer(this.clock(), 'clock'),
       overheadStart: { setup: null, final: null }, trialStart: null, blocked: false, pairs: [], trials: {}, requests: [], preflights: [] }), true);
   }
   validate(state) {
-    exactKeys(state, ['version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
-    if (state.version !== 2 || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
+    guardLedgerOperation(this.file,this.config.mode,{state});
+    exactKeys(state, [...(state.version===3?['recovery']:[]),'version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
+    if (![2,3].includes(state.version) || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
         !Array.isArray(state.requests) || !Array.isArray(state.preflights) || !state.trials || typeof state.trials !== 'object' || Array.isArray(state.trials)) throw Error('Ledger/config mismatch');
     integer(state.lastTime, 'lastTime');
     exactKeys(state.overheadStart, ['setup', 'final'], 'overhead starts');
@@ -45,7 +49,7 @@ export class BudgetLedger {
     seen.clear(); let pending = 0;
     for (const request of state.requests) {
       exactKeys(request, ['id', 'trial', 'phase', 'model', 'effort', 'inputBound', 'outputBound', 'reservation', 'start', 'end', 'status', 'cost', 'usage', 'providerRequestId'], 'request');
-      id(request.id); if (seen.has(request.id)) throw Error('Duplicate request'); seen.add(request.id);
+      id(request.id);if(state.version===3&&!request.id.startsWith(state.recovery.namespace))throw Error('Recovery request namespace'); if (seen.has(request.id)) throw Error('Duplicate request'); seen.add(request.id);
       if (!phases.includes(request.phase) || !this.config.models[request.model] || !['low', 'medium', 'high', 'xhigh'].includes(request.effort)) throw Error('Invalid request metadata');
       if (request.trial !== null && !state.trials[request.trial]) throw Error('Unknown trial');
       if ((request.trial === null) !== ['setup', 'final'].includes(request.phase)) throw Error('Wrong request scope');
@@ -64,11 +68,11 @@ export class BudgetLedger {
       }
     }
     if (pending > 1 || (state.requests.some(r => r.status === 'unknown') && !state.blocked)) throw Error('Invalid in-flight state');
-    if (state.preflights.length > 64) throw Error('Preflight limit exceeded');
+    if (state.preflights.length+(state.recovery?.carriedPreflightCount??0) > 64) throw Error('Preflight limit exceeded');
     const preflightIds = new Set(); let activePreflights = 0;
     for (const count of state.preflights) {
       exactKeys(count, ['id','requestId','trial','phase','payloadHash','model','effort','serviceTier','pricingDate','billingInterpretation','status','start','inputTokens','providerRequestId'], 'preflight');
-      id(count.id); id(count.requestId);
+      id(count.id); id(count.requestId);if(state.version===3&&!count.requestId.startsWith(state.recovery.namespace))throw Error('Recovery count namespace');
       if (preflightIds.has(count.id) || count.id !== `${count.requestId}_count` || !/^[a-f0-9]{64}$/.test(count.payloadHash) || !this.config.models[count.model] || !phases.includes(count.phase) || !['medium','high'].includes(count.effort) || count.serviceTier !== 'default' || count.pricingDate !== '2026-10-06' || count.billingInterpretation !== 'published-pricing-count-zero-2026-10-06') throw Error('Invalid preflight');
       preflightIds.add(count.id); integer(count.start, 'preflight time');
       if ((count.trial === null) !== ['setup','final'].includes(count.phase) || (count.trial !== null && !state.trials[count.trial])) throw Error('Invalid count scope');
@@ -83,8 +87,8 @@ export class BudgetLedger {
   charged(request) { return request.status === 'complete' ? request.cost : request.reservation; }
   sum(state, predicate = () => true) { return state.requests.filter(predicate).reduce((sum, request) => sum + this.charged(request), 0); }
   checkBudgets(state) {
-    const overhead = this.sum(state, r => r.trial === null);
-    if (overhead > LIMITS.overhead || this.sum(state) > LIMITS.total || overhead + Object.keys(state.trials).length * LIMITS.trial > LIMITS.total) throw Error('Budget exhausted');
+    const carry=state.recovery?.carriedExposure??0;const overhead = (state.recovery?.carriedOverhead??0)+this.sum(state, r => r.trial === null);
+    if (overhead > LIMITS.overhead || carry+this.sum(state) > LIMITS.total || carry+overhead + Object.keys(state.trials).length * LIMITS.trial > LIMITS.total) throw Error('Budget exhausted');
     for (const trial of Object.keys(state.trials)) {
       if (this.sum(state, r => r.trial === trial) > LIMITS.trial) throw Error('Trial budget exhausted');
       for (const [bucket, limit] of [['planning', LIMITS.planning], ['implementation', LIMITS.implementation], ['reviewRepair', LIMITS.reviewRepair]]) {
@@ -99,13 +103,15 @@ export class BudgetLedger {
     this.validate(envelope.state); return envelope.state;
   }
   write(state) {
+    guardLedgerOperation(this.file,this.config.mode,{writing:true,state});
     this.validate(state);
     const temp = `${this.file}.next`; const fd = fs.openSync(temp, 'wx', 0o600);
     try { fs.writeFileSync(fd, JSON.stringify({ state, sha256: hash(state) }) + '\n'); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
     fs.renameSync(temp, this.file);
     // Directory sync is not portable to Windows; file sync and same-volume rename are used.
   }
-  transaction(change, initializing = false) {
+  transaction(change, initializing = false,recovered=false) {
+    if(!recovered)guardLedgerOperation(this.file,this.config.mode,{initializing,writing:true});
     // A stale lock is never auto-cleared. Crash recovery requires inspecting retained state.
     const lock = `${this.file}.lock`; const lockFd = fs.openSync(lock, 'wx', 0o600);
     try {
@@ -117,12 +123,12 @@ export class BudgetLedger {
       const next = initializing ? result : state; next.lastTime = now; this.write(next); return result;
     } finally { fs.closeSync(lockFd); fs.unlinkSync(lock); }
   }
-  ready(state) { if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
+  ready(state) { if(this.config.mode==='live')guardLedgerOperation(this.file,this.config.mode,{writing:true,state});if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
   pair(pairId, first, second) {
     return this.transaction((state) => {
       this.ready(state); id(pairId); id(first); id(second);
       if (first === second || state.pairs.some(p => p.id === pairId) || state.trials[first] || state.trials[second]) throw Error('Pair already allocated');
-      if (Object.keys(state.trials).length + 2 > LIMITS.trials || this.sum(state, r => r.trial === null) + (Object.keys(state.trials).length + 2) * LIMITS.trial > LIMITS.total) throw Error('Matched pair cannot fit');
+      if (Object.keys(state.trials).length + 2 > LIMITS.trials || (state.recovery?.carriedExposure??0)+(state.recovery?.carriedOverhead??0)+this.sum(state, r => r.trial === null) + (Object.keys(state.trials).length + 2) * LIMITS.trial > LIMITS.total) throw Error('Matched pair cannot fit');
       state.pairs.push({ id: pairId, trials: [first, second] });
       for (const trial of [first, second]) state.trials[trial] = { start: null, repairs: {}, closed: false };
     });
@@ -194,7 +200,7 @@ export class BudgetLedger {
   beginPreflight(meta) {
     return this.transaction((state, now) => {
       this.ready(state); id(meta.requestId);
-      if (state.preflights.length >= 64 || state.preflights.some(p => p.requestId === meta.requestId) || state.requests.some(r => r.id === meta.requestId)) throw Error('Preflight limit/reuse');
+      if (state.preflights.length+(state.recovery?.carriedPreflightCount??0) >= 64 || state.preflights.some(p => p.requestId === meta.requestId) || state.requests.some(r => r.id === meta.requestId)) throw Error('Preflight limit/reuse');
       if (meta.trial !== null) {
         const trial = state.trials[meta.trial];
         if (!trial || trial.start === null || trial.closed || now >= trial.start + LIMITS.trialMs || now >= state.trialStart + LIMITS.dispatchMs) throw Error('Preflight trial deadline');
