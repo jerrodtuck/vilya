@@ -43,7 +43,11 @@ export function evidenceSummary(snapshot) {
     return { environment, fixture, a: a?.runId ?? null, b: b?.runId ?? null, complete: comparable && a.quality.accepted !== null && b.quality.accepted !== null && a.endedAt !== null && b.endedAt !== null };
   }));
   const screeningComplete = snapshot.runs.length === 12 && pairs.every((p) => p.complete) && snapshot.runs.every((r) => hasCompleteAcceptedEvidence(r));
-  const apiResolved = snapshot.budget?.heldReservationMicrodollars === 0 && snapshot.runs.filter((r) => r.environment === 'api').every((r) => r.requests.length > 0 && r.requests.every((p) => p.status === 'complete' && p.costMicrodollars !== null));
+  const apiRuns = snapshot.runs.filter(r => r.environment === 'api');
+  const freshRequests = [...apiRuns.flatMap(r => r.requests), ...(snapshot.overhead?.setupRequests ?? []), ...(snapshot.overhead?.finalRequests ?? [])];
+  const priorRequests = snapshot.schemaVersion === 2 ? [...snapshot.priorCampaign.runs.flatMap(r => r.requests), ...snapshot.priorCampaign.overhead.setupRequests, ...snapshot.priorCampaign.overhead.finalRequests] : [];
+  const priorHeld = priorRequests.filter(p => p.status !== 'complete').reduce((sum, p) => sum + p.reservationMicrodollars, 0);
+  const apiResolved = snapshot.budget?.heldReservationMicrodollars === priorHeld && apiRuns.every(r => r.requests.length > 0) && freshRequests.every(p => p.status === 'complete' && p.costMicrodollars !== null);
   const nativeObserved = snapshot.runs.filter((r) => r.environment === 'native').every((r) => r.nativePhases?.length > 0 && r.nativePhases.every((p) => p.status === 'observed' && p.attribution === 'verified' && p.disjointnessVerified === true));
   const aCost = populations.find((p) => p.environment === 'api' && p.arm === 'A').reconciled;
   const bCost = populations.find((p) => p.environment === 'api' && p.arm === 'B').reconciled;
