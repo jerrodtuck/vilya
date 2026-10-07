@@ -38,4 +38,3 @@ export function fakeProvider({ text = 'offline result', lost = false } = {}) {
       output: Buffer.byteLength(text, 'utf8'), reasoning: 0, fees: 0 } };
   } };
 }
-
