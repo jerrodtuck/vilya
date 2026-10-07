@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/orch", label: "Orch" },
   { href: "/skills", label: "Skills" },
   { href: "/setup", label: "Setup" },
+  { href: "/evaluation", label: "Evaluation" },
   { href: "/night-shift", label: "Night shift" },
   { href: "/differences", label: "Desktop differences" },
 ];
