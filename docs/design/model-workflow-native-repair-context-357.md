@@ -6,7 +6,7 @@ The native bridge now keeps rejected review findings for the immediate repair pa
 
 Owning issue: https://github.com/jerrodtuck/vilya/issues/357, freshly read as OPEN before implementation on 2026-10-07. The bounded settled implementation uses `gpt-6.1-sol` / `medium` under the operator's #347 policy and the parent worker brief. The orchestrator owns separate Sol/high review and merge coordination. No subagents were spawned.
 
-Worktree: `C:/Users/jerro/.codex/worktrees/357-model-workflow-pilot/vilya`, branch `codex/357-model-workflow-pilot`. Brief base: `ddde35e33d4c70786df490a4628b46801b0b103e`. Original start: `012220a83d11acf5c7c316dca36490152f9a8e90`. The base is an ancestor of that original start. Actual repair starting HEAD: `e057a381bbd950cd21e645eb4731c7ee02aa4fed`, after the separate workflow proof commit.
+Worktree: `C:/Users/jerro/.codex/worktrees/357-model-workflow-pilot/vilya`, branch `codex/357-model-workflow-pilot`. Brief base: `ddde35e33d4c70786df490a4628b46801b0b103e`. Original start: `012220a83d11acf5c7c316dca36490152f9a8e90`. The original feature start precedes both the later brief base and the repair starting HEAD. Actual repair starting HEAD: `e057a381bbd950cd21e645eb4731c7ee02aa4fed`, after the separate workflow proof commit.
 
 Only these paths belong to this correction:
 
