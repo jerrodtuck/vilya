@@ -110,10 +110,10 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
       const attemptStarted=ledger.clock();review=null;
       gates = await acceptanceFn(root, manifest, Math.min(started + LIMITS.trialMs, ledger.read().trialStart + LIMITS.dispatchMs), { sandbox });
       if (gates.length && gates.every(result => result.passed)) {
-        review = JSON.parse(await call('review', phasePacket({phase:'review',manifest,baseline,current:scopedContext(root,manifest),gates,fullBaseline,fullCurrent:context(root,manifest)})));
-        if (!review || typeof review.ready !== 'boolean' || !Array.isArray(review.findings) || review.findings.some(f => typeof f !== 'string')) throw Error('Invalid independent review');
+        const candidate = JSON.parse(await call('review', phasePacket({phase:'review',manifest,baseline,current:scopedContext(root,manifest),gates,fullBaseline,fullCurrent:context(root,manifest)})));
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || typeof candidate.ready !== 'boolean' || !Array.isArray(candidate.findings) || candidate.findings.some(f => typeof f !== 'string')) throw Error('Invalid independent review');
         const observed=ledger.read().requests.filter(r=>r.trial===trial&&r.phase==='review').at(-1);
-        review={...review,model:observed.model,effort:observed.effort,independent:true,requestId:observed.id};
+        review={...candidate,model:observed.model,effort:observed.effort,independent:true,requestId:observed.id};
         accepted = review.ready && review.findings.length === 0;
       }
       const attemptEnded=ledger.clock();attempts.push({ordinal:attempt,kind:attempt===0?'initial':'repair',started:attemptStarted,ended:attemptEnded,elapsedMs:attemptEnded-attemptStarted,outcome:accepted?'accepted':'failed',gates:gates.map(({output,...m})=>m),review:review&&{ready:review.ready,findingCount:review.findings.length,model:review.model,effort:review.effort,independent:review.independent,requestId:review.requestId}});
