@@ -78,12 +78,12 @@ export function guardedTransport(budget) {
 async function setupReview(args, output) {
   const values = {};for(let i=0;i<args.length;i++){if(['--live','--initialize'].includes(args[i]))values[args[i]]=true;else if(['--ledger','--prompt','--review-id'].includes(args[i])&&args[i+1])values[args[i]]=args[++i];else throw Error('Unsupported review option');}
   if(!values['--live']||!['--ledger','--prompt'].every(k=>path.isAbsolute(values[k]??'')))throw Error('Explicit live and absolute review paths required');
-  const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./workflow.mjs');
+  const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./paths.mjs');
   for(const k of ['--ledger','--prompt']){if(!path.resolve(values[k]).startsWith(repo+path.sep))throw Error('Review path outside pilot');safeFile(repo,path.relative(repo,values[k]).split(path.sep).join('/'));}
-  if(!['setup_cost_review_1','setup_sandbox_review_1','setup_final_review_1'].includes(values['--review-id']))throw Error('Explicit review request ID required');
+  if(!['setup_cost_review_1','setup_sandbox_review_1','setup_final_review_1','setup_product_plan_1'].includes(values['--review-id']))throw Error('Explicit review request ID required');
   const prompt=fs.readFileSync(values['--prompt'],'utf8');if(Buffer.byteLength(prompt)>32000)throw Error('Review context bound');
   if(!process.env.OPENAI_API_KEY)throw Error('Missing controller credential');const budget=new BudgetLedger(values['--ledger'],apiConfig());if(values['--initialize'])budget.initialize();else budget.read();
-  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--review-id'],phase:'setup',model:'gpt-6.1-sol',effort:'high',maxOutputTokens:8000});
+  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--review-id'],phase:'setup',model:values['--review-id']==='setup_product_plan_1'?'gpt-6-astra':'gpt-6.1-sol',effort:'high',maxOutputTokens:values['--review-id']==='setup_product_plan_1'?4000:8000});
   output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--review-id'])}));
 }
 async function runAPI(args, output) {
@@ -96,7 +96,7 @@ async function runAPI(args, output) {
   }
   if (!values['--live'] || !['--ledger','--workspace','--dependencies'].every(key => path.isAbsolute(values[key] ?? ''))) throw Error('Explicit --live and absolute --ledger/--workspace/--dependencies required');
   const repo = fs.realpathSync(new URL('../..', import.meta.url));
-  const { safeFile } = await import('./workflow.mjs');
+  const { safeFile } = await import('./paths.mjs');
   const workspace = path.resolve(values['--workspace']);
   if (!workspace.startsWith(repo + path.sep) || workspace === repo || !path.resolve(values['--ledger']).startsWith(workspace + path.sep)) throw Error('Pilot workspace/ledger must stay inside dedicated repo subdirectory');
   safeFile(repo, path.relative(repo, workspace).split(path.sep).join('/'));

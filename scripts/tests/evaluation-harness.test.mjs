@@ -236,3 +236,9 @@ test('sandbox exposes only isolated fixture, readonly deps and explicit harmless
  assert.equal(args.filter(a=>a.startsWith('type=bind')).length,1);assert.ok(args.find(a=>a.startsWith('type=bind')).endsWith('target=/seed,readonly'));assert.equal(args.some(a=>a.includes('OPENAI_API_KEY')||a.includes('docker.sock')||a.includes('.env.local')),false);
  fs.writeFileSync(path.join(root,'.env.local'),'ignored');assert.throws(()=>sandboxArgs({allowedRoot,root}),/private configuration/);
 });
+
+test('actual setup-review CLI reaches missing credential without cyclic top-level await or requests',t=>{
+ const repo=fileURLToPath(new URL('../../',import.meta.url));const runtime=path.join(repo,'scripts/evaluation/runtime');fs.mkdirSync(runtime,{recursive:true});const dir=fs.mkdtempSync(path.join(runtime,'cli-test-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const prompt=path.join(dir,'public.txt'),ledger=path.join(dir,'ledger.json');fs.writeFileSync(prompt,'Public bounded independent review packet.');
+ const result=spawnSync(process.execPath,['scripts/evaluation/harness.mjs','--setup-review','--live','--initialize','--ledger',ledger,'--prompt',prompt,'--review-id','setup_cost_review_1'],{cwd:repo,encoding:'utf8',timeout:3000,env:{...process.env,OPENAI_API_KEY:''}});
+ assert.equal(result.status,1);assert.match(result.stderr,/Missing controller credential/);assert.doesNotMatch(result.stderr,/unsettled top-level await/);assert.equal(fs.existsSync(ledger),false);
+});
