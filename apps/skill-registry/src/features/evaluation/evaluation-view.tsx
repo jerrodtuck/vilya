@@ -4,8 +4,18 @@ import type { Run, Snapshot, Usage } from './types';
 import styles from './evaluation.module.css';
 const money = (n: number | null) => n === null ? 'Unavailable' : `$${(n / 1000000).toFixed(4)}`;
 const duration = (n: number | null) => n === null ? 'Unavailable' : `${(n / 1000).toFixed(1)} s`;
+function EvaluationMethod() {
+  return <>
+    <h2>Approved limits</h2>
+    <p>Up to 12 trials: six API and six native. Total trial time: 90 minutes; each trial: 7 minutes. API budget: $25 total, $2 per API trial, and $1 shared setup/final overhead.</p>
+    <h2>Workflows and method</h2>
+    <p>A uses Sol/medium planning; B uses Astra/high planning. Both use Sol/medium implementation and repairs, then a separate Sol/high review with the same acceptance gates.</p>
+    <p>The API pairs test a cost and accepted-quality hypothesis. Native Codex pairs then check that hypothesis on the same fixtures. Repeated native confirmation is required before recommending a production model change.</p>
+    <p>Native output-token limits are checked after completion; the exposed agent tool cannot cap output before generation. Native no-tools is an instruction while tools remain available. These historical fixtures include writable copied dependencies, tests and oracle checks. This screening provides no adversarial holdout guarantee.</p>
+  </>;
+}
 export function NoResults({ invalid = false }: { invalid?: boolean }) {
-  return <section className={styles.evaluation}><h1>Workflow evaluation</h1><p role="status" className={styles.notice}>{invalid ? 'The results snapshot could not be validated. Results are temporarily unavailable.' : 'No results have been exported yet. Completed trials will appear after an evidence snapshot is exported.'}</p><p><Link href="/evaluation">Refresh results</Link></p></section>;
+  return <section className={styles.evaluation}><h1>Workflow evaluation</h1><EvaluationMethod /><p role="status" className={styles.notice}>{invalid ? 'The results snapshot could not be validated. Results are temporarily unavailable.' : 'No results have been exported yet. Completed trials will appear after an evidence snapshot is exported.'}</p><p><Link href="/evaluation">Refresh results</Link></p></section>;
 }
 function UsageView({ usage }: { usage: Usage | null }) {
   return usage === null ? <span>Usage unavailable</span> : <span>Input {usage.inputTokens ?? 'unknown'}; cached {usage.cachedInputTokens ?? 'unknown'}; cache write {usage.cacheWriteInputTokens ?? 'unknown'}; output {usage.outputTokens ?? 'unknown'}; reasoning {usage.reasoningOutputTokens ?? 'unknown'} (included in output)</span>;
@@ -14,7 +24,7 @@ export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query:
   const filters = normalizeFilters(query); const runs: Run[] = filterRuns(snapshot.runs, filters.values);
   const summary = evidenceSummary(snapshot);
   return <section className={styles.evaluation}>
-    <h1>Workflow evaluation</h1><p>Compare planning with Sol/medium (A) and Astra/high (B), followed by the same Sol implementation and independent Sol/high review.</p>
+    <h1>Workflow evaluation</h1><EvaluationMethod />
     <p className={styles.muted}>Snapshot {snapshot.generatedAt} · <Link href="/evaluation">Refresh results</Link> · <a href="/evaluation/data.json" download>Download all sanitized results</a></p>
     <p className={styles.notice}>Historical screening: up to 12 trials, six API and six native. These tasks are not held out, and oracle access is not enforced. One screen does not establish universal model quality or cache causality.</p>
     <form method="get" action="/evaluation" className={styles.filters}>

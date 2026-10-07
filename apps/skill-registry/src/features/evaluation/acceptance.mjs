@@ -11,6 +11,7 @@ const within = (item, start, end) => item.startedAt !== null && item.endedAt !==
 const completeUsage = (usage) => usage !== null && ['inputTokens','cachedInputTokens','cacheWriteInputTokens','outputTokens','reasoningOutputTokens','totalTokens'].every((key) => Number.isSafeInteger(usage[key]) && usage[key] >= 0);
 export function assertAcceptedEvidence(run) {
   const gates = REQUIRED_GATE_IDS[run.fixture];
+  if (run.attempts.length > 3 || run.attempts.some((a, index) => index === 0 ? a.kind !== 'initial' || a.defectId !== null : a.kind !== 'repair' || a.defectId !== 'acceptance')) fail();
   if (!gates || !run.startedAt || !run.endedAt || run.elapsedMs === null || !run.attempts.length || !run.quality.attemptHistoryComplete) fail();
   if (run.quality.requiredGateIds.length !== gates.length || gates.some((id) => !run.quality.requiredGateIds.includes(id))) fail();
   const phases = run.environment === 'api' ? run.requests.map((p) => ({ ...p, receiptId: receiptIdForRequest(p.requestId) })) : run.nativePhases;
