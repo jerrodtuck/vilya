@@ -76,15 +76,15 @@ export function guardedTransport(budget) {
   } });
 }
 async function setupReview(args, output) {
-  const values = {};for(let i=0;i<args.length;i++){if(['--live','--initialize'].includes(args[i]))values[args[i]]=true;else if(['--ledger','--prompt','--request-id'].includes(args[i])&&args[i+1])values[args[i]]=args[++i];else throw Error('Unsupported review option');}
+  const values = {};for(let i=0;i<args.length;i++){if(['--live','--initialize'].includes(args[i]))values[args[i]]=true;else if(['--ledger','--prompt','--review-id'].includes(args[i])&&args[i+1])values[args[i]]=args[++i];else throw Error('Unsupported review option');}
   if(!values['--live']||!['--ledger','--prompt'].every(k=>path.isAbsolute(values[k]??'')))throw Error('Explicit live and absolute review paths required');
   const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./workflow.mjs');
   for(const k of ['--ledger','--prompt']){if(!path.resolve(values[k]).startsWith(repo+path.sep))throw Error('Review path outside pilot');safeFile(repo,path.relative(repo,values[k]).split(path.sep).join('/'));}
-  if(!/^[A-Za-z0-9_-]{1,70}$/.test(values['--request-id']??''))throw Error('Explicit review request ID required');
+  if(!['setup_cost_review_1','setup_sandbox_review_1','setup_final_review_1'].includes(values['--review-id']))throw Error('Explicit review request ID required');
   const prompt=fs.readFileSync(values['--prompt'],'utf8');if(Buffer.byteLength(prompt)>32000)throw Error('Review context bound');
   if(!process.env.OPENAI_API_KEY)throw Error('Missing controller credential');const budget=new BudgetLedger(values['--ledger'],apiConfig());if(values['--initialize'])budget.initialize();else budget.read();
-  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--request-id'],phase:'setup',model:'gpt-6.1-sol',effort:'high',maxOutputTokens:8000});
-  output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--request-id'])}));
+  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--review-id'],phase:'setup',model:'gpt-6.1-sol',effort:'high',maxOutputTokens:8000});
+  output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--review-id'])}));
 }
 async function runAPI(args, output) {
   throw Error('Trial dispatch stopped: unresolved Docker full-gate defect requires independently reviewed revised plan');
