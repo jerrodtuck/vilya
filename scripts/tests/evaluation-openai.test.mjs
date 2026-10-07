@@ -1,6 +1,12 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { BudgetLedger } from '../evaluation/ledger.mjs';
+import { apiConfig } from '../evaluation/money.mjs';
+import { generate } from '../evaluation/harness.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createOpenAITransport, buildResponsePayload, LIVE_BLOCK_REASON, OFFLINE_FIXTURE_KEY } from '../evaluation/openai-transport.mjs';
+import { createOpenAITransport, parseResponse, buildResponsePayload, LIVE_BLOCK_REASON, OFFLINE_FIXTURE_KEY, COUNT_BILLING_INTERPRETATION } from '../evaluation/openai-transport.mjs';
 const endpoint = 'https://api.openai.com/v1/responses';
 const base = () => ({ model: 'gpt-6.1-sol', effort: 'medium', prompt: 'private prompt', maxOutputTokens: 32, maxToolCalls: 0, retries: 0,
   reservation: { id: 'request_1' } });
@@ -128,4 +134,135 @@ test('fixture mode rejects native fetch and a real-shaped environment credential
   assert.throws(() => createOpenAITransport({ offlineFixture: true, fetchImpl: globalThis.fetch, inputTokensForFixture: () => 20 }), /injected/);
   const { provider, calls } = fixture({ env: { OPENAI_API_KEY: 'sk-private-credential' } });
   await assert.rejects(send(provider), /sentinel/); assert.equal(calls.length, 0);
+});
+
+function countedFixture(options = {}) {
+  const calls = []; const events = []; let pending;
+  const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-count-secret' },
+    countBillingInterpretation: COUNT_BILLING_INTERPRETATION,
+    preflightGuard: {
+      begin(meta, scope) { events.push('begin'); pending = { ...meta, ...scope, id: `${scope.requestId}_count`, status: 'pending', deadline: (options.clock ?? Date.now)() + 15_000 }; return pending; },
+      complete(id, receipt) { assert.equal(id, pending.id); events.push('complete'); pending = { ...pending, ...receipt, status: 'complete' }; return true; },
+      hold(id) { assert.equal(id, pending.id); events.push('hold'); pending.status = 'unknown'; }
+    },
+    reservationGuard: request => { events.push('generation-guard'); return { id: request.reservation.id, status: 'pending', model: request.model,
+      effort: request.effort, inputBound: 20, outputBound: request.maxOutputTokens, reservation: 500 }; },
+    fetchImpl: async (url, init) => { calls.push({ url, init }); events.push(url.endsWith('/input_tokens') ? 'count-send' : 'generation-send');
+      return { ok: true, url, headers: { get: () => 'req_count1' }, json: async () => url.endsWith('/input_tokens') ?
+        { object: 'response.input_tokens', input_tokens: 20 } : data() }; }, ...options });
+  return { provider, calls, events, pending: () => pending };
+}
+
+test('approved exact count records before send then certifies generation bound', async () => {
+  const { provider, calls, events, pending } = countedFixture(); const request = base();
+  const certificate = await provider.prepare(request, { requestId: 'request_1', trial: 'trial_1', phase: 'planning' });
+  assert.equal(calls.length, 1); assert.deepEqual(events, ['begin', 'count-send', 'complete']);
+  assert.equal(pending().status, 'complete'); assert.equal(certificate.provenance, 'openai-exact-input-count');
+  assert.equal(provider.inputBound(request, certificate), 20);
+  const countPayload = JSON.parse(calls[0].init.body);
+  assert.deepEqual(countPayload, { model: request.model, input: request.prompt, reasoning: { effort: request.effort }, text: { format: { type: 'text' } },
+    parallel_tool_calls: false, tools: [], tool_choice: 'none', truncation: 'disabled' });
+  await provider.send(request, certificate);
+  assert.deepEqual(events, ['begin', 'count-send', 'complete', 'generation-guard', 'generation-send']);
+  assert.equal(calls.length, 2);
+  await assert.rejects(provider.send(request, certificate), /certificate/); assert.equal(calls.length, 2);
+});
+
+test('missing approved interpretation/guard or denied durable preflight emits zero calls', async () => {
+  for (const options of [{ countBillingInterpretation: 'assume-free' }, { preflightGuard: undefined }]) {
+    const { provider, calls } = countedFixture(options);
+    assert.throws(() => provider.prepare(base(), { requestId: 'request_1' }), /blocked-live/); assert.equal(calls.length, 0);
+  }
+  const { provider, calls } = countedFixture({ preflightGuard: { begin() { throw Error('exhausted'); }, complete() {}, hold() {} } });
+  await assert.rejects(provider.prepare(base(), { requestId: 'request_1' }), /exhausted/); assert.equal(calls.length, 0);
+});
+
+test('unknown count fees/usage/schema/overflow/lost response hold preflight without generation', async () => {
+  for (const value of [{ object: 'response.input_tokens', input_tokens: 20, usage: {} },
+    { object: 'response.input_tokens', input_tokens: 20, fees: 0 }, { object: 'response.input_tokens', input_tokens: 32001 },
+    { object: 'response.input_tokens', input_tokens: -1 }, { object: 'response.input_tokens', input_tokens: null },
+    { object: 'response', input_tokens: 20 }, null]) {
+    let calls = 0;
+    const { provider, events, pending } = countedFixture({ fetchImpl: async url => { calls++; return { ok: true, url, json: async () => value }; } });
+    await assert.rejects(provider.prepare(base(), { requestId: 'request_1' }), /preflight unresolved/);
+    assert.equal(calls, 1); assert.deepEqual(events, ['begin', 'hold']); assert.equal(pending().status, 'unknown');
+  }
+  const { provider, pending } = countedFixture({ fetchImpl: async () => { throw Error('private FAKE-count-secret'); } });
+  await assert.rejects(provider.prepare(base(), { requestId: 'request_1' }), error => error.message === 'Input preflight unresolved; dispatch held');
+  assert.equal(pending().status, 'unknown');
+});
+
+test('count deadline aborts once and holds durable preflight', async () => {
+  let calls = 0; let signal;
+  const { provider, pending } = countedFixture({ timeoutMs: 5, fetchImpl: async (_url, init) => { calls++; signal = init.signal; return new Promise(() => {}); } });
+  await assert.rejects(provider.prepare(base(), { requestId: 'request_1' }), /preflight unresolved/);
+  assert.equal(calls, 1); assert.equal(signal.aborted, true); assert.equal(pending().status, 'unknown');
+});
+
+test('certificate expires or clock regresses before generation and binds every generation option', async () => {
+  let now = 1000; const { provider, calls } = countedFixture({ clock: () => now }); const request = base();
+  const certificate = await provider.prepare(request, { requestId: 'request_1' });
+  for (const changes of [{ effort: 'high' }, { maxOutputTokens: 31 }, { prompt: 'different' }, { model: 'gpt-6-astra' }]) {
+    await assert.rejects(provider.send({ ...request, ...changes }, certificate), /certificate/);
+  }
+  now = 999; await assert.rejects(provider.send(request, certificate), /certificate/);
+  now = 61000; await assert.rejects(provider.send(request, certificate), /certificate/);
+  assert.equal(calls.length, 1);
+});
+
+test('production fake-network preparation integrates with persisted budget before generation', async () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'vilya-count-seam-'));
+  try {
+    const ledger = new BudgetLedger(path.join(temp, 'ledger.json'), apiConfig()); ledger.initialize(); let calls = 0;
+    const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-integration-key' },
+      countBillingInterpretation: COUNT_BILLING_INTERPRETATION,
+      preflightGuard: { begin: (meta, scope) => ledger.beginPreflight({ ...meta, ...scope }),
+        complete: (id, result) => ledger.completePreflight(id, result), hold: id => ledger.holdPreflight(id) },
+      reservationGuard: request => ledger.read().requests.find(r => r.id === request.reservation.id),
+      fetchImpl: async url => {
+        calls++; const state = ledger.read();
+        if (url.endsWith('/input_tokens')) {
+          assert.equal(state.preflights.length, 1); assert.equal(state.preflights[0].status, 'pending'); assert.equal(state.requests.length, 0);
+          return { ok: true, url, json: async () => ({ object: 'response.input_tokens', input_tokens: 20 }) };
+        }
+        assert.equal(state.preflights[0].status, 'complete'); assert.equal(state.requests[0].status, 'pending');
+        assert.equal(state.requests[0].inputBound, 20); assert.equal(state.requests[0].reservation, 370);
+        return { ok: true, url, json: async () => data() };
+      } });
+    await generate(ledger, provider, { prompt: 'private seam prompt', requestId: 'seam_1', phase: 'setup', model: 'gpt-6.1-sol', effort: 'medium', maxOutputTokens: 32 });
+    assert.equal(calls, 2); const state = ledger.read();
+    assert.equal(state.requests[0].status, 'complete'); assert.equal(state.preflights[0].status, 'complete');
+    assert.equal(state.requests[0].cost, 137); assert.equal(fs.readFileSync(ledger.file, 'utf8').includes('private seam prompt'), false);
+    const resumed = new BudgetLedger(ledger.file, apiConfig()); assert.equal(resumed.sum(resumed.read()), 137);
+  } finally { fs.rmSync(temp, { recursive: true, force: true }); }
+});
+
+test('unexpected top-level charge or usage metadata cannot normalize to zero fees', async () => {
+  for (const unknown of ['fees', 'fee', 'cost', 'charges', 'billing', 'billing_details', 'additional_usage', 'unrecognized_field']) {
+    const value = { ...data(), [unknown]: { amount: 999, private: 'FAKE-secret private prompt' } };
+    assert.throws(() => parseResponse(value, base(), 20), error => error.message === 'OpenAI request unresolved; retain full reservation');
+    const { provider } = fixture({ fetchImpl: async () => ({ ok: true, url: endpoint, json: async () => value }) });
+    await assert.rejects(send(provider), error => error.message === 'OpenAI request unresolved; retain full reservation');
+  }
+  const documented = { ...data(), id: 'resp_fixture', object: 'response', created_at: 1000, completed_at: 1001,
+    error: null, incomplete_details: null, metadata: {}, reasoning: { effort: 'medium', summary: null },
+    max_output_tokens: 32, max_tool_calls: null, store: false, background: false, temperature: 1,
+    text: { format: { type: 'text' } }, tool_choice: 'none', parallel_tool_calls: false, top_p: 1, truncation: 'disabled', user: null };
+  assert.equal(parseResponse(documented, base(), 20).usage.fees, 0);
+});
+
+test('count uses remaining stage deadline and rejects a response arriving at that boundary', async () => {
+  for (const late of [false, true]) {
+    let now = 1000; let sends = 0; let held = false; let signal;
+    const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-deadline-key' },
+      countBillingInterpretation: COUNT_BILLING_INTERPRETATION, clock: () => now,
+      preflightGuard: { begin: meta => ({ ...meta, id: 'near_deadline_count', status: 'pending', deadline: 1005 }),
+        complete() { throw Error('Late count must not complete'); }, hold() { held = true; } },
+      fetchImpl: async (url, init) => { sends++; signal = init.signal;
+        if (!late) return new Promise(() => {});
+        now = 1005; return { ok: true, url, json: async () => ({ object: 'response.input_tokens', input_tokens: 20 }) };
+      } });
+    await assert.rejects(provider.prepare(base(), { requestId: 'near_deadline' }), /preflight unresolved/);
+    assert.equal(sends, 1); assert.equal(held, true); if (!late) assert.equal(signal.aborted, true);
+  }
 });

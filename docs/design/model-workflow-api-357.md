@@ -5,80 +5,101 @@ Last updated: 2026-10-06
 Issue: [#357](https://github.com/jerrodtuck/vilya/issues/357)
 Kickoff: [settled offline-first harness](https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6028353155)
 
-The operator selected an API comparison first to keep experimental calls separate
-from the weekly Codex subscription allowance. Harness development itself uses
-native Codex calls. No API comparison trial has run and no performance result is
-claimed. API evidence must later be checked against native Codex workflow behavior
-before recommending production routing changes.
+The operator selected an API comparison first to separate experimental API spend
+from weekly Codex subscription allowance, then asked the controller to finish the
+safeguards and first comparison. Development calls use native Codex separately.
+This document describes transport readiness, not a completed comparison or measured
+performance result. API screening still needs native Codex validation before adoption.
 
-The dependency-free transport builds a fixed text-only Responses request for
-`gpt-6.1-sol` or `gpt-6-astra`, with medium/high reasoning, an explicit Standard
-`default` service tier, bounded output including reasoning, no tools, no retries,
-no previous response, and no background/streaming execution. The core ledger owns
-all spending limits: $25 aggregate, $2 per trial, and $1 shared setup/final overhead.
-It must persist the reservation before dispatch and retain it on an unresolved call.
-The adapter does not implement a second budget ledger or a live command-line entry.
+The dependency-free transport fixes text-only Responses requests to `gpt-6.1-sol`
+or `gpt-6-astra`, medium/high reasoning and the explicit Standard `default` tier.
+It enforces bounded output including reasoning, no tools, retries, previous response,
+background execution or streaming. Root controls actual requests after independent
+review. The adapter has no automatic CLI entry and reads the key only from its
+provided environment. Root may supply the locally excluded environment file to its
+controller; keys never enter prompts, committed files, receipts or diagnostics.
 
-The dated rate catalog is
-`scripts/evaluation/verified-api-rates-2026-10-06.json`. Cache reads, cache writes
-and uncached input are disjoint parts of total input; reasoning is part of output.
-Unknown or missing counters cannot be reconciled as zero. Unsupported returned
-service tiers, hosted tool output, redirects, malformed usage and usage exceeding
-the held bounds fail without exposing response bodies or provider exception text.
-Generated text is returned only for ephemeral isolated trial processing. Safe
-request IDs and exact usage counters are separate metadata; prompts and provider
+## Exact preparation and reservation sequence
+
+1. The core calls `prepare(request, {requestId, trial, phase})`. Production preparation
+   requires explicit live opt-in, credentials, the selected billing interpretation and
+   all durable preflight callbacks. Before count dispatch, `preflightGuard.begin`
+   persists the scope, complete generation payload hash, exact model/effort, tier,
+   pricing date and pending status. The core owns the global 64-count request limit,
+   sequential dispatch, scope deadlines and restart blocking.
+2. The adapter calls the documented count endpoint once with the same model and input,
+   identical reasoning, plain-text format, parallel-tool setting, empty tools and disabled
+   truncation. The count schema supports each of these input-affecting options. Generation
+   output controls are not count-endpoint parameters;
+   every generation option is nevertheless bound by the certificate hash. The count
+   deadline is the lesser of 15 seconds and the durable remaining stage/aggregate time. Only the documented two-field count response is
+   accepted; unexpected usage, fees or fields stop dispatch. A lost, malformed or
+   cancelled count is held in durable state and cannot be silently retried.
+3. A successful count is durably completed, then mints an immutable, provenance-checked
+   certificate for the exact payload and input count. Admission rejects counts over
+   32,000. Certificates expire after 60 seconds, reject clock regression and cannot
+   be copied, forged, transferred between transports or reused after dispatch.
+4. The core reserves generation cost using the exact count at the maximum disjoint
+   input rate and bounded output, before generation POST. Transport checks the pending
+   persisted reservation and certificate before sending. Lost responses, cancellation,
+   malformed usage or exceeded bounds retain the generation reservation and stop calls.
+
+The core ledger owns $25 aggregate, $2 per trial and $1 shared setup/final overhead;
+there is no second budget ledger in the transport. Count attempts, including failed
+ones, are recorded separately from billable inference under the interpretation below.
+The local 32,000-byte prompt restriction is an admission rule, not a token estimate
+or an API-enforced input cap. Exact provider counting includes message framing.
+
+## Billing evidence and selected interpretation
+
+Reviewed official [pricing](https://developers.openai.com/api/docs/pricing) states
+that Responses and the other listed APIs are not priced separately; model input and
+output tokens carry model rates. The [count reference](https://developers.openai.com/api/reference/python/resources/responses/subresources/input_tokens/methods/count)
+returns a count object without model output or a generation usage record. No separate
+count endpoint fee is published in the reviewed pricing table.
+
+Root selected the narrow interpretation that this non-generating count operation
+has zero inference cost for this bounded pilot. This is an inference from published
+pricing and the endpoint contract, **not an explicit provider guarantee that counting
+is free**. The configured value is
+`published-pricing-count-zero-2026-10-06`. An arbitrary free-count assumption does not
+unlock the adapter. Missing interpretation or durable callbacks fail closed.
+
+The hard budget accounting uses reviewed published prices and the fixed request scope.
+It is not a warranty against an undisclosed provider fee, provider price change or
+incorrect provider usage. Unexpected count schemas/fees/usage fail closed; any changed
+billing contract must be reviewed before another request. No hypothetical fee number,
+byte-padding tokenizer proof or unpriced alias is used.
+
+The dated rates live in `scripts/evaluation/verified-api-rates-2026-10-06.json`.
+Uncached input, cached input and cache writes are disjoint parts of total input;
+reasoning is part of output. Missing counters are not zero. Unsupported returned
+tiers, tools, redirects and usage overflow stop reconciliation. Generated text is
+returned only for ephemeral isolated trial processing. Only safe request IDs and
+exact counters are audit metadata; prompts, tool text, raw error bodies and provider
 reasoning summaries do not belong in the durable audit.
 
-## Input certification and present live blocker
+## Verification and limits
 
-`createOpenAITransport().prepare(request)` must certify the exact model and full
-immutable payload before the core reserves money. `inputBound(request, certificate)`
-checks certificate provenance and its payload hash, model, Standard tier and pricing
-date. `send(request, certificate)` also requires a callback which checks the actual
-persisted pending reservation. A caller-supplied count, changed prompt, different
-model or copied certificate is rejected.
+Run `node --test scripts/tests/evaluation-openai.test.mjs`. Tests use injected fake
+fetches and fake credentials, exercising actual production preparation logic without
+network calls. Explicit offline fixture mode additionally rejects native fetch and
+accepts only a fixed nonsecret sentinel key. The production fake-network tests prove
+ordering, strict count contracts, reservation checks, bound enforcement, one-use/expiry,
+no retries, deadlines and private-error suppression. They do not establish real model
+availability, account charges or model quality. This worker made no real API request.
 
-Currently certificates exist only in explicit offline fixture mode, requiring an
-injected fake fetch and fixture token counter. These certify a fake-provider contract,
-not OpenAI tokenization. Fixture mode rejects native fetch and accepts only the
-fixed nonsecret sentinel credential. Production preparation and input validation fail closed,
-even with explicit live opt-in and an environment key. No injected counter is proof
-of a production tokenizer or fee bound.
-
-The official token-count endpoint includes model message framing. Its pricing was
-not established from the reviewed documentation. A byte estimate plus invented
-padding does not certify framing or authorize an unreserved preflight request.
-Live execution therefore requires verified count/preflight billing evidence and a
-reviewed integration that accounts for every potentially billable call before send.
-The existing 32,000-byte prompt admission limit is a local size restriction, not an
-API token-count guarantee or an API-enforced input-token cap.
-
-## Preparation and verification
-
-Supply an API key outside chat and outside committed files only when live readiness
-has been established. The intended source is the process `OPENAI_API_KEY` environment
-variable. Never paste it into an issue, ledger, prompt or diagnostic. Only optional
-credential availability belongs in status. Key presence alone cannot unlock this
-adapter. This build did not set up an account or read a credential file.
-
-Offline tests use fake credentials and fake fetch implementations. Run
-`node --test scripts/tests/evaluation-openai.test.mjs`. They exercise pre-send
-rejection, certificate binding, payload bounds, cancellation/deadline behavior,
-no retries, redirects, missing/overlapping counters, budget-bound overflow and
-private-error suppression. They establish protocol guard behavior, not provider
-availability, actual charges, native Codex tool parity or model quality.
-
-An API comparison would use stateless bounded planning, an owned-file JSON patch,
-preapproved local Node gates and a fresh independent Sol/high review. It cannot
-reproduce all native Codex tools, agent delegation, cache/session context or runtime
-behavior. A completed API screening remains evidence for its own fixtures and
-configurations, with failures included and no universal winner or subscription-dollar
-savings claim.
+The comparison uses stateless bounded planning, an owned-file JSON patch, preapproved
+local Node gates and a fresh independent Sol/high review. API tools, agents, cache,
+context and runtime differ from native Codex. Failures count toward accepted-result
+cost, and a single matched pair offers limited screening evidence. API results alone
+cannot establish native workflow recommendations or subscription-dollar savings.
 
 ## Official references reviewed on 2026-10-06
 
-- [Responses create reference](https://developers.openai.com/api/reference/python/resources/responses/methods/create): output, tier, usage and no-tools request contract.
-- [Counting tokens](https://developers.openai.com/api/docs/guides/token-counting): exact count includes message framing; local estimates have limitations.
-- [Count input tokens reference](https://developers.openai.com/api/reference/python/resources/responses/subresources/input_tokens/methods/count): `POST /v1/responses/input_tokens`.
+- [Responses create reference](https://developers.openai.com/api/reference/python/resources/responses/methods/create): output, tier and usage contract.
+- [Counting tokens](https://developers.openai.com/api/docs/guides/token-counting): exact count includes message framing.
+- [Count input tokens reference](https://developers.openai.com/api/reference/python/resources/responses/subresources/input_tokens/methods/count): `POST /v1/responses/input_tokens` and the two-field result.
+- [API pricing](https://developers.openai.com/api/docs/pricing): published billing basis used for the disclosed interpretation.
 - [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching): disjoint input billing categories.
-- [Sol model](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [Astra model](https://developers.openai.com/api/docs/models/gpt-6-astra): exact model identifiers and dated pricing catalog sources.
+- [Sol model](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [Astra model](https://developers.openai.com/api/docs/models/gpt-6-astra): exact model and rate catalog sources.

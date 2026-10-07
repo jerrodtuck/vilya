@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url';
 import { BudgetLedger } from './ledger.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-import { createOpenAITransport, LIVE_BLOCK_REASON } from './openai-transport.mjs';
+import { createOpenAITransport, LIVE_BLOCK_REASON, COUNT_BILLING_INTERPRETATION } from './openai-transport.mjs';
 import { exampleConfig, apiConfig } from './money.mjs';
 
 export async function generate(ledger, provider, { prompt, requestId, trial = null, phase, model, effort, maxOutputTokens, defect = null }) {
@@ -11,8 +11,8 @@ export async function generate(ledger, provider, { prompt, requestId, trial = nu
   if (provider.kind !== 'live' && ledger.config.mode !== 'offline') throw Error('Offline transport cannot produce paid trial receipts');
   if (typeof prompt !== 'string') throw Error('Invalid prompt');
   const transportRequest = { model, effort, prompt, maxOutputTokens, maxToolCalls: 0, retries: 0 };
-  // Adapter prepare must be local/nonbillable; uncertified production input bounds fail here.
-  const certificate = provider.prepare ? await provider.prepare(transportRequest) : null;
+  // Real count preflight is remote, durably bounded, and uses the scoped published-pricing zero-separate-fee interpretation.
+  const certificate = provider.prepare ? await provider.prepare(transportRequest, { requestId, trial, phase }) : null;
   const inputBound = provider.inputBound ? provider.inputBound(transportRequest, certificate) : Buffer.byteLength(prompt, 'utf8');
   if (provider.kind === 'live' && !provider.inputBound) throw Error('blocked-live: certified input bound required');
   const request = ledger.reserve({ requestId, trial, phase, model, effort, inputBound, outputBound: maxOutputTokens, defect });
@@ -48,6 +48,7 @@ export async function cli(args, output = console.log) {
   if (args.length === 1 && args[0] === '--api-preflight') {
     output(JSON.stringify({ status: 'blocked-live', modelRates: 'verified-2026-10-06', credentialPresent: Boolean(process.env.OPENAI_API_KEY), reason: LIVE_BLOCK_REASON, paidRequests: 0 })); return;
   }
+  if (args[0] === '--setup-review') return setupReview(args.slice(1), output);
   if (args[0] === '--run-api') return runAPI(args.slice(1), output);
   if (args.includes('--live')) throw Error(LIVE_BLOCK_REASON);
   if (!args.length || (args.length === 1 && args[0] === '--dry-run')) {
@@ -66,7 +67,27 @@ export async function cli(args, output = console.log) {
     fakeMicrodollars: ledger.sum(final), trialCount: Object.keys(final.trials).length }));
 }
 
+export function guardedTransport(budget) {
+  return createOpenAITransport({ liveEnabled: true, countBillingInterpretation: COUNT_BILLING_INTERPRETATION, preflightGuard: {
+    begin: meta => budget.beginPreflight(meta), complete: (id, result) => budget.completePreflight(id, result), hold: id => budget.holdPreflight(id)
+  }, reservationGuard: request => {
+    const pending = budget.read().requests.filter(r => r.status === 'pending');
+    if (pending.length !== 1 || pending[0].id !== request.reservation?.id) throw Error('Missing persisted reservation'); return pending[0];
+  } });
+}
+async function setupReview(args, output) {
+  const values = {};for(let i=0;i<args.length;i++){if(['--live','--initialize'].includes(args[i]))values[args[i]]=true;else if(['--ledger','--prompt','--request-id'].includes(args[i])&&args[i+1])values[args[i]]=args[++i];else throw Error('Unsupported review option');}
+  if(!values['--live']||!['--ledger','--prompt'].every(k=>path.isAbsolute(values[k]??'')))throw Error('Explicit live and absolute review paths required');
+  const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./workflow.mjs');
+  for(const k of ['--ledger','--prompt']){if(!path.resolve(values[k]).startsWith(repo+path.sep))throw Error('Review path outside pilot');safeFile(repo,path.relative(repo,values[k]).split(path.sep).join('/'));}
+  if(!/^[A-Za-z0-9_-]{1,70}$/.test(values['--request-id']??''))throw Error('Explicit review request ID required');
+  const prompt=fs.readFileSync(values['--prompt'],'utf8');if(Buffer.byteLength(prompt)>32000)throw Error('Review context bound');
+  if(!process.env.OPENAI_API_KEY)throw Error('Missing controller credential');const budget=new BudgetLedger(values['--ledger'],apiConfig());if(values['--initialize'])budget.initialize();else budget.read();
+  const text=await generate(budget,guardedTransport(budget),{prompt,requestId:values['--request-id'],phase:'setup',model:'gpt-6.1-sol',effort:'high',maxOutputTokens:8000});
+  output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--request-id'])}));
+}
 async function runAPI(args, output) {
+  throw Error('Trial dispatch stopped: unresolved Docker full-gate defect requires independently reviewed revised plan');
   const flags = new Set(['--live', '--initialize']); const values = {};
   for (let i = 0; i < args.length; i++) {
     if (flags.has(args[i])) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = true; }
@@ -82,12 +103,8 @@ async function runAPI(args, output) {
   safeFile(repo, path.relative(repo, path.resolve(values['--ledger'])).split(path.sep).join('/'));
   if (!process.env.OPENAI_API_KEY) throw Error('blocked-live: OPENAI_API_KEY is absent; no request sent');
   const budget = new BudgetLedger(values['--ledger'], apiConfig());
-  const provider = createOpenAITransport({ liveEnabled: true, reservationGuard: request => {
-    const pending = budget.read().requests.filter(r => r.status === 'pending');
-    if (pending.length !== 1 || pending[0].id !== request.reservation?.id) throw Error('Missing persisted reservation'); return pending[0];
-  } });
-  // Production certification is currently blocked BEFORE initialize, archive or transport.
-  provider.prepare({ model: 'gpt-6.1-sol', effort: 'medium', prompt: 'pilot preflight', maxOutputTokens: 2400, maxToolCalls: 0, retries: 0 });
+  const provider = guardedTransport(budget);
+  // Exact counting is durably recorded inside each actual phase; no paid generation preflight probe.
   const { loadFixtures, schedule, archiveFixture, runTrial } = await import('./workflow.mjs');
   const manifests = loadFixtures(); const order = schedule(manifests, { environment: 'api' });
   if (values['--initialize']) { fs.mkdirSync(workspace, { recursive: true }); budget.initialize(); } else budget.read();

@@ -170,8 +170,7 @@ test('patch traversal, absolute paths, ownership, duplicate files and symlinks a
 });
 test('model never supplies gate shell commands; gate deadline kills bounded child', async t => {
   for (const command of ['node evil.mjs', 'node scripts/sync-skills.mjs; echo secret', 'node node_modules/vitest/vitest.mjs run ../outside', 'powershell evil']) assert.throws(() => gateArgs(command), /gate/i);
-  const { file } = setup(t); const result = await gate(path.dirname(file), ['-e', 'setInterval(()=>{},1000)'], Date.now() + 40);
-  assert.equal(result.passed, false); assert.equal(result.timedOut, true);
+  const { file } = setup(t); await assert.rejects(gate(path.dirname(file), ['-e', 'setInterval(()=>{},1000)'], Date.now() + 40), /Docker sandbox required/);
 });
 test('initial allocation is six API plus six counterbalanced native; second API repetitions never dispatch silently', () => {
   const manifests = [{ name: 'behavior', seed: 'a'.repeat(40), order: ['AB','BA'] }, { name: 'instruction', seed: 'b'.repeat(40), order: ['BA','AB'] }, { name: 'migration', seed: 'c'.repeat(40), order: ['AB','BA'] }];
@@ -223,27 +222,17 @@ test('Responses fixture integration proves durable reservation exists before tra
 });
 
 import { archiveFixture, loadFixtures } from '../evaluation/workflow.mjs';
-test('historical tracked archive executes actual focused oracle through fake pipeline without production mutation', async t => {
-  const { file } = setup(t); const base = path.dirname(file); const root = path.join(base, 'historical');
-  const repo = fileURLToPath(new URL('../../', import.meta.url));
-  const dependencies = 'C:/Users/repo/vilya/apps/skill-registry/node_modules';
-  if (!fs.existsSync(path.join(dependencies, 'vitest/vitest.mjs'))) { t.skip('Existing dependency runtime unavailable'); return; }
-  const manifest = loadFixtures().find(m => m.name === 'behavior'); archiveFixture(repo, root, manifest.seed, dependencies);
-  assert.equal(fs.existsSync(path.join(root, '.git')), false); assert.equal(fs.existsSync(path.join(root, '.claude/settings.local.json')), false);
-  const app = path.join(root, 'apps/skill-registry');
-  const sourcePath = path.join(root, manifest.fileOwnership[0]); const original = fs.readFileSync(sourcePath, 'utf8');
-  const changed = original.replace('  return "any stack";', '  if (slug.endsWith("fastapi")) return "FastAPI / Python";\n  if (slug.endsWith("django")) return "Django / Python";\n  if (slug.endsWith("-ml")) return "Python ML / Data";\n  return "any stack";');
-  const config = exampleConfig(); config.bounds.maxOutputTokens = 8000;
-  config.models = { 'gpt-6.1-sol': config.models['offline-fixture-model'], 'gpt-6-astra': config.models['offline-fixture-model'] }; delete config.models['offline-fixture-model'];
-  const ledger = new BudgetLedger(path.join(base, 'historical-ledger.json'), config); ledger.initialize(); ledger.pair('archive_pair', 'archive_a', 'archive_b');
-  let calls = 0; const provider = { kind: 'fake', async send(request) {
-    calls++; const text = calls === 1 ? 'offline fixture contract plan' : calls === 2 ? JSON.stringify({ files: [{ path: manifest.fileOwnership[0], content: changed }] }) : JSON.stringify({ ready: true, findings: [] });
-    return { text, usage: usage({ input: Buffer.byteLength(request.prompt), output: Buffer.byteLength(text) }) };
-  } };
-  const result = await runTrial({ ledger, provider, root, manifest, trial: 'archive_a', arm: 'A', phaseOutput: 8000, acceptanceFn: async (_root, _manifest, deadline) => {
-    fs.copyFileSync(fileURLToPath(new URL('../evaluation/fixtures/behavior.oracle.test.ts', import.meta.url)), path.join(app, manifest.gates.independent.copyTo));
-    return [{ command: manifest.gates.independent.command, ...await gate(app, gateArgs(manifest.gates.independent.command), deadline) }];
-  } });
-  assert.equal(result.accepted, true); assert.equal(calls, 3); assert.equal(result.gates[0].passed, true);
-  assert.equal(result.requests.every(r => r.status === 'complete'), true);
+test('immutable archive forbids host dependencies and contains no private environment files', t => {
+  const { file } = setup(t); const root=path.join(path.dirname(file),'historical');const repo=fileURLToPath(new URL('../../',import.meta.url));const manifest=loadFixtures()[0];
+  assert.throws(()=>archiveFixture(repo,root,manifest.seed,'host-dependencies'),/Host dependencies forbidden/);archiveFixture(repo,root,manifest.seed);
+  assert.equal(fs.existsSync(path.join(root,'.git')),false);assert.equal(fs.existsSync(path.join(root,'apps/skill-registry/.env.example')),false);
+});
+
+import {sandboxArgs} from '../evaluation/sandbox.mjs';
+test('sandbox exposes only isolated fixture, readonly deps and explicit harmless environment', t=>{
+ const {file}=setup(t);const allowedRoot=path.dirname(file),root=path.join(allowedRoot,'fixture');fs.mkdirSync(root);
+ const args=sandboxArgs({allowedRoot,root,image:'sha256:'+ 'a'.repeat(64),volume:'vilya357-deps-'+ 'b'.repeat(64),commands:[['-e','console.log(1)']],deadline:Date.now()+1000,name:'vilya357-test'});
+ for(const flag of ['--network=none','--read-only','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=256','--memory=4g'])assert.ok(args.includes(flag));
+ assert.equal(args.filter(a=>a.startsWith('type=bind')).length,1);assert.ok(args.find(a=>a.startsWith('type=bind')).endsWith('target=/seed,readonly'));assert.equal(args.some(a=>a.includes('OPENAI_API_KEY')||a.includes('docker.sock')||a.includes('.env.local')),false);
+ fs.writeFileSync(path.join(root,'.env.local'),'ignored');assert.throws(()=>sandboxArgs({allowedRoot,root}),/private configuration/);
 });

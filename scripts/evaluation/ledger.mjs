@@ -14,13 +14,13 @@ export class BudgetLedger {
   }
   initialize() {
     if (fs.existsSync(this.file)) throw Error('Ledger already exists; resume it');
-    return this.transaction(() => ({ version: 1, configHash: hash(this.config), lastTime: integer(this.clock(), 'clock'),
-      overheadStart: { setup: null, final: null }, trialStart: null, blocked: false, pairs: [], trials: {}, requests: [] }), true);
+    return this.transaction(() => ({ version: 2, configHash: hash(this.config), lastTime: integer(this.clock(), 'clock'),
+      overheadStart: { setup: null, final: null }, trialStart: null, blocked: false, pairs: [], trials: {}, requests: [], preflights: [] }), true);
   }
   validate(state) {
-    exactKeys(state, ['version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests'], 'ledger');
-    if (state.version !== 1 || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
-        !Array.isArray(state.requests) || !state.trials || typeof state.trials !== 'object' || Array.isArray(state.trials)) throw Error('Ledger/config mismatch');
+    exactKeys(state, ['version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
+    if (state.version !== 2 || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
+        !Array.isArray(state.requests) || !Array.isArray(state.preflights) || !state.trials || typeof state.trials !== 'object' || Array.isArray(state.trials)) throw Error('Ledger/config mismatch');
     integer(state.lastTime, 'lastTime');
     exactKeys(state.overheadStart, ['setup', 'final'], 'overhead starts');
     for (const value of Object.values(state.overheadStart)) if (value !== null) integer(value, 'overhead start');
@@ -62,6 +62,20 @@ export class BudgetLedger {
       }
     }
     if (pending > 1 || (state.requests.some(r => r.status === 'unknown') && !state.blocked)) throw Error('Invalid in-flight state');
+    if (state.preflights.length > 64) throw Error('Preflight limit exceeded');
+    const preflightIds = new Set(); let activePreflights = 0;
+    for (const count of state.preflights) {
+      exactKeys(count, ['id','requestId','trial','phase','payloadHash','model','effort','serviceTier','pricingDate','billingInterpretation','status','start','inputTokens','providerRequestId'], 'preflight');
+      id(count.id); id(count.requestId);
+      if (preflightIds.has(count.id) || count.id !== `${count.requestId}_count` || !/^[a-f0-9]{64}$/.test(count.payloadHash) || !this.config.models[count.model] || !phases.includes(count.phase) || !['medium','high'].includes(count.effort) || count.serviceTier !== 'default' || count.pricingDate !== '2026-10-06' || count.billingInterpretation !== 'published-pricing-count-zero-2026-10-06') throw Error('Invalid preflight');
+      preflightIds.add(count.id); integer(count.start, 'preflight time');
+      if ((count.trial === null) !== ['setup','final'].includes(count.phase) || (count.trial !== null && !state.trials[count.trial])) throw Error('Invalid count scope');
+      if (!['pending','unknown','complete'].includes(count.status)) throw Error('Invalid count status');
+      if (count.status === 'complete') { integer(count.inputTokens,'exact input tokens',1); if (count.inputTokens > this.config.bounds.maxInputTokens) throw Error('Count bound exceeded'); }
+      else { activePreflights++; if (count.inputTokens !== null || count.providerRequestId !== null) throw Error('Invalid pending count'); }
+      if (count.providerRequestId !== null && !/^[A-Za-z0-9_-]{1,128}$/.test(count.providerRequestId)) throw Error('Invalid count provider ID');
+    }
+    if (activePreflights + pending > 1 || (state.preflights.some(p => p.status === 'unknown') && !state.blocked)) throw Error('Invalid shared in-flight state');
     this.checkBudgets(state);
   }
   charged(request) { return request.status === 'complete' ? request.cost : request.reservation; }
@@ -101,7 +115,7 @@ export class BudgetLedger {
       const next = initializing ? result : state; next.lastTime = now; this.write(next); return result;
     } finally { fs.closeSync(lockFd); fs.unlinkSync(lock); }
   }
-  ready(state) { if (state.blocked || state.requests.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
+  ready(state) { if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
   pair(pairId, first, second) {
     return this.transaction((state) => {
       this.ready(state); id(pairId); id(first); id(second);
@@ -142,6 +156,10 @@ export class BudgetLedger {
       }
       if (state.requests.some(r => r.id === requestId)) throw Error('Request already attempted');
       if (state.requests.filter(r => r.trial === trial && r.phase === phase).length >= this.config.bounds.maxRequestsPerPhase) throw Error('Request limit');
+      if (this.config.mode === 'live') {
+        const count = state.preflights.find(p => p.requestId === requestId);
+        if (!count || count.status !== 'complete' || count.model !== model || count.effort !== effort || count.trial !== trial || count.phase !== phase || count.inputTokens !== inputBound) throw Error('Missing exact preflight');
+      }
       const request = { id: requestId, trial, phase, model, effort, inputBound, outputBound,
         reservation: maximumCost(this.config.models[model], inputBound, outputBound), start: now, status: 'pending', cost: null, usage: null, providerRequestId: null };
       state.requests.push(request); this.checkBudgets(state); return structuredClone(request);
@@ -169,6 +187,37 @@ export class BudgetLedger {
       this.ready(state); const repair = state.trials[trialId]?.repairs[defect];
       if (!repair?.active || typeof passed !== 'boolean') throw Error('No active repair');
       repair.active = false; repair.unsuccessful = passed ? 0 : repair.unsuccessful + 1;
+    });
+  }
+  beginPreflight(meta) {
+    return this.transaction((state, now) => {
+      this.ready(state); id(meta.requestId);
+      if (state.preflights.length >= 64 || state.preflights.some(p => p.requestId === meta.requestId) || state.requests.some(r => r.id === meta.requestId)) throw Error('Preflight limit/reuse');
+      if (meta.trial !== null) {
+        const trial = state.trials[meta.trial];
+        if (!trial || trial.start === null || trial.closed || now >= trial.start + LIMITS.trialMs || now >= state.trialStart + LIMITS.dispatchMs) throw Error('Preflight trial deadline');
+      } else {
+        if (!['setup','final'].includes(meta.phase)) throw Error('Preflight scope');
+        state.overheadStart[meta.phase] ??= now;
+        if (now >= state.overheadStart[meta.phase] + (meta.phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs)) throw Error('Preflight overhead deadline');
+      }
+      const count = { ...meta, id: `${meta.requestId}_count`, status: 'pending', start: now, inputTokens: null, providerRequestId: null };
+      state.preflights.push(count); const deadline = meta.trial !== null ? Math.min(state.trials[meta.trial].start + LIMITS.trialMs, state.trialStart + LIMITS.dispatchMs) : Math.min(state.overheadStart[meta.phase] + (meta.phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs), meta.phase === 'final' && state.trialStart !== null ? state.trialStart + LIMITS.dispatchMs + LIMITS.finalMs : Infinity); return { ...structuredClone(count), deadline };
+    });
+  }
+  completePreflight(countId, result) {
+    return this.transaction((state, now) => {
+      const count = state.preflights.find(p => p.id === countId);
+      const deadline = count?.trial !== null ? Math.min(state.trials[count?.trial]?.start + LIMITS.trialMs, state.trialStart + LIMITS.dispatchMs) : Math.min(state.overheadStart[count?.phase] + (count?.phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs), count?.phase === 'final' && state.trialStart !== null ? state.trialStart + LIMITS.dispatchMs + LIMITS.finalMs : Infinity);
+      if (!count || count.status !== 'pending' || now >= count.start + 15000 || now >= deadline) throw Error('Preflight unresolved/deadline');
+      exactKeys(result, ['inputTokens','providerRequestId'], 'count result');
+      count.inputTokens = result.inputTokens; count.providerRequestId = result.providerRequestId; count.status = 'complete'; return true;
+    });
+  }
+  holdPreflight(countId) {
+    return this.transaction(state => {
+      const count = state.preflights.find(p => p.id === countId); if (!count || count.status !== 'pending') throw Error('Preflight cannot hold');
+      count.status = 'unknown'; state.blocked = true;
     });
   }
   deadline(trial, phase) {

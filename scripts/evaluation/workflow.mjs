@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn, execFileSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { generate } from './harness.mjs';
+import { runSandbox } from './sandbox.mjs';
 import { LIMITS } from './money.mjs';
 const fixtureDir = new URL('./fixtures/', import.meta.url);
 const cleanRelative = value => {
@@ -42,23 +43,10 @@ export function gateArgs(command) {
   if (!['node_modules/vitest/vitest.mjs', 'scripts/sync-skills.mjs'].includes(args[0]) || args.some(a => a.split('/').includes('..'))) throw Error('Unapproved gate');
   return args;
 }
-export function gate(root, args, deadline, { clock = Date.now } = {}) {
-  if (clock() >= deadline) return Promise.resolve({ passed: false, timedOut: true, code: null, output: '' });
-  return new Promise(resolve => {
-    // Do not forward provider credentials to model-edited tests/build scripts.
-    const env = Object.fromEntries(['PATH', 'Path', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'COMSPEC'].filter(k => process.env[k]).map(k => [k, process.env[k]]));
-    const child = spawn(process.execPath, args, { cwd: root, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-    let output = '', timedOut = false, overflow = false;
-    const kill = () => {
-      if (process.platform === 'win32') { try { execFileSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' }); } catch { child.kill(); } }
-      else child.kill('SIGKILL');
-    };
-    const capture = data => { output += data.toString(); if (Buffer.byteLength(output) > 1_000_000) { output = output.slice(-32_000); overflow = true; kill(); } };
-    child.stdout.on('data', capture); child.stderr.on('data', capture);
-    const timer = setTimeout(() => { timedOut = true; kill(); }, Math.max(1, deadline - clock()));
-    child.once('error', () => { clearTimeout(timer); resolve({ passed: false, timedOut, code: null, output: 'Gate process failed' }); });
-    child.once('exit', code => { clearTimeout(timer); resolve({ passed: code === 0 && !timedOut && !overflow, timedOut, code, output }); });
-  });
+export async function gate(root, args, deadline, { sandbox } = {}) {
+  if (!sandbox) throw Error('Docker sandbox required; host fixture execution forbidden');
+  const results = await runSandbox({ ...sandbox, root: path.resolve(root, '../..'), commands: [args], deadline,
+    name: `vilya357-gate-${process.pid}-${Date.now()}` }); return results[0];
 }
 export function schedule(manifests, { environment = 'api' } = {}) {
   if (!['api', 'native'].includes(environment)) throw Error('Unknown screening environment');
@@ -80,32 +68,34 @@ export function loadFixtures() {
   });
 }
 export function archiveFixture(repo, destination, seed, dependencies) {
+  if (dependencies !== undefined) throw Error('Host dependencies forbidden; use pinned container image');
   if (!/^[a-f0-9]{40}$/.test(seed) || fs.existsSync(destination)) throw Error('Fresh immutable fixture required');
   fs.mkdirSync(destination, { recursive: true }); const tar = `${destination}.tar`;
   execFileSync('git', ['archive', '--format=tar', `--output=${tar}`, seed], { cwd: repo, windowsHide: true });
   execFileSync('tar', ['-xf', tar, '-C', destination], { cwd: repo, windowsHide: true });
   fs.unlinkSync(tar);
-  fs.symlinkSync(fs.realpathSync(dependencies), path.join(destination, 'apps/skill-registry/node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+  const removeExamples = directory => { for (const entry of fs.readdirSync(directory, { withFileTypes: true })) { const file = path.join(directory, entry.name); if (entry.name.startsWith('.env')) fs.rmSync(file, { recursive: true }); else if (entry.isDirectory()) removeExamples(file); } };
+  removeExamples(destination);
+
 }
-export async function acceptance(root, manifest, deadline, options = {}) {
-  const app = path.join(root, 'apps/skill-registry'); const results = [];
-  const run = async args => { const result = await gate(app, args, deadline, options); results.push({ command: `node ${args.join(' ')}`, ...result }); return result.passed; };
-  for (const command of [...manifest.gates.setup, ...manifest.gates.focused, ...manifest.gates.workerRegression]) if (!await run(gateArgs(command))) return results;
+export function fullGateCommands(root) {
+  const app = path.join(root, 'apps/skill-registry'); const commands = [];
+  for (const script of ['sync-github-projects-template.mjs','sync-night-shift-template.mjs','sync-skills.mjs']) if (fs.existsSync(path.join(app,'scripts',script))) commands.push([`scripts/${script}`]);
+  commands.push(['node_modules/vitest/vitest.mjs','run'], ['node_modules/next/dist/bin/next','build'], ['scripts/scan-code-spacing.mjs']); return commands;
+}
+export async function acceptance(root, manifest, deadline, { sandbox } = {}) {
+  if (!sandbox) throw Error('Docker sandbox required; host fixture execution forbidden');
   const oracle = safeFile(root, `apps/skill-registry/${manifest.gates.independent.copyTo}`);
   fs.copyFileSync(new URL(manifest.gates.independent.source, fixtureDir), oracle);
-  if (!await run(gateArgs(manifest.gates.independent.command))) return results;
-  // Fixed full production gates, with npm lifecycle hooks expanded to bounded Node processes.
-  for (const script of ['sync-github-projects-template.mjs', 'sync-night-shift-template.mjs', 'sync-skills.mjs']) {
-    if (fs.existsSync(path.join(app, 'scripts', script)) && !await run([`scripts/${script}`])) return results;
-  }
-  for (const args of [['node_modules/vitest/vitest.mjs', 'run'], ['node_modules/next/dist/bin/next', 'build'], ['scripts/scan-code-spacing.mjs']]) if (!await run(args)) return results;
-  return results;
+  const commands = [...manifest.gates.setup,...manifest.gates.focused,...manifest.gates.workerRegression,manifest.gates.independent.command].map(gateArgs);
+  commands.push(...fullGateCommands(root));
+  return runSandbox({ ...sandbox, root, commands, deadline, name: `vilya357-accept-${process.pid}-${Date.now()}` });
 }
 const reviewPrompt = (manifest, baseline, current, gates) => JSON.stringify({
   role: 'Separate independent reviewer. Apply the supplied rubric and existing architecture/quality requirements to actual before/after files and controller-run gates. Do not accept implementer claims. Return only JSON {ready:boolean,findings:[string]}. No tools/API/database/credential actions.',
   task: manifest.taskPrompt, rubric: manifest.rubric, baseline, current, gates
 });
-export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = 2400, acceptanceFn = acceptance }) {
+export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = 2400, acceptanceFn = acceptance, sandbox }) {
   ledger.begin(trial); const started = ledger.clock(); const baseline = context(root, manifest); let accepted = false, failure = null, gates = [], review = null;
   let ordinal = 0;
   const call = (phase, prompt, extras = {}) => generate(ledger, provider, {
@@ -118,7 +108,7 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
     const patch = await call('implementation', JSON.stringify({ role: 'Implement this settled plan. Return only JSON {files:[{path,content}]} containing full file replacements inside ownership. No shell commands/tools. Preserve unrelated behavior.', task: manifest.taskPrompt, plan, source: baseline, ownership: ownership(manifest) }));
     applyPatch(root, manifest, patch);
     for (let attempt = 0; attempt <= 2; attempt++) {
-      gates = await acceptanceFn(root, manifest, Math.min(started + LIMITS.trialMs, ledger.read().trialStart + LIMITS.dispatchMs), { clock: ledger.clock });
+      gates = await acceptanceFn(root, manifest, Math.min(started + LIMITS.trialMs, ledger.read().trialStart + LIMITS.dispatchMs), { sandbox });
       if (gates.length && gates.every(result => result.passed)) {
         review = JSON.parse(await call('review', reviewPrompt(manifest, baseline, context(root, manifest), gates)));
         if (!review || typeof review.ready !== 'boolean' || !Array.isArray(review.findings) || review.findings.some(f => typeof f !== 'string')) throw Error('Invalid independent review');

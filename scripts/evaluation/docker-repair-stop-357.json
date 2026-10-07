@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "issue": 357,
+  "defect": "docker-next-dependency-filesystem-root",
+  "unsuccessfulCorrections": 2,
+  "status": "stopped",
+  "initial": "Default Next build rejected /opt/deps node_modules symlink outside filesystem root",
+  "attempts": [
+    {
+      "attempt": 1,
+      "hypothesis": "readonly dependency volume directly at app node_modules",
+      "outcome": "failed: isolated workspace setup due mount parent ownership"
+    },
+    {
+      "attempt": 2,
+      "hypothesis": "readonly project-root dependency volume plus internal app link",
+      "outcome": "failed: default Next build still rejects link outside inferred project root"
+    }
+  ],
+  "nextHypothesis": "Copy actual container-owned Linux dependency directory into bounded fixture tmpfs, no node_modules link",
+  "authorization": "Pending separate high review and explicit revised-plan approval; no automatic counter reset",
+  "nextHypothesisDetails": {
+    "copyOptions": {
+      "recursive": true,
+      "dereference": false,
+      "verbatimSymlinks": true
+    },
+    "linkValidation": "Every dependency symlink must resolve within copied node_modules",
+    "measurement": "Measure dependency bytes and actual full-build tmpfs/memory peak before acceptance",
+    "evidence": "Three immutable Next configs have no Turbopack root override; locks have no file/link dependencies; image size roughly 329 MiB is not build peak proof"
+  }
+}
