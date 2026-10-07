@@ -5,49 +5,14 @@ import path from 'node:path';
 import { createOpenAITransport, LIVE_BLOCK_REASON, COUNT_BILLING_INTERPRETATION } from './openai-transport.mjs';
 import { exampleConfig, apiConfig } from './money.mjs';
 
-export async function generate(ledger, provider, { prompt, requestId, trial = null, phase, model, effort, maxOutputTokens, defect = null }) {
-  if (!provider || !['fake', 'offline-api-fixture', 'live'].includes(provider.kind) || typeof provider.send !== 'function') throw Error('Invalid provider');
-  if (provider.kind === 'live' && (ledger.config.mode !== 'live' || provider.liveEnabled !== true)) throw Error('blocked-live: explicit live mode required');
-  if (provider.kind !== 'live' && ledger.config.mode !== 'offline') throw Error('Offline transport cannot produce paid trial receipts');
-  if (typeof prompt !== 'string') throw Error('Invalid prompt');
-  const transportRequest = { model, effort, prompt, maxOutputTokens, maxToolCalls: 0, retries: 0 };
-  // Real count preflight is remote, durably bounded, and uses the scoped published-pricing zero-separate-fee interpretation.
-  const certificate = provider.prepare ? await provider.prepare(transportRequest, { requestId, trial, phase }) : null;
-  const inputBound = provider.inputBound ? provider.inputBound(transportRequest, certificate) : Buffer.byteLength(prompt, 'utf8');
-  if (provider.kind === 'live' && !provider.inputBound) throw Error('blocked-live: certified input bound required');
-  const request = ledger.reserve({ requestId, trial, phase, model, effort, inputBound, outputBound: maxOutputTokens, defect });
-  const controller = new AbortController(); let timer;
-  const duration = Math.min(ledger.config.bounds.requestMs, ledger.deadline(trial, phase) - ledger.clock());
-  try {
-    if (duration <= 0) throw Error('deadline');
-    const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(Error('timeout')); }, duration); });
-    const result = await Promise.race([Promise.resolve().then(() => provider.send({
-      ...transportRequest, reservation: request, signal: controller.signal
-    }, certificate)), timeout]);
-    if (ledger.clock() >= ledger.deadline(trial, phase) || ledger.clock() >= request.start + duration || !result || typeof result.text !== 'string' ||
-        Buffer.byteLength(result.text, 'utf8') > (provider.kind === 'fake' ? maxOutputTokens : 128_000)) throw Error('Invalid or late result');
-    ledger.reconcile(requestId, result.usage, result.metadata);
-    // Prompt and generated text are never persisted in the budget ledger.
-    return result.text;
-  } catch {
-    controller.abort(); ledger.hold(requestId);
-    throw Error('Request unresolved; full reservation retained and future dispatch held');
-  } finally { clearTimeout(timer); }
-}
-
-export function fakeProvider({ text = 'offline result', lost = false } = {}) {
-  return { kind: 'fake', async send({ prompt, maxOutputTokens }) {
-    if (lost) throw Error('simulated lost response');
-    if (Buffer.byteLength(text, 'utf8') > maxOutputTokens) throw Error('output bound');
-    return { text, usage: { input: Buffer.byteLength(prompt, 'utf8'), cachedInput: 0, cacheWrite: 0,
-      output: Buffer.byteLength(text, 'utf8'), reasoning: 0, fees: 0 } };
-  } };
-}
-
+import {generate,fakeProvider} from './generation.mjs';
+export {generate,fakeProvider} from './generation.mjs';
 export async function cli(args, output = console.log) {
   if (args.length === 1 && args[0] === '--api-preflight') {
     output(JSON.stringify({ status: 'blocked-live', modelRates: 'verified-2026-10-06', credentialPresent: Boolean(process.env.OPENAI_API_KEY), reason: LIVE_BLOCK_REASON, paidRequests: 0 })); return;
   }
+  if(args[0]==='--snapshot-dry-run'){if(args.length!==1)throw Error('Unsupported snapshot option');const {publicSnapshot}=await import('./public-results.mjs');const {execFileSync}=await import('node:child_process');const repo=fs.realpathSync(new URL('../..',import.meta.url));const snapshot=publicSnapshot({sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim()});output(JSON.stringify({status:'public-snapshot-dry-run',runCount:snapshot.runs.length,paidRequests:0}));return;}
+  if(args[0]==='--export-public')return exportPublic(args.slice(1),output);
   if (args[0] === '--setup-review') return setupReview(args.slice(1), output);
   if (args[0] === '--run-api') return runAPI(args.slice(1), output);
   if (args.includes('--live')) throw Error(LIVE_BLOCK_REASON);
@@ -67,6 +32,7 @@ export async function cli(args, output = console.log) {
     fakeMicrodollars: ledger.sum(final), trialCount: Object.keys(final.trials).length }));
 }
 
+async function exportPublic(args,output){const values={};for(let i=0;i<args.length;i++){if(!['--ledger','--workspace','--readiness'].includes(args[i])||!args[i+1])throw Error('Unsupported export option');values[args[i]]=args[++i];}const repo=fs.realpathSync(new URL('../..',import.meta.url));const {safeFile}=await import('./paths.mjs');for(const value of Object.values(values)){if(!path.isAbsolute(value)||!path.resolve(value).startsWith(repo+path.sep))throw Error('Export input outside pilot');safeFile(repo,path.relative(repo,value).split(path.sep).join('/'));}const {publicSnapshot}=await import('./public-results.mjs');const {exportSnapshot}=await import('./export-results.mjs');const {loadFixtures,initialAllocation}=await import('./workflow.mjs');const {execFileSync}=await import('node:child_process');const sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();const state=values['--ledger']?new BudgetLedger(values['--ledger'],apiConfig()).read():null;const images=values['--readiness']?JSON.parse(fs.readFileSync(values['--readiness'])).images:{};const receipts=[];if(values['--workspace'])for(const item of Object.values(initialAllocation(loadFixtures())).flat()){const file=safeFile(values['--workspace'],item.trial+(item.environment==='api'?'.receipt.json':'.native-state.json'));if(fs.existsSync(file))receipts.push(JSON.parse(fs.readFileSync(file)));}const result=await exportSnapshot(publicSnapshot({state,receipts,sourceHead,images}));output(JSON.stringify({status:'public-evidence-exported',runCount:result.runCount}));}
 export function guardedTransport(budget) {
   return createOpenAITransport({ liveEnabled: true, countBillingInterpretation: COUNT_BILLING_INTERPRETATION, preflightGuard: {
     begin: meta => budget.beginPreflight(meta), complete: (id, result) => budget.completePreflight(id, result), hold: id => budget.holdPreflight(id)
@@ -87,43 +53,47 @@ async function setupReview(args, output) {
   output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===values['--review-id'])}));
 }
 async function runAPI(args, output) {
-  throw Error('Trial dispatch stopped: unresolved Docker full-gate defect requires independently reviewed revised plan');
-  const flags = new Set(['--live', '--initialize']); const values = {};
+  const flags = new Set(['--live', '--initialize','--first-pair']); const values = {};
   for (let i = 0; i < args.length; i++) {
     if (flags.has(args[i])) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = true; }
-    else if (['--ledger', '--workspace', '--dependencies'].includes(args[i]) && args[i + 1]) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = args[++i]; }
+    else if (['--ledger', '--workspace', '--readiness','--reviewed-head'].includes(args[i]) && args[i + 1]) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = args[++i]; }
     else throw Error('Unsupported pilot option');
   }
-  if (!values['--live'] || !['--ledger','--workspace','--dependencies'].every(key => path.isAbsolute(values[key] ?? ''))) throw Error('Explicit --live and absolute --ledger/--workspace/--dependencies required');
+  if (!values['--live'] || !['--ledger','--workspace','--readiness'].every(key => path.isAbsolute(values[key] ?? ''))) throw Error('Explicit --live and absolute --ledger/--workspace/--readiness required');
   const repo = fs.realpathSync(new URL('../..', import.meta.url));
   const { safeFile } = await import('./paths.mjs');
   const workspace = path.resolve(values['--workspace']);
   if (!workspace.startsWith(repo + path.sep) || workspace === repo || !path.resolve(values['--ledger']).startsWith(workspace + path.sep)) throw Error('Pilot workspace/ledger must stay inside dedicated repo subdirectory');
   safeFile(repo, path.relative(repo, workspace).split(path.sep).join('/'));
   safeFile(repo, path.relative(repo, path.resolve(values['--ledger'])).split(path.sep).join('/'));
+  const {execFileSync}=await import('node:child_process');const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();if(values['--reviewed-head']!==currentHead)throw Error('Exact reviewed controller head required');
+  if(!path.resolve(values['--readiness']).startsWith(repo+path.sep))throw Error('Readiness path outside pilot');safeFile(repo,path.relative(repo,values['--readiness']).split(path.sep).join('/'));
+  const readiness=JSON.parse(fs.readFileSync(values['--readiness'],'utf8'));if(readiness.schemaVersion!==1||readiness.fullBaselines!==true||readiness.referenceAcceptance!==true||readiness.negativeOracles!==true||readiness.cleanupNegativeProof!==true)throw Error('Fixture readiness unresolved');
   if (!process.env.OPENAI_API_KEY) throw Error('blocked-live: OPENAI_API_KEY is absent; no request sent');
   const budget = new BudgetLedger(values['--ledger'], apiConfig());
   const provider = guardedTransport(budget);
   // Exact counting is durably recorded inside each actual phase; no paid generation preflight probe.
   const { loadFixtures, schedule, archiveFixture, runTrial } = await import('./workflow.mjs');
-  const manifests = loadFixtures(); const order = schedule(manifests, { environment: 'api' });
+  const manifests = loadFixtures(); const order = schedule(manifests, { environment: 'api' });const {buildSandboxImage}=await import('./sandbox.mjs');for(const m of manifests){const observed=buildSandboxImage({repo,seed:m.seed,runtimeRoot:path.dirname(values['--readiness'])});const supplied=readiness.images[m.name];if(!supplied||observed.image!==supplied.image||observed.volume!==supplied.volume||observed.lockSha256!==supplied.lockSha256||observed.runnerSha256!==supplied.runnerSha256)throw Error('Immutable image readiness mismatch');}
   if (values['--initialize']) { fs.mkdirSync(workspace, { recursive: true }); budget.initialize(); } else budget.read();
+  const {sharedSkillsDigest}=await import('./context.mjs');const skillsDigest=sharedSkillsDigest(repo);
   const receipts = [];
   for (const item of order) {
-    const state = budget.read();
+    const state = budget.read();if(Object.keys(state.trials).some(id=>id.startsWith('native_')))throw Error('API stage closed after native allocation');
     if (Object.keys(state.trials).some(id => !order.some(item => item.trial === id)) || Object.keys(state.trials).length > 6) throw Error('Ledger exceeds initial six-API allocation');
     if (state.blocked || state.requests.some(r => r.status !== 'complete')) throw Error('Unresolved request; trial dispatch held');
     if (state.trials[item.trial]?.start !== null && state.trials[item.trial]?.start !== undefined) continue;
     if (!state.pairs.some(pair => pair.id === item.pair)) {
       const pair = order.filter(candidate => candidate.pair === item.pair); budget.pair(item.pair, pair[0].trial, pair[1].trial);
     }
-    const root = path.join(workspace, item.trial); archiveFixture(repo, root, item.seed, values['--dependencies']);
-    const receipt = await runTrial({ ledger: budget, provider, root, manifest: manifests.find(m => m.name === item.fixture), trial: item.trial, arm: item.arm });
+    const root = path.join(workspace, item.trial); archiveFixture(repo, root, item.seed);
+    const receipt = await runTrial({ ledger: budget, provider, root, manifest: manifests.find(m => m.name === item.fixture), trial: item.trial, arm: item.arm,environment:{controllerHead:currentHead,nodeVersion:process.version,image:readiness.images[item.fixture].image,gateNodeVersion:readiness.images[item.fixture].nodeVersion,lockSha256:readiness.images[item.fixture].lockSha256,skillsDigest,contextVersion:'scoped-search-replace-1',toolsMode:'stateless-no-tools',cacheControl:'uncontrolled'},sandbox:{...readiness.images[item.fixture],allowedRoot:workspace},onAttempt:attempt=>fs.appendFileSync(path.join(workspace,item.trial+'.attempts.jsonl'),JSON.stringify(attempt)+'\n') });
     receipts.push(receipt);
     // Persist each receipt separately; no prompt, generated code or gate output is imported.
     fs.writeFileSync(path.join(workspace, `${item.trial}.receipt.json`), JSON.stringify(receipt, null, 2));
     output(JSON.stringify({ trial: item.trial, accepted: receipt.accepted, failure: receipt.failure }));
     if (budget.read().blocked) break;
+    if(values['--first-pair']&&item===order.filter(i=>i.pair===item.pair).at(-1))break;
   }
   output(JSON.stringify({ status: 'pilot-ended', trialsThisInvocation: receipts.length, accepted: receipts.filter(r => r.accepted).length }));
 }

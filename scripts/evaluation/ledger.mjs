@@ -44,12 +44,14 @@ export class BudgetLedger {
     }
     seen.clear(); let pending = 0;
     for (const request of state.requests) {
-      exactKeys(request, ['id', 'trial', 'phase', 'model', 'effort', 'inputBound', 'outputBound', 'reservation', 'start', 'status', 'cost', 'usage', 'providerRequestId'], 'request');
+      exactKeys(request, ['id', 'trial', 'phase', 'model', 'effort', 'inputBound', 'outputBound', 'reservation', 'start', 'end', 'status', 'cost', 'usage', 'providerRequestId'], 'request');
       id(request.id); if (seen.has(request.id)) throw Error('Duplicate request'); seen.add(request.id);
       if (!phases.includes(request.phase) || !this.config.models[request.model] || !['low', 'medium', 'high', 'xhigh'].includes(request.effort)) throw Error('Invalid request metadata');
       if (request.trial !== null && !state.trials[request.trial]) throw Error('Unknown trial');
       if ((request.trial === null) !== ['setup', 'final'].includes(request.phase)) throw Error('Wrong request scope');
       for (const key of ['inputBound', 'outputBound', 'reservation', 'start']) integer(request[key], key);
+      if(request.end!==null){integer(request.end,'request end');if(request.end<request.start)throw Error('Invalid request timing');}
+      if(request.status!=='complete'&&request.end!==null)throw Error('Incomplete request has end');
       if (request.inputBound > this.config.bounds.maxInputTokens || request.outputBound > this.config.bounds.maxOutputTokens || request.outputBound < 1 ||
           request.reservation !== maximumCost(this.config.models[request.model], request.inputBound, request.outputBound)) throw Error('Invalid reservation');
       if (request.providerRequestId !== null && (typeof request.providerRequestId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(request.providerRequestId))) throw Error('Invalid provider ID');
@@ -161,17 +163,17 @@ export class BudgetLedger {
         if (!count || count.status !== 'complete' || count.model !== model || count.effort !== effort || count.trial !== trial || count.phase !== phase || count.inputTokens !== inputBound) throw Error('Missing exact preflight');
       }
       const request = { id: requestId, trial, phase, model, effort, inputBound, outputBound,
-        reservation: maximumCost(this.config.models[model], inputBound, outputBound), start: now, status: 'pending', cost: null, usage: null, providerRequestId: null };
+        reservation: maximumCost(this.config.models[model], inputBound, outputBound), start: now, end: null, status: 'pending', cost: null, usage: null, providerRequestId: null };
       state.requests.push(request); this.checkBudgets(state); return structuredClone(request);
     });
   }
   reconcile(requestId, usage, metadata = null) {
-    return this.transaction(state => {
+    return this.transaction((state, now) => {
       const request = state.requests.find(r => r.id === requestId);
       if (!request || request.status !== 'pending') throw Error('Request cannot reconcile');
       const cost = actualCost(this.config.models[request.model], usage);
       if (cost > request.reservation || usage.input > request.inputBound || usage.output > request.outputBound) throw Error('Actual usage exceeds reservation');
-      request.cost = cost; request.usage = structuredClone(usage); request.status = 'complete';
+      request.end = now; request.cost = cost; request.usage = structuredClone(usage); request.status = 'complete';
       if (metadata !== null) { exactKeys(metadata, ['providerRequestId'], 'provider metadata'); request.providerRequestId = metadata.providerRequestId; }
     });
   }

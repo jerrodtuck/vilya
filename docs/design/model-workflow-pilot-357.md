@@ -1,84 +1,82 @@
-# Model/workflow pilot harness — issue #357
+# Model/workflow pilot and results — issue #357
 
 Created: 2026-10-06
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 Owning issue: https://github.com/jerrodtuck/vilya/issues/357
-Implementation kickoff: https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6028353155
+Operator decision: https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6029424573
 
-A dependency-free local Node harness now proves its reservation guards and bounded workflow with offline providers. No paid API request, coding model trial or native validation trial has run. Exact API model pricing is available; production transport remains blocked because exact input-token bounds and token-count preflight billing are not certified. The current development session has no environment API credential. Fake certificates are accepted only by injected offline transport and cannot unlock production.
+The controller supports a guarded API stage, a manually orchestrated native stage, and a whitelist-only results snapshot. Development and fixture validation have made no benchmark generation calls. Coding trials and comparisons remain unrun. Root controls paid dispatch after separate review of the exact committed controller head. PR359 references #357; these preparation results do not complete the experiment.
 
-The CLI defaults to dry-run. It never reads credential files, installs dependencies, starts the app, changes model defaults or creates provider accounts. `--api-preflight` reports credential presence, never its value. `--run-api --live` requires absolute workspace, ledger and existing dependency paths inside the dedicated checkout; current certification failure occurs before ledger initialization, archive or network. The CLI is not an unattended native-agent backend.
+## Locked experiment
+
+| Fixture | Immutable seed | API pair | Native pair |
+| --- | --- | --- | --- |
+| behavior | 3d868ea5e69a3d01e433488ea6a682574d03a697 | A,B | B,A |
+| instruction | d17eb2d9aafc692306976b9ad00ddccf30f6869c | B,A | A,B |
+| migration | 012220a83d11acf5c7c316dca36490152f9a8e90 | A,B | B,A |
+
+Exact prompts, ownership, gates and semantic rubrics are immutable fixture manifests in scripts/evaluation/fixtures. A plans at gpt-6.1-sol/medium; B plans at gpt-6-astra/high. Both implement at gpt-6.1-sol/medium and receive separate stateless gpt-6.1-sol/high review. Implementation pin for this controller remains native gpt-6.1-sol/medium. No production defaults change.
+
+Six API trials precede six native trials. One campaign allows at most12 trials, seven minutes per trial,84 minutes from first trial admission for dispatch and six minutes for final adjudication. Failures and timeouts count; no replacement trials. Native allocation closes API dispatch. Planning/implementation/review/repair caps are4000/8000/4000/8000 output tokens including reasoning; shared planning output must also fit5000 UTF-8 bytes. Every packet must fit32000 UTF-8 bytes and API exact input must fit32000 tokens. Eight requests per phase,60 seconds per generation, zero tools/retries. Native output caps are observed after completion because the native collaboration tool cannot enforce a generation limit.
+
+## Budget and transport
+
+The shared durable ledger caps total API work at$25, each trial including review/repairs/failures at$2, and setup plus final overhead at$1. Phase reservations allocate$0.40 planning,$1 implementation and$0.60 shared review/repair. Matched-pair admission reserves capacity for both trial ceilings. Setup has a ten-minute window. No retries, fallback model, top-up or reset is automatic.
+
+Dated exact model rates are in verified-api-rates-2026-10-06.json. Only Standard/default short-context processing is allowed. Integer microdollars round upward. Before generation, reserve worst-case input using the highest input-category rate plus bounded output and known fees. Reconcile uncached/cached/cache-write input as disjoint categories; reasoning is an output subset. Unknown schema/fees/counts, late/lost usage, overspend, changed rates or unfinished requests retain reservations and hold future dispatch across restart.
+
+Exact input-count POSTs are separately persisted before transport, capped64 globally including failures, with no retries and at most15 seconds or the remaining stage deadline. The scoped dated interpretation assigns no separate fee under published Responses pricing; this is an inference rather than an explicit provider free-call warranty. One-use,60-second certificates bind the full payload and exact count. One pending count or generation excludes all other transport. Checksummed atomic ledger writes and exclusive locks precede requests; stale locks/pending files require explicit reconciliation. Windows power-loss directory durability and manual operator deletion resistance are not claimed. Strict incomplete-response handling may hold the campaign even when a provider exposes partial usage; it never fabricates a known cost.
+
+## Isolation and fixture evidence
+
+All three baseline focused/full Vitest, default Next build and spacing gates pass in the same isolated Linux container used for trials. Unfixed oracle assertions fail meaningfully. All three vetted evaluator reference fixes pass full acceptance, including instruction regression. Baseline/reference elapsed milliseconds: behavior8752/9383, instruction17072/18123, migration18335/19565. These are fixture feasibility checks, not model completions.
+
+Official Node22 base is pinned to node@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392, Nodev22.23.3. Trusted immutable package/lock manifests prepare Linux dependencies with npmci during image build. Runtime is network-none, nonroot1000, read-only base, cap-dropALL/no-new-privileges,256pids,2CPUs,4GiB memory. No key, home, Docker socket, controller environment or outside dependencies are mounted. Seed and container-owned dependency source are read-only. Actual dependencies are copied into2GiB fixture tmpfs using verbatim relative symlinks and verified link containment. Fixture tmpfs permits executable native addons with nosuid/nodev;256MiB temporary tmpfs remains noexec/nosuid/nodev. Model-edited code executes only inside this container. Gate commands are fixed controller-owned Node commands.
+
+Measured dependency bytes388185852. Maximum observed fixture tmpfs usage after command boundaries438992896 bytes (not a continuous peak). Maximum measured cgroup memory.peak1485062144 bytes. Mount flags, nonroot identity, native addon load and absent credential/socket checks pass. Real timeout and output-overflow probes both await bounded container removal and inspect-confirmed absence. An unresolved durable cleanup marker blocks API transport and native admission across restart.
+
+The original two failed dependency-placement corrections remain in docker-repair-stop-357.json. Explicit revised-plan copy failed under noexec. A separately reviewed exec-only fixture correction then passed full three-seed verification. Cleanup parser, immutable image reuse and missing private reference regression corrections retain separate evidence. No historical counter was reset.
+
+## Context, edits and quality evidence
+
+Shared deterministic context preserves complete canonical instruction contracts with independently verified byte-equal generated aliases. Migration packets include task-relevant imports/functions/tests and hashes for omitted unrelated templates/helpers. Edits require expected full-file SHA256, unique exact search/replace, owned contained paths, bounded new tests and validation of all edits before any write. Traversal, symlink escape, duplicate ownership, stale hash and no-op edits fail closed.
+
+Independent review receives every actual full-source changed line as exact hunks, including edits to omitted helpers/templates/tests. Generated diffs may alias canonical changes only if both baseline/current copies independently match. The first contiguous full-source diff correction exceeded the migration review cap; correction2 complete line hunks passes. Reference packet maxima: behavior9022, instruction30483, migration29255 UTF-8 bytes. No blind truncation or reduced gate is used. Prospective packets with maximum settled-plan length, reference edits and full compact gate facts pass before timed trials; unusually large actual diffs still fail closed.
+
+Each acceptance attempt records ordinal, initial/repair kind, start/end/elapsed, complete immutable gate roles and actual independent review receipt. Maximum two repairs; no fault renaming. Known usage reconciliation means paid request completion, not quality acceptance. Accepted results require all fixed gates and linked planning/implementation/review evidence. Historical missing end timestamps/model identity are null, never inferred from later exports.
+
+Native receipt imports inspect only session metadata/turn-context/token counters, require fresh no-history single-phase identity and externally observed completion, and deduplicate cumulative counters. Campaign-wide aggregate proof rejects duplicate or parent/child session overlap and missing independence evidence. Missing fields remain unavailable and hold further dispatch. Native tokens never become API dollars. Controller preparation usage is unavailable until separately verified; the page states unavailable rather than zero.
+
+## Operator invocation
+
+Use the isolated checkout as the absolute working directory. Runtime paths below must resolve inside that checkout; campaign workspace contains its ledger, receipts, phase outputs and proofs. Root alone supplies the excluded controller environment file; never transfer it to Docker or a phase agent.
 
 ```powershell
-# Workdir: C:\Users\jerro\.codex\worktrees\357-model-workflow-pilot\vilya
 node scripts/evaluation/harness.mjs --dry-run
-node scripts/evaluation/harness.mjs --api-preflight
-node --test skills/tests/*.test.mjs scripts/tests/*.test.mjs
-# Explicit fake example; use a new path once, then resume the same path:
-node scripts/evaluation/harness.mjs --initialize-example --ledger C:\Users\jerro\AppData\Local\Temp\vilya-357-offline-example.json
-node scripts/evaluation/harness.mjs --resume-example --ledger C:\Users\jerro\AppData\Local\Temp\vilya-357-offline-example.json
+node --test scripts/tests/*.test.mjs skills/tests/*.test.mjs
+node --env-file=ABSOLUTE_EXCLUDED_CONTROLLER_ENV_FILE scripts/evaluation/harness.mjs --run-api --live --initialize --first-pair --ledger ABSOLUTE_CAMPAIGN/pilot-budget.json --workspace ABSOLUTE_CAMPAIGN --readiness ABSOLUTE_RUNTIME/readiness.json --reviewed-head EXACT_REVIEWED_HEAD
+# Resume the next pair with the SAME ledger, omitting --initialize.
+# Remove --first-pair only to finish the remaining locked API stage.
+node scripts/evaluation/harness.mjs --export-public --ledger ABSOLUTE_CAMPAIGN/pilot-budget.json --workspace ABSOLUTE_CAMPAIGN --readiness ABSOLUTE_RUNTIME/readiness.json
 ```
 
-Fake example amounts are test-vector microdollars, not paid spend. Missing ledgers cannot silently initialize on resume. Reusing initialize refuses to overwrite a ledger. No API-key value, prompt, generated code, gate output, private reasoning or failed response body is persisted in budget receipts.
+Setup-review IDs are setup_cost_review_1/setup_sandbox_review_1/setup_final_review_1 (Sol/high,8000) and setup_product_plan_1 (Astra/high,4000). Invoke --setup-review --live --review-id ID --ledger SAME_LEDGER --prompt ABSOLUTE_PUBLIC_PACKET; --initialize only once. Each uses the same$1 overhead.
 
-## Budget and failure behavior
+After all six API trials terminate with reconciled spend, root drives native bridge phases manually:
 
-| Scope | Hard design ceiling |
-| --- | --- |
-| All API work | 25,000,000 integer microdollars ($25) |
-| One trial, including review/repair/failures | 2,000,000 ($2) |
-| Setup plus final report/adjudication | 1,000,000 ($1), shared |
-| Planning / implementation / shared review-repair | 400,000 / 1,000,000 / 600,000 |
-| Trials / individual trial | At most 12 / seven minutes |
-| Trial dispatch window / final reserve | 84 minutes / six minutes |
-| Setup window | Ten minutes; final has a separate six-minute window |
-| Request bounds | 32,000 input, 8,000 output including reasoning, eight requests per phase, 60 seconds, zero model tools, zero transport retries |
+```powershell
+node scripts/evaluation/native-controller.mjs begin --ledger ABSOLUTE_CAMPAIGN/pilot-budget.json --workspace ABSOLUTE_CAMPAIGN --trial native_behavior_2_B --readiness ABSOLUTE_RUNTIME/readiness.json --output ABSOLUTE_CAMPAIGN/planning.packet.json
+node scripts/evaluation/native-usage.mjs --manifest ABSOLUTE_CAMPAIGN/phase.manifest.json --session EXPLICIT_MATCHED_SESSION_FILE > ABSOLUTE_CAMPAIGN/phase.usage.json
+node scripts/evaluation/native-controller.mjs advance --ledger ABSOLUTE_CAMPAIGN/pilot-budget.json --workspace ABSOLUTE_CAMPAIGN --trial native_behavior_2_B --phase-output ABSOLUTE_CAMPAIGN/phase.output.txt --usage-receipt ABSOLUTE_CAMPAIGN/phase.usage.json --independence-proof ABSOLUTE_CAMPAIGN/phase.independence.json --output ABSOLUTE_CAMPAIGN/next.packet.json
+```
 
-The setup ten-minute ceiling and phase allocations are initial implementation limits, not completion or affordability claims. Trial timing is a conservative wall-clock window from first begin, including later archive/gate time; backward clock changes fail closed. A hard request deadline aborts the provider and leaves unresolved spend held. Cancellation is best effort and does not prove no charge.
+Root dispatches each packet through a fresh fork-none phase agent at its exact model/effort; only structured response text is supplied to advance. Output paths must be fresh. Manifest schema is documented in model-workflow-codex-validation-357.md: explicit agent/task/session/head/phase/pin identity, zero baseline at fresh session metadata, exact cumulative terminal/cutoff timestamp and external final-completion evidence. Never read/export prompt or tool logs. Independence proof requires freshNoHistory:true, accountingDisjoint:true and the exact sessionUUIDs of ALL campaign receipts so far. Native phases use no provider transport; BudgetLedger(file,apiConfig()) resumes the same campaign for time admission. There is no unattended native backend.
 
-Reserve the worst-case input at the highest uncached/cache-write/cached rate and bounded output/known maximum fees before transport. Reconciliation treats uncached, cached and cache-write tokens as disjoint input categories. Output includes reasoning; reasoning is reported separately and not added again. Weighted category costs use BigInt arithmetic with upward microdollar rounding. Rates/config changes, unknown fees, malformed counts, output/input beyond reservation, overflow or unresolved requests fail closed. Exact verified rates are pinned in `scripts/evaluation/verified-api-rates-2026-10-06.json`; this only covers Standard/default processing region, short context and no tools.
+The exporter accepts a normalized whitelist DTO, not arbitrary ledger/logs. Snapshot list/detail/download keep API/native observations separate and preserve actual execution controller/image/lock/skills/node identity rather than relabeling it with export HEAD. Unknowns remain null. Raw source, prompts, secrets, paths, provider bodies and session UUIDs are excluded.
 
-Pairs allocate both full $2 trial ceilings before either arm. One persisted pending request excludes all other requests, including other processes. A checksummed ledger, exclusive lock, fsync and same-volume atomic rename persist the reservation before send. Completed usage releases only known unused capacity. Lost/unknown usage retains the full reservation and blocks dispatch across restart. A stale lock or `.next` file is never automatically deleted; retain evidence and reconcile outside the runner. This does not claim power-loss durability for Windows directory metadata, tamper resistance or protection against an operator manually deleting budget state.
+## Interpretation limits
 
-Every paid attempt, including failed responses and review/repairs, uses the same ledger. Request IDs and trials cannot be reused; no replacement runs, top-ups or fallback models exist. Same-defect repairs preserve their request history and stop after two unsuccessful corrective checks; a meaningful pass closes the consecutive failure count. A no-change correction stops without pretending it repaired the defect.
+Historical public replay is not held out. Models may know source/history; current installed skills can contaminate instruction tasks. Evaluator references and oracles are instruction-hidden, not technically inaccessible to filesystem-capable agents. Copied fixture dependencies/tests/oracles are writable inside the bounded container. Native tools remain technically available despite no-tools instructions. API/native tooling differs and cache conditions are uncontrolled. One pair per fixture/environment is screening evidence, not a universal winner or production recommendation. Native confirmation requires verified matched evidence; preparation, fake tests and fixture references do not count as trials.
 
-## Workflow and fixture validity
-
-The fixture manifests lock seeds, task prompts, owned files, commands, semantic rubrics and paired order. [Fixture validation](model-workflow-fixtures-357.md) records existing focused baseline pass, expected unfixed oracle failure and reference pass for all three. Full seed app/build feasibility remains unverified and must pass before paid dispatch. The workflow preserves full Vitest, production build and spacing gates, rather than replacing them with focused checks.
-
-The original manifest orders are behavior AB/BA, instruction BA/AB, migration AB/BA. The settled initial stage runs API behavior A,B; instruction B,A; migration A,B, then native behavior B,A; instruction A,B; migration B,A. Six API plus six native trials share the original twelve-trial/90-minute cap. Further API repetitions are not dispatched. Each trial gets a tracked-only fresh archive without Git history or private untracked settings. Native settings remain A Sol/medium planning versus B Astra/high planning, both Sol/medium implementation and separate Sol/high review. API exact IDs use `gpt-6.1-sol` and `gpt-6-astra`, with corresponding efforts. API phases use fresh stateless requests, fixed source context, validated full-file JSON replacements, controller-run tests and separate actual before/after review. They do not offer desktop agent shell/tool exploration and must be evaluated as a different workflow bundle.
-
-Patch paths reject traversal, absolute paths, backslash ambiguity, duplicates, symlinks and changes outside fixture ownership. Gates are controller-selected Node commands, never model-supplied shell commands. Model-edited tests run with provider credentials removed from the child environment and bounded process deadlines. The process runner kills its child tree on Windows timeout. This is not an OS filesystem sandbox: generated tests or a filesystem-capable agent can access other local paths, dependencies and supposedly hidden checks. Historical public-source replay and installed later skills also contaminate tasks. No genuinely held-out claim is justified.
-
-The operator additionally requires native Codex validation before recommendations. [The settled allocation](https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6028446097) is six API plus six native trials, one counterbalanced pair per task/environment within the combined twelve-trial/90-minute ceiling. It reduces repetitions; extensions require separate approval. The runner does not silently dispatch the original twelve API trials and then add native trials. Native collection and [validation protocol](model-workflow-codex-validation-357.md) remain separate from paid API spend. Native monitoring cannot enforce API-style dollar/token ceilings.
-
-## Evidence and interpretation
-
-Offline tests cover exact rounding/boundaries, budget denial before send, setup/review/repair inclusion, restart/locks/concurrent attempts, unknown usage, time/context/output/request bounds, pair capacity, stop conditions, patch isolation, CLI privacy and the complete fake planning/implementation/review pipeline. Injected Responses tests additionally prove certificate provenance, persisted reservation checks, exact model/tier/tool limits and sanitized errors. These establish code paths against fakes, not real provider billing or live readiness.
-
-Receipts retain phase, exact model/effort, local request ID, provider request ID when exposed, baseline/reservation/terminal usage, cached/write/output/reasoning counters and phase/trial clock evidence. Cumulative native records require deduplication and proven fresh-session attribution; see the native importer. Missing attribution is unavailable, not zero. Controller/native development overhead is reported separately from paid API trial usage.
-
-At present accepted coding trials = 0, observed paid API requests = 0, paid API spend = $0. Cost per accepted result is undefined. No completion-rate ranking, paired model difference, cache causality, subscription-dollar savings or production model recommendation is supported. After valid API plus native evidence, report raw counts, completion rate, paired differences, median/range, all failures/timeouts and total accepted-result usage/time; do not choose a universal winner from this screening sample.
-
-Implementation pin: gpt-6.1-sol / medium, retained native session under issue-scoped operator authorization. Mandatory crucible applied to actual harness source: no app UI or database-affecting change, component/database review not applicable; local scripts own budget/transport/workflow concerns. Separate actual-head review remains owed. PR references #357 because live comparisons, certified API preflight and native confirmation remain open.
-
-## Repair receipt
-
-Stable gate: gate357-initial-stage-allocation. Initial detection was zero repairs: runnable schedule still included twelve API repetitions after the six-API/six-native amendment. Attempt 1 started from HEAD 012220a83d11acf5c7c316dca36490152f9a8e90 plus the uncommitted harness diff. Hypothesis: selecting the environment-specific first/second manifest pair in one shared schedule and rejecting mismatched resumed trial IDs prevents silent extra API trials. Change: API selects only pair 1 (six trials); native exports pair 2 (six metadata/protocol entries, no spawn). Targeted check: evaluation-harness initial allocation test verifies six/six, counterbalanced order, unique IDs and unsupported replication rejection. Outcome: pass; resolved, zero unsuccessful corrective attempts. Native scheduling remains orchestration-owned; no native backend is added.
-
-The fake historical-archive integration check contains a small behavior reference patch in evaluator test code. Trial archives and API source context exclude that evaluator area; access is not technically hidden from filesystem-capable native agents. This adds another disclosed contamination route.
-
-
-Observed final gates: node --test skills/tests/*.test.mjs scripts/tests/*.test.mjs passed 139/139, zero failures/skips (46 evaluation checks plus 93 existing skill checks). The real historical archive/focused oracle integration uses fake responses and is not a model trial or a full seed app/build proof. Dry-run and API preflight made zero paid requests. Explicit offline example initialization/resume retained the same ledger and increased fake usage from 43 to 86 microdollars. Fresh origin/master remained 012220a83d11acf5c7c316dca36490152f9a8e90; no rebase was needed. App source was unchanged; app build was not run under the kickoff's scoped source-gate rule.
-
-### Docker safeguard follow-up — stopped at dependency build gate
-
-The pinned official Node 22 image (node@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392) and trusted lockfile dependency image were built locally. The behavior baseline passed all 53 existing app tests in the network-disabled, nonroot container. Default Next build failed because Turbopack rejects the dependency link outside its inferred project root. Two placement corrections failed; the durable stop receipt is scripts/evaluation/docker-repair-stop-357.json. Its same-fault count is 2. No third correction, benchmark generation, or other fixture full-build validation ran.
-
-The revised hypothesis is to copy actual Linux dependencies into bounded fixture tmpfs, without a node_modules link. It requires separate high review and explicit revised-plan approval. Restart and review do not reset the failure counter. Runtime image/dependency receipt and gate logs remain in ignored scripts/evaluation/runtime; they contain no controller credentials. Host model-code execution is now forbidden. Current trial CLI fails closed at this stop; setup review alone has a bounded explicit invocation.
-
-The real remote input-count preflight uses the dated scoped zero-separate-fee interpretation of published pricing, not an explicit provider free-call warranty. Durable preflight completion must meet count, phase and aggregate deadlines. All generation costs remain reserved before transport. No paid call occurred during this follow-up.
-
-Root-controlled setup review command (public bounded prompt only; generation ledger is reused for trials): node --env-file=C:/Users/repo/vilya/.env.local scripts/evaluation/harness.mjs --setup-review --live --initialize --ledger ABSOLUTE_PILOT_RUNTIME_LEDGER --prompt ABSOLUTE_PUBLIC_REVIEW_PROMPT. Omit --initialize when resuming. Use --review-id setup_cost_review_1, setup_sandbox_review_1 or setup_final_review_1; allowlisted IDs prevent replay. Model gpt-6.1-sol, effort high, output cap 8000, prompt cap 32000 UTF-8 bytes. This does not execute model code or clear the Docker repair stop.
-
-CLI bootstrap repair: initial setup invocation detected a cyclic top-level await (harness → workflow → harness) before ledger creation or provider transport. Attempt 1 extracts trusted path guards into independent paths.mjs. A real subprocess with an absent key must now exit 1 at the credential check, create no ledger, and avoid exit 13. The expanded product planning ID setup_product_plan_1 is explicitly allowed at gpt-6-astra/high with output cap 4000; review IDs remain gpt-6.1-sol/high with cap 8000. All share the same setup ledger and dollar/time ceiling. Worker dispatch remains unpaid; root controls actual calls.
+No observed paid coding requests or accepted model trials exist in this preparation receipt. Cost per accepted result is undefined. Final actual-head independent review and root-controlled execution remain owed.
+Final candidate source gate: node --test scripts/tests/*.test.mjs skills/tests/*.test.mjs passed183/183 with zero failures/skips. Real snapshot CLI returned12 scheduled runs and zero paid requests. App UI worker separately verified406 app passes plus8 existing platform skips and default production build/spacing. These checks and fixture references are preparation, not trial results.

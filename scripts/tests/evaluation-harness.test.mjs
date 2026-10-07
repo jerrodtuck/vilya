@@ -1,3 +1,4 @@
+import {sha256,scopedContext,boundedPacket,applyEdits} from '../evaluation/context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -190,7 +191,7 @@ test('fake end-to-end pipeline uses stateless planning, implementation, independ
   const root = path.dirname(file); fs.writeFileSync(path.join(root, 'a.ts'), 'before');
   const manifest = { name: 'fake-contract', seed: 'a'.repeat(40), taskPrompt: 'replace before with after', fileOwnership: ['a.ts'], rubric: ['after'] };
   const calls = []; const provider = { kind: 'fake', async send(request) {
-    calls.push(request); const text = calls.length === 1 ? 'settled plan' : calls.length === 2 ? JSON.stringify({ files: [{ path: 'a.ts', content: 'after' }] }) : JSON.stringify({ ready: true, findings: [] });
+    calls.push(request); const text = calls.length === 1 ? 'settled plan' : calls.length === 2 ? JSON.stringify({ files: [{ path: 'a.ts', sha256:sha256('before'), edits:[{old:'before',new:'after'}] }] }) : JSON.stringify({ ready: true, findings: [] });
     return { text, usage: usage({ input: Buffer.byteLength(request.prompt), output: Buffer.byteLength(text) }) };
   } };
   const result = await runTrial({ ledger: budget, provider, root, manifest, trial: 'a', arm: 'B', acceptanceFn: async () => [{ passed: fs.readFileSync(path.join(root, 'a.ts'), 'utf8') === 'after', command: 'fake-independent-gate', code: 0 }] });
@@ -242,3 +243,7 @@ test('actual setup-review CLI reaches missing credential without cyclic top-leve
  const result=spawnSync(process.execPath,['scripts/evaluation/harness.mjs','--setup-review','--live','--initialize','--ledger',ledger,'--prompt',prompt,'--review-id','setup_cost_review_1'],{cwd:repo,encoding:'utf8',timeout:3000,env:{...process.env,OPENAI_API_KEY:''}});
  assert.equal(result.status,1);assert.match(result.stderr,/Missing controller credential/);assert.doesNotMatch(result.stderr,/unsettled top-level await/);assert.equal(fs.existsSync(ledger),false);
 });
+
+test('actual public snapshot CLI resolves full workflow import graph without network or files',()=>{const repo=fileURLToPath(new URL('../../',import.meta.url));const result=spawnSync(process.execPath,['scripts/evaluation/harness.mjs','--snapshot-dry-run'],{cwd:repo,encoding:'utf8',timeout:3000,env:{...process.env,OPENAI_API_KEY:''}});assert.equal(result.status,0);assert.deepEqual(JSON.parse(result.stdout),{status:'public-snapshot-dry-run',runCount:12,paidRequests:0});assert.doesNotMatch(result.stderr,/unsettled top-level await/);});
+
+test('cleanup failure blocks later paid phases and restart before provider transport',async t=>{const {file,config}=setup(t);config.models={'gpt-6.1-sol':config.models['offline-fixture-model'],'gpt-6-astra':config.models['offline-fixture-model']};delete config.models['offline-fixture-model'];const ledger=new BudgetLedger(path.join(path.dirname(file),'cleanup-ledger.json'),config,{clock:()=>1000});ledger.initialize();ledger.pair('p','a','b');const root=path.dirname(file);fs.writeFileSync(path.join(root,'a.ts'),'before');const manifest={name:'fake-contract',seed:'a'.repeat(40),taskPrompt:'fix',fileOwnership:['a.ts'],rubric:['after']};let sends=0;const provider={kind:'fake',async send(request){sends++;const text=sends===1?'plan':JSON.stringify({files:[{path:'a.ts',sha256:sha256('before'),edits:[{old:'before',new:'after'}]}]});return{text,usage:usage({input:Buffer.byteLength(request.prompt),output:Buffer.byteLength(text)})};}};const result=await runTrial({ledger,provider,root,manifest,trial:'a',arm:'A',acceptanceFn:async()=>{fs.writeFileSync(path.join(root,'.sandbox-cleanup-hold.json'),'pending');throw Error('Sandbox cleanup unresolved');}});assert.equal(result.failure,'sandbox-cleanup-unresolved');assert.equal(ledger.read().blocked,true);assert.equal(sends,2);const resumed=new BudgetLedger(ledger.file,config,{clock:()=>1000});await assert.rejects(generate(resumed,provider,{prompt:'never sent',requestId:'next',trial:'b',phase:'planning',model:'gpt-6.1-sol',effort:'medium',maxOutputTokens:100}));assert.equal(sends,2);});

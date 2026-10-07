@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { generate } from './harness.mjs';
+import { generate } from './generation.mjs';
 import { runSandbox } from './sandbox.mjs';
+import {scopedContext,boundedPacket,applyEdits,compactDiff,CONTEXT_VERSION,sha256} from './context.mjs';
 import { LIMITS } from './money.mjs';
 const fixtureDir = new URL('./fixtures/', import.meta.url);
 import {cleanRelative,safeFile} from './paths.mjs';
@@ -20,9 +21,9 @@ export function applyPatch(root, manifest, text) {
   for (const file of files) { fs.mkdirSync(path.dirname(file.path), { recursive: true }); fs.writeFileSync(file.path, file.content); }
   return changed;
 }
-function context(root, manifest) {
+export function context(root, manifest) {
   return ownership(manifest).map(relative => {
-    const file = safeFile(root, relative); return { path: relative, content: fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null };
+    const file = safeFile(root, relative);const content=fs.existsSync(file)?fs.readFileSync(file,'utf8'):null;return {path:relative,sha256:content===null?null:sha256(content),content};
   });
 }
 export function gateArgs(command) {
@@ -77,40 +78,55 @@ export async function acceptance(root, manifest, deadline, { sandbox } = {}) {
   fs.copyFileSync(new URL(manifest.gates.independent.source, fixtureDir), oracle);
   const commands = [...manifest.gates.setup,...manifest.gates.focused,...manifest.gates.workerRegression,manifest.gates.independent.command].map(gateArgs);
   commands.push(...fullGateCommands(root));
-  return runSandbox({ ...sandbox, root, commands, deadline, name: `vilya357-accept-${process.pid}-${Date.now()}` });
+  const ids=[...manifest.gates.setup.map(()=> 'setup-sync-skills'),...manifest.gates.focused.map(()=> 'focused'),...manifest.gates.workerRegression.map(()=> 'regression'),'oracle',...fullGateCommands(root).map(args=>({'scripts/sync-github-projects-template.mjs':'sync-projects','scripts/sync-night-shift-template.mjs':'sync-night-shift','scripts/sync-skills.mjs':'sync-skills','node_modules/vitest/vitest.mjs':'tests','node_modules/next/dist/bin/next':'build','scripts/scan-code-spacing.mjs':'spacing'})[args[0]])];
+  const results=await runSandbox({ ...sandbox, root, commands, deadline, name: `vilya357-accept-${process.pid}-${Date.now()}` });
+  return ids.map((id,index)=>({id,...(results[index]??{passed:false,timedOut:false,code:null,notRun:true})}));
 }
-const reviewPrompt = (manifest, baseline, current, gates) => JSON.stringify({
+export function exactReviewDiff(manifest,before,after){const diff=compactDiff(before,after);if(manifest.name==='instruction'){if(before[0].content!==before[1].content||after[0].content!==after[1].content)throw Error('Generated contract equality changed');return diff.map(item=>item.path===before[1].path?{path:item.path,beforeHash:item.beforeHash,afterHash:item.afterHash,aliasExactDiffOf:before[0].path}:item);}return diff;}
+const reviewPrompt = (manifest, baseline, current, gates,fullBaseline,fullCurrent) => boundedPacket({
   role: 'Separate independent reviewer. Apply the supplied rubric and existing architecture/quality requirements to actual before/after files and controller-run gates. Do not accept implementer claims. Return only JSON {ready:boolean,findings:[string]}. No tools/API/database/credential actions.',
-  task: manifest.taskPrompt, rubric: manifest.rubric, baseline, current, gates
+  task: manifest.taskPrompt, rubric: manifest.rubric, source:{...current,files:current.files.map(file=>baseline.files.find(old=>old.path===file.path)?.sha256===null?{path:file.path,sha256:file.sha256,contentInExactDiff:true}:file)}, diff:exactReviewDiff(manifest,fullBaseline,fullCurrent), gates:gates.map((g,index)=>({id:g.id??'gate_'+(index+1),passed:g.passed,timedOut:g.timedOut,code:g.code,elapsedMs:g.started!=null&&g.ended!=null?g.ended-g.started:null}))
 });
-export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = 2400, acceptanceFn = acceptance, sandbox }) {
-  ledger.begin(trial); const started = ledger.clock(); const baseline = context(root, manifest); let accepted = false, failure = null, gates = [], review = null;
-  let ordinal = 0;
+export function phasePacket({phase,manifest,baseline,current=baseline,plan='',gates=[],review=null,fullBaseline=null,fullCurrent=null}) {
+ if(Buffer.byteLength(plan)>5000)throw Error('Plan response context bound');
+ const source=phase==='planning'||phase==='implementation'?baseline:current;
+ if(phase==='review'){if(!fullBaseline||!fullCurrent){if(baseline.files.some((f,i)=>f.sha256!==current.files[i]?.sha256))throw Error('Full before/current diff required');fullBaseline=baseline.files;fullCurrent=current.files;}return reviewPrompt(manifest,baseline,current,gates,fullBaseline,fullCurrent);}
+ return boundedPacket({role:phase==='planning'?'Resolve contracts, edge cases and verification. Return a concise plan of at most 5000 UTF-8 bytes. No code or tools.':phase==='implementation'?'Implement settled plan using hash-bound unique exact edits {files:[{path,sha256,edits:[{old,new}]}]}. New focused tests use sha256:null,content <=8000 bytes. No tools.':'Repair unresolved acceptance only using same hash-bound unique edits. No third unsuccessful repair.',task:manifest.taskPrompt,rubric:manifest.rubric,source,ownership:ownership(manifest),...(phase==='implementation'?{plan}:{}),...(phase==='repair'?{gates:gates.map(({output,...m})=>m),review}:{})});
+}
+export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = null, acceptanceFn = acceptance, sandbox,onAttempt=()=>{},environment=null }) {
+  if(sandbox&&fs.existsSync(path.join(sandbox.allowedRoot,'.sandbox-cleanup-hold.json'))){ledger.transaction(state=>{state.blocked=true;});throw Error('Sandbox cleanup unresolved; trial held');}
+  ledger.begin(trial); const started = ledger.clock(); const baseline = scopedContext(root, manifest);const fullBaseline=context(root,manifest); let accepted = false, failure = null, gates = [], review = null;
+  const attempts=[]; let ordinal = 0;
   const call = (phase, prompt, extras = {}) => generate(ledger, provider, {
     prompt, requestId: `${trial}_${phase}_${++ordinal}`, trial, phase,
     model: phase === 'planning' && arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol', effort: phase === 'review' ? 'high' : phase === 'planning' && arm === 'B' ? 'high' : 'medium',
-    maxOutputTokens: phaseOutput, ...extras
+    maxOutputTokens: phaseOutput ?? (phase === 'planning' || phase === 'review' ? 4000 : 8000), ...extras
   });
   try {
-    const plan = await call('planning', JSON.stringify({ role: 'Resolve contracts, edge cases, ownership, exclusions, verification and stop conditions. No implementation. No tool execution.', task: manifest.taskPrompt, source: baseline, rubric: manifest.rubric }));
-    const patch = await call('implementation', JSON.stringify({ role: 'Implement this settled plan. Return only JSON {files:[{path,content}]} containing full file replacements inside ownership. No shell commands/tools. Preserve unrelated behavior.', task: manifest.taskPrompt, plan, source: baseline, ownership: ownership(manifest) }));
-    applyPatch(root, manifest, patch);
+    const plan = await call('planning', phasePacket({phase:'planning',manifest,baseline}));
+    const patch = await call('implementation', phasePacket({phase:'implementation',manifest,baseline,plan}));
+    applyEdits(root, manifest, patch);
     for (let attempt = 0; attempt <= 2; attempt++) {
+      const attemptStarted=ledger.clock();review=null;
       gates = await acceptanceFn(root, manifest, Math.min(started + LIMITS.trialMs, ledger.read().trialStart + LIMITS.dispatchMs), { sandbox });
       if (gates.length && gates.every(result => result.passed)) {
-        review = JSON.parse(await call('review', reviewPrompt(manifest, baseline, context(root, manifest), gates)));
+        review = JSON.parse(await call('review', phasePacket({phase:'review',manifest,baseline,current:scopedContext(root,manifest),gates,fullBaseline,fullCurrent:context(root,manifest)})));
         if (!review || typeof review.ready !== 'boolean' || !Array.isArray(review.findings) || review.findings.some(f => typeof f !== 'string')) throw Error('Invalid independent review');
+        const observed=ledger.read().requests.filter(r=>r.trial===trial&&r.phase==='review').at(-1);
+        review={...review,model:observed.model,effort:observed.effort,independent:true,requestId:observed.id};
         accepted = review.ready && review.findings.length === 0;
       }
+      const attemptEnded=ledger.clock();attempts.push({ordinal:attempt,kind:attempt===0?'initial':'repair',started:attemptStarted,ended:attemptEnded,elapsedMs:attemptEnded-attemptStarted,outcome:accepted?'accepted':'failed',gates:gates.map(({output,...m})=>m),review:review&&{ready:review.ready,findingCount:review.findings.length,model:review.model,effort:review.effort,independent:review.independent,requestId:review.requestId}});
+      onAttempt(attempts.at(-1));
       if (attempt > 0) ledger.repairResult(trial, 'acceptance', accepted);
       if (accepted || attempt === 2) break;
-      const correction = await call('repair', JSON.stringify({ role: 'Correct the unresolved acceptance defect only. Return JSON {files:[{path,content}]}. This is a bounded corrective attempt; no third unsuccessful repair.', task: manifest.taskPrompt, source: context(root, manifest), gates, review, ownership: ownership(manifest) }), { defect: 'acceptance' });
-      if (!applyPatch(root, manifest, correction)) throw Error('No corrective change');
+      const correction = await call('repair', phasePacket({phase:'repair',manifest,baseline,current:scopedContext(root,manifest),gates,review}), {defect:'acceptance'});
+      if (!applyEdits(root, manifest, correction)) throw Error('No corrective change');
     }
-  } catch (error) { failure = ['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
+  } catch (error) { if(/cleanup unresolved/i.test(error.message)){ledger.transaction(state=>{state.blocked=true;});failure='sandbox-cleanup-unresolved';}else failure = ['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
   finally { ledger.close(trial); }
   const state = ledger.read();
   return { fixture: manifest.name, seed: manifest.seed, trial, arm, started, ended: ledger.clock(), accepted,
-    failure, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
+    failure, environment, attempts, historyComplete:failure===null, contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
     repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial) };
 }
