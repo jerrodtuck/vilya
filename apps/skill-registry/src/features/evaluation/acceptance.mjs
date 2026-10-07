@@ -1,3 +1,4 @@
+import {assertWorkflowEvidence,workflowPlanningSteps} from './workflow-contract.mjs';
 import { createHash } from 'node:crypto';
 // Immutable acceptance gates at the three fixture seeds; never supplied by a result.
 export const REQUIRED_GATE_IDS = Object.freeze({
@@ -10,6 +11,7 @@ const fail = () => { throw new Error('Invalid evaluation snapshot'); };
 const within = (item, start, end) => item.startedAt !== null && item.endedAt !== null && item.elapsedMs !== null && Date.parse(item.startedAt) >= Date.parse(start) && Date.parse(item.endedAt) <= Date.parse(end);
 const completeUsage = (usage) => usage !== null && ['inputTokens','cachedInputTokens','cacheWriteInputTokens','outputTokens','reasoningOutputTokens','totalTokens'].every((key) => Number.isSafeInteger(usage[key]) && usage[key] >= 0);
 export function assertAcceptedEvidence(run) {
+  assertWorkflowEvidence(run);
   const gates = REQUIRED_GATE_IDS[run.fixture];
   if (run.attempts.length > 3 || run.attempts.some((a, index) => index === 0 ? a.kind !== 'initial' || a.defectId !== null : a.kind !== 'repair' || a.defectId !== 'acceptance')) fail();
   if (!gates || !run.startedAt || !run.endedAt || run.elapsedMs === null || !run.attempts.length || !run.quality.attemptHistoryComplete) fail();
@@ -17,14 +19,14 @@ export function assertAcceptedEvidence(run) {
   const phases = run.environment === 'api' ? run.requests.map((p) => ({ ...p, receiptId: receiptIdForRequest(p.requestId) })) : run.nativePhases;
   if (phases.some((p) => !within(p,run.startedAt,run.endedAt) || !completeUsage(p.usage) || !run.provenance.receiptIds.includes(p.receiptId))) fail();
   if (run.environment === 'api' ? phases.some((p) => p.status !== 'complete' || p.costMicrodollars === null) : phases.some((p) => p.status !== 'observed' || p.attribution !== 'verified' || p.disjointnessVerified !== true)) fail();
-  if (phases.some((p) => p.model !== (p.phase === 'planning' && run.arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol') || p.effort !== (p.phase === 'review' || p.phase === 'planning' && run.arm === 'B' ? 'high' : 'medium'))) fail();
+  if (!run.workflowProtocol && phases.some((p) => p.model !== (p.phase === 'planning' && run.arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol') || p.effort !== (p.phase === 'review' || p.phase === 'planning' && run.arm === 'B' ? 'high' : 'medium'))) fail();
   if (phases.some((p) => !['planning','implementation','repair','review'].includes(p.phase))) fail();
   const planning = phases.filter((p) => p.phase === 'planning');
   const implementation = phases.filter((p) => p.phase === 'implementation');
   const repairs = phases.filter((p) => p.phase === 'repair');
   const reviews = phases.filter((p) => p.phase === 'review');
-  if (planning.length !== 1 || implementation.length !== 1 || repairs.length !== run.attempts.length - 1) fail();
-  if (Date.parse(planning[0].endedAt) > Date.parse(implementation[0].startedAt) || Date.parse(implementation[0].endedAt) > Date.parse(run.attempts[0].startedAt)) fail();
+  if (planning.length !== (run.workflowProtocol?workflowPlanningSteps(run.fixture,run.arm).length:1) || implementation.length !== 1 || repairs.length !== run.attempts.length - 1) fail();
+  if (Date.parse(planning.at(-1).endedAt) > Date.parse(implementation[0].startedAt) || Date.parse(implementation[0].endedAt) > Date.parse(run.attempts[0].startedAt)) fail();
   const usedReviews = new Set(); const usedRepairs = new Set();
   for (let index = 0; index < run.attempts.length; index++) {
     const attempt = run.attempts[index];

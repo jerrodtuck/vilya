@@ -16,10 +16,11 @@ const moduleUrl=name=>pathToFileURL(path.resolve('scripts/evaluation',name)).hre
 const stub=path.join(temp,'workflow.mjs');
 fs.writeFileSync(stub,`export {loadFixtures,schedule,archiveFixture,phasePacket,context} from ${JSON.stringify(moduleUrl('workflow.mjs'))};\nexport let results=[{id:'focused',passed:true,code:0}];export const setResults=value=>results=value;export async function acceptance(){return results;}`);
 let bridge=fs.readFileSync(new URL('../evaluation/native-bridge.mjs',import.meta.url),'utf8');
-for(const name of ['native-usage.mjs','context.mjs','paths.mjs'])bridge=bridge.replaceAll(`'./${name}'`,JSON.stringify(moduleUrl(name)));
+for(const name of ['native-usage.mjs','context.mjs','paths.mjs','workflow-protocol.mjs'])bridge=bridge.replaceAll(`'./${name}'`,JSON.stringify(moduleUrl(name)));
 bridge=bridge.replace("'./workflow.mjs'",JSON.stringify(pathToFileURL(stub).href));
 const bridgeFile=path.join(temp,'native-bridge.mjs');fs.writeFileSync(bridgeFile,bridge);
 const {advanceNative}=await import(pathToFileURL(bridgeFile).href);
+assert.equal(typeof advanceNative,'function','temporary bridge module loads current dependencies');
 const {setResults}=await import(pathToFileURL(stub).href);
 const manifest=loadFixtures().find(m=>m.name==='behavior'),trial='native_behavior_2_A',head='a'.repeat(40);
 const finding='PRIVATE_FINDING: Return the mapped option label instead of its internal ID.';

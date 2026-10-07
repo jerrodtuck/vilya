@@ -58,12 +58,15 @@ async function setupReview(args, output) {
   output(JSON.stringify({status:'setup-review',text,receipt:budget.read().requests.find(r=>r.id===budget.requestId(values['--review-id']))}));
 }
 async function runAPI(args, output) {
-  const flags = new Set(['--live', '--initialize','--first-pair']); const values = {};
+  const flags = new Set(['--live', '--initialize','--first-pair','--offline']); const values = {};
   for (let i = 0; i < args.length; i++) {
     if (flags.has(args[i])) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = true; }
-    else if (['--ledger', '--workspace', '--readiness','--reviewed-head'].includes(args[i]) && args[i + 1]) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = args[++i]; }
+    else if (['--ledger', '--workspace', '--readiness','--reviewed-head','--workflow-protocol'].includes(args[i]) && args[i + 1]) { if (values[args[i]]) throw Error('Duplicate option'); values[args[i]] = args[++i]; }
     else throw Error('Unsupported pilot option');
   }
+  const workflowProtocolVersion=values['--workflow-protocol']===undefined?1:Number(values['--workflow-protocol']);if(![1,2].includes(workflowProtocolVersion))throw Error('Unsupported workflow protocol');
+  if(workflowProtocolVersion===2){if(values['--live']||!values['--offline'])throw Error('Protocol v2 is offline only');if(!path.isAbsolute(values['--readiness']??''))throw Error('Offline readiness path required');const {runContractProof}=await import('./contract-proof.mjs');const result=await runContractProof({readiness:values['--readiness'],workflowProtocolVersion});output(JSON.stringify({status:'offline-workflow-proof',paidRequests:0,...result}));return;}
+  if(values['--offline'])throw Error('Offline complete workflow requires protocol 2');
   if (!values['--live'] || !['--ledger','--workspace','--readiness'].every(key => path.isAbsolute(values[key] ?? ''))) throw Error('Explicit --live and absolute --ledger/--workspace/--readiness required');
   const repo = fs.realpathSync(new URL('../..', import.meta.url));
   const { safeFile } = await import('./paths.mjs');
@@ -93,7 +96,7 @@ async function runAPI(args, output) {
       const pair = order.filter(candidate => candidate.pair === item.pair); budget.pair(item.pair, pair[0].trial, pair[1].trial);
     }
     const root = path.join(workspace, item.trial); archiveFixture(repo, root, item.seed);
-    const receipt = await runTrial({ ledger: budget, provider, root, manifest: manifests.find(m => m.name === item.fixture), trial: item.trial, arm: item.arm,environment:{controllerHead:currentHead,nodeVersion:process.version,image:readiness.images[item.fixture].image,gateNodeVersion:readiness.images[item.fixture].nodeVersion,lockSha256:readiness.images[item.fixture].lockSha256,skillsDigest,contextVersion:'scoped-search-replace-1',toolsMode:'stateless-no-tools',cacheControl:'uncontrolled'},sandbox:{...readiness.images[item.fixture],allowedRoot:workspace},onAttempt:attempt=>fs.appendFileSync(path.join(workspace,item.trial+'.attempts.jsonl'),JSON.stringify(attempt)+'\n') });
+    const receipt = await runTrial({ ledger: budget, provider, root, manifest: manifests.find(m => m.name === item.fixture), trial: item.trial, arm: item.arm,workflowProtocolVersion,environment:{controllerHead:currentHead,nodeVersion:process.version,image:readiness.images[item.fixture].image,gateNodeVersion:readiness.images[item.fixture].nodeVersion,lockSha256:readiness.images[item.fixture].lockSha256,skillsDigest,contextVersion:'scoped-search-replace-1',toolsMode:'stateless-no-tools',cacheControl:'uncontrolled'},sandbox:{...readiness.images[item.fixture],allowedRoot:workspace},onAttempt:attempt=>fs.appendFileSync(path.join(workspace,item.trial+'.attempts.jsonl'),JSON.stringify(attempt)+'\n') });
     receipts.push(receipt);
     // Persist each receipt separately; no prompt, generated code or gate output is imported.
     fs.writeFileSync(path.join(workspace, `${item.trial}.receipt.json`), JSON.stringify(receipt, null, 2));

@@ -5,6 +5,7 @@ import { generate } from './generation.mjs';
 import { runSandbox } from './sandbox.mjs';
 import {scopedContext,boundedPacket,applyEdits,compactDiff,CONTEXT_VERSION,sha256} from './context.mjs';
 import { LIMITS } from './money.mjs';
+import {protocolDescriptor,prepareProtocolPlan,WorkflowProtocolError} from './workflow-protocol.mjs';
 const fixtureDir = new URL('./fixtures/', import.meta.url);
 import {cleanRelative,safeFile} from './paths.mjs';
 export {safeFile} from './paths.mjs';
@@ -93,17 +94,24 @@ export function phasePacket({phase,manifest,baseline,current=baseline,plan='',ga
  if(phase==='review'){if(!fullBaseline||!fullCurrent){if(baseline.files.some((f,i)=>f.sha256!==current.files[i]?.sha256))throw Error('Full before/current diff required');fullBaseline=baseline.files;fullCurrent=current.files;}return reviewPrompt(manifest,baseline,current,gates,fullBaseline,fullCurrent);}
  return boundedPacket({role:phase==='planning'?'Resolve contracts, edge cases and verification. Return a concise plan of at most 5000 UTF-8 bytes. No code or tools.':phase==='implementation'?'Implement settled plan using hash-bound unique exact edits {files:[{path,sha256,edits:[{old,new}]}]}. New focused tests use sha256:null,content <=8000 bytes. No tools.':'Repair unresolved acceptance only using same hash-bound unique edits. No third unsuccessful repair.',task:manifest.taskPrompt,rubric:manifest.rubric,source,ownership:ownership(manifest),...(phase==='implementation'?{plan}:{}),...(phase==='repair'?{gates:gates.map(({output,...m})=>m),review}:{})});
 }
-export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = null, acceptanceFn = acceptance, sandbox,onAttempt=()=>{},environment=null }) {
+export async function runTrial({ ledger, provider, root, manifest, trial, arm, phaseOutput = null, acceptanceFn = acceptance, sandbox,onAttempt=()=>{},environment=null,workflowProtocolVersion=1 }) {
+  if(![1,2].includes(workflowProtocolVersion))throw Error('Unsupported workflow protocol');
+  if(workflowProtocolVersion===2&&ledger.config.mode!=='offline')throw Error('Protocol v2 is offline only');
+  const workflowProtocol=workflowProtocolVersion===2?protocolDescriptor(manifest,arm):null;const workflowSteps=[];
   if(sandbox&&fs.existsSync(path.join(sandbox.allowedRoot,'.sandbox-cleanup-hold.json'))){ledger.transaction(state=>{state.blocked=true;});throw Error('Sandbox cleanup unresolved; trial held');}
   ledger.begin(trial); const started = ledger.clock(); const baseline = scopedContext(root, manifest);const fullBaseline=context(root,manifest); let accepted = false, failure = null, gates = [], review = null;
   const attempts=[]; let ordinal = 0;
-  const call = (phase, prompt, extras = {}) => generate(ledger, provider, {
-    prompt, requestId: ledger.requestId(`${trial}_${phase}_${++ordinal}`), trial, phase,
-    model: phase === 'planning' && arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol', effort: phase === 'review' ? 'high' : phase === 'planning' && arm === 'B' ? 'high' : 'medium',
-    maxOutputTokens: phaseOutput ?? (phase === 'planning' || phase === 'review' ? 4000 : 8000), ...extras
-  });
+  let previousEnded=started;
+  const call = async (phase, prompt, extras = {}) => {
+    const {workflowStep=phase,...options}=extras;
+    const requestId=ledger.requestId(`${trial}_${phase}_${++ordinal}`);
+    const request={prompt,requestId,trial,phase,model:phase==='planning'&&arm==='B'?'gpt-6-astra':'gpt-6.1-sol',effort:phase==='review'||phase==='planning'&&arm==='B'?'high':'medium',maxOutputTokens:phaseOutput??(phase==='planning'||phase==='review'?4000:8000),...options};
+    const callStarted=ledger.clock();let output=null;
+    try {output=await generate(ledger,provider,request);return output;}
+    finally {if(workflowProtocol){const ended=ledger.clock(),observed=ledger.read().requests.find(r=>r.id===requestId);workflowSteps.push({stepId:workflowStep,requestId:observed?.id??null,phase,model:request.model,effort:request.effort,status:observed?.status??'not-dispatched',inputBytes:Buffer.byteLength(prompt),inputDigest:sha256(prompt),outputBytes:output===null?null:Buffer.byteLength(output),outputDigest:output===null?null:sha256(output),started:callStarted,ended,elapsedMs:ended-callStarted,handoffElapsedMs:callStarted-previousEnded});previousEnded=ended;}}
+  };
   try {
-    const plan = await call('planning', phasePacket({phase:'planning',manifest,baseline}));
+    const plan = workflowProtocol?await prepareProtocolPlan({manifest,baseline,arm,call}):await call('planning', phasePacket({phase:'planning',manifest,baseline}));
     const patch = await call('implementation', phasePacket({phase:'implementation',manifest,baseline,plan}));
     applyEdits(root, manifest, patch);
     for (let attempt = 0; attempt <= 2; attempt++) {
@@ -123,10 +131,10 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
       const correction = await call('repair', phasePacket({phase:'repair',manifest,baseline,current:scopedContext(root,manifest),gates,review}), {defect:'acceptance'});
       if (!applyEdits(root, manifest, correction)) throw Error('No corrective change');
     }
-  } catch (error) { if(/cleanup unresolved/i.test(error.message)){ledger.transaction(state=>{state.blocked=true;});failure='sandbox-cleanup-unresolved';}else failure = ['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
+  } catch (error) { if(/cleanup unresolved/i.test(error.message)){ledger.transaction(state=>{state.blocked=true;});failure='sandbox-cleanup-unresolved';}else failure = error instanceof WorkflowProtocolError?error.message:['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
   finally { ledger.close(trial); }
   const state = ledger.read();
   return { fixture: manifest.name, seed: manifest.seed, trial, arm, started, ended: ledger.clock(), accepted,
     failure, environment, attempts, historyComplete:failure===null, contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
-    repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial) };
+    repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial),...(workflowProtocol?{workflowProtocol,workflowSteps}:{}) };
 }

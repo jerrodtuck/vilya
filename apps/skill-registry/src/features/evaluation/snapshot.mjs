@@ -1,3 +1,4 @@
+import {assertWorkflowEvidence} from './workflow-contract.mjs';
 import { assertAcceptedEvidence, REQUIRED_GATE_IDS } from './acceptance.mjs';
 export { REQUIRED_GATE_IDS, receiptIdForRequest } from './acceptance.mjs';
 // Public evidence boundary: exact keys, controlled strings, and safe scalar values.
@@ -30,7 +31,7 @@ const diagnosticObservation = { source: enumeration('provider-response-metadata'
 const request = { requestId: identifier, phase, model, effort, status: enumeration('pending', 'unknown', 'complete'),
   startedAt: optionalTime, endedAt: optionalTime, elapsedMs: numberOrNull,
   reservationMicrodollars: numberOrNull, costMicrodollars: numberOrNull, usage, diagnosticObservation: { optional: diagnosticObservation } };
-const native = { receiptId: receiptIdentifier, phase, model, effort, status: enumeration('observed', 'unavailable'),
+const native = { phaseId:{optional:identifier},receiptId: receiptIdentifier, phase, model, effort, status: enumeration('observed', 'unavailable'),
   attribution: enumeration('verified', 'unavailable', 'blocked'), startedAt: optionalTime, endedAt: optionalTime,
   elapsedMs: numberOrNull, usage, reasonCodes: array(enumeration('attribution-unavailable','missing-completion','missing-terminal','mixed-phase','counter-reset','session-mismatch','fork-overlap','missing-independence'), 32), disjointnessVerified: enumeration(true, false, null) };
 const review = { status: enumeration('ready', 'changes-required', 'not-run', 'unavailable'), findingCount: numberOrNull,
@@ -38,13 +39,15 @@ const review = { status: enumeration('ready', 'changes-required', 'not-run', 'un
 const gate = { id: { pattern: /^(?:setup-sync-skills|focused|regression|oracle|sync-projects|sync-night-shift|sync-skills|tests|build|spacing)$/, max: 24 }, status: enumeration('passed', 'failed', 'timed-out', 'not-run', 'unavailable'), exitCode: nullable({ signedInteger: true }), elapsedMs: numberOrNull };
 const attempt = { ordinal: integer, kind: enumeration('initial', 'repair'), defectId: nullable({ pattern: /^(?:acceptance|gates|review|defect_[a-f0-9]{16,64})$/, max: 71 }), startedAt: optionalTime,
   endedAt: optionalTime, elapsedMs: numberOrNull, outcome: enumeration('passed', 'failed', 'inconclusive'), gates: array(gate, 32), review };
-const run = { runId: identifier, pairId: identifier, fixture: enumeration(...Object.keys(FIXTURES)), seed: head,
+const workflowProtocol={version:enumeration(2),digest,variant:enumeration('R0','R1'),reasonCode:enumeration('baseline-complete-plan','declared-consequential-question','not-applicable'),questionId:nullable(enumeration('migration-review-applicability','migration-markdown-roundtrip')),fixture:enumeration(...Object.keys(FIXTURES)),seed:head};
+const workflowStep={phaseId:identifier,stepId:enumeration('complete-plan','draft-plan','consultation','synthesis','implementation','review','repair'),receiptId:nullable(receiptIdentifier),phase,model,effort,status:enumeration('complete','unknown','unavailable','not-dispatched'),inputBytes:integer,inputDigest:digest,outputBytes:numberOrNull,outputDigest:nullable(digest),startedAt:optionalTime,endedAt:optionalTime,elapsedMs:numberOrNull,handoffElapsedMs:integer};
+const run = {workflowProtocol:{optional:workflowProtocol},workflowSteps:{optional:array(workflowStep,32)}, runId: identifier, pairId: identifier, fixture: enumeration(...Object.keys(FIXTURES)), seed: head,
   environment: enumeration('api', 'native'), arm: enumeration('A', 'B'), orderIndex: integer, status: enumeration(...STATUSES),
   failureCode: nullable(enumeration('budget-exhausted','trial-budget-exhausted','phase-budget-exhausted','token-bound-exceeded','request-limit','no-corrective-change','invalid-output','unresolved-request','acceptance-failed','deadline-exceeded','not-run','unavailable','controller-stopped','context-too-large','sandbox-cleanup-unresolved')), startedAt: optionalTime, endedAt: optionalTime, elapsedMs: numberOrNull,
   evidenceStatus: enumeration('complete', 'partial', 'unavailable'),
   environmentEvidence: { controllerHead: nullable(head), runtime: enumeration('openai-responses', 'codex-desktop'), gateRuntime: enumeration('docker'),
     nodeVersion: nullable({ pattern: /^v?\d+\.\d+\.\d+$/, max: 32 }), imageDigest: nullable({ pattern: /^(?:sha256:)?[a-f0-9]{64}$/, max: 71 }),
-    lockDigest: nullable(digest), skillsDigest: nullable(digest), contextMode: enumeration('scoped-search-replace-1'), toolsMode: enumeration('stateless-no-tools'), cacheControl: enumeration('uncontrolled'), differences: array(enumeration('api-json-edits','native-desktop-tools'), 32) },
+    lockDigest: nullable(digest), skillsDigest: nullable(digest), contextMode: enumeration('scoped-search-replace-1'), toolsMode: enumeration('stateless-no-tools','native-tools-exposed-instruction-only'), cacheControl: enumeration('uncontrolled'), differences: array(enumeration('api-json-edits','native-desktop-tools'), 32) },
   attempts: array(attempt, 8), requests: array(request, 64), nativePhases: array(native, 32),
   quality: { accepted: enumeration(true, false, null), requiredGateIds: array(code, 32), independentReviewRequired: enumeration(true),
     attemptHistoryComplete: enumeration(true, false), adjudicationStatus: enumeration('accepted', 'rejected', 'pending', 'unavailable') },
@@ -126,9 +129,12 @@ export function validateSnapshot(candidate) {
     }
     for (const p of [...r.requests, ...r.nativePhases]) {
       usageChecks(p);
+      if(r.workflowProtocol)continue;
       const expected = p.phase === 'planning' && r.arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol';
       if (p.model !== expected || p.effort !== (p.phase === 'review' || expected === 'gpt-6-astra' ? 'high' : 'medium')) invalid();
     }
+    for(const step of r.workflowSteps??[])chronological(step);
+    assertWorkflowEvidence(r);
     const required = REQUIRED_GATE_IDS[r.fixture];
     if (r.quality.requiredGateIds.length !== required.length || required.some((id) => !r.quality.requiredGateIds.includes(id))) invalid();
     const last = r.attempts.at(-1);

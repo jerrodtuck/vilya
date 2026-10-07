@@ -48,13 +48,13 @@ function verifyReview(packet,root,manifest) {
   assert.equal(metadata.includes('if (skill.slug === "night-shift") return "scheduler-fired";'),true);
 }
 /** Scripted control-plane fixture. No model, transport, API credential or network lookup. */
-export function scriptedProvider({root,manifest,arm,scenario='accept'}) {
+export function scriptedProvider({root,manifest,arm,scenario='accept',workflowProtocolVersion=1}) {
   const calls=[];let reviews=0,repairs=0;
   return {kind:'fake',calls,inputBound:()=>SCRIPTED_USAGE.input,
     async send(request) {
       const phase=request.reservation.phase;
-      assert.equal(request.model,phase==='planning'&&arm==='B'?'gpt-6-astra':'gpt-6.1-sol');
-      assert.equal(request.effort,phase==='review'||phase==='planning'&&arm==='B'?'high':'medium');
+      assert.equal(request.model,phase==='planning'&&arm==='B'&&workflowProtocolVersion===1?'gpt-6-astra':'gpt-6.1-sol');
+      assert.equal(request.effort,phase==='review'||phase==='planning'&&arm==='B'&&workflowProtocolVersion===1?'high':'medium');
       assert.equal(request.maxToolCalls,0);assert.equal(request.retries,0);
       const packet=JSON.parse(request.prompt);let text;
       if(phase==='planning') text='Synthetic settled plan: preserve metadata, add exact Python labels and focused fallback tests.';
@@ -81,16 +81,16 @@ export function offlineProofLedger(file,{clock=Date.now,configure=()=>{}}={}) {
   const ledger=new BudgetLedger(file,config,{clock});ledger.initialize();return ledger;
 }
 /** Component cases inject gates explicitly. The main proof always uses actual Docker acceptance. */
-export async function contractCase({repo=repoDefault,workspace,arm='A',scenario='accept',sandbox,acceptanceFn=acceptance,clock=Date.now,configure}) {
+export async function contractCase({repo=repoDefault,workspace,arm='A',scenario='accept',sandbox,acceptanceFn=acceptance,clock=Date.now,configure,workflowProtocolVersion=1}) {
   const manifest=loadFixtures().find(item=>item.name==='behavior');
   const root=path.join(workspace,'fixture');archiveFixture(repo,root,manifest.seed);
   const ledger=offlineProofLedger(path.join(workspace,'contract-ledger.json'),{clock,configure});
   ledger.pair('api_behavior_1','api_behavior_1_A','api_behavior_1_B');
   const trial='api_behavior_1_'+arm;
-  const provider=scriptedProvider({root,manifest,arm,scenario});
+  const provider=scriptedProvider({root,manifest,arm,scenario,workflowProtocolVersion});
   const controllerHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
   const environment={controllerHead,gateNodeVersion:sandbox?.nodeVersion??null,image:sandbox?.image??null,lockSha256:sandbox?.lockSha256??null,skillsDigest:sharedSkillsDigest(repo)};
-  const receipt=await runTrial({ledger,provider,root,manifest,trial,arm,sandbox,acceptanceFn,environment});
+  const receipt=await runTrial({ledger,provider,root,manifest,trial,arm,sandbox,acceptanceFn,environment,workflowProtocolVersion});
   fs.writeFileSync(path.join(workspace,'contract-receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
   assert.equal(ledger.read().trials[trial].closed,true);
   assert.equal(provider.calls.length,receipt.requests.length);
@@ -120,12 +120,12 @@ function readinessForBehavior(file,repo) {
   return image;
 }
 /** Entire controller chain with pinned Docker gates. Synthetic proof, never a model trial. */
-export async function runContractProof({repo=repoDefault,readiness=path.join(repo,'scripts/evaluation/runtime/readiness.json')}={}) {
+export async function runContractProof({repo=repoDefault,readiness=path.join(repo,'scripts/evaluation/runtime/readiness.json'),workflowProtocolVersion=1}={}) {
   const image=readinessForBehavior(readiness,repo);const workspace=fs.mkdtempSync(path.join(os.tmpdir(),'vilya-contract-proof-'));
   const started=Date.now();const cases=[];
   for(const [arm,scenario] of [['A','accept'],['B','review-repair']]) {
     const trialWorkspace=path.join(workspace,arm);fs.mkdirSync(trialWorkspace);
-    cases.push(await contractCase({repo,workspace:trialWorkspace,arm,scenario,sandbox:{...image,allowedRoot:workspace}}));
+    cases.push(await contractCase({repo,workspace:trialWorkspace,arm,scenario,workflowProtocolVersion,sandbox:{...image,allowedRoot:workspace}}));
   }
   const sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
   const snapshot=publicContractEvidence(cases,sourceHead);
@@ -136,7 +136,7 @@ export async function runContractProof({repo=repoDefault,readiness=path.join(rep
   assert.equal(fs.existsSync(path.join(workspace,'.sandbox-cleanup-hold.json')),false);
   const containers=execFileSync('docker',['ps','-a','--format','{{.Names}}'],{encoding:'utf8',windowsHide:true,timeout:10000}).trim().split('\n');
   assert.equal(containers.some(name=>name.startsWith('vilya357-accept-'+process.pid+'-')),false);
-  const report={schemaVersion:1,kind:'synthetic-controller-contract-proof',paidCalls:0,gateEvidence:'actual-network-none-docker',controllerHead:sourceHead,fixtureSeed:image.seed,imageDigest:image.image,startedAt:new Date(started).toISOString(),elapsedMs:Date.now()-started,scriptedUsage:SCRIPTED_USAGE,cases:cases.map(item=>({arm:item.receipt.arm,acceptedContract:true,attempts:item.receipt.attempts.length,routing:item.calls.map(({phase,model,effort})=>({phase,model,effort})),syntheticMicrodollars:item.syntheticMicrodollars,totalInputTokens:item.calls.length*SCRIPTED_USAGE.input,totalOutputTokens:item.calls.length*SCRIPTED_USAGE.output,elapsedMs:item.receipt.ended-item.receipt.started})),reconciledSyntheticMicrodollars:snapshot.budget.reconciledCostMicrodollars,heldSyntheticMicrodollars:snapshot.budget.heldReservationMicrodollars,cleanupConfirmed:true,limitations:['scripted-responses-not-model-quality','synthetic-token-counters-not-measured-generation','fake-cost-at-fixed-rates-not-provider-billing','historical-fixture-not-held-out','no-native-model-execution','no-live-export']};
+  const report={schemaVersion:1,kind:'synthetic-controller-contract-proof',workflowProtocolVersion,paidCalls:0,gateEvidence:'actual-network-none-docker',controllerHead:sourceHead,fixtureSeed:image.seed,imageDigest:image.image,startedAt:new Date(started).toISOString(),elapsedMs:Date.now()-started,scriptedUsage:SCRIPTED_USAGE,cases:cases.map(item=>({arm:item.receipt.arm,acceptedContract:true,attempts:item.receipt.attempts.length,routing:item.calls.map(({phase,model,effort})=>({phase,model,effort})),syntheticMicrodollars:item.syntheticMicrodollars,totalInputTokens:item.calls.length*SCRIPTED_USAGE.input,totalOutputTokens:item.calls.length*SCRIPTED_USAGE.output,elapsedMs:item.receipt.ended-item.receipt.started})),reconciledSyntheticMicrodollars:snapshot.budget.reconciledCostMicrodollars,heldSyntheticMicrodollars:snapshot.budget.heldReservationMicrodollars,cleanupConfirmed:true,limitations:['scripted-responses-not-model-quality','synthetic-token-counters-not-measured-generation','fake-cost-at-fixed-rates-not-provider-billing','historical-fixture-not-held-out','no-native-model-execution','no-live-export']};
   fs.writeFileSync(path.join(workspace,'contract-proof.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx'});
   return {report,workspace};
 }
