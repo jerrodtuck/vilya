@@ -173,13 +173,14 @@ export class BudgetLedger {
       state.requests.push(request); this.checkBudgets(state); return structuredClone(request);
     });
   }
-  reconcile(requestId, usage, metadata = null) {
+  reconcile(requestId, usage, metadata = null, observedAt = null) {
     return this.transaction((state, now) => {
       const request = state.requests.find(r => r.id === requestId);
       if (!request || request.status !== 'pending') throw Error('Request cannot reconcile');
       const cost = actualCost(this.config.models[request.model], usage);
       if (cost > request.reservation || usage.input > request.inputBound || usage.output > request.outputBound) throw Error('Actual usage exceeds reservation');
-      request.end = now; request.cost = cost; request.usage = structuredClone(usage); request.status = 'complete';
+      if(observedAt!==null){integer(observedAt,'observation time');if(observedAt<request.start||observedAt>now)throw Error('Invalid observation time');}
+      request.end = observedAt??now; request.cost = cost; request.usage = structuredClone(usage); request.status = 'complete';
       if (metadata !== null) { exactKeys(metadata, ['providerRequestId'], 'provider metadata'); request.providerRequestId = metadata.providerRequestId; }
     });
   }
