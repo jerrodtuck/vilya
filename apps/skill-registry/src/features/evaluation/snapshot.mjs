@@ -1,3 +1,5 @@
+import { assertAcceptedEvidence, REQUIRED_GATE_IDS } from './acceptance.mjs';
+export { REQUIRED_GATE_IDS, receiptIdForRequest } from './acceptance.mjs';
 // Public evidence boundary: exact keys, controlled strings, and safe scalar values.
 export const FIXTURES = {
   behavior: '3d868ea5e69a3d01e433488ea6a682574d03a697',
@@ -30,7 +32,7 @@ const native = { receiptId: receiptIdentifier, phase, model, effort, status: enu
   elapsedMs: numberOrNull, usage, reasonCodes: array(enumeration('attribution-unavailable','missing-completion','missing-terminal','mixed-phase','counter-reset','session-mismatch','fork-overlap','missing-independence'), 32), disjointnessVerified: enumeration(true, false, null) };
 const review = { status: enumeration('ready', 'changes-required', 'not-run', 'unavailable'), findingCount: numberOrNull,
   model: nullable(model), effort: nullable(effort), independent: enumeration(true, false, null), receiptId: nullable(receiptIdentifier) };
-const gate = { id: { pattern: /^(?:focused|oracle|tests|build|spacing|source|gate_[1-9][0-9]?)$/, max: 16 }, status: enumeration('passed', 'failed', 'timed-out', 'not-run', 'unavailable'), exitCode: nullable({ signedInteger: true }), elapsedMs: numberOrNull };
+const gate = { id: { pattern: /^(?:setup-sync-skills|focused|regression|oracle|sync-projects|sync-night-shift|sync-skills|tests|build|spacing)$/, max: 24 }, status: enumeration('passed', 'failed', 'timed-out', 'not-run', 'unavailable'), exitCode: nullable({ signedInteger: true }), elapsedMs: numberOrNull };
 const attempt = { ordinal: integer, kind: enumeration('initial', 'repair'), defectId: nullable({ pattern: /^(?:acceptance|gates|review|defect_[a-f0-9]{16,64})$/, max: 71 }), startedAt: optionalTime,
   endedAt: optionalTime, elapsedMs: numberOrNull, outcome: enumeration('passed', 'failed', 'inconclusive'), gates: array(gate, 32), review };
 const run = { runId: identifier, pairId: identifier, fixture: enumeration(...Object.keys(FIXTURES)), seed: head,
@@ -107,9 +109,12 @@ export function validateSnapshot(candidate) {
       const expected = p.phase === 'planning' && r.arm === 'B' ? 'gpt-6-astra' : 'gpt-6.1-sol';
       if (p.model !== expected || p.effort !== (p.phase === 'review' || expected === 'gpt-6-astra' ? 'high' : 'medium')) invalid();
     }
+    const required = REQUIRED_GATE_IDS[r.fixture];
+    if (r.quality.requiredGateIds.length !== required.length || required.some((id) => !r.quality.requiredGateIds.includes(id))) invalid();
     const last = r.attempts.at(-1);
     if (r.quality.accepted === true || r.status === 'accepted') {
       if (r.status !== 'accepted' || r.quality.accepted !== true || r.quality.adjudicationStatus !== 'accepted' || !r.quality.attemptHistoryComplete || !r.quality.requiredGateIds.length || !last || last.outcome !== 'passed' || last.review.status !== 'ready' || last.review.model !== 'gpt-6.1-sol' || last.review.effort !== 'high' || last.review.independent !== true || last.review.findingCount !== 0 || !last.review.receiptId || r.endedAt === null) invalid();
+      assertAcceptedEvidence(r);
       if (r.quality.requiredGateIds.some((id) => !last.gates.some((g) => g.id === id && g.status === 'passed' && g.exitCode === 0))) invalid();
     }
   }

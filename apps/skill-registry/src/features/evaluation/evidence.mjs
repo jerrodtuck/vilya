@@ -1,3 +1,4 @@
+import { hasCompleteAcceptedEvidence } from './acceptance.mjs';
 import { STATUSES } from './snapshot.mjs';
 export const FILTERS = { environment: ['all', 'api', 'native'], fixture: ['all', 'behavior', 'instruction', 'migration'], arm: ['all', 'A', 'B'], status: ['all', ...STATUSES] };
 export function normalizeFilters(query) {
@@ -37,9 +38,11 @@ export function evidenceSummary(snapshot) {
   const pairs = ['api', 'native'].flatMap((environment) => ['behavior', 'instruction', 'migration'].map((fixture) => {
     const runs = snapshot.runs.filter((r) => r.environment === environment && r.fixture === fixture);
     const a = runs.find((r) => r.arm === 'A'); const b = runs.find((r) => r.arm === 'B');
-    return { environment, fixture, a: a?.runId ?? null, b: b?.runId ?? null, complete: !!a && !!b && a.quality.accepted !== null && b.quality.accepted !== null && a.endedAt !== null && b.endedAt !== null };
+    const keys = ['controllerHead','imageDigest','lockDigest','skillsDigest','nodeVersion','contextMode','toolsMode'];
+    const comparable = !!a && !!b && keys.every((key) => a.environmentEvidence?.[key] !== null && a.environmentEvidence?.[key] !== undefined && a.environmentEvidence[key] === b.environmentEvidence?.[key]);
+    return { environment, fixture, a: a?.runId ?? null, b: b?.runId ?? null, complete: comparable && a.quality.accepted !== null && b.quality.accepted !== null && a.endedAt !== null && b.endedAt !== null };
   }));
-  const screeningComplete = snapshot.runs.length === 12 && pairs.every((p) => p.complete) && snapshot.runs.every((r) => r.quality.accepted === true && r.evidenceStatus === 'complete');
+  const screeningComplete = snapshot.runs.length === 12 && pairs.every((p) => p.complete) && snapshot.runs.every((r) => hasCompleteAcceptedEvidence(r));
   const apiResolved = snapshot.budget?.heldReservationMicrodollars === 0 && snapshot.runs.filter((r) => r.environment === 'api').every((r) => r.requests.length > 0 && r.requests.every((p) => p.status === 'complete' && p.costMicrodollars !== null));
   const nativeObserved = snapshot.runs.filter((r) => r.environment === 'native').every((r) => r.nativePhases?.length > 0 && r.nativePhases.every((p) => p.status === 'observed' && p.attribution === 'verified' && p.disjointnessVerified === true));
   const aCost = populations.find((p) => p.environment === 'api' && p.arm === 'A').reconciled;
