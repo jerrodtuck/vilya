@@ -40,7 +40,7 @@ export function projectDiagnosticObservations(state, rows, config) {
     if (chain.some(row => row.observedAt < request.start || row.observedAt >= deadline)) invalid();
     const [send,http,body,rejected] = chain;
     if (http.httpStatus !== 200 || body.httpStatus !== 200 || rejected.httpStatus !== null || !uint(request.start) || send.observedAt < request.start) invalid();
-    if (body.schemaVersion !== rejected.schemaVersion || body.billingValidated !== rejected.billingValidated || body.schemaVersion === 3 && JSON.stringify(body.financialInspection) !== JSON.stringify(rejected.financialInspection)) invalid();
+    if (body.schemaVersion !== rejected.schemaVersion || body.billingValidated !== rejected.billingValidated || [3,4].includes(body.schemaVersion) && JSON.stringify(body.financialInspection) !== JSON.stringify(rejected.financialInspection) || body.schemaVersion === 4 && body.financialContractVersion !== rejected.financialContractVersion) invalid();
     if (body.billingValidated === true) continue;
     if (body.responseModel !== request.model || rejected.responseModel !== request.model || body.serviceTier !== 'default' || rejected.serviceTier !== 'default' || body.responseStatus === null || body.responseStatus !== rejected.responseStatus || http.providerRequestId !== body.providerRequestId || body.providerRequestId !== rejected.providerRequestId || body.responseId !== rejected.responseId) invalid();
     if (!counters.every(key => body.counterPresence[key] && rejected.counterPresence[key] && uint(body.counts[key]) && body.counts[key] === rejected.counts[key])) invalid();

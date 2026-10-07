@@ -211,7 +211,7 @@ test('Responses fixture integration proves durable reservation exists before tra
     fetchImpl: async url => {
       calls++; assert.equal(ledger.read().requests[0].status, 'pending');
       return { ok: true, redirected: false, url, headers: { get: () => 'req_receipt' }, json: async () => ({
-        model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', tools: [], previous_response_id: null,
+        model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', parallel_tool_calls: false, tools: [], previous_response_id: null,
         output: [{ type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: 'private result', annotations: [] }] }],
         usage: { input_tokens: 20, input_tokens_details: { cached_tokens: 3, cache_write_tokens: 4 }, output_tokens: 10, output_tokens_details: { reasoning_tokens: 2 }, total_tokens: 30 }
       }) };

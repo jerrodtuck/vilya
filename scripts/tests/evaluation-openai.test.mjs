@@ -10,7 +10,7 @@ import { createOpenAITransport, parseResponse, buildResponsePayload, LIVE_BLOCK_
 const endpoint = 'https://api.openai.com/v1/responses';
 const base = () => ({ model: 'gpt-6.1-sol', effort: 'medium', prompt: 'private prompt', maxOutputTokens: 32, maxToolCalls: 0, retries: 0,
   reservation: { id: 'request_1' } });
-const data = () => ({ model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', tools: [], previous_response_id: null,
+const data = () => ({ model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', parallel_tool_calls: false, tools: [], previous_response_id: null,
   output: [{ type: 'reasoning', summary: [{ type:'summary_text', text: 'private reasoning' }] }, { type: 'message', role: 'assistant', status: 'completed',
     content: [{ type: 'output_text', text: 'ephemeral private generated content', annotations: [] }] }],
   usage: { input_tokens: 20, input_tokens_details: { cached_tokens: 3, cache_write_tokens: 4 }, output_tokens: 10,
