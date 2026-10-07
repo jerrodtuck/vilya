@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "name": "instruction",
+  "issue": "https://github.com/jerrodtuck/vilya/issues/357",
+  "created": "2026-10-06",
+  "lastUpdated": "2026-10-06",
+  "seed": "d17eb2d9aafc692306976b9ad00ddccf30f6869c",
+  "taskPrompt": "Add conditional database/schema migration review to the canonical Next.js crucible skill and its generated delivery. Require applicability evidence from actual touched paths and repo migration configuration. Cover verified no application database; database present with unrelated UI/docs changes; relevant Drizzle changes; relevant other frameworks; and relevant changes with missing, conflicting or pending evidence. Block only affected gates when evidence is unresolved. Read actual Migration tool, Migration command and Migration status plus applicable existing baseline/backup/restore policy. Preserve immutable applied history, installed-version artifacts and the actual application runner. Review grants no migration/database/production execution authority. Preserve all existing severity, refactor, VSA, component, boundary and readiness requirements. Add focused canonical/generated delivery coverage; semantic review remains required.\n\nWork only in the fresh disposable fixture checkout at its immutable seed. Keep changes within the listed ownership. Add focused regression tests. Do not install dependencies, change model settings, call APIs, start services, execute database or provider commands, access credentials, commit, push, open a PR, or use earlier trial outputs. Stop on uncertain scope or missing tooling. Keep the fixed acceptance gates and existing architecture/review requirements. Report exact changes, commands, results, limitations and any repair ledger. At two consecutive unsuccessful corrective attempts on the same defect, stop before a third.",
+  "fileOwnership": [
+    "skills/vl-crucible-nextjs/SKILL.md",
+    "apps/skill-registry/content/skills/vl-crucible-nextjs/SKILL.md (generated)",
+    "apps/skill-registry/src/shared/skills/migration-review.test.ts (new)"
+  ],
+  "gates": {
+    "workingDirectory": "<fixtureRoot>/apps/skill-registry",
+    "setup": [
+      "node scripts/sync-skills.mjs"
+    ],
+    "focused": [
+      "node node_modules/vitest/vitest.mjs run src/shared/skills/frontmatter.test.ts"
+    ],
+    "workerRegression": [
+      "node node_modules/vitest/vitest.mjs run src/shared/skills/migration-review.test.ts"
+    ],
+    "independent": {
+      "source": "instruction.oracle.test.ts",
+      "copyTo": "src/shared/skills/fixture-357.oracle.test.ts",
+      "command": "node node_modules/vitest/vitest.mjs run src/shared/skills/frontmatter.test.ts src/shared/skills/fixture-357.oracle.test.ts",
+      "hidden": false
+    },
+    "review": "Separate fresh Sol/high reviewer inspects actual diff, scoped tests and semantic rubric; implementer self-report cannot approve."
+  },
+  "rubric": [
+    "Verified no database is not applicable with evidence; blank fields cannot imply none.",
+    "Unrelated UI in a database repo retains normal acceptance without global optional-field blocking.",
+    "Relevant Drizzle requires installed-version SQL/history/artifacts and verified runner without rewriting applied history.",
+    "Relevant other frameworks retain their own artifacts/runner; no forced Drizzle or ORM replacement.",
+    "Missing/conflicting/pending relevant evidence blocks affected acceptance and names owning follow-up.",
+    "Existing baseline/target/backup-integrity/restore/restored-upgrade/reapplication/recovery gates remain; no execution permission.",
+    "Canonical and generated delivery match; outside the added policy and focused tests, existing requirements remain intact."
+  ],
+  "order": [
+    "BA",
+    "AB"
+  ],
+  "status": "tested",
+  "validation": {
+    "baselineExit": 0,
+    "unfixedOracleExit": 1,
+    "referenceGatesAndOracleExit": 0,
+    "evidenceDirectory": "C:\\Users\\jerro\\AppData\\Local\\Temp\\vilya-357-fixtures-j1nLmI",
+    "referenceSolutionDelivered": false,
+    "semanticModelReview": "unverified",
+    "fullAppBuild": "not run; focused preparation only"
+  },
+  "limits": {
+    "historicalReplay": true,
+    "heldOut": false,
+    "checkAccessRestriction": "not enforced",
+    "apiCompatibility": "unverified",
+    "paidModelCalls": 0
+  }
+}
