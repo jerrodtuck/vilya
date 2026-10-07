@@ -17,7 +17,7 @@ const data = () => ({ model: 'gpt-6.1-sol', status: 'completed', service_tier: '
     output_tokens_details: { reasoning_tokens: 2 }, total_tokens: 30 } });
 function fixture(options = {}) {
   const calls = [];
-  const provider = createOpenAITransport({ offlineFixture: true, liveEnabled: true, env: { OPENAI_API_KEY: OFFLINE_FIXTURE_KEY },
+  const provider = createOpenAITransport({diagnosticGuard:()=>true, offlineFixture: true, liveEnabled: true, env: { OPENAI_API_KEY: OFFLINE_FIXTURE_KEY },
     inputTokensForFixture: () => 20,
     reservationGuard: request => ({ id: request.reservation.id, status: 'pending', model: request.model, effort: request.effort,
       inputBound: 20, outputBound: request.maxOutputTokens, reservation: 500 }),
@@ -29,7 +29,7 @@ const send = (provider, request = base()) => provider.send(request, provider.pre
 
 test('live stays blocked with credentials and explicit opt-in before reserve/network', async () => {
   let calls = 0;
-  const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-secret' }, fetchImpl: () => { calls++; } });
+  const provider = createOpenAITransport({diagnosticGuard:()=>true, liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-secret' }, fetchImpl: () => { calls++; } });
   assert.throws(() => provider.prepare(base()), { message: LIVE_BLOCK_REASON });
   assert.throws(() => provider.inputBound(base(), { inputTokens: 1 }), { message: LIVE_BLOCK_REASON });
   await assert.rejects(provider.send(base()), { message: LIVE_BLOCK_REASON });
@@ -131,14 +131,14 @@ test('provider exception and private JSON errors never escape into diagnostics',
 });
 
 test('fixture mode rejects native fetch and a real-shaped environment credential', async () => {
-  assert.throws(() => createOpenAITransport({ offlineFixture: true, fetchImpl: globalThis.fetch, inputTokensForFixture: () => 20 }), /injected/);
+  assert.throws(() => createOpenAITransport({diagnosticGuard:()=>true, offlineFixture: true, fetchImpl: globalThis.fetch, inputTokensForFixture: () => 20 }), /injected/);
   const { provider, calls } = fixture({ env: { OPENAI_API_KEY: 'sk-private-credential' } });
   await assert.rejects(send(provider), /sentinel/); assert.equal(calls.length, 0);
 });
 
 function countedFixture(options = {}) {
   const calls = []; const events = []; let pending;
-  const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-count-secret' },
+  const provider = createOpenAITransport({diagnosticGuard:()=>true, liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-count-secret' },
     countBillingInterpretation: COUNT_BILLING_INTERPRETATION,
     preflightGuard: {
       begin(meta, scope) { events.push('begin'); pending = { ...meta, ...scope, id: `${scope.requestId}_count`, status: 'pending', deadline: (options.clock ?? Date.now)() + 15_000 }; return pending; },
@@ -214,7 +214,7 @@ test('production fake-network preparation integrates with persisted budget befor
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'vilya-count-seam-'));
   try {
     const ledger = new BudgetLedger(path.join(temp, 'ledger.json'), apiConfig()); ledger.initialize(); let calls = 0;
-    const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-integration-key' },
+    const provider = createOpenAITransport({diagnosticGuard:()=>true, liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-integration-key' },
       countBillingInterpretation: COUNT_BILLING_INTERPRETATION,
       preflightGuard: { begin: (meta, scope) => ledger.beginPreflight({ ...meta, ...scope }),
         complete: (id, result) => ledger.completePreflight(id, result), hold: id => ledger.holdPreflight(id) },
@@ -254,7 +254,7 @@ test('unexpected top-level charge or usage metadata cannot normalize to zero fee
 test('count uses remaining stage deadline and rejects a response arriving at that boundary', async () => {
   for (const late of [false, true]) {
     let now = 1000; let sends = 0; let held = false; let signal;
-    const provider = createOpenAITransport({ liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-deadline-key' },
+    const provider = createOpenAITransport({diagnosticGuard:()=>true, liveEnabled: true, env: { OPENAI_API_KEY: 'FAKE-deadline-key' },
       countBillingInterpretation: COUNT_BILLING_INTERPRETATION, clock: () => now,
       preflightGuard: { begin: meta => ({ ...meta, id: 'near_deadline_count', status: 'pending', deadline: 1005 }),
         complete() { throw Error('Late count must not complete'); }, hold() { held = true; } },
@@ -267,7 +267,7 @@ test('count uses remaining stage deadline and rejects a response arriving at tha
   }
 });
 
-function realLedgerProvider(ledger,fetchImpl,clock=Date.now){return createOpenAITransport({liveEnabled:true,env:{OPENAI_API_KEY:'FAKE-ledger-guard-key'},clock,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,preflightGuard:{begin:meta=>ledger.beginPreflight(meta),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:r=>ledger.read().requests.find(p=>p.id===r.reservation.id),fetchImpl});}
+function realLedgerProvider(ledger,fetchImpl,clock=Date.now){return createOpenAITransport({diagnosticGuard:()=>true,liveEnabled:true,env:{OPENAI_API_KEY:'FAKE-ledger-guard-key'},clock,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,preflightGuard:{begin:meta=>ledger.beginPreflight(meta),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:r=>ledger.read().requests.find(p=>p.id===r.reservation.id),fetchImpl});}
 test('real ledger count cap65 and lost count restart deny transport before POST',async()=>{
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'vilya-count-edge-'));try{const ledger=new BudgetLedger(path.join(temp,'l.json'),apiConfig(),{clock:()=>1000});ledger.initialize();for(let i=0;i<64;i++){const p=ledger.beginPreflight({requestId:'count_'+i,trial:null,phase:'setup',payloadHash:'a'.repeat(64),model:'gpt-6.1-sol',effort:'medium',serviceTier:'default',pricingDate:'2026-10-06',billingInterpretation:COUNT_BILLING_INTERPRETATION});ledger.completePreflight(p.id,{inputTokens:20,providerRequestId:null});}let posts=0;const provider=realLedgerProvider(ledger,async()=>{posts++;throw Error('forbidden');},()=>1000);await assert.rejects(provider.prepare(base(),{requestId:'count_65',trial:null,phase:'setup'}));assert.equal(posts,0);
  const lost=new BudgetLedger(path.join(temp,'lost.json'),apiConfig(),{clock:()=>1000});lost.initialize();const failing=realLedgerProvider(lost,async()=>{posts++;throw Error('lost');},()=>1000);await assert.rejects(failing.prepare(base(),{requestId:'lost',trial:null,phase:'setup'}));assert.equal(lost.read().preflights[0].status,'unknown');const resumed=new BudgetLedger(lost.file,apiConfig(),{clock:()=>1000});const before=posts;await assert.rejects(realLedgerProvider(resumed,async()=>{posts++;},()=>1000).prepare(base(),{requestId:'retry',trial:null,phase:'setup'}));assert.equal(posts,before);

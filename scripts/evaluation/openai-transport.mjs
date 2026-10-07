@@ -1,3 +1,4 @@
+import {diagnosticEvent,safeProviderId} from './diagnostics.mjs';
 import { createHash } from 'node:crypto';
 const ENDPOINT = 'https://api.openai.com/v1/responses';
 const MODELS = new Set(['gpt-6.1-sol', 'gpt-6-astra']);
@@ -62,21 +63,23 @@ export function parseResponse(data, request, inputBound, providerRequestId = nul
 
 export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = process.env, liveEnabled = false,
   offlineFixture = false, inputTokensForFixture, reservationGuard, preflightGuard,
-  countBillingInterpretation, timeoutMs = 60_000, clock = Date.now } = {}) {
+  countBillingInterpretation, diagnosticGuard, timeoutMs = 60_000, clock = Date.now } = {}) {
   if (!uint(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000) throw Error('Invalid transport deadline');
   if (offlineFixture && (typeof fetchImpl !== 'function' || fetchImpl === globalThis.fetch || typeof inputTokensForFixture !== 'function')) throw Error('Offline fixture requires injected fetch and token count');
   const certificates = new WeakSet(); const consumed = new WeakSet();
   function configured() {
     if (!offlineFixture && (countBillingInterpretation !== COUNT_BILLING_INTERPRETATION ||
-        !preflightGuard || ['begin', 'complete', 'hold'].some(key => typeof preflightGuard[key] !== 'function'))) throw Error(LIVE_BLOCK_REASON);
+        typeof diagnosticGuard!=='function' || !preflightGuard || ['begin', 'complete', 'hold'].some(key => typeof preflightGuard[key] !== 'function'))) throw Error(LIVE_BLOCK_REASON);
   }
   function credential() {
     if (!liveEnabled || !env.OPENAI_API_KEY) throw Error('blocked-live: explicit invocation and environment credential required');
     if (offlineFixture && env.OPENAI_API_KEY !== OFFLINE_FIXTURE_KEY) throw Error('Offline fixture requires sentinel credential');
   }
-  async function post(url, payload, signal, deadline) {
+  function observe(scope,stage,fields={}){const secret=env.OPENAI_API_KEY;const suppress=value=>typeof value==='string'&&secret&&value.includes(secret)?null:value;const safeFields={...fields,providerRequestId:suppress(fields.providerRequestId),data:fields.data?{...fields.data,id:suppress(fields.data.id)}:null};if(diagnosticGuard&&diagnosticGuard(diagnosticEvent({...scope,stage,...safeFields,clock}))!==true)throw Error('Diagnostic persistence unavailable');}
+  async function post(url, payload, signal, deadline, scope) {
     const controller = new AbortController(); const abort = () => controller.abort(); let timer;
     try {
+      observe(scope,'send-start');
       if (signal?.aborted) fail();
       signal?.addEventListener('abort', abort, { once: true });
       const timeout = new Promise((_, reject) => {
@@ -85,16 +88,16 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
       });
       const receive = async () => {
         const response = await fetchImpl(url, { method: 'POST', redirect: 'error', signal: controller.signal,
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: JSON.stringify(payload) });
-        if (!response?.ok || response.redirected || response.url !== url) fail();
+          headers: { 'Content-Type': 'application/json', 'X-Client-Request-Id': scope.requestId, Authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: JSON.stringify(payload) });
+        const rawId=response?.headers?.get('x-request-id');const providerRequestId=safeProviderId(rawId,'req',env.OPENAI_API_KEY);
+        const fields={httpStatus:response?.status??null,providerRequestId};observe(scope,'http-received',fields);
+        if (!response?.ok || response.redirected || response.url !== url){observe(scope,'http-rejected',fields);fail();}
         // Failed bodies may echo private content. Never read or include them in errors.
-        const data = await response.json(); if (controller.signal.aborted) fail();
-        const rawId = response.headers?.get('x-request-id');
-        const providerRequestId = typeof rawId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(rawId) ? rawId : null;
+        let data;try{data=await response.json();}catch{observe(scope,'body-unavailable',fields);fail();}observe(scope,'body-observed',{...fields,data});if(controller.signal.aborted)fail();
         return { data, providerRequestId };
       };
       return await Promise.race([receive(), timeout]);
-    } catch { controller.abort(); fail(); }
+    } catch { controller.abort(); observe(scope,'transport-unavailable'); fail(); }
     finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   }
   function mint(request, payload, count, provenance, preflightId = null) {
@@ -121,7 +124,7 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
         if (!uint(remaining) || remaining < 1) fail();
         const result = await post(`${ENDPOINT}/input_tokens`, { model: payload.model, input: payload.input,
           reasoning: payload.reasoning, text: payload.text, parallel_tool_calls: payload.parallel_tool_calls,
-          tools: payload.tools, tool_choice: payload.tool_choice, truncation: payload.truncation }, request.signal, Math.min(timeoutMs, 15_000, remaining));
+          tools: payload.tools, tool_choice: payload.tool_choice, truncation: payload.truncation }, request.signal, Math.min(timeoutMs, 15_000, remaining),{requestId:pending.id,kind:'count'});
         if (clock() >= pending.deadline || !record(result.data) || Object.keys(result.data).sort().join('|') !== 'input_tokens|object' ||
             result.data.object !== 'response.input_tokens' || !uint(result.data.input_tokens) ||
             result.data.input_tokens < 1 || result.data.input_tokens > 32_000) fail();
@@ -148,8 +151,8 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
           held.inputBound !== bound || held.outputBound !== request.maxOutputTokens || !uint(held.reservation) ||
           !request.reservation || held.id !== request.reservation.id) throw Error('Reservation does not cover request');
       consumed.add(certificate); // Consumed even if request is lost: never blindly retry.
-      const result = await post(ENDPOINT, payload, request.signal, timeoutMs);
-      try { return parseResponse(result.data, request, bound, result.providerRequestId); } catch { fail(); }
+      const scope={requestId:held.id,kind:'generation'};const result = await post(ENDPOINT,payload,request.signal,timeoutMs,scope);
+      let parsed;try{parsed=parseResponse(result.data,request,bound,result.providerRequestId);}catch{observe(scope,'schema-rejected',{data:result.data,providerRequestId:result.providerRequestId});fail();}observe(scope,'response-accepted',{data:result.data,providerRequestId:result.providerRequestId});return parsed;
     }
   };
 }
