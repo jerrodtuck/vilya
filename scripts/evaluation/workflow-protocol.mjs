@@ -1,3 +1,4 @@
+export {REQUIRED_GATE_IDS} from '../../apps/skill-registry/src/features/evaluation/workflow-contract.mjs';
 import {WORKFLOW_PROTOCOL_V2,expectedWorkflowProtocol} from '../../apps/skill-registry/src/features/evaluation/workflow-contract.mjs';
 export {WORKFLOW_PROTOCOL_V2};
 import {boundedPacket,sha256} from './context.mjs';

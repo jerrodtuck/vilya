@@ -6,7 +6,7 @@ export const workflowPlanningSteps=(fixture,arm)=>arm==='B'&&fixture!=='behavior
 export function expectedWorkflowProtocol(fixture,arm,seed){const question=WORKFLOW_PROTOCOL_V2.questions[fixture];return {version:2,digest:WORKFLOW_DIGEST,variant:arm==='B'?'R1':'R0',reasonCode:arm==='A'?'baseline-complete-plan':question?'declared-consequential-question':'not-applicable',questionId:arm==='B'?question?.questionId??null:null,fixture,seed};}
 export function assertWorkflowEvidence(run){
  const fail=()=>{throw Error('Invalid evaluation snapshot');},protocol=run.workflowProtocol,steps=run.workflowSteps;
- if(!protocol){if(steps!==undefined)fail();return;}
+ if(!protocol){if(steps!==undefined||run.terminalFailure!==undefined)fail();return;}
  if(JSON.stringify(protocol)!==JSON.stringify(expectedWorkflowProtocol(run.fixture,run.arm,run.seed))||!Array.isArray(steps))fail();
  if(new Set(steps.map(s=>s.phaseId)).size!==steps.length)fail();
  const phases=run.environment==='api'?run.requests:run.nativePhases,planning=workflowPlanningSteps(run.fixture,run.arm),used=new Set();let repairs=0,implementation=false,previous=null;
@@ -18,6 +18,7 @@ export function assertWorkflowEvidence(run){
  if((step.outputBytes===null)!==(step.outputDigest===null))fail();if(step.status==='complete'&&(step.endedAt===null||run.status==='accepted'&&step.outputDigest===null))fail();previous=step;
  }
  if(used.size!==phases.length)fail();
+ if(run.terminalFailure)assertTerminalFailure(run,fail);
  if(run.quality.attemptHistoryComplete&&['accepted','failed'].includes(run.status))assertAttemptRoute(run,planning,fail);
  if(run.status==='accepted'){const expected=[...planning,'implementation'];for(let i=0;i<run.attempts.length;i++){if(i)expected.push('repair');if(['ready','changes-required'].includes(run.attempts[i].review.status))expected.push('review');}if(!implementation||JSON.stringify(steps.map(s=>s.stepId))!==JSON.stringify(expected)||steps.some(s=>s.status!=='complete'))fail();}
 }
@@ -29,12 +30,14 @@ export const REQUIRED_GATE_IDS = Object.freeze({
   instruction: Object.freeze(['setup-sync-skills','focused','regression','oracle','sync-projects','sync-night-shift','sync-skills','tests','build','spacing']),
   migration: Object.freeze(['focused','oracle','sync-projects','sync-night-shift','sync-skills','tests','build','spacing']),
 });
-function assertAttemptRoute(run,planning,fail){const steps=run.workflowSteps;let cursor=planning.length;
- if(steps.length<=cursor){if(run.attempts.length||run.status==='accepted')fail();return;}
- if(!run.attempts.length||run.attempts.length>3)fail();
+function assertTerminalFailure(run,fail){const tf=run.terminalFailure,last=run.workflowSteps.at(-1),phases=run.environment==='api'?run.requests:run.nativePhases;if(run.status!=='failed'||run.quality.accepted!==false||!run.quality.attemptHistoryComplete||run.evidenceStatus!=='complete'||run.failureCode!==tf.code||tf.code!=='invalid-'+tf.phase+'-output'||!last||last.phase!==tf.phase||last.phaseId!==tf.phaseId||last.receiptId!==tf.receiptId||last.status!=='complete'||last.outputDigest===null||last.outputBytes===null||last.endedAt===null||phases.some(p=>!p.usage||['inputTokens','outputTokens','totalTokens'].some(k=>!Number.isSafeInteger(p.usage[k]))||p.elapsedMs===null||(run.environment==='api'?p.status!=='complete'||p.costMicrodollars===null:p.status!=='observed'||p.attribution!=='verified'||p.disjointnessVerified!==true)))fail();}
+function assertAttemptRoute(run,planning,fail){const steps=run.workflowSteps,tf=run.terminalFailure;let cursor=planning.length;
+ if(steps.length<=cursor){if(run.attempts.length||run.status==='accepted'||tf)fail();return;}
+ if((!run.attempts.length&&tf?.phase!=='implementation')||run.attempts.length>3)fail();
  for(let i=0;i<run.attempts.length;i++){const a=run.attempts[i],step=steps[cursor++],ids=REQUIRED_GATE_IDS[run.fixture];if(a.ordinal!==i+1||a.kind!==(i?'repair':'initial')||!step||step.stepId!==(i?'repair':'implementation')||Date.parse(step.endedAt)>Date.parse(a.startedAt)||a.gates.length!==ids.length||ids.some(id=>!a.gates.some(g=>g.id===id)))fail();
  if(i){const prior=run.attempts[i-1];if(Date.parse(step.startedAt)<Date.parse(prior.endedAt)||prior.outcome==='passed')fail();}
- const passed=a.gates.every(g=>g.status==='passed');if(!passed){if(a.review.status!=='not-run'||a.outcome!=='failed')fail();}else{const review=steps[cursor++];if(!review||review.stepId!=='review'||review.receiptId!==a.review.receiptId||!['ready','changes-required'].includes(a.review.status)||a.review.independent!==true||Date.parse(review.startedAt)<Date.parse(a.startedAt)||Date.parse(review.endedAt)>Date.parse(a.endedAt))fail();if(a.review.status==='ready'&&(a.review.findingCount!==0||i!==run.attempts.length-1||run.status!=='accepted'))fail();if(a.review.status==='changes-required'&&a.outcome!=='failed')fail();}
+ const passed=a.gates.every(g=>g.status==='passed');if(!passed){if(a.review.status!=='not-run'||a.outcome!=='failed')fail();}else{const review=steps[cursor++],terminal=tf?.phase==='review'&&i===run.attempts.length-1&&review?.phaseId===tf.phaseId;if(!review||review.stepId!=='review'||review.receiptId!==a.review.receiptId||!(terminal?a.review.status==='unavailable'&&a.review.findingCount===null&&a.outcome==='failed':['ready','changes-required'].includes(a.review.status))||a.review.independent!==true||Date.parse(review.startedAt)<Date.parse(a.startedAt)||Date.parse(review.endedAt)>Date.parse(a.endedAt))fail();if(a.review.status==='ready'&&(a.review.findingCount!==0||i!==run.attempts.length-1||run.status!=='accepted'))fail();if(a.review.status==='changes-required'&&a.outcome!=='failed')fail();}
  }
+ if(tf&&tf.phase!=='review'){const terminal=steps[cursor++];if(!terminal||terminal.phaseId!==tf.phaseId||terminal.stepId!==(run.attempts.length?'repair':'implementation')||tf.phase!==terminal.stepId||run.attempts.length>2||run.attempts.length&&Date.parse(terminal.startedAt)<Date.parse(run.attempts.at(-1).endedAt))fail();}
  if(cursor!==steps.length)fail();
 }

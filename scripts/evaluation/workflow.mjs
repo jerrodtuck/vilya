@@ -1,3 +1,4 @@
+import {REQUIRED_GATE_IDS} from '../../apps/skill-registry/src/features/evaluation/workflow-contract.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -100,7 +101,7 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
   const workflowProtocol=workflowProtocolVersion===2?protocolDescriptor(manifest,arm):null;const workflowSteps=[];
   if(sandbox&&fs.existsSync(path.join(sandbox.allowedRoot,'.sandbox-cleanup-hold.json'))){ledger.transaction(state=>{state.blocked=true;});throw Error('Sandbox cleanup unresolved; trial held');}
   ledger.begin(trial); const started = ledger.clock(); const baseline = scopedContext(root, manifest);const fullBaseline=context(root,manifest); let accepted = false, failure = null, gates = [], review = null;
-  const attempts=[]; let ordinal = 0;
+  const attempts=[]; let ordinal = 0;let terminalFailure=null,pendingAttempt=null;const invalidStage=phase=>Object.assign(Error('invalid-'+phase+'-output'),{terminalPhase:phase});
   let previousEnded=started;
   const call = async (phase, prompt, extras = {}) => {
     const {workflowStep=phase,...options}=extras;
@@ -113,28 +114,28 @@ export async function runTrial({ ledger, provider, root, manifest, trial, arm, p
   try {
     const plan = workflowProtocol?await prepareProtocolPlan({manifest,baseline,arm,call}):await call('planning', phasePacket({phase:'planning',manifest,baseline}));
     const patch = await call('implementation', phasePacket({phase:'implementation',manifest,baseline,plan}));
-    applyEdits(root, manifest, patch);
+    try{applyEdits(root,manifest,patch);}catch(error){if(workflowProtocol)throw invalidStage('implementation');throw error;}
     for (let attempt = 0; attempt <= 2; attempt++) {
-      const attemptStarted=ledger.clock();review=null;
+      const attemptStarted=ledger.clock();review=null;pendingAttempt={ordinal:attempt,kind:attempt===0?'initial':'repair',started:attemptStarted};
       gates = await acceptanceFn(root, manifest, Math.min(started + LIMITS.trialMs, ledger.read().trialStart + LIMITS.dispatchMs), { sandbox });
       if (gates.length && gates.every(result => result.passed)) {
-        const candidate = JSON.parse(await call('review', phasePacket({phase:'review',manifest,baseline,current:scopedContext(root,manifest),gates,fullBaseline,fullCurrent:context(root,manifest)})));
-        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || typeof candidate.ready !== 'boolean' || !Array.isArray(candidate.findings) || candidate.findings.some(f => typeof f !== 'string')) throw Error('Invalid independent review');
+        const text=await call('review',phasePacket({phase:'review',manifest,baseline,current:scopedContext(root,manifest),gates,fullBaseline,fullCurrent:context(root,manifest)}));let candidate;try{candidate=JSON.parse(text);}catch(error){if(workflowProtocol)throw invalidStage('review');throw error;}
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || typeof candidate.ready !== 'boolean' || !Array.isArray(candidate.findings) || candidate.findings.some(f => typeof f !== 'string')) throw workflowProtocol?invalidStage('review'):Error('Invalid independent review');
         const observed=ledger.read().requests.filter(r=>r.trial===trial&&r.phase==='review').at(-1);
         review={...candidate,model:observed.model,effort:observed.effort,independent:true,requestId:observed.id};
         accepted = review.ready && review.findings.length === 0;
       }
       const attemptEnded=ledger.clock();attempts.push({ordinal:attempt,kind:attempt===0?'initial':'repair',started:attemptStarted,ended:attemptEnded,elapsedMs:attemptEnded-attemptStarted,outcome:accepted?'accepted':'failed',gates:gates.map(({output,...m})=>m),review:review&&{ready:review.ready,findingCount:review.findings.length,model:review.model,effort:review.effort,independent:review.independent,requestId:review.requestId}});
-      onAttempt(attempts.at(-1));
+      pendingAttempt=null;onAttempt(attempts.at(-1));
       if (attempt > 0) ledger.repairResult(trial, 'acceptance', accepted);
       if (accepted || attempt === 2) break;
       const correction = await call('repair', phasePacket({phase:'repair',manifest,baseline,current:scopedContext(root,manifest),gates,review}), {defect:'acceptance'});
-      if (!applyEdits(root, manifest, correction)) throw Error('No corrective change');
+      try{if(!applyEdits(root,manifest,correction))throw Error('No corrective change');}catch(error){if(workflowProtocol)throw invalidStage('repair');throw error;}
     }
-  } catch (error) { if(/cleanup unresolved/i.test(error.message)){ledger.transaction(state=>{state.blocked=true;});failure='sandbox-cleanup-unresolved';}else failure = error instanceof WorkflowProtocolError?error.message:['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
+  } catch (error) { const last=workflowSteps.at(-1);if(workflowProtocol&&error.terminalPhase&&last?.phase===error.terminalPhase&&last.status==='complete'&&last.outputDigest){terminalFailure={code:error.message,phase:last.phase,phaseId:last.requestId,receiptId:'receipt_'+sha256(JSON.stringify(last.requestId)).slice(0,32)};if(last.phase==='review'&&pendingAttempt){const ended=ledger.clock();attempts.push({...pendingAttempt,ended,elapsedMs:ended-pendingAttempt.started,outcome:'failed',gates:gates.map(({output,...g})=>g),review:{invalidOutput:true,model:last.model,effort:last.effort,independent:true,requestId:last.requestId}});if(pendingAttempt.ordinal>0)ledger.repairResult(trial,'acceptance',false);}}if(terminalFailure)failure=terminalFailure.code;else if(/cleanup unresolved/i.test(error.message)){ledger.transaction(state=>{state.blocked=true;});failure='sandbox-cleanup-unresolved';}else failure = error instanceof WorkflowProtocolError?error.message:['Budget exhausted', 'Trial budget exhausted', 'Phase budget exhausted', 'Token bound exceeded', 'Request limit', 'No corrective change'].includes(error.message) ? error.message : 'Trial stopped: invalid output, unresolved request or required acceptance failure'; }
   finally { ledger.close(trial); }
   const state = ledger.read();
   return { fixture: manifest.name, seed: manifest.seed, trial, arm, started, ended: ledger.clock(), accepted,
-    failure, environment, attempts, historyComplete:failure===null||!!workflowProtocol&&failure!=='sandbox-cleanup-unresolved'&&workflowSteps.length>0&&workflowSteps.every(s=>s.status==='complete'&&s.ended!==null)&&workflowSteps.filter(s=>['implementation','repair'].includes(s.phase)).length===attempts.length&&workflowSteps.filter(s=>s.phase==='review').length===attempts.filter(a=>a.review).length, contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
-    repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial),...(workflowProtocol?{workflowProtocol,workflowSteps}:{}) };
+    failure, environment, attempts, historyComplete:failure===null||!!workflowProtocol&&failure!=='sandbox-cleanup-unresolved'&&workflowSteps.length>0&&workflowSteps.every(s=>s.status==='complete'&&s.ended!==null)&&workflowSteps.filter(s=>['implementation','repair'].includes(s.phase)).length===attempts.length+(terminalFailure&&terminalFailure.phase!=='review'?1:0)&&workflowSteps.filter(s=>s.phase==='review').length===attempts.filter(a=>a.review).length&&attempts.every(a=>a.gates.length===REQUIRED_GATE_IDS[manifest.name].length&&REQUIRED_GATE_IDS[manifest.name].every(id=>a.gates.some(g=>g.id===id))), contextVersion:CONTEXT_VERSION, gates: gates.map(({ output, ...metadata }) => metadata), review: review && { ready: review.ready, findingCount: review.findings.length },
+    repairs: state.trials[trial].repairs, requests: state.requests.filter(r => r.trial === trial),...(workflowProtocol?{workflowProtocol,workflowSteps,...(terminalFailure?{terminalFailure}: {})}:{}) };
 }

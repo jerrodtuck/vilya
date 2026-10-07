@@ -50,3 +50,16 @@ skip; correction 2 failed before editing because Python was unavailable and rera
 unchanged source with the same counts. Reassessed fixture setup and dependency
 plans then passed. Review blockers formed a separate scope; its campaign proof
 exposed the attempt-bound successive-repair rule now implemented.
+
+A fully received and metered invalid implementation, repair or review is a
+terminal failed workflow outcome. Its sanitized `terminalFailure` binds the
+finite failure code to the final step and receipt. The record retains all usage,
+cost, elapsed time and preceding attempts. An invalid review retains its completed
+gate attempt with review status `unavailable`. These records can enter fixture
+comparisons only as accepted=false with complete observed history.
+
+Missing usage, unknown requests, missing gates, torn receipt bindings or later
+steps remain incomplete or fail snapshot validation. Terminal failure evidence
+cannot appear on an accepted run. Native records retain observed tokens and time
+without dollar estimates; private outputs and provider/session identifiers stay
+outside the public snapshot.
