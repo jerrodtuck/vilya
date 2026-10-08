@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {SCHEMA_PROBE_POLICY as P,acquireSchemaProbeLease,readSchemaProbeClaimLocked,closeSchemaProbeLease} from './schema-probe-campaign.mjs';
 import {apiConfig,maximumCost,actualCost,exactKeys,integer} from './money.mjs';
@@ -18,14 +19,41 @@ function bytes(file){safe(file);const st=fs.statSync(file);if(!st.isFile()||st.s
 function authorization(head){const raw=bytes(SCHEMA_PROBE_PATHS.authorization),value=JSON.parse(raw);const expected={schemaVersion:1,campaignId:P.campaignId,reviewedHead:head,windowMinutes:90,paidProbeSlots:1,userAuthorized:true};if(!same(value,expected))throw Error('Separate fixed 90-minute/one-slot user authorization required');return digest(raw);}
 function publish(file,value){safe(file);const temp=file+'.next';const fd=fs.openSync(temp,'wx',0o600);try{fs.writeFileSync(fd,JSON.stringify(value)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.linkSync(temp,file);fs.unlinkSync(temp);}
 function binding(lease,head){const claim=readSchemaProbeClaimLocked(lease);if(claim.activation.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(SCHEMA_PROBE_PATHS.claim)),authorizationDigest:authorization(head),policyDigest:hash(P)};}
+const fileIdentity=st=>({dev:String(st.dev),ino:String(st.ino),size:String(st.size),mtimeNs:String(st.mtimeNs),ctimeNs:String(st.ctimeNs),mode:String(st.mode),nlink:String(st.nlink)});
+const canonical=value=>process.platform==='win32'?path.resolve(value).toLowerCase():path.resolve(value);
+function rejectWindowsReparse(paths){
+  if(process.platform!=='win32')return;
+  // Node Stats does not expose FILE_ATTRIBUTE_REPARSE_POINT for every Windows
+  // tag. Query only native metadata, in one bounded process, and fail closed.
+  const literals=paths.map(p=>"'"+p.replaceAll("'","''")+"'").join(',');
+  const script="$ErrorActionPreference='Stop'; foreach ($entry in @("+literals+")) { if (([IO.File]::GetAttributes($entry) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { exit 9 } }; exit 0";
+  try{execFileSync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,stdio:'ignore',timeout:5000});}catch{throw Error('Unsupported Windows credential reparse metadata');}
+}
+function credentialPathVector(){
+  const file=SCHEMA_PROBE_PATHS.env,root=path.parse(file).root,parts=file.slice(root.length).split(path.sep),parents=[];let at=root;
+  for(let i=0;i<=parts.length;i++){
+    const st=fs.lstatSync(at,{bigint:true}),isFile=i===parts.length;
+    if(st.isSymbolicLink()||(isFile?!st.isFile():!st.isDirectory()))throw Error('Unsafe credential file type or reparse path');
+    const real=fs.realpathSync.native(at);if(canonical(real)!==canonical(at))throw Error('Credential path redirected');
+    if(isFile){if(st.size<1n||st.size>65536n||st.nlink!==1n)throw Error('Credential file bound or linked alias');rejectWindowsReparse([...parents.map(p=>p.path),at]);return {parents,file:{path:at,real,identity:fileIdentity(st)}};}
+    parents.push({path:at,real,dev:String(st.dev),ino:String(st.ino),mode:String(st.mode)});at=path.join(at,parts[i]);
+  }
+}
+function credentialFile(){
+  const before=credentialPathVector(),fd=fs.openSync(SCHEMA_PROBE_PATHS.env,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW??0)|(fs.constants.O_NONBLOCK??0));
+  let raw;
+  try{const start=fs.fstatSync(fd,{bigint:true});if(!start.isFile()||!same(fileIdentity(start),before.file.identity))throw Error('Credential descriptor identity changed');raw=fs.readFileSync(fd);const end=fs.fstatSync(fd,{bigint:true});if(!same(fileIdentity(start),fileIdentity(end))||BigInt(raw.length)!==start.size)throw Error('Credential descriptor changed during read');}
+  finally{fs.closeSync(fd);}
+  const after=credentialPathVector();if(!same(before,after))throw Error('Credential path changed during descriptor read');return {raw,identity:before};
+}
 function credentialBoundary(pinned=null){
   if(process.execArgv.length!==1||process.execArgv[0]!=='--env-file='+SCHEMA_PROBE_PATHS.env)throw Error('Exactly one fixed env-file flag required');
   // The file is inspected privately, never loaded, logged, hashed or persisted.
-  const raw=bytes(SCHEMA_PROBE_PATHS.env).toString('utf8');if(raw.includes('\0')||raw.includes('$')||raw.includes('`')||raw.includes('\\')||raw.charCodeAt(0)===0xfeff)throw Error('Unsupported env-file syntax');
+  const file=credentialFile(),raw=file.raw.toString('utf8');if(raw.includes('\0')||raw.includes('$')||raw.includes('`')||raw.includes('\\')||raw.charCodeAt(0)===0xfeff)throw Error('Unsupported env-file syntax');
   const fields=new Map();for(const line of raw.split(/\r?\n/)){if(!line.trim()||line.trimStart().startsWith('#'))continue;const match=/^([A-Z_][A-Z0-9_]*)=(.*)$/.exec(line);if(!match||fields.has(match[1]))throw Error('Duplicate or unsupported env-file assignment');let value=match[2];if(value.startsWith('"')||value.startsWith("'")){const quote=value[0];if(value.length<2||value.at(-1)!==quote||value.slice(1,-1).includes(quote))throw Error('Unsupported env-file quoting');value=value.slice(1,-1);}else if(/[\s"'#]/.test(value))throw Error('Unsupported env-file value');fields.set(match[1],value);}
   const fixed=fields.get('OPENAI_API_KEY'),active=process.env.OPENAI_API_KEY;
   if(typeof fixed!=='string'||!fixed.length||typeof active!=='string')throw Error('Fixed credential required');
-  const a=Buffer.from(fixed),b=Buffer.from(active);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)||pinned!==null&&(a.length!==pinned.length||!crypto.timingSafeEqual(a,pinned)))throw Error('Active credential differs from fixed env-file');return a;
+  const a=Buffer.from(fixed),b=Buffer.from(active);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)||pinned!==null&&(!same(file.identity,pinned.identity)||file.raw.length!==pinned.raw.length||!crypto.timingSafeEqual(file.raw,pinned.raw)||a.length!==pinned.key.length||!crypto.timingSafeEqual(a,pinned.key)))throw Error('Active credential differs or fixed file identity changed');return Object.freeze({key:a,raw:file.raw,identity:file.identity});
 }
 const inert=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(inert);Object.freeze(value);}return value;};
 function summary(s){const r=s.requests[0],known=P.carry.known+(r?.cost??0),held=P.carry.held+(r&&r.status!=='complete'?r.reservation:0);return {status:'stopped',blocked:s.blocked,known,held,exposure:known+held,countCalls:P.carry.countCalls+s.preflights.length,consumedTrialSlots:P.carry.consumedTrialSlots+1,paidRequests:s.requests.length};}
@@ -84,13 +112,13 @@ export async function schemaProbeCLI(args){
       safe(SCHEMA_PROBE_PATHS.workspace);fs.mkdirSync(SCHEMA_PROBE_PATHS.workspace);
       const state={version:1,binding:bound,carry:structuredClone(P.carry),consumedSlotHistory:structuredClone(P.consumedSlotHistory),lastTime:integer(Date.now(),'clock'),executionWindow:null,status:'initialized',blocked:false,preflights:[],requests:[]};publish(SCHEMA_PROBE_PATHS.ledger,{state,sha256:hash(state)});return {status:'initialized',executionWindowStarted:false,paidRequests:0};
     }
-    const pinnedCredential=credentialBoundary();
+    const pinnedCredential=credentialBoundary(),privateEnv=Object.freeze({OPENAI_API_KEY:pinnedCredential.key.toString('utf8')});
     const ledger=new ProbeLedger(lease,head,bound);const initial=ledger.read();if(initial.status!=='initialized'||fs.existsSync(ledger.file+'.lock'))throw Error('Probe already attempted; restart denied');
     publish(path.join(SCHEMA_PROBE_PATHS.workspace,'execution.attempt.json'),{schemaVersion:1,binding:bound});
     try{
       ledger.transaction(s=>{if(s.status!=='initialized')throw Error('Probe already attempted; restart denied');s.status='running';s.consumedSlotHistory.push({segment:P.campaignId,trial:P.trial,slots:1});});
       const prompt=bytes(SCHEMA_PROBE_PATHS.prompt).toString('utf8');
-      const provider=createOpenAITransport({liveEnabled:true,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,diagnosticGuard:event=>recordDiagnostic(ledger,event),preflightGuard:{begin:m=>ledger.beginPreflight(m),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:request=>{const r=ledger.read().requests[0];if(r?.status!=='pending'||r.id!==request.reservation?.id)throw Error('Probe reservation missing');return r;},fetchImpl:(...request)=>{ledger.check();const s=ledger.read(),count=request[0].endsWith('/input_tokens'),r=count?s.preflights[0]:s.requests[0],now=integer(ledger.clock(),'network clock');if(r?.status!=='pending'||now<s.lastTime||now>=Math.min(r.start+(count?15000:60000),s.executionWindow.dispatchDeadline))throw Error('Probe pre-network deadline');credentialBoundary(pinnedCredential);return globalThis.fetch(...request);}});
+      const provider=createOpenAITransport({liveEnabled:true,env:privateEnv,clock:ledger.clock,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,diagnosticGuard:event=>recordDiagnostic(ledger,event),preflightGuard:{begin:m=>ledger.beginPreflight(m),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:request=>{const r=ledger.read().requests[0];if(r?.status!=='pending'||r.id!==request.reservation?.id)throw Error('Probe reservation missing');return r;},fetchImpl:(...request)=>{ledger.check();const s=ledger.read(),count=request[0].endsWith('/input_tokens'),r=count?s.preflights[0]:s.requests[0],now=integer(ledger.clock(),'network clock');if(r?.status!=='pending'||now<s.lastTime||now>=Math.min(r.start+(count?15000:60000),s.executionWindow.dispatchDeadline))throw Error('Probe pre-network deadline');credentialBoundary(pinnedCredential);return globalThis.fetch(...request);}});
       await generate(ledger,provider,{prompt,requestId:P.requestId,trial:P.trial,phase:'implementation',model:P.model,effort:P.effort,maxOutputTokens:P.maxOutputTokens});
     }catch{/* Transport details and private content never enter controller output. */}
     finally{try{ledger.stop();}catch{try{return ledger.halt();}catch{releaseLease=false;throw Error('Probe halt persistence failed; guard retained');}}}
