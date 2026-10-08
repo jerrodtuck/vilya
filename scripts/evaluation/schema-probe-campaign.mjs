@@ -4,6 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {types} from 'node:util';
 import {apiConfig,maximumCost,actualCost} from './money.mjs';
 
 const repo=fileURLToPath(new URL('../..',import.meta.url));
@@ -85,6 +86,23 @@ export function publishSchemaProbeClaim({initialize,reviewedHead,reviews}){
 }
 
 const proofs=new WeakMap();
+function ownData(value){
+  if(!value||typeof value!=='object'||types.isProxy(value)||![Object.prototype,null].includes(Object.getPrototypeOf(value)))throw Error('Invalid schema-probe generation evidence');
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  if(Reflect.ownKeys(descriptors).some(key=>typeof key!=='string'||!Object.hasOwn(descriptors[key],'value')))throw Error('Accessor schema-probe evidence denied');
+  return descriptors;
+}
+function snapshotGenerationUsage(result){
+  // Reject accessors and proxies without reading their properties. Descriptor
+  // values are then copied exactly once into an inert, frozen primitive record.
+  const envelope=ownData(result);
+  if(!Object.hasOwn(envelope,'usage')||Object.keys(envelope).some(key=>!['usage','text'].includes(key))||envelope.text&&envelope.text.value!==null&&typeof envelope.text.value!=='string')throw Error('Invalid schema-probe generation envelope');
+  const fields=ownData(envelope.usage.value),names=['input','cachedInput','cacheWrite','output','reasoning','fees'];
+  if(Object.keys(fields).sort().join()!==names.sort().join())throw Error('Invalid schema-probe usage fields');
+  const usage={};
+  for(const name of names){const value=fields[name].value;if(!Number.isSafeInteger(value)||value<0)throw Error('Invalid schema-probe usage counter');usage[name]=value;}
+  return freeze(usage);
+}
 // Fake adapters are never accepted by a live ledger and this token is process-local.
 export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-probe-proof',status:'scaffold',executionWindow:null,lastTime:null,newCountCalls:0,consumedCountCalls:5,newGenerations:0,newTrialSlots:0,consumedTrialSlots:4,consumedSlotHistory:structuredClone(SCHEMA_PROBE_POLICY.consumedSlotHistory),reservation:0,cost:null,held:361646,known:10929,exposure:372575,carriedCountCalls:5,carriedTrialSlots:4};const store=Object.freeze({read:()=>structuredClone(proofs.get(store))});proofs.set(store,state);return store;}
 export async function runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow=false,prompt,clock=Date.now}){
@@ -114,9 +132,11 @@ export async function runOfflineSchemaProbe({store,provider,authorizeSyntheticWi
     s.status='generation-pending';s.newGenerations=1;s.reservation=reservation;s.held+=reservation;s.exposure+=reservation;proofs.set(store,structuredClone(s));
     const result=await provider.send(packet,certificate);
     sampleClock();
-    if(!result||!result.usage||result.usage.input>certificate.inputTokens||result.usage.output>p.maxOutputTokens)throw Error('Unresolved schema-probe generation');
-    const cost=actualCost(rate,result.usage);if(cost>reservation)throw Error('Unbounded schema-probe cost');
-    s.cost=cost;s.known+=cost;s.exposure=s.exposure-reservation+cost;s.held-=reservation;
+    const usage=snapshotGenerationUsage(result);
+    if(usage.input>certificate.inputTokens||usage.output>p.maxOutputTokens)throw Error('Unresolved schema-probe generation');
+    const cost=actualCost(rate,usage),known=s.known+cost,exposure=s.exposure-reservation+cost,held=s.held-reservation;
+    if([cost,known,exposure,held].some(value=>!Number.isSafeInteger(value)||value<0)||cost>reservation||cost>p.trialCap||exposure>p.totalCap||known<p.carry.known||held<p.carry.held||known+held!==exposure)throw Error('Unbounded schema-probe settlement');
+    s.cost=cost;s.known=known;s.exposure=exposure;s.held=held;
   }catch{/* Missing evidence retains the reservation; no retry or second generation. */}
   finally{s.status='stopped';proofs.set(store,structuredClone(s));}
   return freeze(store.read());

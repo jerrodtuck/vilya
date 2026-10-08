@@ -202,3 +202,30 @@ test('valid checkpoints record monotonically increasing lastTime with exactly th
   const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>sequence[samples++]});
   assert.equal(samples,3);assert.equal(result.lastTime,1002);assert.notEqual(result.cost,null);assert.equal(result.held,361646);
 });
+test('accessor, proxy and malformed generation evidence cannot release reservation or erase carry',async()=>{
+  const good=()=>({input:128,cachedInput:0,cacheWrite:0,output:40,reasoning:10,fees:0});
+  let getterReads=0,proxyReads=0;
+  const badResults=[
+    ()=>Object.defineProperty({},'usage',{get(){getterReads++;return getterReads===1?good():{...good(),output:-1000000};},enumerable:true}),
+    ()=>({usage:Object.defineProperty(good(),'input',{get(){getterReads++;throw Error('malicious getter');},enumerable:true})}),
+    ()=>new Proxy({usage:good()},{get(target,key){if(key==='then')return undefined;proxyReads++;throw Error('malicious proxy');},ownKeys(){proxyReads++;throw Error('malicious proxy');}}),
+    ()=>({usage:new Proxy(good(),{get(){proxyReads++;throw Error('malicious usage proxy');}})}),
+    ()=>({usage:{...good(),output:-1}}),()=>({usage:{...good(),input:Number.MAX_SAFE_INTEGER+1}}),
+    ()=>({usage:{...good(),output:1.5}}),()=>({usage:{...good(),fees:NaN}}),()=>({usage:{...good(),fees:Infinity}}),
+    ()=>({usage:{...good(),extra:0}}),()=>({usage:good(),extra:0}),
+    ()=>({usage:Object.assign(Object.create({input:128}),{cachedInput:0,cacheWrite:0,output:40,reasoning:10,fees:0})})
+  ];
+  for(const create of badResults){
+    const store=offlineSchemaProbeStore(),provider=fake();provider.send=async()=>create();
+    const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000});
+    assert.equal(result.status,'stopped');assert.equal(result.cost,null);assert.ok(result.reservation>0);assert.equal(result.known,10929);assert.equal(result.held,361646+result.reservation);assert.equal(result.exposure,372575+result.reservation);assert.equal(result.known+result.held,result.exposure);
+    await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic'}),/replay/);
+  }
+  assert.equal(getterReads,0);assert.equal(proxyReads,0);
+});
+test('settlement uses a frozen data snapshot and ignores later mutation of the returned usage object',async()=>{
+  const store=offlineSchemaProbeStore(),provider=fake(),usage={input:128,cachedInput:0,cacheWrite:0,output:40,reasoning:10,fees:0};
+  provider.send=async()=>{setTimeout(()=>{usage.output=-1000000;},0);return {usage};};
+  const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000});
+  await new Promise(resolve=>setTimeout(resolve,5));assert.equal(usage.output,-1000000);assert.ok(Number.isSafeInteger(result.cost));assert.ok(result.cost>=0);assert.ok(result.cost<=result.reservation);assert.equal(result.known,10929+result.cost);assert.equal(result.held,361646);assert.equal(result.exposure,372575+result.cost);
+});
