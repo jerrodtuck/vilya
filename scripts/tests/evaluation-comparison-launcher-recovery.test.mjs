@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {comparisonLauncherRecoveryPaths,publishComparisonLauncherRecovery,readComparisonLauncherRecovery,COMPARISON_LAUNCHER_RECOVERY_ORIGIN} from '../evaluation/comparison-launcher-recovery.mjs';
+import {comparisonLauncherRecoveryPaths,comparisonLauncherRecoveryPresent,publishComparisonLauncherRecovery,readComparisonLauncherRecovery,COMPARISON_LAUNCHER_RECOVERY_ORIGIN} from '../evaluation/comparison-launcher-recovery.mjs';
 
 const sourceRoot=fileURLToPath(new URL('../..',import.meta.url));
 const originNames=['comparison-357-1.claim.json','comparison-357-1.claim.json.attempt.json','comparison-357-1.claim.json.published.json','comparison-357-1.authorization.json'];
-const git=(root,args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true}).trim();
 const gitEnvironmentNames=()=>Object.keys(process.env).filter(key=>key.toUpperCase().startsWith('GIT_CONFIG')||['GIT_DIR','GIT_COMMON_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES','GIT_SHALLOW_FILE','GIT_REPLACE_REF_BASE'].includes(key.toUpperCase()));
-function withoutGitOverrides(operation){const saved=Object.fromEntries(gitEnvironmentNames().map(key=>[key,process.env[key]]));for(const key of Object.keys(saved))delete process.env[key];try{return operation();}finally{Object.assign(process.env,saved);}}
+for(const key of gitEnvironmentNames())delete process.env[key];
+const gitEnvironment={...process.env,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:process.platform==='win32'?'NUL':'/dev/null',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':'/dev/null',GIT_TERMINAL_PROMPT:'0'};
+const git=(root,args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true,env:gitEnvironment}).trim();
 function writeReview(file,head,model,changed={}){fs.writeFileSync(file,JSON.stringify({head,model,effort:'high',status:'READY',findings:[],...changed})+'\n');}
 function fixture(t){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'comparison-launcher-recovery-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));const runtime=path.join(root,'scripts/evaluation/runtime');fs.mkdirSync(runtime,{recursive:true});
@@ -19,7 +21,8 @@ function fixture(t){
  fs.writeFileSync(path.join(root,'reviewed.txt'),'reviewed source\n');git(root,['init','--quiet']);git(root,['config','core.autocrlf','false']);git(root,['add','reviewed.txt']);git(root,['-c','user.name=Recovery test','-c','user.email=recovery@example.invalid','commit','--quiet','-m','Reviewed recovery source']);
  const head=git(root,['rev-parse','HEAD']),paths=comparisonLauncherRecoveryPaths(root);writeReview(paths.solReview,head,'gpt-6.1-sol');writeReview(paths.astraReview,head,'gpt-6-astra');return {root,runtime,head,paths};
 }
-function publish(f){return withoutGitOverrides(()=>publishComparisonLauncherRecovery({recover:true,reviewedHead:f.head,root:f.root}));}
+function publish(f){return publishComparisonLauncherRecovery({recover:true,reviewedHead:f.head,root:f.root});}
+function danglingDirectoryLink(f,file){const target=path.join(f.root,'removed-reparse-target-'+crypto.randomUUID());fs.mkdirSync(path.dirname(file),{recursive:true});fs.mkdirSync(target);fs.symlinkSync(target,file,process.platform==='win32'?'junction':'dir');fs.rmdirSync(target);assert.equal(fs.existsSync(file),false);assert.equal(fs.lstatSync(file).isSymbolicLink(),true);}
 
 test('one-time recovery preserves origin bytes and publishes an exact effective head without execution',t=>{
  const f=fixture(t),before=originNames.map(name=>fs.readFileSync(path.join(f.runtime,name)));const result=publish(f),identity=readComparisonLauncherRecovery({root:f.root,currentHead:f.head});
@@ -39,12 +42,17 @@ test('workspace, ledger, execution window, paid request, halt, or native packet 
  for(const [label,create]of cases){const f=fixture(t);create(f);assert.throws(()=>publish(f),/execution evidence/,label);assert.equal(fs.existsSync(f.paths.attempt),false,label);assert.equal(fs.existsSync(f.paths.file),false,label);}
 });
 
+test('dangling workspace, evidence, review, and publication reparse points are never treated as absent',t=>{
+ const fields=[['workspace',false],['ledger',false],['executionWindow',false],['paidRequest',false],['halt',false],['nativePacket',false],['solReview',false],['file',true],['attempt',true],['published',true],['next',true]];
+ for(const [field,isMarker]of fields){const f=fixture(t),file=f.paths[field];if(field==='solReview')fs.unlinkSync(file);danglingDirectoryLink(f,file);if(isMarker)assert.throws(()=>comparisonLauncherRecoveryPresent(f.root),/linked|reparse/,field);else assert.equal(comparisonLauncherRecoveryPresent(f.root),false,field);assert.throws(()=>publish(f),/linked|reparse/,field);assert.equal(fs.existsSync(f.paths.attempt),false,field);}
+});
+
 test('altered original claim, publication markers, or authorization block recovery',t=>{
  for(const name of originNames){const f=fixture(t),file=path.join(f.runtime,name);fs.appendFileSync(file,' ');assert.throws(()=>publish(f),/Original comparison|authorization binding/,name);assert.equal(fs.existsSync(f.paths.attempt),false,name);}
 });
 
 test('stale head and stale, missing, malformed, or non-independent reviews cannot recover',t=>{
- {const f=fixture(t);assert.throws(()=>withoutGitOverrides(()=>publishComparisonLauncherRecovery({recover:true,reviewedHead:'0'.repeat(40),root:f.root})),/current recovery head/);}
+ {const f=fixture(t);assert.throws(()=>publishComparisonLauncherRecovery({recover:true,reviewedHead:'0'.repeat(40),root:f.root}),/current recovery head/);}
  for(const mutate of [
   f=>writeReview(f.paths.solReview,COMPARISON_LAUNCHER_RECOVERY_ORIGIN.reviewedHead,'gpt-6.1-sol'),
   f=>writeReview(f.paths.astraReview,f.head,'gpt-6-astra',{status:'BLOCKED'}),

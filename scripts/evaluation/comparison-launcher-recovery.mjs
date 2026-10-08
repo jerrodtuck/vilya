@@ -24,19 +24,27 @@ export const COMPARISON_LAUNCHER_RECOVERY_ORIGIN=freeze({
 
 export function comparisonLauncherRecoveryPaths(root=productionRoot){
  const runtime=path.join(root,'scripts/evaluation/runtime'),file=path.join(runtime,'comparison-357-1.launcher-recovery.json'),workspace=path.join(root,P.workspace);
- return freeze({root:path.resolve(root),runtime,file,attempt:file+'.attempt.json',published:file+'.published.json',next:file+'.next',guard:path.join(root,P.claim+'.guard'),claim:path.join(root,P.claim),claimAttempt:path.join(root,P.claim+'.attempt.json'),claimPublished:path.join(root,P.claim+'.published.json'),authorization:path.join(root,P.authorization),solReview:path.join(runtime,'comparison-357-1.launcher-recovery.sol-review.json'),astraReview:path.join(runtime,'comparison-357-1.launcher-recovery.astra-review.json'),workspace,ledger:path.join(workspace,'pilot-budget.json'),executionWindow:path.join(workspace,'execution-window.json'),halt:path.join(runtime,'comparison-357-1.halt.json')});
+ return freeze({root:path.resolve(root),runtime,file,attempt:file+'.attempt.json',published:file+'.published.json',next:file+'.next',guard:path.join(root,P.claim+'.guard'),claim:path.join(root,P.claim),claimAttempt:path.join(root,P.claim+'.attempt.json'),claimPublished:path.join(root,P.claim+'.published.json'),authorization:path.join(root,P.authorization),solReview:path.join(runtime,'comparison-357-1.launcher-recovery.sol-review.json'),astraReview:path.join(runtime,'comparison-357-1.launcher-recovery.astra-review.json'),workspace,ledger:path.join(workspace,'pilot-budget.json'),executionWindow:path.join(workspace,'execution-window.json'),paidRequest:path.join(workspace,'compare1_api_behavior_A.count-attempt.json'),nativePacket:path.join(workspace,'compare1_native_behavior_B.native-state.json'),halt:path.join(runtime,'comparison-357-1.halt.json')});
 }
 
-function safeBytes(file,limit=8000000){
- let at=path.parse(file).root;
- for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.existsSync(at)&&fs.lstatSync(at).isSymbolicLink())throw Error('Comparison recovery symlink denied');}
- const stat=fs.statSync(file);if(!stat.isFile()||stat.nlink!==1||stat.size<1||stat.size>limit)throw Error('Comparison recovery evidence bound');return fs.readFileSync(file);
+const canonical=file=>process.platform==='win32'?path.resolve(file).toLowerCase():path.resolve(file);
+function lstatOrAbsent(file){try{return fs.lstatSync(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}}
+function pathBoundary(file,boundaryRoot){
+ const target=path.resolve(file),root=path.resolve(boundaryRoot);if(target!==root&&!target.startsWith(root+path.sep))throw Error('Comparison recovery path escaped root');const parts=target.slice(root.length).split(path.sep).filter(Boolean);let at=root;
+ const inspect=(stat,last)=>{if(stat.isSymbolicLink())throw Error('Comparison recovery linked or reparse path denied');const real=fs.realpathSync.native(at);if(canonical(real)!==canonical(at))throw Error('Comparison recovery redirected or reparse path denied');if(!last&&!stat.isDirectory())throw Error('Comparison recovery ancestor type denied');};
+ const rootStat=lstatOrAbsent(root);if(rootStat===null){const error=Error('Comparison recovery path absent');error.code='ENOENT';throw error;}inspect(rootStat,parts.length===0);
+ for(let index=0;index<parts.length;index++){at=path.join(at,parts[index]);const stat=lstatOrAbsent(at);if(stat===null)return {absent:true,missing:at};inspect(stat,index===parts.length-1);if(index===parts.length-1)return {absent:false,stat};}
+ return {absent:false,stat:rootStat};
 }
-function record(file){try{return {exists:true,bytes:safeBytes(file).toString('base64')};}catch(error){if(error.code==='ENOENT')return {exists:false,bytes:null};throw error;}}
+function exactAbsent(file,root){const value=pathBoundary(file,root);if(!value.absent)throw Error('Comparison execution evidence already exists');return true;}
+function safeBytes(file,limit=8000000,root=productionRoot){
+ const boundary=pathBoundary(file,root);if(boundary.absent){const error=Error('Comparison recovery evidence absent');error.code='ENOENT';throw error;}const stat=boundary.stat;if(!stat.isFile()||stat.nlink!==1||stat.size<1||stat.size>limit)throw Error('Comparison recovery evidence bound');return fs.readFileSync(file);
+}
+function record(file,root){try{return {exists:true,bytes:safeBytes(file,8000000,root).toString('base64')};}catch(error){if(error.code==='ENOENT')return {exists:false,bytes:null};throw error;}}
 function parse(raw,label){let value;try{value=JSON.parse(raw);}catch{throw Error('Invalid '+label);}return value;}
 
 function originEvidence(paths){
- const raw={claim:safeBytes(paths.claim),claimAttempt:safeBytes(paths.claimAttempt),claimPublished:safeBytes(paths.claimPublished),authorization:safeBytes(paths.authorization)};
+ const raw={claim:safeBytes(paths.claim,8000000,paths.root),claimAttempt:safeBytes(paths.claimAttempt,8000000,paths.root),claimPublished:safeBytes(paths.claimPublished,8000000,paths.root),authorization:safeBytes(paths.authorization,8000000,paths.root)};
  for(const [key,digest]of [['claim','claimSha256'],['claimAttempt','claimAttemptSha256'],['claimPublished','claimPublishedSha256'],['authorization','authorizationSha256']])if(sha(raw[key])!==COMPARISON_LAUNCHER_RECOVERY_ORIGIN[digest])throw Error('Original comparison '+key+' changed');
  const claim=parse(raw.claim,'original comparison claim'),attempt=parse(raw.claimAttempt,'original comparison claim attempt'),published=parse(raw.claimPublished,'original comparison claim publication'),authorization=parse(raw.authorization,'original comparison authorization');
  exactKeys(claim,['activation','sha256'],'original comparison claim');exactKeys(attempt,['schemaVersion','claimDigest'],'original comparison claim attempt');exactKeys(published,['schemaVersion','claimDigest','reviewedHead'],'original comparison claim publication');
@@ -47,14 +55,14 @@ function originEvidence(paths){
 }
 
 function pristineEvidence(paths){
- if(fs.existsSync(paths.workspace)||fs.existsSync(paths.ledger)||fs.existsSync(paths.executionWindow)||fs.existsSync(paths.halt))throw Error('Comparison execution evidence already exists');
- return freeze({workspace:P.workspace,workspaceAbsent:true,ledger:P.workspace+'/pilot-budget.json',ledgerAbsent:true,executionWindow:'claim-null-and-workspace-absent',paidRequests:'claim-zero-and-workspace-absent',halt:'scripts/evaluation/runtime/comparison-357-1.halt.json',haltAbsent:true,nativePackets:'workspace-absent'});
+ for(const file of [paths.ledger,paths.executionWindow,paths.paidRequest,paths.halt,paths.nativePacket,paths.workspace])exactAbsent(file,paths.root);
+ return freeze({workspace:P.workspace,workspaceAbsent:true,ledger:P.workspace+'/pilot-budget.json',ledgerAbsent:true,executionWindow:'claim-null-and-workspace-absent',paidRequests:'claim-zero-and-workspace-absent',paidRequestMarker:P.workspace+'/compare1_api_behavior_A.count-attempt.json',paidRequestMarkerAbsent:true,halt:'scripts/evaluation/runtime/comparison-357-1.halt.json',haltAbsent:true,nativePacket:P.workspace+'/compare1_native_behavior_B.native-state.json',nativePacketAbsent:true});
 }
 
 function reviewEvidence(paths,reviewedHead){
  const digests=new Set();
  return freeze([['gpt-6.1-sol',paths.solReview],['gpt-6-astra',paths.astraReview]].map(([model,file])=>{
-  const raw=safeBytes(file,100000),value=parse(raw,'comparison recovery review');exactKeys(value,['head','model','effort','status','findings'],'comparison recovery review');
+  const raw=safeBytes(file,100000,paths.root),value=parse(raw,'comparison recovery review');exactKeys(value,['head','model','effort','status','findings'],'comparison recovery review');
   const digest=sha(raw);if(value.head!==reviewedHead||value.model!==model||value.effort!=='high'||value.status!=='READY'||!Array.isArray(value.findings)||value.findings.length||digests.has(digest))throw Error('Exact independent READY recovery reviews required');digests.add(digest);
   return {model,effort:'high',status:'READY',head:reviewedHead,receiptDigest:digest};
  }));
@@ -77,14 +85,15 @@ function recoveryValue(paths,reviewedHead){
  return freeze({schemaVersion:1,campaignId:P.campaignId,scope:'pre-execution-launcher-host-compatibility-only',origin:structuredClone(COMPARISON_LAUNCHER_RECOVERY_ORIGIN),reviewedHead:current,reviews,preExecution,authorizationReused:true,resetsAllowed:false,replayAllowed:false});
 }
 
-function recoveryRecords(paths){return {file:record(paths.file),attempt:record(paths.attempt),published:record(paths.published),next:record(paths.next)};}
+function recoveryRecords(paths){return {file:record(paths.file,paths.root),attempt:record(paths.attempt,paths.root),published:record(paths.published,paths.root),next:record(paths.next,paths.root)};}
+export function comparisonLauncherRecoveryPresent(root=productionRoot){const paths=comparisonLauncherRecoveryPaths(root);return Object.values(recoveryRecords(paths)).some(item=>item.exists);}
 function recoverySnapshot(paths,currentHead,originHead,originClaimDigest){
  originEvidence(paths);const records=recoveryRecords(paths),present=Object.values(records).some(item=>item.exists);if(!present)return null;
  if(records.next.exists||!records.file.exists||!records.attempt.exists||!records.published.exists)throw Error('Comparison recovery publication incomplete');
  const raw=Buffer.from(records.file.bytes,'base64'),envelope=parse(raw,'comparison recovery'),attempt=parse(Buffer.from(records.attempt.bytes,'base64'),'comparison recovery attempt'),published=parse(Buffer.from(records.published.bytes,'base64'),'comparison recovery publication');
  exactKeys(envelope,['recovery','sha256'],'comparison recovery');exactKeys(attempt,['schemaVersion','recoveryDigest','reviewedHead'],'comparison recovery attempt');exactKeys(published,['schemaVersion','recoveryDigest','reviewedHead','originClaimDigest'],'comparison recovery publication');
  const value=envelope.recovery;exactKeys(value,['schemaVersion','campaignId','scope','origin','reviewedHead','reviews','preExecution','authorizationReused','resetsAllowed','replayAllowed'],'comparison recovery value');
- const expectedPreExecution=freeze({workspace:P.workspace,workspaceAbsent:true,ledger:P.workspace+'/pilot-budget.json',ledgerAbsent:true,executionWindow:'claim-null-and-workspace-absent',paidRequests:'claim-zero-and-workspace-absent',halt:'scripts/evaluation/runtime/comparison-357-1.halt.json',haltAbsent:true,nativePackets:'workspace-absent'}),digest=sha(raw);
+ const expectedPreExecution=freeze({workspace:P.workspace,workspaceAbsent:true,ledger:P.workspace+'/pilot-budget.json',ledgerAbsent:true,executionWindow:'claim-null-and-workspace-absent',paidRequests:'claim-zero-and-workspace-absent',paidRequestMarker:P.workspace+'/compare1_api_behavior_A.count-attempt.json',paidRequestMarkerAbsent:true,halt:'scripts/evaluation/runtime/comparison-357-1.halt.json',haltAbsent:true,nativePacket:P.workspace+'/compare1_native_behavior_B.native-state.json',nativePacketAbsent:true}),digest=sha(raw);
  if(value.schemaVersion!==1||value.campaignId!==P.campaignId||value.scope!=='pre-execution-launcher-host-compatibility-only'||!same(value.origin,COMPARISON_LAUNCHER_RECOVERY_ORIGIN)||value.reviewedHead!==currentHead||value.reviewedHead===value.origin.reviewedHead||value.origin.reviewedHead!==originHead||value.origin.claimSha256!==originClaimDigest||!same(value.preExecution,expectedPreExecution)||value.authorizationReused!==true||value.resetsAllowed!==false||value.replayAllowed!==false||envelope.sha256!==hash(value)||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.recoveryDigest!==digest||published.recoveryDigest!==digest||attempt.reviewedHead!==value.reviewedHead||published.reviewedHead!==value.reviewedHead||published.originClaimDigest!==originClaimDigest)throw Error('Comparison recovery binding changed');
  const actualReviews=reviewEvidence(paths,currentHead);if(!same(value.reviews,actualReviews))throw Error('Comparison recovery reviews changed');
  return freeze({reviewedHead:value.reviewedHead,originHead:value.origin.reviewedHead,recoveryDigest:digest,reviews:structuredClone(value.reviews)});
@@ -95,7 +104,7 @@ export function readComparisonLauncherRecovery({root=productionRoot,currentHead,
 }
 
 function withRecoveryGuard(paths,operation){
- let at=path.parse(paths.guard).root;for(const part of path.dirname(paths.guard).slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.lstatSync(at).isSymbolicLink())throw Error('Comparison recovery guard symlink denied');}
+ const parent=pathBoundary(path.dirname(paths.guard),paths.root);if(parent.absent||!parent.stat.isDirectory())throw Error('Comparison recovery guard parent denied');
  const fd=fs.openSync(paths.guard,'wx',0o600),owner=fs.fstatSync(fd);try{fs.fsyncSync(fd);return operation();}finally{fs.closeSync(fd);const current=fs.lstatSync(paths.guard);if(current.dev!==owner.dev||current.ino!==owner.ino||current.size!==0||current.isSymbolicLink())throw Error('Comparison recovery guard ownership changed; retained');fs.unlinkSync(paths.guard);}
 }
 
