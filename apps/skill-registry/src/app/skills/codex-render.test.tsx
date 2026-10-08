@@ -21,6 +21,11 @@ import { SkillsReference } from "../../features/registry/skills-reference";
 import { GET } from "./[slug]/SKILL.md/route";
 
 describe("Codex registry and skill detail", () => {
+  it("explains the catalog-wide new-model recalibration route", () => {
+    state.skill = { slug: "vl-example", body: "", filePath: "skills/vl-example/SKILL.md", frontmatter: { name: "Example", description: "Example skill." } };
+    const html = renderToStaticMarkup(<RegistryList />);
+    for (const text of ["When a new model ships", "screen current independent", "lowest applicable proven seat", "Paid execution stays operator-only", "/evaluation/policy"]) expect(html).toContain(text);
+  });
   it.each(["shared-compatible", "codex-adapted", "other-host-only", "unsupported-deferred", undefined])("renders source applicability %s with safe affordances", (support) => {
     state.skill = { slug: "vl-example", body: "Original body", filePath: "skills/vl-example/SKILL.md", frontmatter: {
       "codex-support": support as Skill["frontmatter"]["codex-support"], "codex-notes": "Measured host behavior.",
