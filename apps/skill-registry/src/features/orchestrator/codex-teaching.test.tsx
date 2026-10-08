@@ -56,10 +56,11 @@ describe("Codex orchestration teaching", () => {
     expect(text).toContain("do-not-dispatch, filed-for-record"); expect(text).toContain("priority:critical > priority:high");
   });
   it("keeps model selection configurable and explicitly bounded by runtime contracts", () => {
-    for (const term of ["configured defaults", "latest supported Astra/high", "latest supported Sol/medium", "override scope", "#330–#332", "active and resumed workers", "Do not invent a latest alias", "full-history forks", "limited or no-history", "delegate only the planning stage", "Medium effort never weakens verification", "return real design forks to planning"]) expect(text).toContain(term);
+    for (const term of ["configured defaults", "latest supported Astra/high", "latest supported Sol/medium", "override scope", "#330–#332", "active and resumed workers", "Do not invent a latest alias", "full-history forks", "limited or no-history", "correctly pinned child", "Medium effort never weakens verification", "return real design forks to planning"]) expect(text).toContain(term);
     expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain(`Load ${SKILL_INVOKES.orchestratorCodex}'s Model policy`);
     expect(cards.find(card => card.label === "Worker entry — include in every brief")!.text).toContain(`Load ${SKILL_INVOKES.chip}'s Codex phase policy`);
-    expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain("Astra/high planning, then latest supported Sol/medium implementation");
+    expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain("GPT-6.1 Sol/medium");
+    expect(cards.find(card => card.label === "Codex — Orchestrator")!.text).toContain("Skill invocation cannot change");
   });
   it("requires requested sidebar workers to be grouped without granting chat creation", () => {
     for (const term of ["<repo-short>-orch-working", "vilya-orch-working", "list_threads", "create_sidebar_section", "move_thread_to_sidebar_section", "rename_sidebar_section", "preserve project association", "every created worker grouped", "ordinary subagents are not promised sidebar entries"]) expect(text).toContain(term);
@@ -80,7 +81,7 @@ describe("#347 full contract delivery", () => {
   it.each(required)("%s carries routing and repair instructions when copied alone", label => {
     const entry = cards.find(card => card.label === label)!.text;
     expect(entry).toContain("Read and apply the full resolved vl-orch-codex/references/model-routing.md");
-    for (const route of ["Astra/high", "Astra/xhigh", "Sol/medium", "Luna/low ONLY", "Sol/high independent review"]) expect(entry).toContain(route);
+    for (const route of ["Astra/high", "xhigh only", "Sol/medium", "Luna/low ONLY", "Sol/high for difficult architecture"]) expect(entry).toContain(route);
     for (const rule of ["small behavior change", "Initial detection/reproduction is not a repair attempt", "targeted verification is one attempt", "No-change reruns", "second consecutive unsuccessful repair attempt STOP before a third correction", "current HEAD/diff", "earlier hard stops", "unavailable usage is not zero"]) expect(entry.toLowerCase()).toContain(rule.toLowerCase());
     expect(entry).toContain("implementer cannot be sole approval");
     expect(entry).toContain("preserving history");
@@ -91,6 +92,6 @@ describe("#347 full contract delivery", () => {
   });
   it("renders the expanded phases and bounded repairs on the Codex page", () => {
     const html = renderToStaticMarkup(<CodexOrchestration />);
-    for (const term of ["Luna/low", "Sol/high", "Astra/xhigh", "third correction", "renames and resumes"]) expect(html).toContain(term);
+    for (const term of ["Seat model: GPT-6.1 Sol · medium", "cannot change the active chat", "Luna/low", "Sol/high", "justified xhigh", "third correction", "renames and resumes"]) expect(html).toContain(term);
   });
 });

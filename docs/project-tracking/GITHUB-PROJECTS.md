@@ -37,14 +37,15 @@ of invocation. Read each skill's Codex applicability/prerequisites, then use the
 `$vl-orch-codex` / `$vl-arch` invocation or explicitly read/apply its source.
 The exhaustive classification lives in `docs/design/codex-skill-coverage.md` (#330).
 
-Phase preferences are per operator, not product config. This operator adopted the #329
-standing policy on 2026-10-03: latest supported Astra/high planning, then latest
-supported Sol/medium implementation, validated against current capabilities. #347
-extends this to Astra/xhigh justified hard planning, Luna/low ONLY explicitly
-enumerated mechanical operations with objective verification, separate Sol/high
-independent review, and Astra/high (justified xhigh) consequential design/security
-review. Route by uncertainty and consequence, never line count; small behavior
-changes are not Luna-eligible. Read and apply the full
+Phase preferences are per operator, not product config. This operator adopted the #357
+Sol-first route on 2026-10-08: latest supported Sol/medium for normal planning,
+implementation and repair; Sol/high for difficult architecture and separate independent
+review; Luna/low ONLY for explicitly enumerated mechanical operations with objective
+verification; and Astra/high (justified xhigh) only after a recorded Sol impasse or
+capability failure. Route by uncertainty and consequence, never line count; small behavior
+changes are not Luna-eligible. The standing Codex orch starts on Sol/medium and the
+standing Codex architect on Sol/high in the UI; invoking a skill cannot change its active
+chat model or reasoning effort. Read and apply the full
 [Codex routing and repair contract](../../skills/vl-orch-codex/references/model-routing.md)
 before selecting phases, dispatching, repairing or resuming.
 Other operators retain configured defaults absent their own authorization. Record

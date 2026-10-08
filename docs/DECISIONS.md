@@ -2,6 +2,21 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-08 — Standing Codex seats use explicit Sol models (#363)
+
+**Decision:** The operator approved GPT-6.1 Sol/high for the standing Product Architect and GPT-6.1 Sol/medium for the standing Codex orchestrator. Operators select these settings in the Codex UI before invoking each skill because skill invocation cannot change the active chat model or reasoning effort. Bounded children may use other recorded phase settings; Astra remains an escalation after a recorded Sol impasse or capability failure. (decided by the operator, 2026-10-08).
+
+**Options considered:**
+1. Let each invoked skill switch its active chat automatically — cost: the current Codex desktop tool contract exposes no self-model mutation, so the instruction would promise unavailable behavior.
+2. Keep the seat model implicit in the evaluation policy — cost: operators must infer setup and stale copied prompts can silently preserve superseded routing.
+3. **Publish explicit standing-seat settings and dispatch correctly pinned children for other phases** — cost: one UI selection when seating or reseating each standing chat and explicit child pins. Chosen.
+
+**Why:** The live operator check showed that invoking `$vl-orch-codex` did not change the active model. Official OpenAI Agents API documentation supports session updates for subsequent turns, but this desktop chat exposes no equivalent self-update tool. Issue #357 and merged PR #359 established Sol-first routing; #363 makes the desktop boundary and standing-seat choices explicit.
+
+**Consequences:** The Architect page and `vl-arch` name Sol/high. The Codex Orch page, Setup, Planner, copied prompts and `vl-orch-codex` name Sol/medium. The canonical project template references the same #357 route. Historical Astra-first ADRs remain intact and are superseded by this entry for this operator. Existing project templates that copied the old policy require reconciliation; linked skills update from Vilya after pull and session refresh.
+
+**Evidence:** Operator approval in this chat on 2026-10-08; issue #357 and PR #359; issue #363 and its [issue-first decision record](https://github.com/jerrodtuck/vilya/issues/363#issuecomment-6068335492); prior entry `2026-10-03 — Codex routing by phase, uncertainty and consequence (#347)`; [official session update boundary](https://developers.openai.com/api/docs/guides/agents-api/configuration).
+
 ## 2026-10-03 — Shared clear writing and automatic presentation (#341)
 
 **Decision:** The operator approved evolving vl-adhd into a shared STE-inspired communication policy, with a companion visual capability. Seats select prose, tables, editable diagrams or interactive output according to the task; explicit operator direction overrides defaults. Ask only when a material usability/delivery choice cannot be inferred.

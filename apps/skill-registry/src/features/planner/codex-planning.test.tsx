@@ -12,7 +12,7 @@ describe("Codex planning route", () => {
     expect(html).toContain("/orch?host=codex");
     expect(html).toContain("plan:ready ∧ night-shift:ready");
     expect(html).not.toContain("Planner prompt library");
-    for (const term of ["Astra/xhigh", "Luna/low ONLY", "Sol/high independent review", "references/model-routing.md", "second consecutive unsuccessful repair", "renamed gates do not reset counts"]) expect(html).toContain(term);
+    for (const term of ["Sol/medium", "Sol/high", "Luna/low", "recorded Sol impasse", "cannot change the active chat", "references/model-routing.md", "second consecutive unsuccessful repair", "renamed gates do not reset counts"]) expect(html).toContain(term);
   });
   it.each(["cc", "cursor"])("preserves %s planning teaching", host => {
     current.host = host;
