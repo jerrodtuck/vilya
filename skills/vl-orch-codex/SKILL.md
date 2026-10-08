@@ -148,11 +148,12 @@ contract into every self-contained worker brief, or require the worker to read t
 exact bundled reference before implementation and repair; a summary alone is insufficient.
 
 For operators without a human-authorized override, preserve configured defaults.
-This operator's #347 refinement (2026-10-03) extends #329: latest supported
-Astra / high for normal planning, Astra / xhigh for justified hard planning,
-Sol / medium for settled implementation, Luna / low ONLY for enumerated mechanical
-operations with objective verification, separate Sol / high independent review,
-and Astra / high (xhigh for justified hard analysis) consequential design/security review.
+This operator's #357 evidence-led refinement (2026-10-08) supersedes the planning
+portion of #329/#347: latest supported Sol / medium for normal planning,
+implementation and repair; separate Sol / high independent review; Luna / low ONLY
+for enumerated mechanical operations with objective verification; and Astra / high
+(xhigh for justified hard analysis) only after a recorded Sol impasse or a
+capability-specific failure on consequential design/security work.
 Explicit operator choices win only in their stated scope; preserve active and resumed worker
 pins. Route by uncertainty and consequence, never size. Validate current exact identifiers,
 effort and fork restrictions; record phase, rationale, date, capability and authorization

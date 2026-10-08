@@ -145,11 +145,11 @@ the `spawn_task` and monitor procedures below apply only to the other hosts.
 3. Read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
    before selection, implementation, review, repair or resume; require every worker
    to load it from the resolved complete skill folder. Apply the [Codex phase policy](../vl-orch-codex/SKILL.md#model-policy): for the
-   operator who adopted #329 on 2026-10-03, select the latest supported Astra/high
-   planning model and latest supported Sol/medium implementation model. #347 extends
-   this with Astra/xhigh justified hard planning, Luna/low ONLY enumerated mechanical
-   work with objective verification, separate Sol/high independent review, and
-   Astra/high (justified xhigh) consequential design/security review. Route by
+   operator who adopted #357 on 2026-10-08, select the latest supported Sol/medium
+   model for normal planning and implementation. Use Luna/low ONLY for enumerated
+   mechanical work with objective verification and Sol/high for independent review.
+   Astra/high (justified xhigh) is a bounded escalation only after a recorded Sol
+   impasse or capability-specific failure on consequential design/security work. Route by
    uncertainty and consequence; small behavior changes are not Luna-eligible. Other
    operators keep configured defaults absent their own authorization. A scoped
    explicit override wins only in scope; prior #330–#332 Astra implementation pins
