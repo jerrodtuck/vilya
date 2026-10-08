@@ -64,12 +64,12 @@ export function schemaProbeActivation(scaffold,args){
   inputKeys(cleanArgs,['reviewedHead','currentHead','reviews']);
   const {reviewedHead,currentHead,reviews}=cleanArgs;
   validateScaffold(cleanScaffold);
-  if(!/^[a-f0-9]{40}$/.test(reviewedHead)||reviewedHead!==currentHead)throw Error('Exact reviewed schema-probe head required');
+  if(typeof reviewedHead!=='string'||typeof currentHead!=='string'||!/^[a-f0-9]{40}$/.test(reviewedHead)||reviewedHead!==currentHead)throw Error('Exact reviewed schema-probe head required');
   if(!Array.isArray(reviews)||reviews.length!==2)throw Error('Two schema-probe reviews required');
   const digests=new Set();
   for(const [i,model]of ['gpt-6.1-sol','gpt-6-astra'].entries()){
     const r=reviews[i];
-    if(!r||Object.keys(r).sort().join()!==['model','effort','status','head','receiptDigest'].sort().join()||r.model!==model||r.effort!=='high'||r.status!=='READY'||r.head!==reviewedHead||!/^[a-f0-9]{64}$/.test(r.receiptDigest)||digests.has(r.receiptDigest))throw Error('Schema-probe review stale or invalid');
+    if(!r||Object.keys(r).sort().join()!==['model','effort','status','head','receiptDigest'].sort().join()||['model','effort','status','head','receiptDigest'].some(key=>typeof r[key]!=='string')||r.model!==model||r.effort!=='high'||r.status!=='READY'||r.head!==reviewedHead||!/^[a-f0-9]{64}$/.test(r.receiptDigest)||digests.has(r.receiptDigest))throw Error('Schema-probe review stale or invalid');
     digests.add(r.receiptDigest);
   }
   return freeze({...createSchemaProbeScaffold(),activation:{reviewedHead,reviews,scaffoldDigest:hash(cleanScaffold)},executionWindow:null,paidRequests:0});

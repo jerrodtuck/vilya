@@ -267,3 +267,17 @@ test('publisher claim uses its validated snapshot if caller reviews mutate durin
   try{fixture.publishSchemaProbeClaim(args);}finally{fs.openSync=original;}
   const claim=JSON.parse(fs.readFileSync(claimFile));assert.deepEqual(claim.activation.activation.reviews,expected);assert.equal(claim.activation.policy.nativeEnabled,false);assert.equal(claim.activation.policy.retries,0);
 });
+test('activation requires primitive strings before regex matching or receipt deduplication',()=>{
+  const scaffold=createSchemaProbeScaffold(),digest='a'.repeat(64),args=()=>({reviewedHead:head,currentHead:head,reviews:structuredClone(reviews)});
+  for(const value of [[digest],[[digest]],new String(digest),Symbol(digest)]){
+    const changed=args();changed.reviews[1].receiptDigest=value;assert.throws(()=>schemaProbeActivation(scaffold,changed));
+  }
+  for(const values of [[digest,[digest]],[[digest],[digest]],[[[digest]],[[digest]]],[digest,digest]]){
+    const changed=args();changed.reviews[0].receiptDigest=values[0];changed.reviews[1].receiptDigest=values[1];assert.throws(()=>schemaProbeActivation(scaffold,changed));
+  }
+  for(const field of ['reviewedHead','currentHead'])for(const value of [[head],[[head]],new String(head),Symbol(head)]){const changed=args();changed[field]=value;assert.throws(()=>schemaProbeActivation(scaffold,changed));}
+  for(const field of ['model','effort','status','head']){
+    for(const wrap of [value=>[value],value=>[[value]],value=>new String(value),value=>Symbol(value)]){const changed=args();changed.reviews[0][field]=wrap(changed.reviews[0][field]);assert.throws(()=>schemaProbeActivation(scaffold,changed));}
+  }
+  const valid=schemaProbeActivation(scaffold,args());assert.equal(typeof valid.activation.reviews[0].receiptDigest,'string');assert.notEqual(valid.activation.reviews[0].receiptDigest,valid.activation.reviews[1].receiptDigest);
+});
