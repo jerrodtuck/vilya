@@ -19,6 +19,13 @@ export type RouteEvidence = {
   workflow: string;
   standing: 'proven' | 'candidate' | 'invalidated';
   decision: 'promoted' | 'incumbent-retained' | 'inconclusive';
+  ranking: {
+    status: 'ranked' | 'tied' | 'unranked';
+    rank: number | null;
+    comparedRoutes: number;
+    metric: 'total-workflow-cost-per-accepted';
+    evidenceDigest: string;
+  };
   acceptance: {
     accepted: number;
     sampleCount: number;
@@ -32,8 +39,33 @@ export type RouteEvidence = {
   elapsedMs: number | null;
   validity: {
     status: 'valid' | 'partial' | 'stale';
-    fingerprintVersion: string;
-    fingerprint: string;
+    fingerprint: {
+      version: string;
+      digest: string;
+      exactModelId: string;
+      exactEffort: string;
+      exactSettings: Record<string, string | number | boolean | null>;
+      routeScope: string;
+      workflow: string;
+      policyVersion: string;
+      workflowProtocolVersion: string;
+      runtime: string;
+      nodeVersion: string;
+      controllerDigest: string;
+      dependenciesDigest: string;
+      skillsDigest: string;
+      contextMode: string;
+      cacheConditions: string;
+      promptsDigest: string;
+      toolsDigest: string;
+      fixturesDigest: string;
+      seedsDigest: string;
+      armOrderDigest: string;
+      acceptanceRubricDigest: string;
+      capabilitiesDigest: string;
+      accountingVersion: string;
+      pricingVersion: string;
+    };
     coverage: string;
     invalidatedBy?: string[];
   };
@@ -54,6 +86,80 @@ const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US
 
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
+const requiredCostParts: Array<'failed-attempts' | 'review' | 'repair'> = ['failed-attempts', 'review', 'repair'];
+
+const hasValidAcceptance = ({ accepted, sampleCount, interval }: RouteEvidence['acceptance']) =>
+  Number.isInteger(accepted)
+  && Number.isInteger(sampleCount)
+  && accepted > 0
+  && sampleCount > 0
+  && accepted <= sampleCount
+  && interval !== null
+  && Number.isFinite(interval.low)
+  && Number.isFinite(interval.high)
+  && Number.isFinite(interval.confidence)
+  && interval.low >= 0
+  && interval.low <= interval.high
+  && interval.high <= 1
+  && interval.confidence > 0
+  && interval.confidence <= 1
+  && interval.method.trim().length > 0;
+
+const hasResolvedWorkflowCost = (cost: RouteEvidence['totalWorkflowCostPerAccepted']) => cost !== null
+  && Number.isFinite(cost.amount)
+  && cost.amount >= 0
+  && cost.currency.trim().length > 0
+  && requiredCostParts.every((part) => cost.includes.includes(part));
+
+const hasCompleteFingerprint = (route: RouteEvidence) => {
+  const fingerprint = route.validity.fingerprint;
+  return fingerprint.version.trim().length > 0
+    && fingerprint.digest.trim().length > 0
+    && fingerprint.exactModelId === route.exactModelId
+    && fingerprint.exactEffort.trim().length > 0
+    && Object.keys(fingerprint.exactSettings).length > 0
+    && fingerprint.routeScope === route.routeScope
+    && fingerprint.workflow === route.workflow
+    && [
+      fingerprint.policyVersion,
+      fingerprint.workflowProtocolVersion,
+      fingerprint.runtime,
+      fingerprint.nodeVersion,
+      fingerprint.controllerDigest,
+      fingerprint.dependenciesDigest,
+      fingerprint.skillsDigest,
+      fingerprint.contextMode,
+      fingerprint.cacheConditions,
+      fingerprint.promptsDigest,
+      fingerprint.toolsDigest,
+      fingerprint.fixturesDigest,
+      fingerprint.seedsDigest,
+      fingerprint.armOrderDigest,
+      fingerprint.acceptanceRubricDigest,
+      fingerprint.capabilitiesDigest,
+      fingerprint.accountingVersion,
+      fingerprint.pricingVersion,
+    ].every((value) => value.trim().length > 0);
+};
+
+const hasFirstPlaceRanking = ({ status, rank, comparedRoutes, metric, evidenceDigest }: RouteEvidence['ranking']) =>
+  (status === 'ranked' || status === 'tied')
+  && rank === 1
+  && Number.isInteger(comparedRoutes)
+  && comparedRoutes >= 2
+  && metric === 'total-workflow-cost-per-accepted'
+  && evidenceDigest.trim().length > 0;
+
+const isCurrentProvenRoute = (route: RouteEvidence) => route.standing === 'proven'
+  && route.validity.status === 'valid'
+  && (route.validity.invalidatedBy?.length ?? 0) === 0
+  && hasCompleteFingerprint(route)
+  && route.validity.coverage.trim().length > 0
+  && route.decision !== 'inconclusive'
+  && hasFirstPlaceRanking(route.ranking)
+  && hasValidAcceptance(route.acceptance)
+  && hasResolvedWorkflowCost(route.totalWorkflowCostPerAccepted);
+
 const elapsed = (milliseconds: number | null) => {
   if (milliseconds === null) return 'Unknown';
   const seconds = Math.round(milliseconds / 1000);
@@ -70,7 +176,10 @@ function Acceptance({ evidence }: { evidence: RouteEvidence['acceptance'] }) {
 
 function Cost({ evidence }: { evidence: RouteEvidence['totalWorkflowCostPerAccepted'] }) {
   if (!evidence) return <>Unknown</>;
-  const complete = ['failed-attempts', 'review', 'repair'].every((part) => evidence.includes.includes(part as 'failed-attempts' | 'review' | 'repair'));
+  if (!Number.isFinite(evidence.amount) || evidence.amount < 0 || evidence.currency.trim().length === 0) {
+    return <>Unknown<br /><span className={styles.muted}>Accounting unresolved</span></>;
+  }
+  const complete = hasResolvedWorkflowCost(evidence);
   return <>{money(evidence.amount, evidence.currency)}<br /><span className={styles.muted}>{complete
     ? 'Includes failed attempts, review, and repair'
     : 'Accounting coverage incomplete'}</span></>;
@@ -83,7 +192,7 @@ export function RecalibrationPolicy({
   routes?: RouteEvidence[];
   campaignLimits?: CampaignLimits | null;
 }) {
-  return <main className={styles.policy}>
+  return <article className={styles.policy}>
     <p><a href="/evaluation">Workflow evaluation</a></p>
     <h1>Model recalibration policy</h1>
     <p className={styles.lede}>Find the cheapest proven route for each task family without turning one campaign&apos;s limits into permanent product policy.</p>
@@ -103,7 +212,7 @@ export function RecalibrationPolicy({
 
     <section aria-labelledby="validity-title">
       <h2 id="validity-title">Evidence validity</h2>
-      <p>Each decision keeps a versioned fingerprint of the exact models, route scope, policy, fixtures, seeds, randomized order, acceptance rubric, controller, dependencies, tools, and capabilities.</p>
+      <p>Each decision keeps a versioned fingerprint of the exact model, effort and settings; route, workflow, policy and workflow protocol; runtime and Node version; controller, dependencies and skills; context and cache conditions; prompts, tools, fixtures, seeds and randomized order; acceptance rubric and required capabilities; and accounting and pricing versions.</p>
       <p>When one dimension changes, invalidate only the routes whose fingerprints depend on it. Run the full matrix only for broad drift such as a shared policy or acceptance-rubric change, a controller-wide behavior change, or evidence that crosses several task families.</p>
     </section>
 
@@ -125,16 +234,16 @@ export function RecalibrationPolicy({
           <thead><tr><th>Task family / route</th><th>Standing</th><th>Acceptance</th><th>Total workflow cost / accepted</th><th>Elapsed</th><th>Validity / coverage</th><th>Outcome</th></tr></thead>
           <tbody>{routes.map((route) => <tr key={`${route.taskFamily}:${route.routeScope}:${route.exactModelId}`}>
             <td><strong>{route.taskFamily}</strong><br />{route.routeScope}<br /><span className={styles.muted}>{route.seat} · <code>{route.exactModelId}</code> · {route.workflow}</span></td>
-            <td>{route.standing === 'proven' ? 'Scoped cheapest proven route' : route.standing === 'candidate' ? 'Candidate; not proven' : 'Invalidated; not current'}</td>
+            <td>{isCurrentProvenRoute(route) ? 'Scoped cheapest proven route' : 'Historical or unverified evidence'}</td>
             <td><Acceptance evidence={route.acceptance} /></td>
             <td><Cost evidence={route.totalWorkflowCostPerAccepted} /></td>
             <td>{elapsed(route.elapsedMs)}</td>
-            <td><strong>{route.validity.status}</strong> · {route.validity.coverage}<br /><code>{route.validity.fingerprintVersion}:{route.validity.fingerprint}</code>{route.validity.invalidatedBy?.length ? <><br /><span className={styles.muted}>Changed: {route.validity.invalidatedBy.join(', ')}</span></> : null}</td>
-            <td><strong>{route.decision}</strong><br />{route.outcome}</td>
+            <td><strong>{route.validity.status}</strong> · {route.validity.coverage}<br /><code>{route.validity.fingerprint.version}:{route.validity.fingerprint.digest}</code>{route.validity.invalidatedBy?.length ? <><br /><span className={styles.muted}>Changed: {route.validity.invalidatedBy.join(', ')}</span></> : null}</td>
+            <td><strong>{route.decision}</strong> · {route.ranking.status}{route.ranking.rank === null ? '' : ` #${route.ranking.rank}`}<br />{route.outcome}</td>
           </tr>)}</tbody>
         </table>
       </div>}
       <p className={styles.muted}>A route is proven only within its recorded scope and validity fingerprint. Cost per accepted result must include failed attempts, review, and repair.</p>
     </section>
-  </main>;
+  </article>;
 }
