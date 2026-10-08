@@ -90,7 +90,12 @@ export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-pr
 export async function runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow=false,prompt,clock=Date.now}){
   if(!proofs.has(store)||provider?.kind!=='fake'||authorizeSyntheticWindow!==true||typeof prompt!=='string')throw Error('Synthetic schema-probe authorization required; live unavailable');
   let s=store.read();if(s.status!=='scaffold')throw Error('Schema-probe already attempted; no replay or reset');
-  const now=clock();if(!Number.isSafeInteger(now)||now<0)throw Error('Invalid schema-probe clock');
+  // Claim the private store before invoking any supplied callback, including the
+  // clock. Nested calls cannot read scaffold and overwrite this invocation.
+  s.status='authorizing';proofs.set(store,structuredClone(s));
+  let now;
+  try{now=clock();if(!Number.isSafeInteger(now)||now<0)throw Error('Invalid schema-probe clock');}
+  catch(error){s.status='stopped';proofs.set(store,structuredClone(s));throw error;}
   s.status='count-pending';s.executionWindow={startedAt:now,deadline:now+60000};s.newCountCalls=1;s.consumedCountCalls+=1;s.newTrialSlots=1;s.consumedTrialSlots+=1;s.consumedSlotHistory.push({segment:SCHEMA_PROBE_POLICY.campaignId,trial:SCHEMA_PROBE_POLICY.trial,slots:1});proofs.set(store,structuredClone(s));
   const p=SCHEMA_PROBE_POLICY,packet=freeze({model:p.model,effort:p.effort,prompt,maxOutputTokens:p.maxOutputTokens,maxToolCalls:0,retries:0,diagnosticProjectionVersion:2,financialContractVersion:3});
   try{

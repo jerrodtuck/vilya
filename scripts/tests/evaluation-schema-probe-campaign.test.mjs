@@ -146,3 +146,33 @@ test('count and generation adapters cannot mutate the counted packet or certific
   await assert.rejects(runOfflineSchemaProbe({store:{read:()=>copy},provider,authorizeSyntheticWindow:true,prompt:'synthetic'}));
   await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic'}),/replay/);assert.equal(store.read().consumedTrialSlots,5);assert.equal(store.read().consumedCountCalls,6);
 });
+test('clock callback reentrancy is fenced before any count or generation',async()=>{
+  const store=offlineSchemaProbeStore(),provider=fake();let nested,entered=false;
+  const clock=()=>{
+    if(!entered){entered=true;assert.equal(store.read().status,'authorizing');nested=runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'nested',clock:()=>1000});}
+    return 1000;
+  };
+  const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'outer',clock});
+  await assert.rejects(nested,/no replay/);assert.deepEqual(provider.calls.map(c=>c[0]),['count','generation']);
+  assert.equal(result.newCountCalls,1);assert.equal(result.newGenerations,1);assert.equal(result.consumedTrialSlots,5);assert.equal(result.consumedCountCalls,6);
+});
+test('count and generation callback reentrancy cannot overwrite authoritative pending state',async()=>{
+  for(const callback of ['count','send']){
+    const store=offlineSchemaProbeStore(),provider=fake(),original=provider[callback];
+    provider[callback]=async(...args)=>{
+      assert.equal(store.read().status,callback==='count'?'count-pending':'generation-pending');
+      await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'nested',clock:()=>1000}),/no replay/);
+      return original(...args);
+    };
+    const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'outer',clock:()=>1000});
+    assert.deepEqual(provider.calls.map(c=>c[0]),['count','generation']);assert.equal(result.newGenerations,1);assert.equal(result.consumedTrialSlots,5);assert.equal(result.consumedCountCalls,6);
+  }
+});
+test('invalid or throwing clock leaves a stopped fence and cannot replay',async()=>{
+  for(const clock of [()=>-1,()=>{throw Error('synthetic clock failure');}]){
+    const store=offlineSchemaProbeStore(),provider=fake();
+    await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock}));
+    assert.equal(store.read().status,'stopped');assert.equal(provider.calls.length,0);assert.equal(store.read().consumedTrialSlots,4);assert.equal(store.read().consumedCountCalls,5);
+    await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000}),/no replay/);
+  }
+});
