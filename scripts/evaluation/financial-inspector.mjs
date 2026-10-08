@@ -1,10 +1,11 @@
 import {createHash} from 'node:crypto';
+import {CONTRACT4_REASON_CODES,inspectContract4,projectContract4,validateContract4Projection} from './financial-contract4.mjs';
 // Prospective contract 3 admits only the documented optional message phase.
 export const FINANCIAL_CONTRACT_VERSION=3;
 const RESPONSE_KEYS = new Set(['id','object','created_at','completed_at','status','error','incomplete_details','instructions','max_output_tokens','max_tool_calls','model','output','parallel_tool_calls','previous_response_id','reasoning','store','temperature','text','tool_choice','tools','top_p','truncation','usage','user','metadata','service_tier','safety_identifier','prompt_cache_key','prompt_cache_options','prompt_cache_retention','background','conversation','top_logprobs','personality','access_programs','moderation','prompt','prompt_cache_diagnostics']);
 const LEGACY_REASON_CODES=Object.freeze(['envelope-shape','envelope-extras','status','model','tier','optional-null-scope','background-scope','conversation-scope','access-programs-scope','tool-choice-scope','parallel-tools-scope','text-shape','text-extras','text-verbosity','text-format','provider-error','incomplete-details','tools-scope','previous-response-scope','usage-shape','usage-extras','input-details-shape','output-details-shape','input-details-extras','output-details-extras','counter-missing','counter-invalid','counter-total','input-bound','output-bound','cache-subsets','reasoning-subset','output-shape','output-kind','reasoning-extras','reasoning-content','message-shape','content-kind','content-extras','annotations-scope','logprobs-scope']);
 export const FINANCIAL_REASON_CODES=Object.freeze([...LEGACY_REASON_CODES,'message-phase']);
-const reasonCodes=version=>{if(version===2)return LEGACY_REASON_CODES;if(version===3)return FINANCIAL_REASON_CODES;throw Error('Invalid financial contract version');};
+const reasonCodes=version=>{if(version===2)return LEGACY_REASON_CODES;if(version===3)return FINANCIAL_REASON_CODES;if(version===4)return [...FINANCIAL_REASON_CODES,...CONTRACT4_REASON_CODES];throw Error('Invalid financial contract version');};
 const record=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const uint=value=>Number.isSafeInteger(value)&&value>=0;
 const extras=(value,keys)=>Object.keys(value).some(key=>!keys.includes(key));
@@ -15,6 +16,7 @@ export const FINANCIAL_SHAPE_KEYS=Object.freeze(['envelope','status','model','ti
 export const FINANCIAL_OUTPUT_TYPES=Object.freeze(['message','reasoning','OTHER']);
 export const FINANCIAL_CONTENT_TYPES=Object.freeze(['output_text','refusal','summary_text','reasoning_text','OTHER']);
 export function inspectFinancialResponse(data,request,inputBound,contractVersion=FINANCIAL_CONTRACT_VERSION){
+ if(contractVersion===4)return inspectContract4(data,request,inputBound,inspectFinancialResponse);
  const codes=reasonCodes(contractVersion);
  const failures=new Set(),add=(code,failed)=>{if(failed)failures.add(code);};
  const d=record(data)?data:{},usage=record(d.usage)?d.usage:{},input=record(usage.input_tokens_details)?usage.input_tokens_details:{},output=record(usage.output_tokens_details)?usage.output_tokens_details:{};
@@ -83,6 +85,7 @@ function structuralFields(value,keys,credential){
  return {fields:safe.slice(0,8),redactedCount:Math.min(64,redacted.length),overflowCount:Math.min(64,Math.max(0,safe.length-8))};
 }
 export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VERSION,{credential=null}={}){
+ if(version===4)return projectContract4(data,{credential});
  const fields=projectionFields(version);
  const envelope=record(data)?data:{};
  const envelopeFields=Object.fromEntries(fields.envelope.map(key=>[key,typeBucket(envelope[key],own(envelope,key))]));
@@ -105,6 +108,7 @@ export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VE
  return {version,...(version>=2?{recognizedRejectedFields:FINANCIAL_CANDIDATE_FIELDS.filter(key=>own(envelope,key))}:{}),...prospective,envelopeFields,envelopeExtras:extraProjection(Object.keys(envelope).filter(key=>!fields.envelope.includes(key)).length),messageFields:Object.fromEntries(fields.message.map(key=>[key,TYPE_BUCKETS.filter(type=>messageSets[key].has(type))])),messageExtras:extraProjection(messageExtras),messageContentShapes:CONTENT_SHAPES.filter(shape=>shapes.has(shape)),messageContentCauses:CONTENT_CAUSES.filter(cause=>causes.has(cause))};
 }
 export function validateFinancialDiagnostics(value,expectedVersion=value?.version){
+ if(expectedVersion===4)return validateContract4Projection(value);
  const fields=projectionFields(expectedVersion);
  const invalid=()=>{throw Error('Invalid bounded financial diagnostics');};
  const exact=(obj,keys)=>record(obj)&&Object.keys(obj).sort().join('|')===[...keys].sort().join('|');

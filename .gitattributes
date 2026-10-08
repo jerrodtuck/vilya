@@ -15,3 +15,5 @@ scripts/evaluation/schema-diagnostic-launcher.ps1 text eol=lf
 scripts/evaluation/schema-diagnostic-controller.mjs text eol=lf
 scripts/evaluation/schema-diagnostic-live-campaign.mjs text eol=lf
 scripts/evaluation/schema-diagnostic-campaign.mjs text eol=lf
+scripts/evaluation/financial-contract4.mjs text eol=lf
+scripts/evaluation/comparison-campaign.mjs text eol=lf
