@@ -6,7 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
 import {apiConfig,maximumCost,actualCost} from './money.mjs';
-import {comparisonLauncherRecoveryPresent,readComparisonLauncherRecovery} from './comparison-launcher-recovery.mjs';
+import {comparisonLauncherRecoveryChainPresent,readComparisonLauncherRecoveryChain} from './comparison-launcher-recovery2.mjs';
 
 const repo=fileURLToPath(new URL('../..',import.meta.url));
 const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
@@ -126,8 +126,8 @@ function stableClaimEvidence(expectedHead=null,expectedClaimDigest=null,ownPubli
   const head=vector.head.trim(),claimDigest=sha(raw),origin=comparisonActivation(createComparisonScaffold(),{reviewedHead:published.reviewedHead,currentHead:published.reviewedHead,reviews:value.activation.reviews});
   if(expectedHead!==null&&head!==expectedHead||expectedClaimDigest!==null&&claimDigest!==expectedClaimDigest||typeof record.sha256!=='string'||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.claimDigest!==claimDigest||published.claimDigest!==claimDigest||record.sha256!==hash(origin)||!equal(value,origin))throw Error('Comparison publication binding changed');
   for(const [i,name]of ['sol','astra'].entries()){const actual=vector.reviews[name],review=origin.activation.reviews[i];if(actual.sha256!==review.receiptDigest||actual.value.head!==review.head||actual.value.model!==review.model||actual.value.effort!=='high'||actual.value.status!=='READY'||!Array.isArray(actual.value.findings)||actual.value.findings.length)throw Error('Exact READY review receipt required');}
-  const recoveryPresent=comparisonLauncherRecoveryPresent(repo);
-  const recovery=head!==published.reviewedHead||recoveryPresent?readComparisonLauncherRecovery({root:repo,currentHead:head,originHead:published.reviewedHead,originClaimDigest:claimDigest}):null;
+  const recoveryPresent=comparisonLauncherRecoveryChainPresent(repo);
+  const recovery=head!==published.reviewedHead||recoveryPresent?readComparisonLauncherRecoveryChain({root:repo,currentHead:head,originHead:published.reviewedHead,originClaimDigest:claimDigest}):null;
   if(head!==published.reviewedHead&&!recovery)throw Error('Current comparison head lacks immutable recovery');
   if(head===published.reviewedHead&&recovery)throw Error('Comparison recovery cannot target original head');
   const validated=recovery?freeze({...structuredClone(origin),activation:{...structuredClone(origin.activation),reviewedHead:recovery.reviewedHead,reviews:structuredClone(recovery.reviews)}}):origin;

@@ -87,6 +87,9 @@ function recoveryValue(paths,reviewedHead){
 
 function recoveryRecords(paths){return {file:record(paths.file,paths.root),attempt:record(paths.attempt,paths.root),published:record(paths.published,paths.root),next:record(paths.next,paths.root)};}
 export function comparisonLauncherRecoveryPresent(root=productionRoot){const paths=comparisonLauncherRecoveryPaths(root);return Object.values(recoveryRecords(paths)).some(item=>item.exists);}
+export function comparisonLauncherRecoveryArtifactDigests(root=productionRoot){
+ const paths=comparisonLauncherRecoveryPaths(root),capture=()=>{const records=recoveryRecords(paths);if(records.next.exists||!records.file.exists||!records.attempt.exists||!records.published.exists)throw Error('Comparison recovery publication incomplete');return freeze({fileSha256:sha(Buffer.from(records.file.bytes,'base64')),attemptSha256:sha(Buffer.from(records.attempt.bytes,'base64')),publishedSha256:sha(Buffer.from(records.published.bytes,'base64')),solReviewSha256:sha(safeBytes(paths.solReview,100000,paths.root)),astraReviewSha256:sha(safeBytes(paths.astraReview,100000,paths.root))});},first=capture(),second=capture();if(!same(first,second))throw Error('Comparison recovery artifacts changed across read');return first;
+}
 function recoverySnapshot(paths,currentHead,originHead,originClaimDigest){
  originEvidence(paths);const records=recoveryRecords(paths),present=Object.values(records).some(item=>item.exists);if(!present)return null;
  if(records.next.exists||!records.file.exists||!records.attempt.exists||!records.published.exists)throw Error('Comparison recovery publication incomplete');
