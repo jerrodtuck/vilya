@@ -53,7 +53,8 @@ export function parseResponse(data, request, inputBound, providerRequestId = nul
 
 export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = process.env, liveEnabled = false,
   offlineFixture = false, inputTokensForFixture, reservationGuard, preflightGuard,
-  countBillingInterpretation, diagnosticGuard, timeoutMs = 60_000, clock = Date.now } = {}) {
+  countBillingInterpretation, diagnosticGuard, diagnosticProjectionVersion=2, timeoutMs = 60_000, clock = Date.now } = {}) {
+  if(![2,3].includes(diagnosticProjectionVersion))throw Error('Invalid diagnostic projection version');
   if (!uint(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000) throw Error('Invalid transport deadline');
   if (offlineFixture && (typeof fetchImpl !== 'function' || fetchImpl === globalThis.fetch || typeof inputTokensForFixture !== 'function')) throw Error('Offline fixture requires injected fetch and token count');
   const certificates = new WeakSet(); const consumed = new WeakSet();
@@ -84,7 +85,7 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
         if (!response?.ok || response.redirected || response.url !== url){observe(scope,'http-rejected',fields);fail();}
         // Failed bodies may echo private content. Never read or include them in errors.
         let data;try{data=await response.json();}catch{observe(scope,'body-unavailable',fields);fail();}let finance = null;
-        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens},scope.inputBound):null,inspection,diagnosticProjection:projectFinancialDiagnostics(data)};}
+        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens},scope.inputBound):null,inspection,diagnosticProjection:projectFinancialDiagnostics(data,diagnosticProjectionVersion,{credential:env.OPENAI_API_KEY})};}
         const observedAt=clock();observe(scope,'body-observed',{...fields,data,...(finance?{billingValidated:finance.billingValidated,billingFailureCode:finance.billingFailureCode,financialInspection:finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION,diagnosticProjection:finance.diagnosticProjection}:{})});if(controller.signal.aborted)fail();
         return { data, providerRequestId, finance, observedAt };
       };
