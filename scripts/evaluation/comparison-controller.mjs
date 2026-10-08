@@ -30,7 +30,7 @@ function readLauncherAuthorization(args){
   exactKeys(proof,['schemaVersion','nonce','parentPid','head','args','gitIdentity','manifest','manifestDigest','nativeTemp','pipeOwnerHandle','credentialBytes','credentialIdentity','bootstrap','controller','node'],'launcher proof');
   const entries=entryHashes();for(const k of ['bootstrap','controller','node']){exactKeys(proof[k],['path','sha256'],'launcher entry');if(canonical(proof[k].path)!==canonical(entries[k].path)||proof[k].sha256!==entries[k].sha256)throw Error('Launcher entry mismatch');}if(proof.schemaVersion!==2||!/^[a-f0-9]{64}$/.test(proof.nonce)||proof.parentPid!==process.ppid||!same(proof.args,args)||typeof proof.credentialBytes!=='string'||typeof proof.credentialIdentity!=='string'||typeof proof.pipeOwnerHandle!=='string')throw Error('Launcher proof mismatch');
   const nativeSource=fs.readFileSync(COMPARISON_PATHS.bootstrap,'utf8').match(/Add-Type -TypeDefinition @'\r?\n([\s\S]*?)\r?\n'@/)[1],ps='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
-  if(!/^[1-9][0-9]{0,15}$/.test(proof.pipeOwnerHandle))throw Error('Private handle shape');const script="$ErrorActionPreference='Stop'; Add-Type -TypeDefinition '"+nativeSource.replaceAll("'","''")+"'; $p=Get-CimInstance Win32_Process -Filter 'ProcessId = "+process.ppid+"'; @{pid=$p.ProcessId;exe=$p.ExecutablePath;argv=@([ProbeCredential]::Arguments($p.CommandLine));bound=[ProbeCredential]::BoundInput("+process.ppid+", '"+proof.pipeOwnerHandle+"')}|ConvertTo-Json -Depth 4 -Compress";
+  if(!/^[1-9][0-9]{0,15}$/.test(proof.pipeOwnerHandle))throw Error('Private handle shape');const script="$ErrorActionPreference='Stop'; Add-Type -TypeDefinition '"+nativeSource.replaceAll("'","''")+"'; $p=[ProbeCredential]::ParentIdentity("+process.pid+","+process.ppid+"); @{pid=$p.Pid;exe=$p.ExecutablePath;argv=@([ProbeCredential]::Arguments($p.CommandLine));bound=[ProbeCredential]::BoundInput("+process.ppid+", '"+proof.pipeOwnerHandle+"')}|ConvertTo-Json -Depth 4 -Compress";
   if(typeof proof.nativeTemp!=='string'||!path.isAbsolute(proof.nativeTemp)||!fs.statSync(safe(proof.nativeTemp)).isDirectory())throw Error('Native metadata temporary directory');const parent=JSON.parse(execFileSync(ps,['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,encoding:'utf8',timeout:5000,stdio:[0,'pipe','pipe'],env:{SystemRoot:'C:\\Windows',WINDIR:'C:\\Windows',PATH:'C:\\Windows\\System32',TEMP:proof.nativeTemp,TMP:proof.nativeTemp}}));
   const expected=[ps,'-NoProfile','-NonInteractive','-File',COMPARISON_PATHS.bootstrap,...args];if(parent.pid!==process.ppid||canonical(parent.exe)!==canonical(ps)||!Array.isArray(parent.argv)||parent.argv.length!==expected.length||parent.argv.some((arg,i)=>i===0||i===4?canonical(arg)!==canonical(expected[i]):arg!==expected[i])||parent.bound!==true||Object.keys(process.env).some(k=>!['OPENAI_API_KEY','SYSTEMROOT','WINDIR','PATH'].includes(k.toUpperCase())))throw Error('Untrusted exact bootstrap route or private pipe');
   exactKeys(proof.gitIdentity,['head','tree','top','gitDir','commonDir'],'canonical Git proof');const root=path.dirname(path.dirname(path.dirname(COMPARISON_PATHS.controller)));if(proof.gitIdentity.head!==proof.head||!/^[a-f0-9]{40}$/.test(proof.gitIdentity.tree)||canonical(proof.gitIdentity.top)!==canonical(root)||!path.isAbsolute(proof.gitIdentity.gitDir)||!path.isAbsolute(proof.gitIdentity.commonDir))throw Error('Canonical Git proof mismatch');verifyModuleManifest(proof);return proof;
@@ -54,7 +54,7 @@ function rejectWindowsReparse(paths){
   // Node Stats does not expose FILE_ATTRIBUTE_REPARSE_POINT for every Windows
   // tag. Query only native metadata, in one bounded process, and fail closed.
   const literals=paths.map(p=>"'"+p.replaceAll("'","''")+"'").join(',');
-  const script="$ErrorActionPreference='Stop'; foreach ($entry in @("+literals+")) { if (([IO.File]::GetAttributes($entry) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { exit 9 } }; exit 0";
+  const script="$ErrorActionPreference='Stop'; foreach ($entry in @("+literals+")) { if (((Get-Item -LiteralPath $entry -Force -ErrorAction Stop).Attributes -band 1024) -ne 0) { exit 9 } }; exit 0";
   try{execFileSync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,stdio:'ignore',timeout:5000});}catch{throw Error('Unsupported Windows credential reparse metadata');}
 }
 function credentialPathVector(file=COMPARISON_PATHS.env){
@@ -66,7 +66,11 @@ function credentialPathVector(file=COMPARISON_PATHS.env){
    parents.unshift({path:at,protected:true});const next=path.dirname(at);if(next===at)break;at=next;continue;
   }
   if(st.isSymbolicLink()||(isFile?!st.isFile():!st.isDirectory()))throw Error('Unsafe credential file type or reparse path');
-  real=fs.realpathSync.native(at);if(canonical(real)!==canonical(at))throw Error('Credential path redirected');
+  try{real=fs.realpathSync.native(at);}catch(error){
+   if(isFile||!record||!['EACCES','EPERM'].includes(error.code))throw error;
+   parents.unshift({path:at,protected:true});const next=path.dirname(at);if(next===at)break;at=next;continue;
+  }
+  if(canonical(real)!==canonical(at))throw Error('Credential path redirected');
   if(isFile){if(st.size<1n||st.size>65536n||st.nlink!==1n)throw Error('Credential file bound or linked alias');record={path:at,real,identity:fileIdentity(st)};}
   else parents.unshift({path:at,real,dev:String(st.dev),ino:String(st.ino),mode:String(st.mode)});
   const next=path.dirname(at);if(next===at)break;at=next;
