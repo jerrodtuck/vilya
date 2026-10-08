@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
 import {apiConfig,maximumCost,actualCost} from './money.mjs';
+import {comparisonLauncherRecoveryPaths,readComparisonLauncherRecovery} from './comparison-launcher-recovery.mjs';
 
 const repo=fileURLToPath(new URL('../..',import.meta.url));
 const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
@@ -63,7 +64,7 @@ const identityEnv=['GIT_DIR','GIT_COMMON_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','
 function gitRead(args){
   if(Object.keys(process.env).some(key=>key.toUpperCase().startsWith('GIT_CONFIG')||identityEnv.includes(key.toUpperCase())))throw Error('Comparison Git environment override denied');
   const nullFile=process.platform==='win32'?'NUL':'/dev/null';
-  const env={GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:nullFile,GIT_CONFIG_GLOBAL:nullFile,GIT_ATTR_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',GIT_CONFIG_COUNT:'4',GIT_CONFIG_KEY_0:'core.fsmonitor',GIT_CONFIG_VALUE_0:'false',GIT_CONFIG_KEY_1:'core.hooksPath',GIT_CONFIG_VALUE_1:nullFile,GIT_CONFIG_KEY_2:'core.excludesFile',GIT_CONFIG_VALUE_2:nullFile,GIT_CONFIG_KEY_3:'core.attributesFile',GIT_CONFIG_VALUE_3:nullFile};
+  const env={GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:nullFile,GIT_CONFIG_GLOBAL:nullFile,GIT_ATTR_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',GIT_CONFIG_COUNT:'5',GIT_CONFIG_KEY_0:'core.fsmonitor',GIT_CONFIG_VALUE_0:'false',GIT_CONFIG_KEY_1:'core.hooksPath',GIT_CONFIG_VALUE_1:nullFile,GIT_CONFIG_KEY_2:'core.excludesFile',GIT_CONFIG_VALUE_2:nullFile,GIT_CONFIG_KEY_3:'core.attributesFile',GIT_CONFIG_VALUE_3:nullFile,GIT_CONFIG_KEY_4:'safe.directory',GIT_CONFIG_VALUE_4:path.resolve(repo)};
   for(const key of ['PATH','Path','SystemRoot','SYSTEMROOT','WINDIR','PATHEXT','TEMP','TMP'])if(process.env[key]!==undefined)env[key]=process.env[key];
   return execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true,env});
 }
@@ -122,10 +123,15 @@ function stableClaimEvidence(expectedHead=null,expectedClaimDigest=null,ownPubli
   const raw=Buffer.from(vector.records[''].bytes,'base64'),record=inputSnapshot(JSON.parse(raw)),attempt=inputSnapshot(JSON.parse(Buffer.from(vector.records['.attempt.json'].bytes,'base64'))),published=inputSnapshot(JSON.parse(Buffer.from(vector.records['.published.json'].bytes,'base64')));
   inputKeys(record,['activation','sha256']);inputKeys(attempt,['schemaVersion','claimDigest']);inputKeys(published,['schemaVersion','claimDigest','reviewedHead']);
   const value=record.activation;inputKeys(value,['policy','predecessorDigests','activation','executionWindow','paidRequests']);inputKeys(value.activation,['reviewedHead','reviews','scaffoldDigest']);
-  const head=vector.head.trim(),claimDigest=sha(raw),validated=comparisonActivation(createComparisonScaffold(),{reviewedHead:published.reviewedHead,currentHead:head,reviews:value.activation.reviews});
-  if(expectedHead!==null&&head!==expectedHead||expectedClaimDigest!==null&&claimDigest!==expectedClaimDigest||typeof record.sha256!=='string'||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.claimDigest!==claimDigest||published.claimDigest!==claimDigest||record.sha256!==hash(validated)||!equal(value,validated))throw Error('Comparison publication binding changed');
-  for(const [i,name]of ['sol','astra'].entries()){const actual=vector.reviews[name],review=validated.activation.reviews[i];if(actual.sha256!==review.receiptDigest||actual.value.head!==review.head||actual.value.model!==review.model||actual.value.effort!=='high'||actual.value.status!=='READY'||!Array.isArray(actual.value.findings)||actual.value.findings.length)throw Error('Exact READY review receipt required');}
-  return {activation:validated,claimDigest};
+  const head=vector.head.trim(),claimDigest=sha(raw),origin=comparisonActivation(createComparisonScaffold(),{reviewedHead:published.reviewedHead,currentHead:published.reviewedHead,reviews:value.activation.reviews});
+  if(expectedHead!==null&&head!==expectedHead||expectedClaimDigest!==null&&claimDigest!==expectedClaimDigest||typeof record.sha256!=='string'||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.claimDigest!==claimDigest||published.claimDigest!==claimDigest||record.sha256!==hash(origin)||!equal(value,origin))throw Error('Comparison publication binding changed');
+  for(const [i,name]of ['sol','astra'].entries()){const actual=vector.reviews[name],review=origin.activation.reviews[i];if(actual.sha256!==review.receiptDigest||actual.value.head!==review.head||actual.value.model!==review.model||actual.value.effort!=='high'||actual.value.status!=='READY'||!Array.isArray(actual.value.findings)||actual.value.findings.length)throw Error('Exact READY review receipt required');}
+  const recoveryPaths=comparisonLauncherRecoveryPaths(repo),recoveryPresent=[recoveryPaths.file,recoveryPaths.attempt,recoveryPaths.published,recoveryPaths.next].some(file=>fs.existsSync(file));
+  const recovery=head!==published.reviewedHead||recoveryPresent?readComparisonLauncherRecovery({root:repo,currentHead:head,originHead:published.reviewedHead,originClaimDigest:claimDigest}):null;
+  if(head!==published.reviewedHead&&!recovery)throw Error('Current comparison head lacks immutable recovery');
+  if(head===published.reviewedHead&&recovery)throw Error('Comparison recovery cannot target original head');
+  const validated=recovery?freeze({...structuredClone(origin),activation:{...structuredClone(origin.activation),reviewedHead:recovery.reviewedHead,reviews:structuredClone(recovery.reviews)}}):origin;
+  return {activation:validated,claimDigest,executionIdentity:recovery??freeze({reviewedHead:published.reviewedHead,originHead:published.reviewedHead,recoveryDigest:null,reviews:structuredClone(origin.activation.reviews)})};
 }
 // All cooperative source/evidence writers, publication, readers and future live
 // dispatch MUST hold this one fixed guard. A crash leaves it held; no recovery or
@@ -174,6 +180,7 @@ function leaseOwner(token){
   return lease;
 }
 export function readComparisonClaimLocked(token){leaseOwner(token);const value=stableClaimEvidence().activation;leaseOwner(token);return value;}
+export function readComparisonExecutionIdentityLocked(token){leaseOwner(token);const value=stableClaimEvidence().executionIdentity;leaseOwner(token);return value;}
 export function closeComparisonLease(token){const lease=leaseOwner(token);leases.delete(token);fs.closeSync(lease.fd);fs.unlinkSync(lease.file);}
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
