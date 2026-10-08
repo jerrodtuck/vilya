@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {ComparisonLedger,comparisonHash} from '../evaluation/comparison-ledger.mjs';
+import {ComparisonLedger,comparisonHash,comparisonPhaseDeadline} from '../evaluation/comparison-ledger.mjs';
 import {advanceComparison,importComparisonNative} from '../evaluation/comparison-workflow.mjs';
 import {COMPARISON_POLICY as P} from '../evaluation/comparison-campaign.mjs';
 import {loadFixtures,archiveFixture,context} from '../evaluation/workflow.mjs';
 import {scopedContext} from '../evaluation/context.mjs';
-import {protocolDescriptor} from '../evaluation/workflow-protocol.mjs';
+import {protocolDescriptor,planningSteps,buildPlanningStepPacket} from '../evaluation/workflow-protocol.mjs';
 import {COUNT_BILLING_INTERPRETATION} from '../evaluation/openai-transport.mjs';
 function terminal(t){const work=fs.mkdtempSync(path.join(os.tmpdir(),'comparison-final-offline-'));t.after(()=>fs.rmSync(work,{recursive:true,force:true}));let now=1002;const ledger=new ComparisonLedger({workspace:path.join(work,'campaign'),binding:{head:'a'.repeat(40)},check:()=>{},clock:()=>now});ledger.initialize();ledger.config.mode='offline';const m=loadFixtures()[0],trial=P.trials[0].id,root=path.join(ledger.workspace,trial);archiveFixture(fileURLToPath(new URL('../..',import.meta.url)),root,m.seed);ledger.transaction(s=>{s.status='running';s.executionWindow={startedAt:1000,dispatchDeadline:1000+174*60000,finalDeadline:1000+180*60000};s.trials=[{id:trial,environment:'api',started:1000,ended:null,status:'active',accepted:null,receiptDigest:null}];s.preflights=[{id:trial+'_step_count',requestId:trial+'_step',trial,phase:'planning',model:'gpt-6.1-sol',effort:'medium',payloadHash:'b'.repeat(64),serviceTier:'default',pricingDate:'2026-10-06',billingInterpretation:COUNT_BILLING_INTERPRETATION,start:1000,end:1001,status:'complete',inputTokens:50,providerRequestId:null}];s.workflow={trial,root,fixture:m.name,arm:'A',seed:m.seed,phase:'terminal',phaseStarted:1000,pending:null,steps:[{status:'complete',started:1000,ended:1002,elapsedMs:2}],attempts:[],repairs:0,sandbox:{allowedRoot:ledger.workspace},sourceHashes:context(root,m).map(({path,sha256})=>({path,sha256})),accepted:false,failure:'invalid-planning-output',protocol:protocolDescriptor(m,'A')};});return {ledger,setTime:value=>now=value};}
 test('terminal receipt finalizes in the six-minute final reserve without starting another trial',async t=>{const {ledger,setTime}=terminal(t);const w=ledger.read().executionWindow;setTime(w.dispatchDeadline+1);let sends=0;const result=await advanceComparison({ledger,provider:{send(){sends++;throw Error('must not send');}}});assert.equal(result.status,'dispatch-closed');assert.equal(sends,0);const s=ledger.read();assert.equal(s.trials.length,1);assert.equal(s.trials[0].status,'complete');assert.equal(s.workflow,null);assert.equal(fs.existsSync(path.join(ledger.workspace,P.trials[0].id+'.receipt.json')),true);const before=ledger.files();await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);assert.deepEqual(ledger.files(),before);assert.equal(ledger.read().trials.length,1);});
@@ -76,4 +76,31 @@ test('native return guard refuses handoff if publication crosses dispatch cutoff
  const {ledger,deadline}=nativeReady(t);let reads=0;ledger.clock=()=>++reads<=3?deadline-1:deadline+1;
  await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);assert.equal(reads,4);
  assert.equal(ledger.read().workflow.pending.kind,'native');assert.equal((await advanceComparison({ledger})).dispatchAgain,false);
+});
+
+function apiPlanning(t,arm){
+ const {ledger,setTime}=terminal(t),item=P.trials.find(item=>item.environment==='api'&&item.task==='instruction'&&item.arm===arm),m=loadFixtures().find(m=>m.name===item.task),root=path.join(ledger.workspace,item.id);
+ archiveFixture(fileURLToPath(new URL('../..',import.meta.url)),root,m.seed);
+ ledger.transaction(s=>{
+  s.trials=P.trials.slice(0,P.trials.indexOf(item)).map(item=>{const r={trial:item.id,bindingDigest:comparisonHash(ledger.bound),status:'complete',accepted:false,steps:[{status:'complete'}]},file=path.join(ledger.workspace,item.id+'.receipt.json');fs.writeFileSync(file,JSON.stringify(r));return {id:item.id,environment:'api',started:1000,ended:1002,status:'complete',accepted:false,receiptDigest:comparisonHash(fs.readFileSync(file))};});
+  s.trials.push({id:item.id,environment:'api',started:1002,ended:null,status:'active',accepted:null,receiptDigest:null});
+  Object.assign(s.workflow,{trial:item.id,fixture:m.name,arm,seed:m.seed,root,phase:'planning',phaseStarted:1002,planningSteps:planningSteps(m,arm),cursor:0,draft:null,answer:null,plan:'',baseline:scopedContext(root,m),fullBaseline:context(root,m),sourceHashes:context(root,m).map(({path,sha256})=>({path,sha256})),steps:[],failure:null,protocol:protocolDescriptor(m,arm)});
+ });return {ledger,setTime};
+}
+for(const arm of ['A','B'])test('planning '+arm+' counts each 45-second completed substep once',async t=>{
+ const {ledger,setTime}=apiPlanning(t,arm);let now=1002;const starts=[];
+ const provider={kind:'fake',prepare(request,scope){if(scope.phase!=='planning')throw Error('end of planning probe');const c=ledger.beginPreflight({...scope,model:request.model,effort:request.effort,payloadHash:comparisonHash(request),serviceTier:'default',pricingDate:'2026-10-06',billingInterpretation:COUNT_BILLING_INTERPRETATION});ledger.completePreflight(c.id,{inputTokens:100,providerRequestId:null});return c;},inputBound:()=>100,async send(){const p=ledger.read().workflow.pending.packet,input=JSON.parse(p.payload);starts.push({step:p.step,at:now});now+=45000;setTime(now);const text=p.step==='consultation'?JSON.stringify({questionId:input.questionId,resolution:'resolved',answer:'synthetic answer'}):p.step==='synthesis'?JSON.stringify({status:'settled',plan:'synthetic plan',answerDigest:input.answerDigest}):'synthetic plan';return {text,usage:{input:100,cachedInput:0,cacheWrite:0,output:10,reasoning:0,fees:0},metadata:{providerRequestId:null}};}};
+ await assert.rejects(advanceComparison({ledger,provider}),/API evidence unresolved/);
+ const f=ledger.read().workflow;assert.equal(f.phase,'implementation');assert.equal(f.steps.length,arm==='B'?3:1);assert.ok(f.steps.every(step=>step.elapsedMs===45000));assert.equal(f.phaseStarted,now);
+ if(arm==='B')assert.deepEqual(starts.at(-1),{step:'synthesis',at:1002+90000});
+});
+for(const arm of ['A','B'])test('planning '+arm+' rejects dispatch at its true 180-second budget boundary',async t=>{
+ const {ledger,setTime}=apiPlanning(t,arm),start=1002;
+ if(arm==='B'){setTime(start+90000);ledger.transaction(s=>{const f=s.workflow,m=loadFixtures().find(m=>m.name===f.fixture),question=JSON.parse((buildPlanningStepPacket('consultation',m,f.baseline,{draft:'synthetic draft'})));f.cursor=2;f.draft='synthetic draft';f.answer={questionId:question.questionId,resolution:'resolved',answer:'synthetic answer'};f.steps=[{phase:'planning',status:'complete',started:start,ended:start+45000,elapsedMs:45000},{phase:'planning',status:'complete',started:start+45000,ended:start+90000,elapsedMs:45000}];f.phaseStarted=start+90000;});}
+ assert.equal(ledger.deadline(ledger.read().workflow.trial,'planning'),start+180000);setTime(start+180000);const before=ledger.files();await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);assert.deepEqual(ledger.files(),before);assert.equal(ledger.read().workflow.pending,null);
+});
+for(const [phase,used,attempts,budget]of [['planning',90000,0,180000],['implementation',60000,0,480000],['repair',120000,30000,480000],['review',60000,0,180000]])test(phase+' remaining budget subtracts completed work exactly once',()=>{
+ const start=1000,anchor=start+used+attempts,s={executionWindow:{finalDeadline:9999999},trials:[{id:'trial',started:start}],workflow:{phaseStarted:anchor,pending:null,steps:[{phase:phase==='repair'?'implementation':phase,elapsedMs:used}],attempts:attempts?[{elapsedMs:attempts}]:[]}};
+ assert.equal(comparisonPhaseDeadline(s,'trial',phase),start+budget);
+ s.workflow.pending={started:anchor};assert.equal(comparisonPhaseDeadline(s,'trial',phase),start+budget);
 });
