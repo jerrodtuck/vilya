@@ -9,6 +9,9 @@ import childProcess from 'node:child_process';
 import {syncBuiltinESMExports} from 'node:module';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createSchemaProbeScaffold,schemaProbeActivation,SCHEMA_PROBE_POLICY,SCHEMA_PROBE_ORIGIN,offlineSchemaProbeStore,runOfflineSchemaProbe,publishSchemaProbeClaim} from '../evaluation/schema-probe-campaign.mjs';
+// The test host injects Git configuration. Production rejects it; disposable
+// fixtures run in a clean test process and injection cases add it explicitly.
+for(const key of Object.keys(process.env))if(key.toUpperCase().startsWith('GIT_CONFIG'))delete process.env[key];
 const hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const head='1'.repeat(40),reviews=['gpt-6.1-sol','gpt-6-astra'].map((model,i)=>({model,effort:'high',status:'READY',head,receiptDigest:String(i+1).repeat(64)}));
 function fake({lost=false,badCount=false,rejectedContent=false}={}){const calls=[];return {kind:'fake',calls,async count(packet){calls.push(['count',packet]);return {inputTokens:128,payloadHash:badCount?'0'.repeat(64):hash(packet)};},async send(packet){calls.push(['generation',packet]);if(lost)throw Error('fake unresolved schema');return {text:rejectedContent?null:'fake',usage:{input:128,cachedInput:0,cacheWrite:0,output:40,reasoning:10,fees:0}};}};}
@@ -110,13 +113,13 @@ test('stale concurrent contender cannot replace the winning claim after passing 
   fs.openSync=function(file,...rest){
     if(file===claimFile+'.lock'&&!interleaved){
       interleaved=true;fs.openSync=original;
-      winner=fixture.publishSchemaProbeClaim(winnerArgs);winningBytes=fs.readFileSync(claimFile);
+      assert.throws(()=>fixture.publishSchemaProbeClaim(winnerArgs),/EEXIST/);
     }
     return original.call(fs,file,...rest);
   };
-  try{assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST|attempted|replay/);}finally{fs.openSync=original;}
+  try{winner=fixture.publishSchemaProbeClaim(args);winningBytes=fs.readFileSync(claimFile);}finally{fs.openSync=original;}
   assert.equal(interleaved,true);assert.equal(winner.paidRequests,0);assert.deepEqual(fs.readFileSync(claimFile),winningBytes);
-  assert.equal(JSON.parse(winningBytes).activation.activation.reviews[0].receiptDigest,'3'.repeat(64));
+  assert.equal(JSON.parse(winningBytes).activation.activation.reviews[0].receiptDigest,args.reviews[0].receiptDigest);
   assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);
 });
 test('torn marker, claim and interrupted publication remain held without overwriting evidence',async t=>{
@@ -395,6 +398,25 @@ test('Git identity rejects replacement refs, grafts, shallow boundaries and obje
   childProcess.execFileSync=function(binary,argv,options,...rest){if(binary==='git'){calls++;assert.equal(options.env.GIT_NO_REPLACE_OBJECTS,'1');}return original.call(childProcess,binary,argv,options,...rest);};syncBuiltinESMExports();
   try{fixture.readSchemaProbeClaim();}finally{childProcess.execFileSync=original;syncBuiltinESMExports();}
   assert.ok(calls>0);
+});
+test('shared guard denies cooperating tail writers, concurrent readers and stale crash locks',async t=>{
+  const {args,fixture,claimFile}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  const original=fs.lstatSync;let attempts=0;
+  fs.lstatSync=function(file,...rest){if(file===claimFile+'.blocked.json'){attempts++;assert.throws(()=>fixture.withSchemaProbeGuard(()=>fs.writeFileSync(file,'held')),/EEXIST/);}return original.call(fs,file,...rest);};
+  try{fixture.readSchemaProbeClaim();}finally{fs.lstatSync=original;}
+  assert.ok(attempts>0);assert.equal(fs.existsSync(claimFile+'.blocked.json'),false);assert.equal(fs.existsSync(claimFile+'.guard'),false);
+  fixture.withSchemaProbeGuard(()=>{assert.throws(()=>fixture.readSchemaProbeClaim(),/EEXIST/);assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST/);});
+  fs.writeFileSync(claimFile+'.guard','crash');assert.throws(()=>fixture.readSchemaProbeClaim(),/EEXIST/);assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST/);assert.equal(fs.readFileSync(claimFile+'.guard','utf8'),'crash');
+});
+test('Git config environment injection and redirected local worktree are denied',async t=>{
+  const {root,args,fixture,git}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  for(const key of ['GIT_CONFIG_COUNT','GIT_CONFIG_KEY_0','GIT_CONFIG_VALUE_0','GIT_CONFIG_PARAMETERS','GIT_CONFIG_GLOBAL','GIT_CONFIG_SYSTEM','GIT_CONFIG_NOSYSTEM']){
+    const prior=process.env[key];process.env[key]='0';try{assert.throws(()=>fixture.readSchemaProbeClaim(),/environment override/);}finally{if(prior===undefined)delete process.env[key];else process.env[key]=prior;}
+  }
+  const original=childProcess.execFileSync;let checked=0;
+  childProcess.execFileSync=function(binary,argv,options,...rest){if(binary==='git'){checked++;assert.equal(options.env.HOME,undefined);assert.equal(options.env.USERPROFILE,undefined);assert.equal(options.env.GIT_CONFIG_GLOBAL,process.platform==='win32'?'NUL':'/dev/null');}return original.call(childProcess,binary,argv,options,...rest);};syncBuiltinESMExports();
+  try{fixture.readSchemaProbeClaim();}finally{childProcess.execFileSync=original;syncBuiltinESMExports();}assert.ok(checked>0);
+  const redirected=path.join(root,'redirected');fs.mkdirSync(redirected);git(['config','core.worktree',redirected]);assert.throws(()=>fixture.readSchemaProbeClaim(),/repository location/);git(['config','--unset','core.worktree']);
 });
 test('second-capture predecessor reads and final record trailers reject pre-linearization mutations',async t=>{
   const {root,args,fixture,claimFile}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);

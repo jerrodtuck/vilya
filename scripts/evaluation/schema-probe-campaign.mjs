@@ -82,9 +82,18 @@ function sourceSnapshot(reviewedHead){
   validateSource(after,reviewedHead);return after.head.trim();
 }
 const identityEnv=['GIT_DIR','GIT_COMMON_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES','GIT_SHALLOW_FILE','GIT_REPLACE_REF_BASE'];
-function gitRead(args){if(identityEnv.some(key=>process.env[key]))throw Error('Schema-probe Git identity override denied');return execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true,env:{...process.env,GIT_NO_REPLACE_OBJECTS:'1'}});}
+function gitRead(args){
+  if(Object.keys(process.env).some(key=>key.toUpperCase().startsWith('GIT_CONFIG')||identityEnv.includes(key.toUpperCase())))throw Error('Schema-probe Git environment override denied');
+  const nullFile=process.platform==='win32'?'NUL':'/dev/null';
+  const env={GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:nullFile,GIT_CONFIG_GLOBAL:nullFile,GIT_ATTR_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',GIT_CONFIG_COUNT:'4',GIT_CONFIG_KEY_0:'core.fsmonitor',GIT_CONFIG_VALUE_0:'false',GIT_CONFIG_KEY_1:'core.hooksPath',GIT_CONFIG_VALUE_1:nullFile,GIT_CONFIG_KEY_2:'core.excludesFile',GIT_CONFIG_VALUE_2:nullFile,GIT_CONFIG_KEY_3:'core.attributesFile',GIT_CONFIG_VALUE_3:nullFile};
+  for(const key of ['PATH','Path','SystemRoot','SYSTEMROOT','WINDIR','PATHEXT','TEMP','TMP'])if(process.env[key]!==undefined)env[key]=process.env[key];
+  return execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true,env});
+}
+function expectedGitDir(){const entry=path.join(repo,'.git'),st=fs.lstatSync(entry);if(st.isSymbolicLink())throw Error('Schema-probe Git symlink denied');if(st.isDirectory())return fs.realpathSync(entry);const match=/^gitdir: ([^\r\n]+)\r?\n?$/.exec(safeBytes(entry).toString('utf8'));if(!match)throw Error('Invalid schema-probe Git entry');return fs.realpathSync(path.resolve(repo,match[1]));}
 function fileRecord(file){try{fs.lstatSync(file);}catch(error){if(error.code!=='ENOENT')throw error;return {exists:false,bytes:null};}return {exists:true,bytes:safeBytes(file).toString('base64')};}
 function canonicalSource(){
+  const top=gitRead(['rev-parse','--show-toplevel']).trim(),gitDir=gitRead(['rev-parse','--absolute-git-dir']).trim();
+  if(path.resolve(top)!==path.resolve(repo)||path.resolve(gitDir)!==expectedGitDir())throw Error('Schema-probe repository location changed');
   const identity=gitRead(['rev-parse','--path-format=absolute','HEAD','HEAD^{tree}','--git-common-dir','--git-dir']).trim().split(/\r?\n/),head=identity[0]+'\n',tree=identity[1]+'\n',roots=identity.slice(2),status=gitRead(['status','--porcelain','--untracked-files=all']);
   if(identity.length!==4||!/^[a-f0-9]{40}$/.test(identity[0])||!/^[a-f0-9]{40}$/.test(identity[1]))throw Error('Invalid schema-probe Git identity');
   const index=gitRead(['ls-files','--stage','-v','-z']),indexFlags=index;
@@ -94,7 +103,7 @@ function canonicalSource(){
   for(const root of new Set(roots))for(const relative of ['info/grafts','shallow','objects/info/alternates']){const file=path.resolve(repo,root,relative);overrides[file]=fileRecord(file);}
   if(replaceRefs.trim()||Object.values(overrides).some(record=>record.exists))throw Error('Schema-probe source Git identity override denied');
   let ancestor;try{gitRead(['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,head.trim()]);ancestor=true;}catch(error){if(error.status!==1)throw error;ancestor=false;}
-  const source={head,tree,status,index,indexFlags,staged,worktree,ancestry:{base:SCHEMA_PROBE_POLICY.sourceBase,ancestor,replaceRefs,parents,overrides}};
+  const source={top,gitDir,head,tree,status,index,indexFlags,staged,worktree,ancestry:{base:SCHEMA_PROBE_POLICY.sourceBase,ancestor,replaceRefs,parents,overrides}};
   validateSource(source);return source;
 }
 function validateSource(source,expectedHead=null){
@@ -138,10 +147,29 @@ function stableClaimEvidence(expectedHead=null,expectedClaimDigest=null,ownPubli
   if(expectedHead!==null&&head!==expectedHead||expectedClaimDigest!==null&&claimDigest!==expectedClaimDigest||typeof record.sha256!=='string'||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.claimDigest!==claimDigest||published.claimDigest!==claimDigest||record.sha256!==hash(validated)||!equal(value,validated))throw Error('Schema-probe publication binding changed');
   return {activation:validated,claimDigest};
 }
-export function readSchemaProbeClaim(){return stableClaimEvidence().activation;}
+// All cooperative source/evidence writers, publication, readers and future live
+// dispatch MUST hold this one fixed guard. A crash leaves it held; no recovery or
+// stale-lock deletion is provided. The owner releases only its unchanged inode.
+// Future execution must repeat the bracketed capture immediately before network
+// while holding this guard through dispatch. Post-trailer non-cooperating writes
+// remain outside this bounded scaffold guarantee.
+export function withSchemaProbeGuard(operation){
+  if(typeof operation!=='function')throw Error('Schema-probe guarded operation required');
+  const file=path.join(repo,SCHEMA_PROBE_POLICY.claim+'.guard');let at=path.parse(file).root;
+  for(const part of path.dirname(file).slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe guard symlink denied');}
+  const fd=fs.openSync(file,'wx',0o600),owner=fs.fstatSync(fd);let release=true;
+  try{fs.fsyncSync(fd);const result=operation();if(result&&typeof result.then==='function'){release=false;throw Error('Schema-probe asynchronous guard operation denied; retained');}return result;}
+  finally{fs.closeSync(fd);if(release){const current=fs.lstatSync(file);if(current.dev!==owner.dev||current.ino!==owner.ino||current.size!==0||current.isSymbolicLink())throw Error('Schema-probe guard ownership changed; retained');fs.unlinkSync(file);}}
+}
+export function readSchemaProbeClaim(){return withSchemaProbeGuard(()=>stableClaimEvidence().activation);}
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
 export function publishSchemaProbeClaim(args){
+  const clean=inputSnapshot(args);inputKeys(clean,['initialize','reviewedHead','reviews']);
+  if(clean.initialize!==true)throw Error('Explicit schema-probe claim initialization required');
+  return withSchemaProbeGuard(()=>publishGuardedSchemaProbeClaim(clean));
+}
+function publishGuardedSchemaProbeClaim(args){
   const cleanArgs=inputSnapshot(args);inputKeys(cleanArgs,['initialize','reviewedHead','reviews']);
   const {initialize,reviewedHead,reviews}=cleanArgs;
   if(initialize!==true)throw Error('Explicit schema-probe claim initialization required');
