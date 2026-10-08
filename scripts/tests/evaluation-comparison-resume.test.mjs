@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {ComparisonLedger} from '../evaluation/comparison-ledger.mjs';
-import {advanceComparison} from '../evaluation/comparison-workflow.mjs';
+import {ComparisonLedger,comparisonHash} from '../evaluation/comparison-ledger.mjs';
+import {advanceComparison,importComparisonNative} from '../evaluation/comparison-workflow.mjs';
 import {COMPARISON_POLICY as P} from '../evaluation/comparison-campaign.mjs';
 import {loadFixtures,archiveFixture,context} from '../evaluation/workflow.mjs';
 import {protocolDescriptor} from '../evaluation/workflow-protocol.mjs';
@@ -14,3 +14,42 @@ function terminal(t){const work=fs.mkdtempSync(path.join(os.tmpdir(),'comparison
 test('terminal receipt finalizes in the six-minute final reserve without starting another trial',async t=>{const {ledger,setTime}=terminal(t);const w=ledger.read().executionWindow;setTime(w.dispatchDeadline+1);let sends=0;const result=await advanceComparison({ledger,provider:{send(){sends++;throw Error('must not send');}}});assert.equal(result.status,'dispatch-closed');assert.equal(sends,0);const s=ledger.read();assert.equal(s.trials.length,1);assert.equal(s.trials[0].status,'complete');assert.equal(s.workflow,null);assert.equal(fs.existsSync(path.join(ledger.workspace,P.trials[0].id+'.receipt.json')),true);const before=ledger.files();await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);assert.deepEqual(ledger.files(),before);assert.equal(ledger.read().trials.length,1);});
 test('terminal receipt cannot finalize at or after final deadline',async t=>{const {ledger,setTime}=terminal(t);setTime(ledger.read().executionWindow.finalDeadline);const before=ledger.files();await assert.rejects(advanceComparison({ledger}),/finalization deadline/);assert.deepEqual(ledger.files(),before);assert.equal(fs.existsSync(path.join(ledger.workspace,P.trials[0].id+'.receipt.json')),false);});
 test('dispatch cutoff rejects an unfinished next model phase before pending marker or transport',async t=>{const {ledger,setTime}=terminal(t);ledger.transaction(s=>{s.workflow.phase='review';});setTime(ledger.read().executionWindow.dispatchDeadline);const before=ledger.files();await assert.rejects(advanceComparison({ledger}),/Comparison deadline/);assert.deepEqual(ledger.files(),before);assert.equal(ledger.read().workflow.pending,null);});
+
+test('terminal finalization rechecks advancing clock inside commit before publishing receipt',async t=>{
+ const {ledger}=terminal(t),deadline=ledger.read().executionWindow.finalDeadline,before=ledger.files();let reads=0;
+ ledger.clock=()=>++reads===1?deadline-1:deadline+1;
+ await assert.rejects(advanceComparison({ledger}),/finalization deadline/);
+ assert.equal(reads,2);assert.deepEqual(ledger.files(),before);assert.equal(ledger.read().trials[0].status,'active');
+ assert.equal(fs.existsSync(path.join(ledger.workspace,P.trials[0].id+'.receipt.json')),false);
+});
+test('terminal receipt and trial bind the same checked commit timestamp',async t=>{
+ const {ledger}=terminal(t),deadline=ledger.read().executionWindow.finalDeadline;let now=deadline-3;
+ ledger.clock=()=>++now;
+ assert.equal((await advanceComparison({ledger})).status,'dispatch-closed');
+ const trial=ledger.read().trials[0],receipt=JSON.parse(fs.readFileSync(path.join(ledger.workspace,trial.id+'.receipt.json')));
+ assert.equal(trial.ended,deadline-1);assert.equal(receipt.ended,trial.ended);
+});
+function nativePending(t,limit){
+ const {ledger,setTime}=terminal(t),m=loadFixtures()[0],item=P.trials[6],window=ledger.read().executionWindow;
+ const start=limit==='final'?window.dispatchDeadline-1000:1002,root=path.join(ledger.workspace,item.id);
+ archiveFixture(fileURLToPath(new URL('../..',import.meta.url)),root,m.seed);setTime(start);
+ ledger.transaction(s=>{
+  const completed=P.trials.slice(0,6).map(item=>{const receipt={trial:item.id,bindingDigest:comparisonHash(ledger.bound),status:'complete',accepted:false,steps:[{status:'complete'}]},file=path.join(ledger.workspace,item.id+'.receipt.json');fs.writeFileSync(file,JSON.stringify(receipt));return {id:item.id,environment:'api',started:1000,ended:1002,status:'complete',accepted:false,receiptDigest:comparisonHash(fs.readFileSync(file))};});
+  const phase=limit==='final'?'implementation':'planning',packet={id:item.id+'_step_1',trial:item.id,phase,step:phase,model:'gpt-6.1-sol',effort:'medium',maxOutputTokens:4000,payload:'EXACT PACKET',sourceHashes:context(root,m).map(({path,sha256})=>({path,sha256}))};
+  s.trials=[...completed,{id:item.id,environment:'native',started:start,ended:null,status:'active',accepted:null,receiptDigest:null}];
+  Object.assign(s.workflow,{trial:item.id,arm:item.arm,root,phase,phaseStarted:start,pending:{kind:'native',packet,started:start},steps:[],sourceHashes:packet.sourceHashes});
+ });
+ const s=ledger.read(),f=s.workflow,p=f.pending.packet,deadline=ledger.deadline(f.trial,f.phase),iso=n=>new Date(n).toISOString(),text='synthetic complete plan';
+ const zero={input_tokens:0,cached_input_tokens:0,cache_write_input_tokens:0,output_tokens:0,reasoning_output_tokens:0,total_tokens:0},counts={...zero,input_tokens:50,output_tokens:10,total_tokens:60};
+ const manifest={schemaVersion:1,agentId:'native_race',taskPath:'/root/native_race',sessionUUID:'11111111-1111-4111-8111-111111111111',parentSessionUUID:null,model:p.model,effort:p.effort,head:ledger.bound.head,fixture:f.fixture,phase:p.phase,startedAt:iso(start),endedAt:iso(deadline-2),completionObserved:{completed:true,source:'native-agent-final',observedAt:iso(deadline-1)},freshSession:true,historyMode:'none',phaseCount:1,baseline:{timestamp:iso(start),counts:zero},terminal:{timestamp:iso(deadline-2),counts},packetDigest:comparisonHash(p),outputDigest:comparisonHash(text),phaseId:p.id};
+ const rows=[{type:'session_meta',timestamp:iso(start),payload:{id:manifest.sessionUUID,parent_thread_id:null,agent_path:manifest.taskPath}},{type:'turn_context',timestamp:iso(start),payload:{model:p.model,effort:p.effort,turn_id:p.id}},{type:'event_msg',timestamp:iso(start),payload:{type:'task_started',turn_id:p.id}},{type:'response_item',timestamp:iso(start),payload:{type:'message',role:'user',content:[{type:'input_text',text:p.payload}]}},...Array.from({length:3},()=>({type:'response_item',timestamp:iso(start),payload:{type:'reasoning',summary:[{type:'summary_text',text:'x'.repeat(2000000)}]}})),{type:'response_item',timestamp:iso(deadline-2),payload:{type:'message',role:'assistant',phase:'final',content:[{type:'output_text',text}]}},{type:'event_msg',timestamp:iso(deadline-2),payload:{type:'token_count',info:{total_token_usage:counts,last_token_usage:counts}}},{type:'event_msg',timestamp:iso(deadline-2),payload:{type:'task_complete',turn_id:p.id,last_agent_message:text}}];
+ const manifestFile=path.join(ledger.workspace,'import.manifest.json'),sessionFile=path.join(ledger.workspace,'import.jsonl'),outputFile=path.join(ledger.workspace,'import.txt');fs.writeFileSync(manifestFile,JSON.stringify(manifest));fs.writeFileSync(sessionFile,rows.map(r=>JSON.stringify(r)).join('\n')+'\n');fs.writeFileSync(outputFile,text);
+ return {ledger,deadline,input:{manifestFile,sessionFile,outputFile}};
+}
+for(const limit of ['phase','final'])test('native large-session verification cannot commit beyond '+limit+' deadline',async t=>{
+ const {ledger,deadline,input}=nativePending(t,limit),before=ledger.files(),state=ledger.read();let reads=0;
+ ledger.clock=()=>++reads===1?deadline-1:deadline+1;
+ await assert.rejects(importComparisonNative({ledger,...input}),/phase commit deadline/);
+ assert.equal(reads,2);assert.deepEqual(ledger.files(),before);assert.deepEqual(ledger.read(),state);
+ assert.equal(ledger.read().nativeReceipts.length,0);assert.equal(ledger.read().workflow.pending.kind,'native');
+});
