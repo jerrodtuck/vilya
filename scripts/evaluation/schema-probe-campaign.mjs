@@ -177,6 +177,24 @@ export function withSchemaProbeGuard(operation){
   finally{fs.closeSync(fd);if(release){const current=fs.lstatSync(file);if(current.dev!==owner.dev||current.ino!==owner.ino||current.size!==0||current.isSymbolicLink())throw Error('Schema-probe guard ownership changed; retained');fs.unlinkSync(file);}}
 }
 export function readSchemaProbeClaim(){return withSchemaProbeGuard(()=>stableClaimEvidence().activation);}
+// A branded lease bridges the synchronous evidence boundary and async dispatch.
+// No callback is accepted. Crash recovery never removes a retained guard.
+const leases=new WeakMap();
+export function acquireSchemaProbeLease(){
+  const file=path.join(repo,SCHEMA_PROBE_POLICY.claim+'.guard');
+  let at=path.parse(file).root;
+  for(const part of path.dirname(file).slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe guard symlink denied');}
+  const fd=fs.openSync(file,'wx',0o600),owner=fs.fstatSync(fd);
+  fs.fsyncSync(fd);const token=Object.freeze({});leases.set(token,{file,fd,owner});return token;
+}
+function leaseOwner(token){
+  const lease=leases.get(token);if(!lease)throw Error('Invalid schema-probe lease');
+  const st=fs.lstatSync(lease.file);
+  if(st.isSymbolicLink()||st.dev!==lease.owner.dev||st.ino!==lease.owner.ino||st.size!==0)throw Error('Schema-probe guard ownership changed; retained');
+  return lease;
+}
+export function readSchemaProbeClaimLocked(token){leaseOwner(token);const value=stableClaimEvidence().activation;leaseOwner(token);return value;}
+export function closeSchemaProbeLease(token){const lease=leaseOwner(token);leases.delete(token);fs.closeSync(lease.fd);fs.unlinkSync(lease.file);}
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
 export function publishSchemaProbeClaim(args){
