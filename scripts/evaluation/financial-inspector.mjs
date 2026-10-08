@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {CONTRACT4_REASON_CODES,inspectContract4,projectContract4,validateContract4Projection} from './financial-contract4.mjs';
+import {CONTRACT4_REASON_CODES,inspectContract4,projectContract4,validateContract4Projection,inertOwnVersion} from './financial-contract4.mjs';
 // Prospective contract 3 admits only the documented optional message phase.
 export const FINANCIAL_CONTRACT_VERSION=3;
 const RESPONSE_KEYS = new Set(['id','object','created_at','completed_at','status','error','incomplete_details','instructions','max_output_tokens','max_tool_calls','model','output','parallel_tool_calls','previous_response_id','reasoning','store','temperature','text','tool_choice','tools','top_p','truncation','usage','user','metadata','service_tier','safety_identifier','prompt_cache_key','prompt_cache_options','prompt_cache_retention','background','conversation','top_logprobs','personality','access_programs','moderation','prompt','prompt_cache_diagnostics']);
@@ -107,7 +107,8 @@ export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VE
  const prospective=version===3?{unknownEnvelope:structuralFields(envelope,Object.keys(envelope).filter(key=>!fields.envelope.includes(key)),credential),billing:{type:typeBucket(envelope.billing,own(envelope,'billing')),...structuralFields(record(envelope.billing)?envelope.billing:{},record(envelope.billing)?Object.keys(envelope.billing):[],credential),payer:!record(envelope.billing)||!own(envelope.billing,'payer')?'absent':['developer','openai'].includes(envelope.billing.payer)?envelope.billing.payer:'OTHER'}}:{};
  return {version,...(version>=2?{recognizedRejectedFields:FINANCIAL_CANDIDATE_FIELDS.filter(key=>own(envelope,key))}:{}),...prospective,envelopeFields,envelopeExtras:extraProjection(Object.keys(envelope).filter(key=>!fields.envelope.includes(key)).length),messageFields:Object.fromEntries(fields.message.map(key=>[key,TYPE_BUCKETS.filter(type=>messageSets[key].has(type))])),messageExtras:extraProjection(messageExtras),messageContentShapes:CONTENT_SHAPES.filter(shape=>shapes.has(shape)),messageContentCauses:CONTENT_CAUSES.filter(cause=>causes.has(cause))};
 }
-export function validateFinancialDiagnostics(value,expectedVersion=value?.version){
+export function validateFinancialDiagnostics(value,expectedVersion){
+ if(expectedVersion===undefined)expectedVersion=inertOwnVersion(value);
  if(expectedVersion===4)return validateContract4Projection(value);
  const fields=projectionFields(expectedVersion);
  const invalid=()=>{throw Error('Invalid bounded financial diagnostics');};

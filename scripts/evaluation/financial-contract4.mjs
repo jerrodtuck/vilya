@@ -6,6 +6,18 @@ export const CONTRACT4_REASON_CODES=Object.freeze(['unsafe-evidence','request-to
 export const TOOL_USAGE_LIMITS=Object.freeze({maxDepth:4,maxNodes:64,maxKeys:8,maxKeyBytes:64,maxPaths:8});
 const plain=value=>!!value&&typeof value==='object'&&!types.isProxy(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 function ownData(value){if(!plain(value))throw Error('Own plain evidence required');const fields=Object.getOwnPropertyDescriptors(value);if(Reflect.ownKeys(fields).some(key=>typeof key!=='string'||!Object.hasOwn(fields[key],'value')))throw Error('Inert own data required');return fields;}
+export function inertOwnVersion(value,key='version'){if(!plain(value))throw Error('Unsafe diagnostic version');const field=Object.getOwnPropertyDescriptor(value,key);if(!field||!Object.hasOwn(field,'value'))throw Error('Unsafe diagnostic version accessor');return field.value;}
+// Validation must establish exactly what JSON serialization can read. Hidden
+// hooks/extras are forbidden, not merely omitted by Object.keys.
+export function assertInertDiagnosticData(value,seen=new Set(),budget={nodes:0},depth=0){
+ if(value===null||typeof value==='string'||typeof value==='boolean'||typeof value==='number'&&Number.isFinite(value))return true;
+ if(!value||typeof value!=='object'||types.isProxy(value)||++budget.nodes>4096||depth>32||seen.has(value))throw Error('Unsafe diagnostic serialization');
+ const array=Array.isArray(value);if(array?Object.getPrototypeOf(value)!==Array.prototype:!plain(value))throw Error('Unsafe diagnostic prototype');
+ if(Object.getOwnPropertyDescriptor(Object.prototype,'toJSON')||array&&Object.getOwnPropertyDescriptor(Array.prototype,'toJSON'))throw Error('Unsafe inherited serialization hook');
+ const fields=Object.getOwnPropertyDescriptors(value),keys=Reflect.ownKeys(fields);
+ if(keys.length>(array?257:128)||keys.some(key=>typeof key!=='string'||!Object.hasOwn(fields[key],'value')||key==='toJSON'||!(array&&key==='length')&&!fields[key].enumerable)||array&&(keys.length!==fields.length.value+1||keys.some(key=>key!=='length'&&!/^(0|[1-9][0-9]*)$/.test(key))))throw Error('Unsafe diagnostic own fields');
+ seen.add(value);try{for(const key of keys)if(!(array&&key==='length'))assertInertDiagnosticData(fields[key].value,seen,budget,depth+1);}finally{seen.delete(value);}return true;
+}
 function snapshot(value,seen=new Set(),budget={nodes:0},depth=0){
  if(value===null||['string','number','boolean','undefined'].includes(typeof value))return value;
  if(++budget.nodes>4096||depth>20||!value||typeof value!=='object'||types.isProxy(value)||seen.has(value))throw Error('Evidence bound');
@@ -36,6 +48,7 @@ export function projectContract4(data,{credential=null}={}){
  return {version:4,billingPayer:payer===undefined?'absent':['developer','openai'].includes(payer)?payer:'OTHER',frequencyPenalty:penalty(d?.frequency_penalty),presencePenalty:penalty(d?.presence_penalty),toolUsage:inspectToolUsage(d?.tool_usage,{credential})};
 }
 export function validateContract4Projection(value){
+ assertInertDiagnosticData(value);
  const exact=(v,keys)=>plain(v)&&Object.keys(v).sort().join('|')===keys.sort().join('|'),uint=n=>Number.isSafeInteger(n)&&n>=0;
  if(!exact(value,['version','billingPayer','frequencyPenalty','presencePenalty','toolUsage'])||value.version!==4||!['absent','developer','openai','OTHER'].includes(value.billingPayer)||['frequencyPenalty','presencePenalty'].some(key=>!['absent','null','boolean','string','array','object','OTHER','zero','nonzero'].includes(value[key])))throw Error('Invalid projection4');
  const t=value.toolUsage;if(!exact(t,['type','allZero','valid','depth','nodeCount','leafCount','paths','overflow'])||!['absent','null','boolean','number','string','array','object','OTHER'].includes(t.type)||typeof t.allZero!=='boolean'||typeof t.valid!=='boolean'||typeof t.overflow!=='boolean'||!uint(t.depth)||t.depth>5||!uint(t.nodeCount)||t.nodeCount>64||!uint(t.leafCount)||t.leafCount>64||t.leafCount>t.nodeCount||!Array.isArray(t.paths)||t.paths.length>8||t.allZero!==(t.valid&&t.leafCount>0))throw Error('Invalid tool usage projection4');

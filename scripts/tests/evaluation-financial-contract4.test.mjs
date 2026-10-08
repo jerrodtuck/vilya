@@ -47,3 +47,15 @@ test('prior contract2/3 and projection1/2/3 retain exact serialized behavior',as
  for(const d of cases){for(const version of [2,3])assert.equal(JSON.stringify(inspectFinancialResponse(d,request(),17,version)),JSON.stringify(prior.inspectFinancialResponse(d,request(),17,version)));for(const version of [1,2,3])assert.equal(JSON.stringify(projectFinancialDiagnostics(d,version)),JSON.stringify(prior.projectFinancialDiagnostics(d,version)));}
  assert.throws(()=>inspectFinancialResponse(baseline,request(),17,1));assert.throws(()=>prior.inspectFinancialResponse(baseline,request(),17,1));
 });
+test('projection4/schema9 validation cannot approve hidden hooks or private serialized bodies',()=>{
+ const projection=()=>projectFinancialDiagnostics(body(),4),event=()=>diagnosticEvent({requestId:'compare1_serialization',kind:'generation',stage:'body-observed',data:body(),clock:()=>1,billingValidated:true,billingFailureCode:null,financialInspection:inspect(),financialContractVersion:4,diagnosticProjection:projection()});let invoked=0;
+ const hook=()=>{invoked++;return 'PRIVATE_BODY';};
+ const targets=[value=>value,value=>value.toolUsage,value=>value.toolUsage.paths,value=>value.toolUsage.paths[0]];
+ for(const target of targets)for(const kind of ['toJSON','hidden','accessor','symbol']){const p=projection(),at=target(p);if(kind==='toJSON')Object.defineProperty(at,'toJSON',{value:hook});if(kind==='hidden')Object.defineProperty(at,'private',{value:'PRIVATE_BODY'});if(kind==='accessor')Object.defineProperty(at,'private',{enumerable:true,get:hook});if(kind==='symbol')at[Symbol('private')]='PRIVATE_BODY';assert.throws(()=>{validateFinancialDiagnostics(p);return JSON.stringify(p);});}
+ for(const target of [value=>value,value=>value.counts,value=>value.financialInspection,value=>value.financialInspection.fixedReasonCodes,value=>value.diagnosticProjection.toolUsage.paths]){const e=event();Object.defineProperty(target(e),'toJSON',{value:hook});assert.throws(()=>{validateDiagnostic(e);return JSON.stringify(e);});}
+ const p=projection();Object.defineProperty(p,'version',{get:hook});assert.throws(()=>validateFinancialDiagnostics(p));const e=event();Object.defineProperty(e,'schemaVersion',{get:hook});assert.throws(()=>validateDiagnostic(e));
+ const extraArray=projection();extraArray.toolUsage.paths.extra='PRIVATE_BODY';assert.throws(()=>validateFinancialDiagnostics(extraArray));const hole=projection();delete hole.toolUsage.paths[0];assert.throws(()=>validateFinancialDiagnostics(hole));
+ const proxied=new Proxy(projection(),{get:hook,ownKeys:hook,getOwnPropertyDescriptor:hook});assert.throws(()=>validateFinancialDiagnostics(proxied));assert.equal(invoked,0);
+ for(const prototype of [Object.prototype,Array.prototype]){const p=projection();Object.defineProperty(prototype,'toJSON',{value:hook,configurable:true});try{assert.throws(()=>validateFinancialDiagnostics(p));}finally{delete prototype.toJSON;}}assert.equal(invoked,0);
+ const safe=event();validateDiagnostic(safe);assert.doesNotMatch(JSON.stringify(safe),/PRIVATE_BODY|PRIVATE_RESPONSE/);
+});
