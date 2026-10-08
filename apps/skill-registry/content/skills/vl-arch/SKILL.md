@@ -32,6 +32,13 @@ Use `$vl-arch` or explicitly read/apply this source. Direction only: never imple
 dispatch, merge, prune, or activate `vl-orch-codex` from this seat. Codex planning
 belongs to the orch; no standing Codex Planner. Shared research/ADR rules below apply.
 
+**Standing seat model:** select **GPT-6.1 Sol / high** in the Codex UI before invoking
+this skill. Skill invocation supplies instructions; it cannot change the active chat's
+model or reasoning effort. Keep this seat on Sol/high for product direction and difficult
+architecture. Use a correctly pinned bounded child for another phase when supported.
+Escalate to Astra/high (xhigh only for justified hard analysis) only after a recorded
+Sol impasse or capability failure; never merely because the task is architectural.
+
 **Standing human messaging authorization — entry prerequisite:** the operator-facing
 entry must explicitly authorize this architect to initiate direction handoffs to, and
 reply to questions from, the owning Codex orch on the same product board. #329 grants

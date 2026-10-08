@@ -23,6 +23,13 @@ Explicit formats and fixed output contracts win; presentation grants no new auth
 
 Invoke $vl-orch-codex when discovered, or explicitly read and apply this source.
 
+**Standing seat model:** select **GPT-6.1 Sol / medium** in the Codex UI before
+invoking this skill. Skill invocation supplies instructions; it cannot change the
+active chat's model or reasoning effort. Keep orchestration on Sol/medium and dispatch
+correctly pinned children for bounded phase work: Luna/low for enumerated mechanical
+work, Sol/medium for implementation and repair, Sol/high for independent review, and
+Astra/high or justified xhigh only after a recorded Sol impasse or capability failure.
+
 One orchestrator per repo, in the main clone on its default branch. The architect is
 one per product board and owns direction. You own planning and coordination; workers
 implement. Never activate another seat, implement feature code, push the default

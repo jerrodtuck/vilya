@@ -28,9 +28,10 @@ test('communication edits preserve coordination while the authorized routing res
 });
 test('ADR insertion preserves the full preamble and every historical byte',()=>{
  const base=atBase('docs/DECISIONS.md'),current=read('docs/DECISIONS.md');const boundary=base.search(/^## \d{4}-\d{2}-\d{2} — /m);assert.ok(boundary>base.indexOf('## YYYY-MM-DD'));
- const entry=current.slice(boundary).split(/^## \d{4}-\d{2}-\d{2} — /m)[1];assert.ok(entry.startsWith('Shared clear writing and automatic presentation (#341)'));
+ const entries=current.slice(boundary).split(/^## \d{4}-\d{2}-\d{2} — /m);assert.ok(entries[1].startsWith('Standing Codex seats use explicit Sol models (#363)'));assert.ok(entries[2].startsWith('Shared clear writing and automatic presentation (#341)'));
  const oldStart=current.indexOf(base.slice(boundary));assert.ok(oldStart>boundary);assert.equal(current.slice(0,boundary)+current.slice(oldStart),base);
  for(const fact of ['strict ASD-STE100','restrictive vocabulary','controlled dictionary','design intent','untested at decision time','5974655990','separate from design intent'])assert.ok(current.slice(boundary,oldStart).toLowerCase().includes(fact.toLowerCase()));
+ for(const fact of ['GPT-6.1 Sol/high','GPT-6.1 Sol/medium','cannot change the active chat model','recorded Sol impasse','6068335492'])assert.ok(current.slice(boundary,oldStart).includes(fact),fact);
 });
 test('only remaining coverage adoption statuses change while merged sibling rows stay exact',()=>{
  const base=atBase('docs/design/codex-skill-coverage.md'),current=read('docs/design/codex-skill-coverage.md');for(const slug of ['vl-adhd','vl-present'])assert.equal(current.split('\n').find(row=>row.startsWith('| ['+slug+']')),base.split('\n').find(row=>row.startsWith('| ['+slug+']')));
