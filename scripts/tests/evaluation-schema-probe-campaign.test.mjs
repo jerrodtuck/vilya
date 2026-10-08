@@ -26,7 +26,7 @@ test('activation requires two distinct exact-head READY reviews and leaves the w
   assert.throws(()=>schemaProbeActivation(scaffold,{...args,reviews:reviews.slice(0,1)}));
   for(const key of ['head','status','model','receiptDigest']){const changed=structuredClone(reviews);changed[1][key]=changed[0][key];if(key==='head'||key==='status')changed[1][key]='stale';assert.throws(()=>schemaProbeActivation(scaffold,{...args,reviews:changed}));}
   const changed=structuredClone(scaffold);changed.policy.carry.held+=1;assert.throws(()=>schemaProbeActivation(changed,args));
-  assert.throws(()=>publishSchemaProbeClaim({initialize:false}),/Explicit/);
+  assert.throws(()=>publishSchemaProbeClaim({initialize:false,reviewedHead:head,reviews}),/Explicit/);
 });
 test('fake proof makes one exact count and one generation then stops with no replay',async()=>{
   const store=offlineSchemaProbeStore(),provider=fake();
@@ -228,4 +228,42 @@ test('settlement uses a frozen data snapshot and ignores later mutation of the r
   provider.send=async()=>{setTimeout(()=>{usage.output=-1000000;},0);return {usage};};
   const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000});
   await new Promise(resolve=>setTimeout(resolve,5));assert.equal(usage.output,-1000000);assert.ok(Number.isSafeInteger(result.cost));assert.ok(result.cost>=0);assert.ok(result.cost<=result.reservation);assert.equal(result.known,10929+result.cost);assert.equal(result.held,361646);assert.equal(result.exposure,372575+result.cost);
+});
+test('activation snapshots reject accessors and proxies at every caller-controlled layer without invoking getters',()=>{
+  let reads=0;
+  const accessor=(object,key)=>Object.defineProperty(object,key,{get(){reads++;throw Error('malicious input accessor');},enumerable:true,configurable:true});
+  const basic=()=>({scaffold:structuredClone(createSchemaProbeScaffold()),args:{reviewedHead:head,currentHead:head,reviews:structuredClone(reviews)}});
+  const bad=[
+    v=>accessor(v.scaffold,'activation'),v=>accessor(v.scaffold,'policy'),v=>accessor(v.scaffold.policy,'nativeEnabled'),v=>accessor(v.scaffold.policy,'retries'),
+    v=>accessor(v.scaffold.policy,'carry'),v=>accessor(v.scaffold.policy.carry,'known'),v=>accessor(v.scaffold,'predecessorDigests'),
+    v=>accessor(v.scaffold.predecessorDigests,Object.keys(v.scaffold.predecessorDigests)[0]),
+    v=>accessor(v.scaffold.policy.consumedSlotHistory,'0'),v=>accessor(v.scaffold.policy.consumedSlotHistory[0],'slots'),
+    v=>accessor(v.args,'reviews'),v=>accessor(v.args.reviews,'0'),v=>accessor(v.args,'reviewedHead'),v=>accessor(v.args,'currentHead'),
+    ...['head','receiptDigest','model','effort','status'].map(key=>v=>accessor(v.args.reviews[0],key)),
+    v=>{v.scaffold=new Proxy(v.scaffold,{});},v=>{v.scaffold.policy=new Proxy(v.scaffold.policy,{});},v=>{v.scaffold.policy.carry=new Proxy(v.scaffold.policy.carry,{});},
+    v=>{v.scaffold.predecessorDigests=new Proxy(v.scaffold.predecessorDigests,{});},v=>{v.args=new Proxy(v.args,{});},v=>{v.args.reviews=new Proxy(v.args.reviews,{});},v=>{v.args.reviews[0]=new Proxy(v.args.reviews[0],{});},
+    v=>{v.args.reviews[0]=Object.assign(Object.create({extra:true}),v.args.reviews[0]);},v=>{v.scaffold.policy.carry.extra=0;},v=>{v.args.reviews[0].extra=0;},
+    v=>{v.args.reviews.extra=0;},v=>{delete v.args.reviews[0];},v=>{v.args.extra=0;},v=>{v.scaffold.extra=0;}
+  ];
+  for(const mutate of bad){const value=basic();mutate(value);assert.throws(()=>schemaProbeActivation(value.scaffold,value.args));}
+  assert.equal(reads,0);
+});
+test('validated activation retains inert reviews and reconstructed policy despite later caller mutation',()=>{
+  const scaffold=structuredClone(createSchemaProbeScaffold()),args={reviewedHead:head,currentHead:head,reviews:structuredClone(reviews)};
+  const activated=schemaProbeActivation(scaffold,args);
+  scaffold.policy.nativeEnabled=true;scaffold.policy.retries=999;scaffold.policy.carry.held=0;scaffold.predecessorDigests[Object.keys(scaffold.predecessorDigests)[0]]='0'.repeat(64);
+  for(const field of ['head','receiptDigest','model','effort','status'])args.reviews[0][field]='changed';
+  assert.deepEqual(activated.policy,SCHEMA_PROBE_POLICY);assert.deepEqual(activated.predecessorDigests,SCHEMA_PROBE_ORIGIN);assert.deepEqual(activated.activation.reviews,reviews);assert.throws(()=>{activated.activation.reviews[0].head='changed';},TypeError);
+});
+test('publisher rejects malformed own-data inputs before creating any publication attempt',()=>{
+  let reads=0;
+  for(const field of ['initialize','reviewedHead','reviews']){const args={initialize:true,reviewedHead:head,reviews:structuredClone(reviews)};Object.defineProperty(args,field,{get(){reads++;throw Error('malicious publisher getter');},enumerable:true});assert.throws(()=>publishSchemaProbeClaim(args));}
+  for(const field of ['head','receiptDigest','model','effort','status']){const args={initialize:true,reviewedHead:head,reviews:structuredClone(reviews)};Object.defineProperty(args.reviews[0],field,{get(){reads++;return 'changing';},enumerable:true});assert.throws(()=>publishSchemaProbeClaim(args));}
+  assert.throws(()=>publishSchemaProbeClaim(new Proxy({initialize:true,reviewedHead:head,reviews},{})));assert.equal(reads,0);
+});
+test('publisher claim uses its validated snapshot if caller reviews mutate during publication',async t=>{
+  const {args,fixture,claimFile}=await publicationFixture(t),original=fs.openSync,expected=structuredClone(args.reviews);
+  fs.openSync=function(file,...rest){if(file===claimFile+'.lock'){args.initialize=false;args.reviewedHead='changed';for(const field of ['head','receiptDigest','model','effort','status'])args.reviews[0][field]='changed';}return original.call(fs,file,...rest);};
+  try{fixture.publishSchemaProbeClaim(args);}finally{fs.openSync=original;}
+  const claim=JSON.parse(fs.readFileSync(claimFile));assert.deepEqual(claim.activation.activation.reviews,expected);assert.equal(claim.activation.policy.nativeEnabled,false);assert.equal(claim.activation.policy.retries,0);
 });

@@ -38,8 +38,32 @@ export const SCHEMA_PROBE_POLICY=freeze({
 });
 export function createSchemaProbeScaffold(){return freeze({policy:structuredClone(SCHEMA_PROBE_POLICY),predecessorDigests:structuredClone(SCHEMA_PROBE_ORIGIN),activation:null,executionWindow:null,paidRequests:0});}
 function validateScaffold(value){if(!equal(value,createSchemaProbeScaffold()))throw Error('Immutable schema-probe scaffold changed');}
-export function schemaProbeActivation(scaffold,{reviewedHead,currentHead,reviews}){
-  validateScaffold(scaffold);
+function inputSnapshot(value,seen=new Set(),depth=0){
+  if(value===null||['string','boolean'].includes(typeof value))return value;
+  if(typeof value==='number'&&Number.isSafeInteger(value))return value;
+  if(!value||typeof value!=='object'||types.isProxy(value)||depth>12||seen.has(value))throw Error('Invalid schema-probe input data');
+  seen.add(value);
+  try{
+    if(Array.isArray(value)){
+      if(Object.getPrototypeOf(value)!==Array.prototype)throw Error('Inherited schema-probe array denied');
+      const fields=Object.getOwnPropertyDescriptors(value),length=fields.length?.value;
+      if(!Number.isSafeInteger(length)||length<0||length>2048||Reflect.ownKeys(fields).length!==length+1)throw Error('Invalid schema-probe array fields');
+      const result=[];
+      for(let i=0;i<length;i++){const field=fields[String(i)];if(!field||!Object.hasOwn(field,'value'))throw Error('Accessor schema-probe array denied');result.push(inputSnapshot(field.value,seen,depth+1));}
+      return freeze(result);
+    }
+    const fields=ownData(value),result={};
+    if(Object.keys(fields).length>128)throw Error('Schema-probe input bound');
+    for(const [key,field]of Object.entries(fields))Object.defineProperty(result,key,{value:inputSnapshot(field.value,seen,depth+1),enumerable:true});
+    return freeze(result);
+  }finally{seen.delete(value);}
+}
+function inputKeys(value,names){if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).sort().join()!==[...names].sort().join())throw Error('Invalid schema-probe input fields');}
+export function schemaProbeActivation(scaffold,args){
+  const cleanScaffold=inputSnapshot(scaffold),cleanArgs=inputSnapshot(args);
+  inputKeys(cleanArgs,['reviewedHead','currentHead','reviews']);
+  const {reviewedHead,currentHead,reviews}=cleanArgs;
+  validateScaffold(cleanScaffold);
   if(!/^[a-f0-9]{40}$/.test(reviewedHead)||reviewedHead!==currentHead)throw Error('Exact reviewed schema-probe head required');
   if(!Array.isArray(reviews)||reviews.length!==2)throw Error('Two schema-probe reviews required');
   const digests=new Set();
@@ -48,13 +72,15 @@ export function schemaProbeActivation(scaffold,{reviewedHead,currentHead,reviews
     if(!r||Object.keys(r).sort().join()!==['model','effort','status','head','receiptDigest'].sort().join()||r.model!==model||r.effort!=='high'||r.status!=='READY'||r.head!==reviewedHead||!/^[a-f0-9]{64}$/.test(r.receiptDigest)||digests.has(r.receiptDigest))throw Error('Schema-probe review stale or invalid');
     digests.add(r.receiptDigest);
   }
-  return freeze({...structuredClone(scaffold),activation:{reviewedHead,reviews:structuredClone(reviews),scaffoldDigest:hash(scaffold)},executionWindow:null,paidRequests:0});
+  return freeze({...createSchemaProbeScaffold(),activation:{reviewedHead,reviews,scaffoldDigest:hash(cleanScaffold)},executionWindow:null,paidRequests:0});
 }
 function safeBytes(file){let at=path.parse(file).root;for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.existsSync(at)&&fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe symlink denied');}const st=fs.statSync(file);if(!st.isFile()||st.size>1000000)throw Error('Schema-probe evidence bound');return fs.readFileSync(file);}
 export function verifySchemaProbePredecessor(){for(const [relative,digest]of Object.entries(SCHEMA_PROBE_ORIGIN))if(sha(safeBytes(path.join(repo,relative)))!==digest)throw Error('Frozen schema-probe predecessor changed');return true;}
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
-export function publishSchemaProbeClaim({initialize,reviewedHead,reviews}){
+export function publishSchemaProbeClaim(args){
+  const cleanArgs=inputSnapshot(args);inputKeys(cleanArgs,['initialize','reviewedHead','reviews']);
+  const {initialize,reviewedHead,reviews}=cleanArgs;
   if(initialize!==true)throw Error('Explicit schema-probe claim initialization required');
   const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
   execFileSync('git',['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,currentHead],{cwd:repo,stdio:'ignore',windowsHide:true});
