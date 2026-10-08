@@ -23,6 +23,21 @@ export function RegistryList() {
         Every version is a git commit; edits happen in your editor and flow
         through the loop. Click any skill for its frontmatter, body, and history.
       </p>
+      <aside className="callout">
+        <h2>When a new model ships</h2>
+        <p>
+          Every skill uses the same evidence-first route: screen current independent
+          benchmarks and official pricing, challenge the lowest applicable proven
+          seat, then run the smallest matched Vilya check for skill adherence,
+          repair cost, or native Codex transfer. Paid execution stays operator-only;
+          this site records the policy and sanitized results.
+        </p>
+        <p>
+          <Link href="/evaluation/policy">Read the recalibration policy</Link>
+          {" · "}
+          <Link href="/skills/vl-orch-codex">Read the Codex routing contract</Link>
+        </p>
+      </aside>
 
       {CATEGORY_ORDER.map((cat) =>
         groups[cat].length === 0 ? null : (

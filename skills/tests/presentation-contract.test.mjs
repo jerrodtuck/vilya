@@ -25,7 +25,7 @@ function anchors(markdown) {
 
 test('portable companion has stable public sections and metadata/coverage agreement', () => {
   assert.match(skill, /^---\nname: vl-present\n/);
-  assert.deepEqual([...skill.matchAll(/^## (.+)$/gm)].map(match => match[1]), stable);
+  assert.deepEqual([...skill.matchAll(/^## (.+)$/gm)].map(match => match[1]), [...stable, 'New-model recalibration']);
   const rows = read('docs/design/codex-skill-coverage.md').split('\n').filter(row => row.startsWith('| [vl-present]'));
   assert.equal(rows.length, 1);
   const row = rows[0].split(' | ');
