@@ -86,26 +86,35 @@ export function publishSchemaProbeClaim({initialize,reviewedHead,reviews}){
 
 const proofs=new WeakMap();
 // Fake adapters are never accepted by a live ledger and this token is process-local.
-export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-probe-proof',status:'scaffold',executionWindow:null,newCountCalls:0,consumedCountCalls:5,newGenerations:0,newTrialSlots:0,consumedTrialSlots:4,consumedSlotHistory:structuredClone(SCHEMA_PROBE_POLICY.consumedSlotHistory),reservation:0,cost:null,held:361646,known:10929,exposure:372575,carriedCountCalls:5,carriedTrialSlots:4};const store=Object.freeze({read:()=>structuredClone(proofs.get(store))});proofs.set(store,state);return store;}
+export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-probe-proof',status:'scaffold',executionWindow:null,lastTime:null,newCountCalls:0,consumedCountCalls:5,newGenerations:0,newTrialSlots:0,consumedTrialSlots:4,consumedSlotHistory:structuredClone(SCHEMA_PROBE_POLICY.consumedSlotHistory),reservation:0,cost:null,held:361646,known:10929,exposure:372575,carriedCountCalls:5,carriedTrialSlots:4};const store=Object.freeze({read:()=>structuredClone(proofs.get(store))});proofs.set(store,state);return store;}
 export async function runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow=false,prompt,clock=Date.now}){
   if(!proofs.has(store)||provider?.kind!=='fake'||authorizeSyntheticWindow!==true||typeof prompt!=='string')throw Error('Synthetic schema-probe authorization required; live unavailable');
   let s=store.read();if(s.status!=='scaffold')throw Error('Schema-probe already attempted; no replay or reset');
   // Claim the private store before invoking any supplied callback, including the
   // clock. Nested calls cannot read scaffold and overwrite this invocation.
   s.status='authorizing';proofs.set(store,structuredClone(s));
+  const sampleClock=()=>{
+    const sample=clock();
+    if(!Number.isSafeInteger(sample)||sample<0||s.lastTime!==null&&sample<s.lastTime)throw Error('Invalid or regressed schema-probe clock');
+    s.lastTime=sample;
+    if(s.executionWindow&&sample>=s.executionWindow.deadline)throw Error('Schema-probe clock expired');
+    return sample;
+  };
   let now;
-  try{now=clock();if(!Number.isSafeInteger(now)||now<0)throw Error('Invalid schema-probe clock');}
+  try{now=sampleClock();if(!Number.isSafeInteger(now+60000))throw Error('Schema-probe deadline overflow');}
   catch(error){s.status='stopped';proofs.set(store,structuredClone(s));throw error;}
   s.status='count-pending';s.executionWindow={startedAt:now,deadline:now+60000};s.newCountCalls=1;s.consumedCountCalls+=1;s.newTrialSlots=1;s.consumedTrialSlots+=1;s.consumedSlotHistory.push({segment:SCHEMA_PROBE_POLICY.campaignId,trial:SCHEMA_PROBE_POLICY.trial,slots:1});proofs.set(store,structuredClone(s));
   const p=SCHEMA_PROBE_POLICY,packet=freeze({model:p.model,effort:p.effort,prompt,maxOutputTokens:p.maxOutputTokens,maxToolCalls:0,retries:0,diagnosticProjectionVersion:2,financialContractVersion:3});
   try{
     const certificate=freeze(structuredClone(await provider.count(packet)));
-    if(!certificate||Object.keys(certificate).sort().join()!==['payloadHash','inputTokens'].sort().join()||certificate.payloadHash!==hash(packet)||!Number.isSafeInteger(certificate.inputTokens)||certificate.inputTokens<0||certificate.inputTokens>32000||clock()<now||clock()>=s.executionWindow.deadline)throw Error('Exact schema-probe count required');
+    sampleClock();
+    if(!certificate||Object.keys(certificate).sort().join()!==['payloadHash','inputTokens'].sort().join()||certificate.payloadHash!==hash(packet)||!Number.isSafeInteger(certificate.inputTokens)||certificate.inputTokens<0||certificate.inputTokens>32000)throw Error('Exact schema-probe count required');
     const rate=apiConfig().models[p.model],reservation=maximumCost(rate,certificate.inputTokens,p.maxOutputTokens);
     if(reservation>p.trialCap||s.exposure+reservation>p.totalCap)throw Error('Schema-probe cap exhausted');
     s.status='generation-pending';s.newGenerations=1;s.reservation=reservation;s.held+=reservation;s.exposure+=reservation;proofs.set(store,structuredClone(s));
     const result=await provider.send(packet,certificate);
-    if(clock()<now||clock()>=s.executionWindow.deadline||!result||!result.usage||result.usage.input>certificate.inputTokens||result.usage.output>p.maxOutputTokens)throw Error('Unresolved schema-probe generation');
+    sampleClock();
+    if(!result||!result.usage||result.usage.input>certificate.inputTokens||result.usage.output>p.maxOutputTokens)throw Error('Unresolved schema-probe generation');
     const cost=actualCost(rate,result.usage);if(cost>reservation)throw Error('Unbounded schema-probe cost');
     s.cost=cost;s.known+=cost;s.exposure=s.exposure-reservation+cost;s.held-=reservation;
   }catch{/* Missing evidence retains the reservation; no retry or second generation. */}

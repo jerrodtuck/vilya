@@ -176,3 +176,29 @@ test('invalid or throwing clock leaves a stopped fence and cannot replay',async(
     await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000}),/no replay/);
   }
 });
+test('initial clock rejects invalid samples and unsafe deadline addition before any adapter',async()=>{
+  for(const value of [NaN,undefined,Infinity,-Infinity,1.5,-1,Number.MAX_SAFE_INTEGER,Number.MAX_SAFE_INTEGER-59999]){
+    const store=offlineSchemaProbeStore(),provider=fake();let samples=0;
+    await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>{samples++;return value;}}));
+    assert.equal(samples,1);assert.equal(provider.calls.length,0);assert.equal(store.read().status,'stopped');assert.equal(store.read().held,361646);assert.equal(store.read().newTrialSlots,0);
+  }
+});
+test('each count-boundary clock sample is checked once; invalid, expired and rollback samples never send',async()=>{
+  for(const value of [NaN,undefined,Infinity,-Infinity,1000.5,-1,Number.MAX_SAFE_INTEGER,61000,999]){
+    const store=offlineSchemaProbeStore(),provider=fake(),sequence=[1000,value,1000];let samples=0;
+    const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>sequence[samples++]});
+    assert.equal(samples,2);assert.deepEqual(provider.calls.map(c=>c[0]),['count']);assert.equal(result.status,'stopped');assert.equal(result.newGenerations,0);assert.equal(result.reservation,0);assert.equal(result.held,361646);assert.equal(result.exposure,372575);assert.equal(result.cost,null);
+  }
+});
+test('each settlement clock sample is checked once; invalid, expired and rollback samples hold the full reservation',async()=>{
+  for(const value of [NaN,undefined,Infinity,-Infinity,1001.5,-1,Number.MAX_SAFE_INTEGER,61000,1000]){
+    const store=offlineSchemaProbeStore(),provider=fake(),sequence=[1000,1001,value,1002];let samples=0;
+    const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>sequence[samples++]});
+    assert.equal(samples,3);assert.deepEqual(provider.calls.map(c=>c[0]),['count','generation']);assert.equal(result.status,'stopped');assert.equal(result.newGenerations,1);assert.ok(result.reservation>0);assert.equal(result.held,361646+result.reservation);assert.equal(result.exposure,372575+result.reservation);assert.equal(result.known,10929);assert.equal(result.cost,null);
+  }
+});
+test('valid checkpoints record monotonically increasing lastTime with exactly three samples',async()=>{
+  const store=offlineSchemaProbeStore(),provider=fake(),sequence=[1000,1001,1002];let samples=0;
+  const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>sequence[samples++]});
+  assert.equal(samples,3);assert.equal(result.lastTime,1002);assert.notEqual(result.cost,null);assert.equal(result.held,361646);
+});
