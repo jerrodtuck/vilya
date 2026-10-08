@@ -8,6 +8,7 @@ import {ComparisonLedger,comparisonHash} from '../evaluation/comparison-ledger.m
 import {advanceComparison,importComparisonNative} from '../evaluation/comparison-workflow.mjs';
 import {COMPARISON_POLICY as P} from '../evaluation/comparison-campaign.mjs';
 import {loadFixtures,archiveFixture,context} from '../evaluation/workflow.mjs';
+import {scopedContext} from '../evaluation/context.mjs';
 import {protocolDescriptor} from '../evaluation/workflow-protocol.mjs';
 import {COUNT_BILLING_INTERPRETATION} from '../evaluation/openai-transport.mjs';
 function terminal(t){const work=fs.mkdtempSync(path.join(os.tmpdir(),'comparison-final-offline-'));t.after(()=>fs.rmSync(work,{recursive:true,force:true}));let now=1002;const ledger=new ComparisonLedger({workspace:path.join(work,'campaign'),binding:{head:'a'.repeat(40)},check:()=>{},clock:()=>now});ledger.initialize();ledger.config.mode='offline';const m=loadFixtures()[0],trial=P.trials[0].id,root=path.join(ledger.workspace,trial);archiveFixture(fileURLToPath(new URL('../..',import.meta.url)),root,m.seed);ledger.transaction(s=>{s.status='running';s.executionWindow={startedAt:1000,dispatchDeadline:1000+174*60000,finalDeadline:1000+180*60000};s.trials=[{id:trial,environment:'api',started:1000,ended:null,status:'active',accepted:null,receiptDigest:null}];s.preflights=[{id:trial+'_step_count',requestId:trial+'_step',trial,phase:'planning',model:'gpt-6.1-sol',effort:'medium',payloadHash:'b'.repeat(64),serviceTier:'default',pricingDate:'2026-10-06',billingInterpretation:COUNT_BILLING_INTERPRETATION,start:1000,end:1001,status:'complete',inputTokens:50,providerRequestId:null}];s.workflow={trial,root,fixture:m.name,arm:'A',seed:m.seed,phase:'terminal',phaseStarted:1000,pending:null,steps:[{status:'complete',started:1000,ended:1002,elapsedMs:2}],attempts:[],repairs:0,sandbox:{allowedRoot:ledger.workspace},sourceHashes:context(root,m).map(({path,sha256})=>({path,sha256})),accepted:false,failure:'invalid-planning-output',protocol:protocolDescriptor(m,'A')};});return {ledger,setTime:value=>now=value};}
@@ -52,4 +53,27 @@ for(const limit of ['phase','final'])test('native large-session verification can
  await assert.rejects(importComparisonNative({ledger,...input}),/phase commit deadline/);
  assert.equal(reads,2);assert.deepEqual(ledger.files(),before);assert.deepEqual(ledger.read(),state);
  assert.equal(ledger.read().nativeReceipts.length,0);assert.equal(ledger.read().workflow.pending.kind,'native');
+});
+
+function nativeReady(t,limit='dispatch'){
+ const {ledger}=nativePending(t,limit==='dispatch'?'final':'phase');
+ ledger.transaction(s=>{const f=s.workflow,m=loadFixtures()[0];Object.assign(f,{pending:null,phase:'implementation',phaseStarted:s.trials.at(-1).started+(limit==='trial'?10*60000:0),baseline:scopedContext(f.root,m),fullBaseline:context(f.root,m),plan:'synthetic plan'});});
+ const s=ledger.read(),f=s.workflow,deadline=limit==='dispatch'?s.executionWindow.dispatchDeadline:limit==='trial'?s.trials.at(-1).started+14*60000:ledger.deadline(f.trial,f.phase);
+ return {ledger,deadline};
+}
+for(const limit of ['dispatch','trial','phase'])for(const edge of ['pending','publication'])test('native '+limit+' cutoff advancing at '+edge+' leaves pending and packet unchanged',async t=>{
+ const {ledger,deadline}=nativeReady(t,limit),before=ledger.files(),state=ledger.read(),files=fs.readdirSync(ledger.workspace);let reads=0;
+ ledger.clock=()=>++reads<=(edge==='pending'?1:2)?deadline-1:deadline+1;
+ await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);
+ assert.equal(reads,edge==='pending'?2:3);assert.deepEqual(ledger.files(),before);assert.deepEqual(ledger.read(),state);assert.deepEqual(fs.readdirSync(ledger.workspace),files);
+});
+test('native handoff carries explicit dispatch cutoff and bounded phase deadline',async t=>{
+ const {ledger,deadline}=nativeReady(t);ledger.clock=()=>deadline-1;
+ const result=await advanceComparison({ledger}),packet=JSON.parse(fs.readFileSync(result.packetFile));
+ assert.equal(result.status,'native-dispatch-required');assert.equal(result.dispatchDeadline,deadline);assert.equal(packet.dispatchDeadline,deadline);assert.equal(packet.deadline,result.deadline);assert.ok(packet.deadline<=ledger.read().executionWindow.finalDeadline);
+});
+test('native return guard refuses handoff if publication crosses dispatch cutoff',async t=>{
+ const {ledger,deadline}=nativeReady(t);let reads=0;ledger.clock=()=>++reads<=3?deadline-1:deadline+1;
+ await assert.rejects(advanceComparison({ledger}),/dispatch deadline/);assert.equal(reads,4);
+ assert.equal(ledger.read().workflow.pending.kind,'native');assert.equal((await advanceComparison({ledger})).dispatchAgain,false);
 });
