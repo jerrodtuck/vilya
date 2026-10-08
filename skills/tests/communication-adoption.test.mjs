@@ -19,8 +19,10 @@ test('both complete worker brief paths load contracts and retain their operation
  for(const body of [chip.split('### Codex self-contained worker brief')[1].split('After interruption')[0],chip.split('## 2. The self-contained brief')[1].split('## 2a.')[0]]){assert.ok(body.includes('full vl-adhd and vl-present'));for(const fact of ['OPEN','original-start','verif','issue','fork'])assert.ok(body.toLowerCase().includes(fact.toLowerCase()));}
  const ask=read('skills/vl-ask/SKILL.md');assert.equal(ask.split('## Answer format')[1].split('## Honesty bar')[0],atBase('skills/vl-ask/SKILL.md').split('## Answer format')[1].split('## Honesty bar')[0]);assert.ok(ask.includes('Do not add a visual, heading or extra line'));
 });
-test('communication edits preserve coordination and routing resource and remove stale exemptions',()=>{
- assert.equal(read('skills/vl-orch-codex/references/model-routing.md'),atBase('skills/vl-orch-codex/references/model-routing.md'));
+test('communication edits preserve coordination while the authorized routing resource stays explicit',()=>{
+ const routing=read('skills/vl-orch-codex/references/model-routing.md');
+ for(const fact of ['Issue #357 revised the planning route','| Normal planning | latest supported Sol | medium |','recorded Sol impasse or capability failure','screen current independent benchmark'])assert.ok(routing.includes(fact),fact);
+ assert.doesNotMatch(routing,/\| Normal planning \| latest supported Astra \| high \|/);
  for(const slug of adopters){const body=read('skills/'+slug+'/SKILL.md');assert.doesNotMatch(body,/operator-chat voice|Operator-facing chat.*follows|in plain chat(?: text)? before|stay[s]? long-form/);}
 });
 test('ADR insertion preserves the full preamble and every historical byte',()=>{

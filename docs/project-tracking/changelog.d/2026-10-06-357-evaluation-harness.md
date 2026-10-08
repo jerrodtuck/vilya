@@ -1,0 +1,1 @@
+- Add guarded API/native pilot control, bounded full-source review packets, isolated Linux fixture gates and whitelist result projection. All three baseline/reference full gates and expected negative oracles pass their intended checks; real timeout/output-overflow cleanup is verified. Paid comparisons remain pending independent actual-head review and root dispatch.

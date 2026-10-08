@@ -1,12 +1,14 @@
-# Codex routing and repair contract (#347)
+# Codex routing and repair contract (#357)
 
 Read and apply this full reference before Codex phase selection, worker implementation,
 repair, independent review or resumption. It supplements the seat/checkout/quality gates
 in [vl-orch-codex](../SKILL.md), never changes ownership or operator merge authority.
-This operator approved the policy on 2026-10-03 in
+This operator approved the original policy on 2026-10-03 in
 [#347 direction/ADR](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975011992),
 with the [settled plan](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975070688).
-Other operators retain configured defaults absent their own authorization.
+Issue #357 revised the planning route on 2026-10-08 using current independent
+benchmark screening and a matched Vilya probe. Other operators retain configured
+defaults absent their own authorization.
 
 ## Select by uncertainty and consequence
 
@@ -16,14 +18,17 @@ metadata and official documentation at setup/dispatch; validate before selecting
 
 | Phase and eligibility | Family | Initial effort |
 | --- | --- | --- |
-| Normal planning | latest supported Astra | high |
-| Difficult architecture, conflicting evidence or consequential uncertainty; record rationale | latest supported Astra | xhigh |
+| Normal planning | latest supported Sol | medium |
+| Difficult architecture, conflicting evidence or consequential uncertainty | latest supported Sol | high first |
 | Implementation from a complete settled plan | latest supported Sol | medium |
 | Explicitly enumerated mechanical operations with objective verification | latest supported Luna | low |
 | Independent review by a separate reviewer | latest supported Sol | high |
-| Consequential design/security review | latest supported Astra | high; xhigh for justified hard analysis |
+| Consequential design/security escalation after recorded Sol impasse or capability failure | latest supported Astra | high; xhigh for justified hard analysis |
 
-Route by uncertainty and consequence, never line count or the word easy. Luna is ONLY
+Route by uncertainty and consequence, never line count or the word easy. Do not add
+an unconditional Astra consultation to ordinary work. Sol must first record the
+specific unresolved question or failed capability; that receipt authorizes the
+bounded Astra escalation. Luna is ONLY
 for explicitly bounded mechanical operations such as approved text replacements,
 formatting or explicit config edits with objective verification. A small behavior
 change, an uncertain choice or a workflow-policy decision is not eligible: use Sol
@@ -84,6 +89,12 @@ reviewer at Sol/high (Astra/high or justified xhigh for consequential design/sec
 The reviewer inspects actual PR head/diff and meaningful test evidence, current
 issue/parent amendments and these scenarios. The implementer cannot be sole approval.
 
+For a new model or a broad recalibration, screen current independent benchmark
+intelligence, coding/agentic performance, latency and price first. Challenge the
+lowest applicable proven seat with the smallest matched Vilya fixture needed to test
+skill adherence, repair rate or native transfer. Do not rerun a full matrix when the
+screen eliminates a candidate or the route-specific probe settles the decision.
+
 Optimize cost per accepted change including retries, review and rework. Record actual
 phase settings, attempt counts, review findings and elapsed/usage evidence only where
 available. Missing usage is unavailable, not zero. Token reduction is a goal, not a
@@ -94,12 +105,12 @@ and render tests validate instruction delivery, not runtime routing or full #329
 
 | Scenario | Required disposition |
 | --- | --- |
-| Normal plan resolves contracts/edge cases and gates | Astra/high planning, then latest supported Sol/medium with the complete settled brief |
-| Conflicting architecture evidence risks data loss | Astra/xhigh planning with explicit uncertainty/consequence rationale; stop unresolved forks |
+| Normal plan resolves contracts/edge cases and gates | Sol/medium planning, then Sol/medium implementation with the complete settled brief |
+| Conflicting architecture evidence risks data loss | Sol/high first; if it records a specific unresolved consequential question, dispatch one bounded Astra/high consultation; xhigh requires separate hard-analysis rationale |
 | Approved replacement of three named headings, expected text diff specified | Luna/low only for those enumerated edits; verify exact diff and applicable gates |
 | One-line retry condition changes behavior | Reject Luna; Sol/medium from a settled plan or planning for unresolved choices |
 | Implementer reports green gates | Assign a separate Sol/high reviewer to the actual head/diff and meaningful evidence; self-report is not approval |
-| Security boundary/design has consequential risk | Separate Astra/high review; xhigh only with justified hard-analysis rationale |
+| Security boundary/design has consequential risk | Separate Sol/high review first; Astra/high only after a recorded impasse or capability failure; xhigh only with justified hard-analysis rationale |
 | Initial targeted gate fails | Detection only, zero repairs; record failure before corrective work |
 | Corrective change 1 has failing targeted check | Attempt 1, unsuccessful count 1; preserve hypothesis/change/check evidence |
 | Corrective change 2 has inconclusive targeted check | Attempt 2, unsuccessful count 2; STOP before third correction, issue ledger + planning handoff |

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "behavior",
+  "issue": "https://github.com/jerrodtuck/vilya/issues/357",
+  "created": "2026-10-06",
+  "lastUpdated": "2026-10-06",
+  "seed": "3d868ea5e69a3d01e433488ea6a682574d03a697",
+  "taskPrompt": "Complete stackOf display labels for the Python crucible variants: FastAPI / Python, Django / Python and Python ML / Data. Preserve Blazor / .NET, Next.js / React and any stack fallback. An html suffix must not be classified as ML. Do not change categorization, invocation or other skill metadata behavior.\n\nWork only in the fresh disposable fixture checkout at its immutable seed. Keep changes within the listed ownership. Add focused regression tests. Do not install dependencies, change model settings, call APIs, start services, execute database or provider commands, access credentials, commit, push, open a PR, or use earlier trial outputs. Stop on uncertain scope or missing tooling. Keep the fixed acceptance gates and existing architecture/review requirements. Report exact changes, commands, results, limitations and any repair ledger. At two consecutive unsuccessful corrective attempts on the same defect, stop before a third.",
+  "fileOwnership": [
+    "apps/skill-registry/src/shared/skills/meta.ts",
+    "apps/skill-registry/src/shared/skills/meta.test.ts"
+  ],
+  "gates": {
+    "workingDirectory": "<fixtureRoot>/apps/skill-registry",
+    "setup": [],
+    "focused": [
+      "node node_modules/vitest/vitest.mjs run src/shared/skills/meta.test.ts"
+    ],
+    "workerRegression": [],
+    "independent": {
+      "source": "behavior.oracle.test.ts",
+      "copyTo": "src/shared/skills/fixture-357.oracle.test.ts",
+      "command": "node node_modules/vitest/vitest.mjs run src/shared/skills/meta.test.ts src/shared/skills/fixture-357.oracle.test.ts",
+      "hidden": false
+    },
+    "review": "Separate fresh Sol/high reviewer inspects actual diff, scoped tests and semantic rubric; implementer self-report cannot approve."
+  },
+  "rubric": [
+    "All five crucible dialects have their exact requested labels.",
+    "Process/unknown/html slugs retain any stack.",
+    "Existing focused gates and independent oracle pass; no unrelated behavior changes."
+  ],
+  "order": [
+    "AB",
+    "BA"
+  ],
+  "status": "tested",
+  "validation": {
+    "baselineExit": 0,
+    "unfixedOracleExit": 1,
+    "referenceGatesAndOracleExit": 0,
+    "evidenceDirectory": "C:\\Users\\jerro\\AppData\\Local\\Temp\\vilya-357-fixtures-j1nLmI",
+    "referenceSolutionDelivered": false,
+    "semanticModelReview": "unverified",
+    "fullAppBuild": "not run; focused preparation only"
+  },
+  "limits": {
+    "historicalReplay": true,
+    "heldOut": false,
+    "checkAccessRestriction": "not enforced",
+    "apiCompatibility": "unverified",
+    "paidModelCalls": 0
+  }
+}

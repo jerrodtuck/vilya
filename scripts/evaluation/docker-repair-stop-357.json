@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "issue": 357,
+  "defect": "docker-next-dependency-filesystem-root",
+  "unsuccessfulCorrections": 2,
+  "status": "verified-after-explicit-revised-plan",
+  "initial": "Default Next build rejected /opt/deps node_modules symlink outside filesystem root",
+  "attempts": [
+    {
+      "attempt": 1,
+      "hypothesis": "readonly dependency volume directly at app node_modules",
+      "outcome": "failed: isolated workspace setup due mount parent ownership"
+    },
+    {
+      "attempt": 2,
+      "hypothesis": "readonly project-root dependency volume plus internal app link",
+      "outcome": "failed: default Next build still rejects link outside inferred project root"
+    }
+  ],
+  "nextHypothesis": "Copy actual container-owned Linux dependency directory into bounded fixture tmpfs, no node_modules link",
+  "authorization": "Root explicit revised plan after separate gpt-6.1-sol/high review; original unsuccessfulCorrections remains 2",
+  "nextHypothesisDetails": {
+    "copyOptions": {
+      "recursive": true,
+      "dereference": false,
+      "verbatimSymlinks": true
+    },
+    "linkValidation": "Every dependency symlink must resolve within copied node_modules",
+    "measurement": "Measure dependency bytes and actual full-build tmpfs/memory peak before acceptance",
+    "evidence": "Three immutable Next configs have no Turbopack root override; locks have no file/link dependencies; image size roughly 329 MiB is not build peak proof"
+  },
+  "revisedAllowance": {
+    "decision": "https://github.com/jerrodtuck/vilya/issues/357#issuecomment-6029424573",
+    "correctionsAllowed": 1,
+    "status": "copy correction failed native addon noexec; unchanged copy layout verified after separate mount-policy correction",
+    "priorCountPreserved": 2
+  },
+  "copyOutcome": "failed: native shared addon could not map executable segment in default noexec fixture tmpfs",
+  "mountPolicyDecision": {
+    "defect": "native-addon-tmpfs-exec",
+    "detection": 0,
+    "attempt": 1,
+    "hypothesis": "Explicit exec only on fixture tmpfs permits trusted native addons inside isolated container",
+    "authority": "Root revised plan after separate native Sol/high review; retained Sol/medium implementation",
+    "startingHead": "ec7592655af7b8599b78c7cdc608572d94045c16",
+    "status": "passed: all three full baselines, unfixed oracle failures and vetted full reference acceptance; timeout/output cleanup absence proven",
+    "previousFailureCountPreserved": 2
+  },
+  "verification": {
+    "fullBaselines": true,
+    "referenceAcceptance": true,
+    "negativeOracles": true,
+    "cleanupNegativeProof": true,
+    "dependencyBytes": 388185852,
+    "maximumObservedTmpfsBytes": 438992896,
+    "cgroupMemoryPeakBytes": 1485062144,
+    "receiptDirectory": "scripts/evaluation/runtime",
+    "tmpfsMeasurement": "maximum observed after command boundaries, not continuous peak"
+  },
+  "additionalCorrections": [
+    {
+      "defect": "teardown-absence-parser",
+      "detection": 0,
+      "attempt": 1,
+      "outcome": "passed case-insensitive Docker absence parsing; real timeout/outputoverflow absence proof"
+    },
+    {
+      "defect": "dependency-image-receipt-lifecycle",
+      "detection": 0,
+      "attempt": 1,
+      "outcome": "passed immutable same-key receipt reuse and live image inspection; old instruction Docker125 image unavailable retained as prior evidence"
+    },
+    {
+      "defect": "fixture-reference-completeness",
+      "detection": 0,
+      "attempt": 1,
+      "outcome": "passed full instruction reference acceptance after adding missing regression test only to private evaluator reference tree"
+    },
+    {
+      "defect": "independent-review-full-diff",
+      "detection": 0,
+      "attempt": 1,
+      "outcome": "failed migration review UTF8 packet cap with contiguous full-source span"
+    },
+    {
+      "defect": "independent-review-full-diff",
+      "attempt": 2,
+      "outcome": "passed exact complete line hunks; all reference phases under32000 bytes; omitted helper/template/test visibility test passed"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "357-schema-diagnostic-1",
+  "status": "stopped",
+  "responseStatus": "completed",
+  "financialSchema": "unresolved",
+  "newCountCalls": 1,
+  "cumulativeCountCalls": 7,
+  "newTrialSlots": 1,
+  "cumulativeTrialSlots": 6,
+  "newHeldMicrodollars": 203,
+  "knownCostMicrodollars": 10929,
+  "heldMicrodollars": 401897,
+  "exposureMicrodollars": 412826,
+  "observedUsage": {
+    "inputTokens": 17,
+    "outputTokens": 7,
+    "totalTokens": 24,
+    "cachedInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "reasoningOutputTokens": 0
+  },
+  "billingPayer": "developer",
+  "resolvedEnvelopeFieldShapes": [
+    { "name": "frequency_penalty", "type": "number", "method": "public-candidate-hash-match" },
+    { "name": "presence_penalty", "type": "number", "method": "public-candidate-hash-match" },
+    { "name": "tool_usage", "type": "object", "method": "public-candidate-hash-match" }
+  ],
+  "unresolvedFinancialScope": "tool_usage",
+  "retries": 0,
+  "nativeTransferProof": false,
+  "productionRecommendation": false
+}

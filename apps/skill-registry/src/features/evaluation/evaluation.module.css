@@ -1,0 +1,17 @@
+.evaluation { padding-top: 1rem; }
+.evaluation h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.2; }
+.evaluation p { max-width: 65ch; }
+.filters, .cards { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+.filters label { display: flex; flex-direction: column; gap: .3rem; }
+.filters select, .filters button { font: inherit; padding: .5rem .8rem; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); }
+.filters button { align-self: end; cursor: pointer; }
+.evaluation a:focus-visible, .filters select:focus-visible, .filters button:focus-visible { outline: 2px solid var(--orch); outline-offset: 4px; }
+.card { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); padding: 1rem; min-width: 0; flex: 1 1 15rem; }
+.card h3 { margin-top: 0; }
+.tableWrap { overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.tableWrap th, .tableWrap td { text-align: left; padding: .65rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.codes { overflow-wrap: anywhere; font-family: var(--font-geist-mono), monospace; }
+.notice { border-left: 3px solid var(--orch); padding: .7rem 1rem; background: var(--surface); }
+.muted { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .evaluation * { scroll-behavior: auto; transition: none; animation: none; } }
