@@ -1,4 +1,4 @@
-import {requireContinuationProtocol,requireContinuationReceipt,continuationReceiptGuard,markContinuationReceiptExpiry,continuationNativePrerequisite,CONTINUATION_PATHS} from './continuation.mjs';
+import {requireContinuationProtocol,requireContinuationReceipt,continuationReceiptGuard,markContinuationReceiptExpiry,continuationNativePrerequisite,CONTINUATION_PATHS,continuationExecutionIdentity} from './continuation.mjs';
 import {publicSnapshot} from './public-results.mjs';
 import {REQUIRED_GATE_IDS} from './workflow-protocol.mjs';
 import {protocolDescriptor,planningSteps,buildPlanningStepPacket,validatePlanningStepOutput,WorkflowProtocolError} from './workflow-protocol.mjs';
@@ -19,7 +19,7 @@ function continuationNativeBinding(ledger,workspace,trial,{controllerHead,sandbo
  if(!item||!manifest||manifest.name!==item.fixture||arm!==item.arm||storedTrial&&storedTrial!==trial||fixture&&fixture!==item.fixture||seed&&seed!==item.seed){ledger.transaction(state=>{state.blocked=true;});throw Error('Continuation native trial changed');}
  const image=JSON.parse(fs.readFileSync(CONTINUATION_PATHS.readiness)).images[manifest.name];
  const expected={...protocolDescriptor(manifest,arm),fixture:manifest.name,seed:manifest.seed};
- if(controllerHead!==s.continuation.reviewedHead||root&&path.resolve(root)!==path.resolve(workspace,trial)||sandbox.allowedRoot!==workspace||['image','nodeVersion','lockSha256'].some(k=>sandbox[k]!==image[k])||workflowProtocol&&digest(workflowProtocol)!==digest(expected)||expected.digest!==s.continuation.protocolDigest){ledger.transaction(state=>{state.blocked=true;});throw Error('Continuation native provenance changed');}
+ if(controllerHead!==continuationExecutionIdentity(s.continuation).reviewedHead||root&&path.resolve(root)!==path.resolve(workspace,trial)||sandbox.allowedRoot!==workspace||['image','nodeVersion','lockSha256'].some(k=>sandbox[k]!==image[k])||workflowProtocol&&digest(workflowProtocol)!==digest(expected)||expected.digest!==s.continuation.protocolDigest){ledger.transaction(state=>{state.blocked=true;});throw Error('Continuation native provenance changed');}
 }
 function repairReview(state,manifest){
  const retained=state.repairContext,review=state.review;
