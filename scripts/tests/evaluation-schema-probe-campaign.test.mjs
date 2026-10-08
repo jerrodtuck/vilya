@@ -311,7 +311,7 @@ test('mutations during completion marker open, write, fsync or close cannot retu
     const mutate=()=>{changed=true;git(['-c','user.name=Synthetic probe','-c','user.email=offline@example.invalid','commit','--quiet','--allow-empty','-m','Marker source mutation']);};
     fs.openSync=function(file,...rest){const fd=originals.openSync.call(fs,file,...rest);if(file===claimFile+'.published.json'){markerFd=fd;if(checkpoint==='openSync')mutate();}return fd;};
     for(const key of ['writeFileSync','fsyncSync','closeSync'])fs[key]=function(fd,...rest){const result=originals[key].call(fs,fd,...rest);if(fd===markerFd&&key===checkpoint&&!changed)mutate();return result;};
-    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args),/HEAD|snapshot/);}finally{Object.assign(fs,originals);}
+    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args));}finally{Object.assign(fs,originals);}
     assert.equal(changed,true);assert.equal(fs.existsSync(claimFile+'.attempt.json'),true);assert.equal(fs.existsSync(claimFile),true);
     assert.equal(fs.existsSync(claimFile+'.blocked.json'),true);
     assert.throws(()=>fixture.readSchemaProbeClaim());assert.throws(()=>fixture.publishSchemaProbeClaim(args));
@@ -342,4 +342,44 @@ test('claim reader rejects missing, tampered or unfinished paired publication ev
   }
   for(const suffix of ['.lock','.next','.blocked.json']){fs.writeFileSync(claimFile+suffix,'held');assert.throws(()=>fixture.readSchemaProbeClaim());fs.unlinkSync(claimFile+suffix);}
   fixture.readSchemaProbeClaim();
+});
+test('complete vectors catch dirty source and ancestry changes during every predecessor read without a HEAD change',async t=>{
+  const {root,args,fixture,git}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  const originalRead=fs.readFileSync,sourceFile=path.join(root,'fixture.txt'),sourceBytes=originalRead(sourceFile);
+  for(const relative of Object.keys(SCHEMA_PROBE_ORIGIN))for(const change of ['dirty','ancestry']){
+    let changed=false;
+    fs.readFileSync=function(file,...rest){const raw=originalRead.call(fs,file,...rest);if(file===path.join(root,relative)&&!changed){changed=true;if(change==='dirty')fs.appendFileSync(sourceFile,'dirty without new HEAD');else git(['replace','--graft',args.reviewedHead]);}return raw;};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim(),/vector|source|binding/);}finally{fs.readFileSync=originalRead;fs.writeFileSync(sourceFile,sourceBytes);if(change==='ancestry')git(['replace','--delete',args.reviewedHead]);}
+    assert.equal(changed,true);assert.equal(git(['rev-parse','HEAD']),args.reviewedHead);
+  }
+  fixture.readSchemaProbeClaim();
+});
+test('complete vectors catch late hold insertion and replacement of every paired record',async t=>{
+  const {args,fixture,claimFile}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  const originalStat=fs.lstatSync,originalRead=fs.readFileSync;
+  for(const suffix of ['.blocked.json','.lock','.next']){
+    const file=claimFile+suffix;let changed=false;
+    fs.lstatSync=function(target,...rest){try{return originalStat.call(fs,target,...rest);}catch(error){if(target===file&&!changed&&error.code==='ENOENT'){changed=true;fs.writeFileSync(file,'late hold');}throw error;}};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim(),/vector|held/);}finally{fs.lstatSync=originalStat;fs.unlinkSync(file);}
+    assert.equal(changed,true);
+  }
+  for(const suffix of ['','.attempt.json','.published.json']){
+    const file=claimFile+suffix,original=originalRead(file);let changed=false;
+    fs.readFileSync=function(target,...rest){const raw=originalRead.call(fs,target,...rest);if(target===file&&!changed){changed=true;fs.writeFileSync(file,Buffer.concat([original,Buffer.from(' ')]));}return raw;};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim(),/vector/);}finally{fs.readFileSync=originalRead;fs.writeFileSync(file,original);}
+    assert.equal(changed,true);
+  }
+  fixture.readSchemaProbeClaim();
+});
+test('publisher final vector detects dirty edits and hold insertion during final predecessor hashing',async t=>{
+  for(const change of ['dirty','.blocked.json','.lock','.next']){
+    const {root,args,fixture,claimFile}=await publicationFixture(t),originalRead=fs.readFileSync,originalOpen=fs.openSync,originalClose=fs.closeSync;
+    let markerFd,armed=false,changed=false;
+    fs.openSync=function(file,...rest){const fd=originalOpen.call(fs,file,...rest);if(file===claimFile+'.published.json')markerFd=fd;return fd;};
+    fs.closeSync=function(fd,...rest){const result=originalClose.call(fs,fd,...rest);if(fd===markerFd)armed=true;return result;};
+    const target=path.join(root,Object.keys(SCHEMA_PROBE_ORIGIN)[0]);
+    fs.readFileSync=function(file,...rest){const raw=originalRead.call(fs,file,...rest);if(file===target&&armed&&!changed){changed=true;if(change==='dirty')fs.appendFileSync(path.join(root,'fixture.txt'),'late dirty source');else fs.writeFileSync(claimFile+change,'late hold');}return raw;};
+    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args));}finally{fs.readFileSync=originalRead;fs.openSync=originalOpen;fs.closeSync=originalClose;}
+    assert.equal(changed,true);assert.throws(()=>fixture.readSchemaProbeClaim());
+  }
 });
