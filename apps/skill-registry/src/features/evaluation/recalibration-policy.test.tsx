@@ -94,7 +94,7 @@ describe('incremental model recalibration policy', () => {
   it('shows scoped route evidence, uncertainty, full cost coverage, elapsed time, validity, and outcome', () => {
     const route: RouteEvidence = {
       taskFamily: 'Test task family', routeScope: 'Test scope', seat: 'lowest-test-seat', exactModelId: 'test-model-exact-1', workflow: 'test-workflow',
-      standing: 'proven', decision: 'incumbent-retained', ranking: firstPlaceRanking, acceptance: { accepted: 8, sampleCount: 10, interval: { low: 0.49, high: 0.94, confidence: 0.95, method: 'Wilson interval' } },
+      standing: 'proven', decision: 'incumbent-retained', ranking: { ...firstPlaceRanking, status: 'tied' }, acceptance: { accepted: 8, sampleCount: 10, interval: { low: 0.49, high: 0.94, confidence: 0.95, method: 'Wilson interval' } },
       totalWorkflowCostPerAccepted: { amount: 0.123456, currency: 'USD', includes: ['failed-attempts', 'review', 'repair'] }, elapsedMs: 125000,
       validity: { status: 'valid', fingerprint: { ...completeFingerprint, digest: 'test-fingerprint' }, coverage: '10 matched fixtures' },
       outcome: 'Matched quality; incumbent kept on tie.',
@@ -117,12 +117,14 @@ describe('incremental model recalibration policy', () => {
 
   it.each([
     ['stale evidence', { validity: { status: 'stale' as const, fingerprint: { ...completeFingerprint, digest: 'stale-test', exactModelId: 'test-model-exact-3', routeScope: 'Guarded scope' }, coverage: '10 matched fixtures' } }],
+    ['an old policy fingerprint', { validity: { status: 'valid' as const, fingerprint: { ...completeFingerprint, digest: 'old-policy-test', exactModelId: 'test-model-exact-3', routeScope: 'Guarded scope', policyVersion: 'incremental-route-ladder/v0' }, coverage: '10 matched fixtures' } }],
     ['zero samples', { acceptance: { accepted: 0, sampleCount: 0, interval: null } }],
     ['unknown uncertainty', { acceptance: { accepted: 8, sampleCount: 10, interval: null } }],
     ['unknown cost', { totalWorkflowCostPerAccepted: null }],
     ['unresolved cost', { totalWorkflowCostPerAccepted: { amount: 0.2, currency: '', includes: ['failed-attempts' as const, 'review' as const, 'repair' as const] } }],
     ['inconclusive outcome', { decision: 'inconclusive' as const }],
     ['no comparison ranking', { ranking: { ...firstPlaceRanking, status: 'unranked' as const, rank: null, evidenceDigest: '' } }],
+    ['a tied ranking paired with promotion', { ranking: { ...firstPlaceRanking, status: 'tied' as const } }],
   ])('does not call standing=proven evidence cheapest when it has %s', (_case, override) => {
     const route: RouteEvidence = {
       taskFamily: 'Guarded family', routeScope: 'Guarded scope', seat: 'test-seat', exactModelId: 'test-model-exact-3', workflow: 'test-workflow',

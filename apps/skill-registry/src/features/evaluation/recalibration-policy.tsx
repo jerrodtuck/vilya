@@ -120,8 +120,8 @@ const hasCompleteFingerprint = (route: RouteEvidence) => {
     && Object.keys(fingerprint.exactSettings).length > 0
     && fingerprint.routeScope === route.routeScope
     && fingerprint.workflow === route.workflow
+    && fingerprint.policyVersion === RECALIBRATION_POLICY_VERSION
     && [
-      fingerprint.policyVersion,
       fingerprint.workflowProtocolVersion,
       fingerprint.runtime,
       fingerprint.nodeVersion,
@@ -142,8 +142,9 @@ const hasCompleteFingerprint = (route: RouteEvidence) => {
     ].every((value) => value.trim().length > 0);
 };
 
-const hasFirstPlaceRanking = ({ status, rank, comparedRoutes, metric, evidenceDigest }: RouteEvidence['ranking']) =>
+const hasFirstPlaceRanking = ({ status, rank, comparedRoutes, metric, evidenceDigest }: RouteEvidence['ranking'], decision: RouteEvidence['decision']) =>
   (status === 'ranked' || status === 'tied')
+  && (status !== 'tied' || decision === 'incumbent-retained')
   && rank === 1
   && Number.isInteger(comparedRoutes)
   && comparedRoutes >= 2
@@ -156,7 +157,7 @@ const isCurrentProvenRoute = (route: RouteEvidence) => route.standing === 'prove
   && hasCompleteFingerprint(route)
   && route.validity.coverage.trim().length > 0
   && route.decision !== 'inconclusive'
-  && hasFirstPlaceRanking(route.ranking)
+  && hasFirstPlaceRanking(route.ranking, route.decision)
   && hasValidAcceptance(route.acceptance)
   && hasResolvedWorkflowCost(route.totalWorkflowCostPerAccepted);
 
