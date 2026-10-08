@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
+import childProcess from 'node:child_process';
+import {syncBuiltinESMExports} from 'node:module';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createSchemaProbeScaffold,schemaProbeActivation,SCHEMA_PROBE_POLICY,SCHEMA_PROBE_ORIGIN,offlineSchemaProbeStore,runOfflineSchemaProbe,publishSchemaProbeClaim} from '../evaluation/schema-probe-campaign.mjs';
 const hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');
@@ -99,6 +101,7 @@ test('disposable fake publication writes only one claim, preserves predecessor b
   for(const [file,raw]of Object.entries(before))assert.deepEqual(fs.readFileSync(file),raw);
   const marker=JSON.parse(fs.readFileSync(claimFile+'.attempt.json'));assert.equal(marker.claimDigest,crypto.createHash('sha256').update(fs.readFileSync(claimFile)).digest('hex'));
   const published=JSON.parse(fs.readFileSync(claimFile+'.published.json'));assert.equal(published.claimDigest,marker.claimDigest);assert.equal(published.reviewedHead,args.reviewedHead);
+  assert.deepEqual(fixture.readSchemaProbeClaim().activation.reviews,args.reviews);
 });
 test('stale concurrent contender cannot replace the winning claim after passing prechecks',async t=>{
   const {args,fixture,claimFile}=await publicationFixture(t),original=fs.openSync;
@@ -300,4 +303,43 @@ test('Git head, source and ancestry changes at lock acquisition or linking leave
     if(checkpoint==='lock')assert.equal(fs.existsSync(claimFile),false);
     else assert.equal(fs.existsSync(claimFile),true); // Frozen bytes exist, but no completion marker authorizes them.
   }
+});
+test('mutations during completion marker open, write, fsync or close cannot return publication success',async t=>{
+  for(const checkpoint of ['openSync','writeFileSync','fsyncSync','closeSync']){
+    const {args,fixture,git,claimFile}=await publicationFixture(t),originals=Object.fromEntries(['openSync','writeFileSync','fsyncSync','closeSync'].map(key=>[key,fs[key]]));
+    let markerFd,changed=false;
+    const mutate=()=>{changed=true;git(['-c','user.name=Synthetic probe','-c','user.email=offline@example.invalid','commit','--quiet','--allow-empty','-m','Marker source mutation']);};
+    fs.openSync=function(file,...rest){const fd=originals.openSync.call(fs,file,...rest);if(file===claimFile+'.published.json'){markerFd=fd;if(checkpoint==='openSync')mutate();}return fd;};
+    for(const key of ['writeFileSync','fsyncSync','closeSync'])fs[key]=function(fd,...rest){const result=originals[key].call(fs,fd,...rest);if(fd===markerFd&&key===checkpoint&&!changed)mutate();return result;};
+    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args),/HEAD|snapshot/);}finally{Object.assign(fs,originals);}
+    assert.equal(changed,true);assert.equal(fs.existsSync(claimFile+'.attempt.json'),true);assert.equal(fs.existsSync(claimFile),true);
+    assert.equal(fs.existsSync(claimFile+'.blocked.json'),true);
+    assert.throws(()=>fixture.readSchemaProbeClaim());assert.throws(()=>fixture.publishSchemaProbeClaim(args));
+    git(['reset','--hard',args.reviewedHead]);assert.throws(()=>fixture.readSchemaProbeClaim(),/held/);
+  }
+});
+test('stable source snapshots reject mutation inside every Git checkpoint and future reads recheck source',async t=>{
+  for(const command of [1,2,3,4]){
+    const {args,fixture,git,claimFile}=await publicationFixture(t),originalOpen=fs.openSync,originalClose=fs.closeSync,originalExec=childProcess.execFileSync;
+    let markerFd,armed=false,commands=0,changed=false;
+    fs.openSync=function(file,...rest){const fd=originalOpen.call(fs,file,...rest);if(file===claimFile+'.published.json')markerFd=fd;return fd;};
+    fs.closeSync=function(fd,...rest){const result=originalClose.call(fs,fd,...rest);if(fd===markerFd)armed=true;return result;};
+    childProcess.execFileSync=function(binary,argv,...rest){
+      if(armed&&binary==='git'&&++commands===command&&!changed){changed=true;armed=false;git(['-c','user.name=Synthetic probe','-c','user.email=offline@example.invalid','commit','--quiet','--allow-empty','-m','Git checkpoint mutation']);}
+      return originalExec.call(childProcess,binary,argv,...rest);
+    };syncBuiltinESMExports();
+    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args));}finally{fs.openSync=originalOpen;fs.closeSync=originalClose;childProcess.execFileSync=originalExec;syncBuiltinESMExports();}
+    assert.equal(changed,true);assert.throws(()=>fixture.readSchemaProbeClaim());
+  }
+  const {args,fixture,git}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);fixture.readSchemaProbeClaim();
+  git(['-c','user.name=Synthetic probe','-c','user.email=offline@example.invalid','commit','--quiet','--allow-empty','-m','After final snapshot mutation']);assert.throws(()=>fixture.readSchemaProbeClaim());
+});
+test('claim reader rejects missing, tampered or unfinished paired publication evidence',async t=>{
+  const {args,fixture,claimFile}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  for(const suffix of ['','.attempt.json','.published.json']){
+    const file=claimFile+suffix,raw=fs.readFileSync(file);fs.unlinkSync(file);assert.throws(()=>fixture.readSchemaProbeClaim());
+    fs.writeFileSync(file,'{}');assert.throws(()=>fixture.readSchemaProbeClaim());fs.writeFileSync(file,raw);
+  }
+  for(const suffix of ['.lock','.next','.blocked.json']){fs.writeFileSync(claimFile+suffix,'held');assert.throws(()=>fixture.readSchemaProbeClaim());fs.unlinkSync(claimFile+suffix);}
+  fixture.readSchemaProbeClaim();
 });

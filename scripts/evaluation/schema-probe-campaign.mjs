@@ -76,13 +76,29 @@ export function schemaProbeActivation(scaffold,args){
 }
 function safeBytes(file){let at=path.parse(file).root;for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.existsSync(at)&&fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe symlink denied');}const st=fs.statSync(file);if(!st.isFile()||st.size>1000000)throw Error('Schema-probe evidence bound');return fs.readFileSync(file);}
 export function verifySchemaProbePredecessor(){for(const [relative,digest]of Object.entries(SCHEMA_PROBE_ORIGIN))if(sha(safeBytes(path.join(repo,relative)))!==digest)throw Error('Frozen schema-probe predecessor changed');return true;}
-function reviewedSourceHead(reviewedHead){
+function sourceSnapshot(reviewedHead){
   const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
   if(typeof reviewedHead!=='string'||currentHead!==reviewedHead)throw Error('Schema-probe reviewed HEAD changed');
   execFileSync('git',['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,currentHead],{cwd:repo,stdio:'ignore',windowsHide:true});
   const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:repo,encoding:'utf8',windowsHide:true}).split(/\r?\n/).filter(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/'));
   if(dirty.length)throw Error('Schema-probe reviewed source changed');
+  verifySchemaProbePredecessor();
+  const afterHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
+  if(afterHead!==currentHead||afterHead!==reviewedHead)throw Error('Schema-probe source snapshot changed');
   return currentHead;
+}
+// Mandatory for any future execution integration. Marker presence never grants
+// execution: every read binds both records and rechecks current stable source.
+export function readSchemaProbeClaim(){
+  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim);
+  for(const suffix of ['.lock','.next','.blocked.json'])if(fs.existsSync(claim+suffix))throw Error('Schema-probe publication unfinished or held');
+  const raw=safeBytes(claim),record=inputSnapshot(JSON.parse(raw)),attempt=inputSnapshot(JSON.parse(safeBytes(claim+'.attempt.json'))),published=inputSnapshot(JSON.parse(safeBytes(claim+'.published.json')));
+  inputKeys(record,['activation','sha256']);inputKeys(attempt,['schemaVersion','claimDigest']);inputKeys(published,['schemaVersion','claimDigest','reviewedHead']);
+  const value=record.activation;inputKeys(value,['policy','predecessorDigests','activation','executionWindow','paidRequests']);inputKeys(value.activation,['reviewedHead','reviews','scaffoldDigest']);
+  const head=sourceSnapshot(published.reviewedHead),validated=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead:head,currentHead:head,reviews:value.activation.reviews});
+  if(typeof record.sha256!=='string'||attempt.schemaVersion!==1||published.schemaVersion!==1||attempt.claimDigest!==sha(raw)||published.claimDigest!==sha(raw)||record.sha256!==hash(validated)||!equal(value,validated))throw Error('Schema-probe publication binding changed');
+  sourceSnapshot(head);
+  return validated;
 }
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
@@ -90,36 +106,43 @@ export function publishSchemaProbeClaim(args){
   const cleanArgs=inputSnapshot(args);inputKeys(cleanArgs,['initialize','reviewedHead','reviews']);
   const {initialize,reviewedHead,reviews}=cleanArgs;
   if(initialize!==true)throw Error('Explicit schema-probe claim initialization required');
-  const currentHead=reviewedSourceHead(reviewedHead);
+  const currentHead=sourceSnapshot(reviewedHead);
   verifySchemaProbePredecessor();
   const activation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead,reviews});
-  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace),marker=claim+'.attempt.json',published=claim+'.published.json';
+  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace),marker=claim+'.attempt.json',published=claim+'.published.json',blocked=claim+'.blocked.json';
   // Parent directories must exist and be unlinked; publication never creates runtime.
   fs.realpathSync(path.dirname(claim));safeBytes(path.join(repo,predecessor+'pilot-budget.json'));
-  for(const file of [claim,marker,published,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
-  let lock,output,attempt;
+  for(const file of [claim,marker,published,blocked,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
+  let lock,output,attempt,ownsAttempt=false;
   const serialized=JSON.stringify({activation,sha256:hash(activation)})+'\n';
   try{
     lock=fs.openSync(claim+'.lock','wx',0o600);
     // The durable marker is never removed, even after a torn publication. A stale
     // contender that passed prechecks cannot become a second publisher.
     attempt=fs.openSync(marker,'wx',0o600);
+    ownsAttempt=true;
     fs.writeFileSync(attempt,JSON.stringify({schemaVersion:1,claimDigest:sha(serialized)})+'\n');fs.fsyncSync(attempt);fs.closeSync(attempt);attempt=undefined;
     for(const file of [claim,claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe publication torn; replay denied');
     verifySchemaProbePredecessor();
-    const innerHead=reviewedSourceHead(reviewedHead),innerActivation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead:innerHead,reviews});
+    const innerHead=sourceSnapshot(reviewedHead),innerActivation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead:innerHead,reviews});
     const innerSerialized=JSON.stringify({activation:innerActivation,sha256:hash(innerActivation)})+'\n';
     if(innerSerialized!==serialized)throw Error('Schema-probe activation snapshot changed');
     output=fs.openSync(claim+'.next','wx',0o600);fs.writeFileSync(output,innerSerialized);fs.fsyncSync(output);fs.closeSync(output);output=undefined;
     // Hard-link publication atomically refuses an existing destination; rename
     // would replace it on some platforms. A leftover .next also stays held.
-    verifySchemaProbePredecessor();reviewedSourceHead(reviewedHead);
+    sourceSnapshot(reviewedHead);
     fs.linkSync(claim+'.next',claim);fs.unlinkSync(claim+'.next');
     // A mutation inside the link operation also fails closed. Claim bytes alone
     // are unverified; completion requires this separate durable publication mark.
-    verifySchemaProbePredecessor();reviewedSourceHead(reviewedHead);
+    sourceSnapshot(reviewedHead);
     output=fs.openSync(published,'wx',0o600);fs.writeFileSync(output,JSON.stringify({schemaVersion:1,claimDigest:sha(innerSerialized),reviewedHead:innerHead})+'\n');fs.fsyncSync(output);fs.closeSync(output);output=undefined;
-    return {claimDigest:sha(safeBytes(claim)),executionWindowStarted:false,paidRequests:0};
+    const claimDigest=sha(safeBytes(claim));
+    sourceSnapshot(reviewedHead);
+    return {claimDigest,executionWindowStarted:false,paidRequests:0};
+  }
+  catch(error){
+    if(ownsAttempt){const fd=fs.openSync(blocked,'wx',0o600);try{fs.writeFileSync(fd,JSON.stringify({schemaVersion:1,reason:'publication-failed'})+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}}
+    throw error;
   }
   finally{if(attempt!==undefined)fs.closeSync(attempt);if(output!==undefined)fs.closeSync(output);if(lock!==undefined){fs.closeSync(lock);fs.unlinkSync(claim+'.lock');}}
 }
