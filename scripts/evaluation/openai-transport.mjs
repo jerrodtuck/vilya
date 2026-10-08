@@ -1,4 +1,4 @@
-import {inspectFinancialResponse,FINANCIAL_CONTRACT_VERSION} from './financial-inspector.mjs';
+import {inspectFinancialResponse,projectFinancialDiagnostics,FINANCIAL_CONTRACT_VERSION} from './financial-inspector.mjs';
 import {diagnosticEvent,safeProviderId} from './diagnostics.mjs';
 import { createHash } from 'node:crypto';
 const ENDPOINT = 'https://api.openai.com/v1/responses';
@@ -83,8 +83,8 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
         if (!response?.ok || response.redirected || response.url !== url){observe(scope,'http-rejected',fields);fail();}
         // Failed bodies may echo private content. Never read or include them in errors.
         let data;try{data=await response.json();}catch{observe(scope,'body-unavailable',fields);fail();}let finance = null;
-        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens},scope.inputBound):null,inspection};}
-        const observedAt=clock();observe(scope,'body-observed',{...fields,data,...(finance?{billingValidated:finance.billingValidated,billingFailureCode:finance.billingFailureCode,financialInspection:finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION}:{})});if(controller.signal.aborted)fail();
+        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens},scope.inputBound):null,inspection,diagnosticProjection:projectFinancialDiagnostics(data)};}
+        const observedAt=clock();observe(scope,'body-observed',{...fields,data,...(finance?{billingValidated:finance.billingValidated,billingFailureCode:finance.billingFailureCode,financialInspection:finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION,diagnosticProjection:finance.diagnosticProjection}:{})});if(controller.signal.aborted)fail();
         return { data, providerRequestId, finance, observedAt };
       };
       return await Promise.race([receive(), timeout]);
@@ -143,7 +143,7 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
           !request.reservation || held.id !== request.reservation.id) throw Error('Reservation does not cover request');
       consumed.add(certificate); // Consumed even if request is lost: never blindly retry.
       const scope={requestId:held.id,kind:'generation',inputBound:bound};const result = await post(ENDPOINT,payload,request.signal,timeoutMs,scope,data=>inspectFinancialResponse(data,request,bound));
-      let parsed;try{parsed=parseResponse(result.data,request,bound,result.providerRequestId);}catch{observe(scope,'schema-rejected',{data:result.data,providerRequestId:result.providerRequestId,billingValidated:result.finance.billingValidated,billingFailureCode:result.finance.billingFailureCode,financialInspection:result.finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION});if(result.finance.billingValidated)return rejectedFinancialResult(result.finance.usage,{providerRequestId:result.providerRequestId},result.observedAt);fail();}observe(scope,'response-accepted',{data:result.data,providerRequestId:result.providerRequestId});return parsed;
+      let parsed;try{parsed=parseResponse(result.data,request,bound,result.providerRequestId);}catch{observe(scope,'schema-rejected',{data:result.data,providerRequestId:result.providerRequestId,billingValidated:result.finance.billingValidated,billingFailureCode:result.finance.billingFailureCode,financialInspection:result.finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION,diagnosticProjection:result.finance.diagnosticProjection});if(result.finance.billingValidated)return rejectedFinancialResult(result.finance.usage,{providerRequestId:result.providerRequestId},result.observedAt);fail();}observe(scope,'response-accepted',{data:result.data,providerRequestId:result.providerRequestId});return parsed;
     }
   };
 }

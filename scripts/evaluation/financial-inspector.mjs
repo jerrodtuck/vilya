@@ -53,3 +53,43 @@ export function validateFinancialInspection(value){
  const shape=value.controlledShape;if(!record(shape)||Object.keys(shape).sort().join('|')!==[...FINANCIAL_SHAPE_KEYS,'outputTypes','contentTypes'].sort().join('|')||FINANCIAL_SHAPE_KEYS.some(key=>!['absent','null','expected','other'].includes(shape[key])))throw Error('Invalid controlled financial shape');
  for(const [key,types] of [['outputTypes',FINANCIAL_OUTPUT_TYPES],['contentTypes',FINANCIAL_CONTENT_TYPES]])if(!Array.isArray(shape[key])||JSON.stringify(shape[key])!==JSON.stringify(types.filter(type=>shape[key].includes(type))))throw Error('Invalid controlled financial types');return true;
 }
+// Diagnostic projection version 1 is independent of financial contract 2 admission.
+export const FINANCIAL_DIAGNOSTIC_VERSION=1;
+const DIAGNOSTIC_FIELDS=Object.freeze([...RESPONSE_KEYS]);
+const MESSAGE_FIELDS=Object.freeze(['id','type','role','status','content']);
+const TYPE_BUCKETS=Object.freeze(['absent','null','boolean','number','string','array','object','OTHER']);
+const CONTENT_SHAPES=Object.freeze(['absent','null','not-array','empty','array']);
+const CONTENT_CAUSES=Object.freeze(['non-record','unknown-kind','extra-fields','annotations-scope','logprobs-scope']);
+const own=(value,key)=>Object.hasOwn(value,key);
+const typeBucket=(value,present=true)=>!present?'absent':value===null?'null':Array.isArray(value)?'array':['boolean','number','string','object'].includes(typeof value)?typeof value:'OTHER';
+const extraProjection=count=>({count:Math.min(count,64),identities:count?['OTHER']:[]});
+export function projectFinancialDiagnostics(data){
+ const envelope=record(data)?data:{};
+ const envelopeFields=Object.fromEntries(DIAGNOSTIC_FIELDS.map(key=>[key,typeBucket(envelope[key],own(envelope,key))]));
+ const messageSets=Object.fromEntries(MESSAGE_FIELDS.map(key=>[key,new Set()])),shapes=new Set(),causes=new Set();let messageExtras=0;
+ for(const item of Array.isArray(envelope.output)?envelope.output:[]){
+  if(!record(item)||item.type!=='message')continue;
+  for(const key of MESSAGE_FIELDS)messageSets[key].add(typeBucket(item[key],own(item,key)));
+  messageExtras=Math.min(64,messageExtras+Object.keys(item).filter(key=>!MESSAGE_FIELDS.includes(key)).length);
+  const content=item.content;
+  shapes.add(!own(item,'content')?'absent':content===null?'null':!Array.isArray(content)?'not-array':content.length?'array':'empty');
+  for(const c of Array.isArray(content)?content:[]){
+   if(!record(c)){causes.add('non-record');continue;}
+   if(!['output_text','refusal'].includes(c.type)){causes.add('unknown-kind');continue;}
+   if(extras(c,c.type==='refusal'?['type','refusal']:['type','text','annotations','logprobs']))causes.add('extra-fields');
+   if(c.annotations!=null&&!empty(c.annotations))causes.add('annotations-scope');
+   if(c.logprobs!=null&&!empty(c.logprobs))causes.add('logprobs-scope');
+  }
+ }
+ return {version:FINANCIAL_DIAGNOSTIC_VERSION,envelopeFields,envelopeExtras:extraProjection(Object.keys(envelope).filter(key=>!RESPONSE_KEYS.has(key)).length),messageFields:Object.fromEntries(MESSAGE_FIELDS.map(key=>[key,TYPE_BUCKETS.filter(type=>messageSets[key].has(type))])),messageExtras:extraProjection(messageExtras),messageContentShapes:CONTENT_SHAPES.filter(shape=>shapes.has(shape)),messageContentCauses:CONTENT_CAUSES.filter(cause=>causes.has(cause))};
+}
+export function validateFinancialDiagnostics(value){
+ const invalid=()=>{throw Error('Invalid bounded financial diagnostics');};
+ const exact=(obj,keys)=>record(obj)&&Object.keys(obj).sort().join('|')===[...keys].sort().join('|');
+ const ordered=(values,allowed)=>Array.isArray(values)&&JSON.stringify(values)===JSON.stringify(allowed.filter(value=>values.includes(value)));
+ if(!exact(value,['version','envelopeFields','envelopeExtras','messageFields','messageExtras','messageContentShapes','messageContentCauses'])||value.version!==FINANCIAL_DIAGNOSTIC_VERSION)invalid();
+ if(!exact(value.envelopeFields,DIAGNOSTIC_FIELDS)||DIAGNOSTIC_FIELDS.some(key=>!TYPE_BUCKETS.includes(value.envelopeFields[key])))invalid();
+ if(!exact(value.messageFields,MESSAGE_FIELDS)||MESSAGE_FIELDS.some(key=>!ordered(value.messageFields[key],TYPE_BUCKETS)))invalid();
+ for(const key of ['envelopeExtras','messageExtras']){const extra=value[key];if(!exact(extra,['count','identities'])||!uint(extra.count)||extra.count>64||JSON.stringify(extra.identities)!==JSON.stringify(extra.count?['OTHER']:[]))invalid();}
+ if(!ordered(value.messageContentShapes,CONTENT_SHAPES)||!ordered(value.messageContentCauses,CONTENT_CAUSES))invalid();return true;
+}
