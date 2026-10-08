@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {COMPARISON_POLICY as P,acquireComparisonLease,readComparisonClaimLocked,closeComparisonLease} from './comparison-live-campaign.mjs';
+import {COMPARISON_POLICY as P,acquireComparisonLease,readComparisonClaimLocked,readComparisonExecutionIdentityLocked,closeComparisonLease} from './comparison-live-campaign.mjs';
 import {apiConfig,maximumCost,actualCost,exactKeys,integer} from './money.mjs';
 import {createOpenAITransport,COUNT_BILLING_INTERPRETATION} from './openai-transport.mjs';
 import {recordDiagnostic} from './diagnostics.mjs';
@@ -21,7 +21,7 @@ function bytes(file){safe(file);const st=fs.statSync(file);if(!st.isFile()||st.s
 function authorization(head){const raw=bytes(COMPARISON_PATHS.authorization),value=JSON.parse(raw);const expected={schemaVersion:1,campaignId:P.campaignId,reviewedHead:head,windowMinutes:180,newTrialSlots:12,userAuthorized:true};if(!same(value,expected))throw Error('Separate fixed 180-minute/twelve-slot user authorization required');return digest(raw);}
 function publish(file,value){safe(file);const temp=file+'.next';const fd=fs.openSync(temp,'wx',0o600);try{fs.writeFileSync(fd,JSON.stringify(value)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.linkSync(temp,file);fs.unlinkSync(temp);}
 function entryHashes(){return Object.fromEntries(['bootstrap','controller','node'].map(k=>{const file=COMPARISON_PATHS[k];safe(file);return [k,{path:file,sha256:digest(fs.readFileSync(file))}];}));}
-function binding(lease,head){const claim=readComparisonClaimLocked(lease);if(claim.activation.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(COMPARISON_PATHS.claim)),authorizationDigest:authorization(head),policyDigest:hash(P),readinessDigest:digest(bytes(path.join(repo,'scripts/evaluation/runtime/readiness.json'))),images:JSON.parse(bytes(path.join(repo,'scripts/evaluation/runtime/readiness.json'))).images,entries:entryHashes(),moduleManifestDigest:verifiedManifestDigest};}
+function binding(lease,head){const claim=readComparisonClaimLocked(lease),identity=readComparisonExecutionIdentityLocked(lease);if(claim.activation.reviewedHead!==head||identity.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(COMPARISON_PATHS.claim)),authorizationDigest:authorization(identity.originHead),originHead:identity.originHead,recoveryDigest:identity.recoveryDigest,policyDigest:hash(P),readinessDigest:digest(bytes(path.join(repo,'scripts/evaluation/runtime/readiness.json'))),images:JSON.parse(bytes(path.join(repo,'scripts/evaluation/runtime/readiness.json'))).images,entries:entryHashes(),moduleManifestDigest:verifiedManifestDigest};}
 let launcherConsumed=false,verifiedManifestDigest=null;
 function readLauncherAuthorization(args){
   // Windows Node reports pipe mode 0x1000 but isFIFO() is false there.
@@ -37,7 +37,18 @@ function readLauncherAuthorization(args){
 }
 const fileIdentity=st=>({dev:String(st.dev),ino:String(st.ino),size:String(st.size),mtimeNs:String(st.mtimeNs),ctimeNs:String(st.ctimeNs),mode:String(st.mode),nlink:String(st.nlink)});
 const canonical=value=>process.platform==='win32'?path.resolve(value).toLowerCase():path.resolve(value);
-function verifyBootstrapIdentity(native,pin){const rows=native.split(';').filter(Boolean);const expected=[pin.identity.file,...[...pin.identity.parents].reverse()];if(rows.length!==expected.length)throw Error('Bootstrap identity vector mismatch');for(let i=0;i<rows.length;i++){const eq=rows[i].lastIndexOf('='),file=rows[i].slice(0,eq),v=rows[i].slice(eq+1).split(':'),e=expected[i],id=e.identity??e;if(canonical(file)!==canonical(e.path)||v.length!==(i===0?8:4)||v[0]!==id.dev||String((BigInt(v[1])<<32n)+BigInt(v[2]))!==id.ino)throw Error('Bootstrap file identity changed');if(i===0){const time=((BigInt.asUintN(32,BigInt(v[5]))<<32n)+BigInt.asUintN(32,BigInt(v[6])))*100n-11644473600000000000n;if(String((BigInt(v[3])<<32n)+BigInt(v[4]))!==id.size||String(time)!==id.mtimeNs)throw Error('Bootstrap credential metadata changed');}}}
+function verifyBootstrapIdentity(native,pin){
+ const rows=native.split(';').filter(Boolean),expected=[pin.identity.file,...[...pin.identity.parents].reverse()];
+ const protectedIndex=rows.findIndex(row=>row.endsWith('=!protected-ancestor'));
+ if(protectedIndex<0?rows.length!==expected.length:protectedIndex<1||protectedIndex!==rows.length-1||rows.length>expected.length)throw Error('Bootstrap identity vector mismatch');
+ for(let i=0;i<rows.length;i++){
+  const eq=rows[i].lastIndexOf('='),file=rows[i].slice(0,eq),v=rows[i].slice(eq+1).split(':'),e=expected[i],id=e.identity??e;
+  if(canonical(file)!==canonical(e.path))throw Error('Bootstrap ancestor suffix mismatch');
+  if(i===protectedIndex)break;
+  if(e.protected||v.length!==(i===0?8:4)||v[0]!==id.dev||String((BigInt(v[1])<<32n)+BigInt(v[2]))!==id.ino)throw Error('Bootstrap file identity changed');
+  if(i===0){const time=((BigInt.asUintN(32,BigInt(v[5]))<<32n)+BigInt.asUintN(32,BigInt(v[6])))*100n-11644473600000000000n;if(String((BigInt(v[3])<<32n)+BigInt(v[4]))!==id.size||String(time)!==id.mtimeNs)throw Error('Bootstrap credential metadata changed');}
+ }
+}
 function rejectWindowsReparse(paths){
   if(process.platform!=='win32')return;
   // Node Stats does not expose FILE_ATTRIBUTE_REPARSE_POINT for every Windows
@@ -47,14 +58,20 @@ function rejectWindowsReparse(paths){
   try{execFileSync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,stdio:'ignore',timeout:5000});}catch{throw Error('Unsupported Windows credential reparse metadata');}
 }
 function credentialPathVector(file=COMPARISON_PATHS.env){
-  const root=path.parse(file).root,parts=file.slice(root.length).split(path.sep),parents=[];let at=root;
-  for(let i=0;i<=parts.length;i++){
-    const st=fs.lstatSync(at,{bigint:true}),isFile=i===parts.length;
-    if(st.isSymbolicLink()||(isFile?!st.isFile():!st.isDirectory()))throw Error('Unsafe credential file type or reparse path');
-    const real=fs.realpathSync.native(at);if(canonical(real)!==canonical(at))throw Error('Credential path redirected');
-    if(isFile){if(st.size<1n||st.size>65536n||st.nlink!==1n)throw Error('Credential file bound or linked alias');rejectWindowsReparse([...parents.map(p=>p.path),at]);return {parents,file:{path:at,real,identity:fileIdentity(st)}};}
-    parents.push({path:at,real,dev:String(st.dev),ino:String(st.ino),mode:String(st.mode)});at=path.join(at,parts[i]);
+ const target=path.resolve(file),parents=[];let at=target,record;
+ for(;;){
+  const isFile=at===target;let st,real;
+  try{st=fs.lstatSync(at,{bigint:true});}catch(error){
+   if(isFile||!record||!['EACCES','EPERM'].includes(error.code))throw error;
+   parents.unshift({path:at,protected:true});const next=path.dirname(at);if(next===at)break;at=next;continue;
   }
+  if(st.isSymbolicLink()||(isFile?!st.isFile():!st.isDirectory()))throw Error('Unsafe credential file type or reparse path');
+  real=fs.realpathSync.native(at);if(canonical(real)!==canonical(at))throw Error('Credential path redirected');
+  if(isFile){if(st.size<1n||st.size>65536n||st.nlink!==1n)throw Error('Credential file bound or linked alias');record={path:at,real,identity:fileIdentity(st)};}
+  else parents.unshift({path:at,real,dev:String(st.dev),ino:String(st.ino),mode:String(st.mode)});
+  const next=path.dirname(at);if(next===at)break;at=next;
+ }
+ rejectWindowsReparse([...parents.filter(p=>!p.protected).map(p=>p.path),target]);return {parents,file:record};
 }
 function credentialFile(file=COMPARISON_PATHS.env){
   const before=credentialPathVector(file),fd=fs.openSync(file,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW??0)|(fs.constants.O_NONBLOCK??0));
