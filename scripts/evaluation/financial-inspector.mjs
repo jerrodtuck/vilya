@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 // Prospective contract 3 admits only the documented optional message phase.
 export const FINANCIAL_CONTRACT_VERSION=3;
 const RESPONSE_KEYS = new Set(['id','object','created_at','completed_at','status','error','incomplete_details','instructions','max_output_tokens','max_tool_calls','model','output','parallel_tool_calls','previous_response_id','reasoning','store','temperature','text','tool_choice','tools','top_p','truncation','usage','user','metadata','service_tier','safety_identifier','prompt_cache_key','prompt_cache_options','prompt_cache_retention','background','conversation','top_logprobs','personality','access_programs','moderation','prompt','prompt_cache_diagnostics']);
@@ -72,13 +73,13 @@ const CONTENT_CAUSES=Object.freeze(['non-record','unknown-kind','extra-fields','
 const own=(value,key)=>Object.hasOwn(value,key);
 const typeBucket=(value,present=true)=>!present?'absent':value===null?'null':Array.isArray(value)?'array':['boolean','number','string','object'].includes(typeof value)?typeof value:'OTHER';
 const extraProjection=count=>({count:Math.min(count,64),identities:count?['OTHER']:[]});
-// Names are the only prospective open vocabulary. Never retain arbitrary values.
+// Prospective identities are digests, never an open plaintext vocabulary.
 const structuralName=name=>typeof name==='string'&&/^[a-z][a-z_]{0,39}$/.test(name)&&!/(?:key|secret|private|password|credential|auth|bearer|prompt|text|content|token|session|cookie|email|address|name|identifier)|^(?:sk_|req_|resp_|api_)/.test(name);
 const PAYER_ENUM=Object.freeze(['developer','openai','OTHER']);
 function structuralFields(value,keys,credential){
  const descriptors=Object.getOwnPropertyDescriptors(value),safe=[],redacted=[];
- for(const name of keys){const descriptor=descriptors[name];if(!structuralName(name)||credential&&name.includes(credential)||!descriptor||!Object.hasOwn(descriptor,'value'))redacted.push(name);else safe.push({name,type:typeBucket(descriptor.value)});}
- safe.sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0);
+ for(const name of keys){const descriptor=descriptors[name];if(!structuralName(name)||credential&&name.includes(credential)||!descriptor||!Object.hasOwn(descriptor,'value'))redacted.push(name);else safe.push({nameHash:createHash('sha256').update(name,'utf8').digest('hex'),type:typeBucket(descriptor.value)});}
+ safe.sort((a,b)=>a.nameHash<b.nameHash?-1:a.nameHash>b.nameHash?1:0);
  return {fields:safe.slice(0,8),redactedCount:Math.min(64,redacted.length),overflowCount:Math.min(64,Math.max(0,safe.length-8))};
 }
 export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VERSION,{credential=null}={}){
@@ -113,6 +114,6 @@ export function validateFinancialDiagnostics(value,expectedVersion=value?.versio
  if(!exact(value.messageFields,fields.message)||fields.message.some(key=>!ordered(value.messageFields[key],TYPE_BUCKETS)))invalid();
  for(const key of ['envelopeExtras','messageExtras']){const extra=value[key];if(!exact(extra,['count','identities'])||!uint(extra.count)||extra.count>64||JSON.stringify(extra.identities)!==JSON.stringify(extra.count?['OTHER']:[]))invalid();}
  if(expectedVersion>=2&&(!ordered(value.recognizedRejectedFields,FINANCIAL_CANDIDATE_FIELDS)||JSON.stringify(value.recognizedRejectedFields)!==JSON.stringify(FINANCIAL_CANDIDATE_FIELDS.filter(key=>value.envelopeFields[key]!=='absent'))))invalid();
- if(expectedVersion===3){for(const [key,extra]of [['unknownEnvelope',[]],['billing',['type','payer']]]){const part=value[key];if(!exact(part,['fields','redactedCount','overflowCount',...extra])||!Array.isArray(part.fields)||part.fields.length>8||!uint(part.redactedCount)||part.redactedCount>64||!uint(part.overflowCount)||part.overflowCount>64)invalid();let prior='';for(const field of part.fields){if(!exact(field,['name','type'])||!structuralName(field.name)||field.name<=prior||!TYPE_BUCKETS.includes(field.type)||field.type==='absent')invalid();prior=field.name;}}if(!TYPE_BUCKETS.includes(value.billing.type)||!['absent',...PAYER_ENUM].includes(value.billing.payer))invalid();}
+ if(expectedVersion===3){for(const [key,extra]of [['unknownEnvelope',[]],['billing',['type','payer']]]){const part=value[key];if(!exact(part,['fields','redactedCount','overflowCount',...extra])||!Array.isArray(part.fields)||part.fields.length>8||!uint(part.redactedCount)||part.redactedCount>64||!uint(part.overflowCount)||part.overflowCount>64)invalid();let prior='';for(const field of part.fields){if(!exact(field,['nameHash','type'])||typeof field.nameHash!=='string'||!/^[a-f0-9]{64}$/.test(field.nameHash)||field.nameHash<=prior||!TYPE_BUCKETS.includes(field.type)||field.type==='absent')invalid();prior=field.nameHash;}}if(!TYPE_BUCKETS.includes(value.billing.type)||!['absent',...PAYER_ENUM].includes(value.billing.payer))invalid();}
  if(!ordered(value.messageContentShapes,CONTENT_SHAPES)||!ordered(value.messageContentCauses,CONTENT_CAUSES))invalid();return true;
 }

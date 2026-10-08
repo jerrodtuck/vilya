@@ -1,5 +1,6 @@
 // Prospective, offline-only scaffold. This module cannot publish or dispatch live.
 import crypto from 'node:crypto';
+import {types} from 'node:util';
 import {apiConfig,maximumCost,actualCost} from './money.mjs';
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const hash=value=>sha(JSON.stringify(value));
@@ -34,12 +35,26 @@ export function validateSchemaDiagnosticScaffold(value){if(JSON.stringify(value)
 // Caller supplies bytes; this verifier neither opens nor changes actual runtime.
 export function verifySchemaDiagnosticPredecessor(bytes){if(!bytes||Object.keys(bytes).sort().join('|')!==Object.keys(SCHEMA_DIAGNOSTIC_ORIGIN).sort().join('|'))throw Error('Exact diagnostic predecessor required');for(const [file,digest]of Object.entries(SCHEMA_DIAGNOSTIC_ORIGIN))if(!Buffer.isBuffer(bytes[file])||sha(bytes[file])!==digest)throw Error('Frozen diagnostic predecessor changed');return true;}
 const stores=new WeakMap();
+function ownData(value){
+ if(!value||typeof value!=='object'||types.isProxy(value)||![Object.prototype,null].includes(Object.getPrototypeOf(value)))throw Error('Invalid diagnostic generation evidence');
+ const descriptors=Object.getOwnPropertyDescriptors(value);
+ if(Reflect.ownKeys(descriptors).some(key=>typeof key!=='string'||!Object.hasOwn(descriptors[key],'value')))throw Error('Accessor diagnostic evidence denied');
+ return descriptors;
+}
+function snapshotGenerationUsage(result){
+ const envelope=ownData(result);
+ if(!Object.hasOwn(envelope,'usage')||Object.keys(envelope).some(key=>!['usage','text'].includes(key))||envelope.text&&envelope.text.value!==null&&typeof envelope.text.value!=='string')throw Error('Invalid diagnostic generation envelope');
+ const fields=ownData(envelope.usage.value),names=['input','cachedInput','cacheWrite','output','reasoning','fees'];
+ if(Object.keys(fields).sort().join('|')!==names.sort().join('|'))throw Error('Invalid diagnostic usage fields');
+ const usage={};for(const name of names){const value=fields[name].value;if(!Number.isSafeInteger(value)||value<0)throw Error('Invalid diagnostic usage counter');usage[name]=value;}
+ return freeze(usage);
+}
 export function offlineSchemaDiagnosticStore(){const p=SCHEMA_DIAGNOSTIC_POLICY,store=Object.freeze({read:()=>structuredClone(stores.get(store))});stores.set(store,{status:'scaffold',executionWindow:null,lastTime:null,newCountCalls:0,newGenerations:0,newTrialSlots:0,reservation:0,cost:null,...structuredClone(p.carry),consumedSlotHistory:structuredClone(p.consumedSlotHistory)});return store;}
 export async function runOfflineSchemaDiagnostic({store,provider,authorizeSyntheticWindow=false,prompt,clock=Date.now}){
  if(!stores.has(store)||provider?.kind!=='fake'||authorizeSyntheticWindow!==true||typeof prompt!=='string')throw Error('Synthetic diagnostic authorization required; live unavailable');
  const s=store.read(),p=SCHEMA_DIAGNOSTIC_POLICY;if(s.status!=='scaffold')throw Error('Diagnostic already attempted; no replay');
  s.status='authorizing';stores.set(store,structuredClone(s));
- const sample=()=>{const now=clock();if(!Number.isSafeInteger(now)||now<0||s.lastTime!==null&&now<s.lastTime||s.executionWindow&&now>=s.executionWindow.dispatchDeadline)throw Error('Invalid diagnostic clock');s.lastTime=now;return now;};
+ const sample=(settling=false)=>{const now=clock();if(!Number.isSafeInteger(now)||now<0||s.lastTime!==null&&now<s.lastTime||s.executionWindow&&now>=(settling?s.executionWindow.deadline:s.executionWindow.dispatchDeadline))throw Error('Invalid diagnostic clock');s.lastTime=now;return now;};
  try{
   const now=sample();if(!Number.isSafeInteger(now+p.dispatchMs+p.finalMs))throw Error('Diagnostic deadline overflow');
   s.executionWindow={startedAt:now,dispatchDeadline:now+p.dispatchMs,deadline:now+p.dispatchMs+p.finalMs};s.status='count-pending';s.newCountCalls=1;s.countCalls++;s.newTrialSlots=1;s.consumedTrialSlots++;s.consumedSlotHistory.push({segment:p.campaignId,trial:p.trial,slots:1});stores.set(store,structuredClone(s));
@@ -48,9 +63,11 @@ export async function runOfflineSchemaDiagnostic({store,provider,authorizeSynthe
   if(!certificate||Object.keys(certificate).sort().join('|')!==['inputTokens','payloadHash'].join('|')||certificate.payloadHash!==hash(packet)||!Number.isSafeInteger(certificate.inputTokens)||certificate.inputTokens<0||certificate.inputTokens>32000)throw Error('Exact diagnostic count required');
   const rate=apiConfig().models[p.model],reservation=maximumCost(rate,certificate.inputTokens,p.maxOutputTokens);if(reservation>p.trialCap||s.exposure+reservation>p.totalCap)throw Error('Diagnostic cap exhausted');
   s.status='generation-pending';s.newGenerations=1;s.reservation=reservation;s.held+=reservation;s.exposure+=reservation;stores.set(store,structuredClone(s));
-  const result=await provider.send(packet,certificate);sample();
-  const usage=result?.usage,names=['input','cachedInput','cacheWrite','output','reasoning','fees'];if(!usage||Object.keys(usage).sort().join('|')!==names.sort().join('|')||names.some(key=>!Number.isSafeInteger(usage[key])||usage[key]<0)||usage.input>certificate.inputTokens||usage.output>p.maxOutputTokens||usage.cachedInput+usage.cacheWrite>usage.input||usage.reasoning>usage.output||usage.fees!==0)throw Error('Unresolved diagnostic generation');
-  const cost=actualCost(rate,usage);if(cost>reservation||cost>p.trialCap)throw Error('Diagnostic settlement exceeds reservation');s.cost=cost;s.known+=cost;s.held-=reservation;s.exposure=s.known+s.held;
+  const usage=snapshotGenerationUsage(await provider.send(packet,certificate));sample(true);
+  if(usage.input>certificate.inputTokens||usage.output>p.maxOutputTokens||usage.cachedInput>usage.input||usage.cacheWrite>usage.input-usage.cachedInput||usage.reasoning>usage.output||usage.fees!==0)throw Error('Unresolved diagnostic generation');
+  const cost=actualCost(rate,usage),known=s.known+cost,held=s.held-reservation,exposure=s.exposure-reservation+cost;
+  if([cost,known,held,exposure].some(value=>!Number.isSafeInteger(value)||value<0)||cost>reservation||cost>p.trialCap||exposure>p.totalCap||known<p.carry.known||held<p.carry.held||known+held!==exposure)throw Error('Diagnostic settlement exceeds reservation');
+  s.cost=cost;s.known=known;s.held=held;s.exposure=exposure;
  }catch{/* Unknown evidence keeps the complete reservation and consumes the slot. */}
  finally{s.status='stopped';stores.set(store,structuredClone(s));}
  return freeze(store.read());
