@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-08",
+  "recommendation": {"default": "GPT-6.1 Sol · medium", "review": "GPT-6.1 Sol · high", "escalation": "GPT-6 Astra · high or higher", "highVolumeCandidate": "GPT-6 Luna"},
+  "external": {
+    "solHigh": {"intelligence": 50, "estimatedCostPerTaskUsd": 0.32},
+    "astraHigh": {"intelligence": 51, "estimatedCostPerTaskUsd": 1.73},
+    "astraXhigh": {"intelligence": 52, "estimatedCostPerTaskUsd": 2.31},
+    "lunaHigh": {"intelligence": 33, "terminalBenchPercent": 5},
+    "solHighTerminalBenchPercent": 52
+  },
+  "localProbe": {
+    "status": "failed-before-flow-b-or-judgment",
+    "acceptedComparisonEstablished": false,
+    "observedCostUsd": 0.4292996,
+    "unresolvedHoldUsd": 2,
+    "accountedExposureUsd": 2.4292996,
+    "automaticRetries": 0,
+    "attempts": [
+      {"solCompletedCalls": 2, "solObservedCostUsd": 0.0813045, "astraMaxOutputTokens": 1200, "astraTextAvailable": false, "astraUsageAvailable": false},
+      {"solCompletedCalls": 2, "solObservedCostUsd": 0.0319401, "astraMaxOutputTokens": 3500, "astraTextAvailable": false, "astraUsageAvailable": true, "astraElapsedMs": 100413, "astraObservedCostUsd": 0.316055, "astraOutputTokens": 3500, "astraReasoningTokens": 3500}
+    ]
+  }
+}

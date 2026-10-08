@@ -25,8 +25,10 @@ const readKey=()=>{
 const manifest=JSON.parse(fs.readFileSync(path.join(import.meta.dirname,'fixtures','migration.json'),'utf8'));
 const source=manifest.fileOwnership.map(file=>({file,content:execFileSync('git',['show',`${manifest.seed}:${file}`],{cwd:ROOT,encoding:'utf8',maxBuffer:2_000_000})}));
 const priorAttempt=fs.existsSync(OUT)?JSON.parse(fs.readFileSync(OUT,'utf8')):null;
-const evidence={schemaVersion:1,startedAt:new Date().toISOString(),fixture:{name:manifest.name,seed:manifest.seed,task:manifest.taskPrompt,rubric:manifest.rubric,sourceDigest:sha(JSON.stringify(source))},limits:{totalUsd:TOTAL_CAP,perCallUsd:CALL_CAP,retries:0},priorAttempts:priorAttempt?[{startedAt:priorAttempt.startedAt,endedAt:priorAttempt.endedAt,status:priorAttempt.status,failure:priorAttempt.failure,confirmedCostUsd:priorAttempt.totalCostUsd,unresolvedCallHoldUsd:2,calls:priorAttempt.calls}]:[],calls:[],flows:{},judgments:[],status:'running'};
-let spent=(evidence.priorAttempts[0]?.confirmedCostUsd??0)+(evidence.priorAttempts[0]?.unresolvedCallHoldUsd??0);
+const completedAttempt=value=>({startedAt:value.startedAt,endedAt:value.endedAt,status:value.status,failure:value.failure,confirmedCostUsd:value.calls.reduce((sum,call)=>sum+call.costUsd,0),unresolvedCallHoldUsd:value.unresolvedHoldUsd??0,calls:value.calls});
+const priorAttempts=priorAttempt?[...(priorAttempt.priorAttempts??[]),completedAttempt(priorAttempt)]:[];
+const evidence={schemaVersion:1,startedAt:new Date().toISOString(),fixture:{name:manifest.name,seed:manifest.seed,task:manifest.taskPrompt,rubric:manifest.rubric,sourceDigest:sha(JSON.stringify(source))},limits:{totalUsd:TOTAL_CAP,perCallUsd:CALL_CAP,automaticRetries:0},priorAttempts,calls:[],flows:{},judgments:[],observedCostUsd:0,unresolvedHoldUsd:0,status:'running'};
+let spent=priorAttempts.reduce((sum,attempt)=>sum+attempt.confirmedCostUsd+attempt.unresolvedCallHoldUsd,0);
 const checkpoint=()=>{fs.mkdirSync(path.dirname(OUT),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(evidence,null,2)+'\n');};
 function textFrom(data){return data.output?.flatMap(item=>item.type==='message'?item.content??[]:[]).filter(item=>item.type==='output_text').map(item=>item.text).join('')?.trim();}
 function cost(model,usage){
@@ -39,7 +41,7 @@ async function call({id,model,effort,prompt,maxOutput=2500}){
   const started=Date.now();
   const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${key}`,'x-client-request-id':`vilya-357-${id}`},body:JSON.stringify({model,input:prompt,reasoning:{effort},max_output_tokens:maxOutput,text:{format:{type:'text'}},tools:[],tool_choice:'none',parallel_tool_calls:false,service_tier:'default',store:false,stream:false,background:false,truncation:'disabled'})});
   if(!response.ok)throw Error(`${id} failed with HTTP ${response.status}`);
-  const data=await response.json(),text=textFrom(data),usd=cost(model,data.usage);spent+=usd;
+  const data=await response.json(),text=textFrom(data),usd=cost(model,data.usage);spent+=usd;evidence.observedCostUsd+=usd;
   if(usd>CALL_CAP||spent>TOTAL_CAP)throw Error(`Observed budget exceeded at ${id}`);
   evidence.calls.push({id,model,effort,status:data.status,textAvailable:Boolean(text),startedAt:new Date(started).toISOString(),endedAt:new Date().toISOString(),elapsedMs:Date.now()-started,usage:{inputTokens:data.usage.input_tokens,cachedInputTokens:data.usage.input_tokens_details?.cached_tokens??0,cacheWriteTokens:data.usage.input_tokens_details?.cache_write_tokens??0,outputTokens:data.usage.output_tokens,reasoningTokens:data.usage.output_tokens_details?.reasoning_tokens??0,totalTokens:data.usage.total_tokens},costUsd:usd,inputDigest:sha(prompt),outputDigest:text?sha(text):null});checkpoint();
   if(data.status!=='completed'||!text)throw Error(`${id} returned no completed text`);
@@ -59,7 +61,7 @@ try{
   const j1=await call({id:'judge-sol',model:'gpt-6.1-sol',effort:'high',maxOutput:1200,prompt:judgePrompt(a,b)});
   const j2=await call({id:'judge-astra-reversed',model:'gpt-6-astra',effort:'high',maxOutput:2500,prompt:judgePrompt(b,a)});
   evidence.judgments=[{judge:'gpt-6.1-sol',order:['A','B'],raw:j1},{judge:'gpt-6-astra',order:['B','A'],raw:j2}];
-  evidence.totalCostUsd=spent;evidence.endedAt=new Date().toISOString();evidence.status='complete';
-}catch(error){evidence.totalCostUsd=spent;evidence.endedAt=new Date().toISOString();evidence.status='failed';evidence.failure=String(error?.message??error);throw error;
+  evidence.totalAccountedExposureUsd=spent;evidence.endedAt=new Date().toISOString();evidence.status='complete';
+}catch(error){evidence.totalAccountedExposureUsd=spent;evidence.endedAt=new Date().toISOString();evidence.status='failed';evidence.failure=String(error?.message??error);throw error;
 }finally{checkpoint();}
-console.log(JSON.stringify({status:evidence.status,totalCostUsd:evidence.totalCostUsd,calls:evidence.calls.map(({id,model,costUsd,elapsedMs,usage})=>({id,model,costUsd,elapsedMs,usage})),output:OUT},null,2));
+console.log(JSON.stringify({status:evidence.status,totalAccountedExposureUsd:evidence.totalAccountedExposureUsd,calls:evidence.calls.map(({id,model,costUsd,elapsedMs,usage})=>({id,model,costUsd,elapsedMs,usage})),output:OUT},null,2));

@@ -42,9 +42,10 @@ attempt exhausted a 1,200-token allowance without answer text.
 The retained accounting has $0.43 of observed calls and a conservative $2 hold for
 the first incomplete Astra call: $2.43 total accounted exposure. No retry loop ran.
 
-This proves that mandatory Astra consultation is not the cheapest accepted route for
-this Vilya planning flow. It does not claim Astra is never useful. Astra becomes a
-conditional escalation.
+The probe failed before Flow B or blind judgments completed, so it does not establish
+accepted-quality superiority or the cheapest accepted route. It does show that
+mandatory Astra consultation failed twice and added latency and cost without a usable
+decision. Combined with the independent screen, Astra becomes a conditional escalation.
 
 ## Recalibration
 
