@@ -65,14 +65,23 @@ export const FINANCIAL_CANDIDATE_FIELDS=Object.freeze(['input','output_text','re
 const DIAGNOSTIC_FIELDS=Object.freeze([...LEGACY_DIAGNOSTIC_FIELDS,...FINANCIAL_CANDIDATE_FIELDS]);
 const LEGACY_MESSAGE_FIELDS=Object.freeze(['id','type','role','status','content']);
 const MESSAGE_FIELDS=Object.freeze([...LEGACY_MESSAGE_FIELDS,'phase']);
-const projectionFields=version=>{if(version===1)return {envelope:LEGACY_DIAGNOSTIC_FIELDS,message:LEGACY_MESSAGE_FIELDS};if(version===2)return {envelope:DIAGNOSTIC_FIELDS,message:MESSAGE_FIELDS};throw Error('Invalid bounded financial diagnostics version');};
+const projectionFields=version=>{if(version===1)return {envelope:LEGACY_DIAGNOSTIC_FIELDS,message:LEGACY_MESSAGE_FIELDS};if(version===2||version===3)return {envelope:DIAGNOSTIC_FIELDS,message:MESSAGE_FIELDS};throw Error('Invalid bounded financial diagnostics version');};
 const TYPE_BUCKETS=Object.freeze(['absent','null','boolean','number','string','array','object','OTHER']);
 const CONTENT_SHAPES=Object.freeze(['absent','null','not-array','empty','array']);
 const CONTENT_CAUSES=Object.freeze(['non-record','unknown-kind','extra-fields','annotations-scope','logprobs-scope']);
 const own=(value,key)=>Object.hasOwn(value,key);
 const typeBucket=(value,present=true)=>!present?'absent':value===null?'null':Array.isArray(value)?'array':['boolean','number','string','object'].includes(typeof value)?typeof value:'OTHER';
 const extraProjection=count=>({count:Math.min(count,64),identities:count?['OTHER']:[]});
-export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VERSION){
+// Names are the only prospective open vocabulary. Never retain arbitrary values.
+const structuralName=name=>typeof name==='string'&&/^[a-z][a-z_]{0,39}$/.test(name)&&!/(?:key|secret|private|password|credential|auth|bearer|prompt|text|content|token|session|cookie|email|address|name|identifier)|^(?:sk_|req_|resp_|api_)/.test(name);
+const PAYER_ENUM=Object.freeze(['developer','openai','OTHER']);
+function structuralFields(value,keys,credential){
+ const descriptors=Object.getOwnPropertyDescriptors(value),safe=[],redacted=[];
+ for(const name of keys){const descriptor=descriptors[name];if(!structuralName(name)||credential&&name.includes(credential)||!descriptor||!Object.hasOwn(descriptor,'value'))redacted.push(name);else safe.push({name,type:typeBucket(descriptor.value)});}
+ safe.sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0);
+ return {fields:safe.slice(0,8),redactedCount:Math.min(64,redacted.length),overflowCount:Math.min(64,Math.max(0,safe.length-8))};
+}
+export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VERSION,{credential=null}={}){
  const fields=projectionFields(version);
  const envelope=record(data)?data:{};
  const envelopeFields=Object.fromEntries(fields.envelope.map(key=>[key,typeBucket(envelope[key],own(envelope,key))]));
@@ -91,17 +100,19 @@ export function projectFinancialDiagnostics(data,version=FINANCIAL_DIAGNOSTIC_VE
    if(c.logprobs!=null&&!empty(c.logprobs))causes.add('logprobs-scope');
   }
  }
- return {version,...(version===2?{recognizedRejectedFields:FINANCIAL_CANDIDATE_FIELDS.filter(key=>own(envelope,key))}:{}),envelopeFields,envelopeExtras:extraProjection(Object.keys(envelope).filter(key=>!fields.envelope.includes(key)).length),messageFields:Object.fromEntries(fields.message.map(key=>[key,TYPE_BUCKETS.filter(type=>messageSets[key].has(type))])),messageExtras:extraProjection(messageExtras),messageContentShapes:CONTENT_SHAPES.filter(shape=>shapes.has(shape)),messageContentCauses:CONTENT_CAUSES.filter(cause=>causes.has(cause))};
+ const prospective=version===3?{unknownEnvelope:structuralFields(envelope,Object.keys(envelope).filter(key=>!fields.envelope.includes(key)),credential),billing:{type:typeBucket(envelope.billing,own(envelope,'billing')),...structuralFields(record(envelope.billing)?envelope.billing:{},record(envelope.billing)?Object.keys(envelope.billing):[],credential),payer:!record(envelope.billing)||!own(envelope.billing,'payer')?'absent':['developer','openai'].includes(envelope.billing.payer)?envelope.billing.payer:'OTHER'}}:{};
+ return {version,...(version>=2?{recognizedRejectedFields:FINANCIAL_CANDIDATE_FIELDS.filter(key=>own(envelope,key))}:{}),...prospective,envelopeFields,envelopeExtras:extraProjection(Object.keys(envelope).filter(key=>!fields.envelope.includes(key)).length),messageFields:Object.fromEntries(fields.message.map(key=>[key,TYPE_BUCKETS.filter(type=>messageSets[key].has(type))])),messageExtras:extraProjection(messageExtras),messageContentShapes:CONTENT_SHAPES.filter(shape=>shapes.has(shape)),messageContentCauses:CONTENT_CAUSES.filter(cause=>causes.has(cause))};
 }
 export function validateFinancialDiagnostics(value,expectedVersion=value?.version){
  const fields=projectionFields(expectedVersion);
  const invalid=()=>{throw Error('Invalid bounded financial diagnostics');};
  const exact=(obj,keys)=>record(obj)&&Object.keys(obj).sort().join('|')===[...keys].sort().join('|');
  const ordered=(values,allowed)=>Array.isArray(values)&&JSON.stringify(values)===JSON.stringify(allowed.filter(value=>values.includes(value)));
- if(!exact(value,['version','envelopeFields','envelopeExtras','messageFields','messageExtras','messageContentShapes','messageContentCauses',...(expectedVersion===2?['recognizedRejectedFields']:[])])||value.version!==expectedVersion)invalid();
+ if(!exact(value,['version','envelopeFields','envelopeExtras','messageFields','messageExtras','messageContentShapes','messageContentCauses',...(expectedVersion>=2?['recognizedRejectedFields']:[]),...(expectedVersion===3?['unknownEnvelope','billing']:[])])||value.version!==expectedVersion)invalid();
  if(!exact(value.envelopeFields,fields.envelope)||fields.envelope.some(key=>!TYPE_BUCKETS.includes(value.envelopeFields[key])))invalid();
  if(!exact(value.messageFields,fields.message)||fields.message.some(key=>!ordered(value.messageFields[key],TYPE_BUCKETS)))invalid();
  for(const key of ['envelopeExtras','messageExtras']){const extra=value[key];if(!exact(extra,['count','identities'])||!uint(extra.count)||extra.count>64||JSON.stringify(extra.identities)!==JSON.stringify(extra.count?['OTHER']:[]))invalid();}
- if(expectedVersion===2&&(!ordered(value.recognizedRejectedFields,FINANCIAL_CANDIDATE_FIELDS)||JSON.stringify(value.recognizedRejectedFields)!==JSON.stringify(FINANCIAL_CANDIDATE_FIELDS.filter(key=>value.envelopeFields[key]!=='absent'))))invalid();
+ if(expectedVersion>=2&&(!ordered(value.recognizedRejectedFields,FINANCIAL_CANDIDATE_FIELDS)||JSON.stringify(value.recognizedRejectedFields)!==JSON.stringify(FINANCIAL_CANDIDATE_FIELDS.filter(key=>value.envelopeFields[key]!=='absent'))))invalid();
+ if(expectedVersion===3){for(const [key,extra]of [['unknownEnvelope',[]],['billing',['type','payer']]]){const part=value[key];if(!exact(part,['fields','redactedCount','overflowCount',...extra])||!Array.isArray(part.fields)||part.fields.length>8||!uint(part.redactedCount)||part.redactedCount>64||!uint(part.overflowCount)||part.overflowCount>64)invalid();let prior='';for(const field of part.fields){if(!exact(field,['name','type'])||!structuralName(field.name)||field.name<=prior||!TYPE_BUCKETS.includes(field.type)||field.type==='absent')invalid();prior=field.name;}}if(!TYPE_BUCKETS.includes(value.billing.type)||!['absent',...PAYER_ENUM].includes(value.billing.payer))invalid();}
  if(!ordered(value.messageContentShapes,CONTENT_SHAPES)||!ordered(value.messageContentCauses,CONTENT_CAUSES))invalid();return true;
 }
