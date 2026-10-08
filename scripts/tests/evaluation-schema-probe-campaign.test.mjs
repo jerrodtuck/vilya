@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import childProcess from 'node:child_process';
+import vm from 'node:vm';
 import {syncBuiltinESMExports} from 'node:module';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createSchemaProbeScaffold,schemaProbeActivation,SCHEMA_PROBE_POLICY,SCHEMA_PROBE_ORIGIN,offlineSchemaProbeStore,runOfflineSchemaProbe,publishSchemaProbeClaim} from '../evaluation/schema-probe-campaign.mjs';
@@ -407,6 +408,23 @@ test('shared guard denies cooperating tail writers, concurrent readers and stale
   assert.ok(attempts>0);assert.equal(fs.existsSync(claimFile+'.blocked.json'),false);assert.equal(fs.existsSync(claimFile+'.guard'),false);
   fixture.withSchemaProbeGuard(()=>{assert.throws(()=>fixture.readSchemaProbeClaim(),/EEXIST/);assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST/);});
   fs.writeFileSync(claimFile+'.guard','crash');assert.throws(()=>fixture.readSchemaProbeClaim(),/EEXIST/);assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST/);assert.equal(fs.readFileSync(claimFile+'.guard','utf8'),'crash');
+});
+test('guard retains its fence for hidden Promises, thenables and unsafe result inspection',async t=>{
+  const {fixture,claimFile}=await publicationFixture(t);let getters=0,traps=0;
+  const hidden=value=>{const promise=Promise.resolve();Object.defineProperty(promise,'then',{value});return promise;};
+  const accessor=()=>Object.defineProperty({},'then',{get(){getters++;throw Error('getter');}});
+  const proxy=()=>new Proxy({},{get(){traps++;throw Error('trap');},getPrototypeOf(){traps++;throw Error('trap');},ownKeys(){traps++;throw Error('trap');}});
+  const cases=[()=>hidden(undefined),()=>hidden(null),()=>hidden(1),accessor,proxy,
+    ()=>vm.runInNewContext('Promise.resolve()'),()=>({then(){}}),()=>Object.create({then(){}}),
+    ()=>vm.runInNewContext('({then(){}})'),()=>new Date(),()=>({get value(){getters++;throw Error('getter');}})];
+  for(const make of cases){
+    const result=make();assert.throws(()=>fixture.withSchemaProbeGuard(()=>result));
+    assert.equal(fs.existsSync(claimFile+'.guard'),true);assert.throws(()=>fixture.withSchemaProbeGuard(()=>undefined),/EEXIST/);
+    // Only the disposable fake fixture removes a held guard to isolate cases.
+    fs.unlinkSync(claimFile+'.guard');
+  }
+  assert.equal(getters,0);assert.equal(traps,0);
+  assert.deepEqual(fixture.withSchemaProbeGuard(()=>({safe:true})),{safe:true});assert.equal(fs.existsSync(claimFile+'.guard'),false);
 });
 test('Git config environment injection and redirected local worktree are denied',async t=>{
   const {root,args,fixture,git}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);

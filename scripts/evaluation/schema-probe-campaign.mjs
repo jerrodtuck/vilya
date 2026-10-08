@@ -158,7 +158,22 @@ export function withSchemaProbeGuard(operation){
   const file=path.join(repo,SCHEMA_PROBE_POLICY.claim+'.guard');let at=path.parse(file).root;
   for(const part of path.dirname(file).slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe guard symlink denied');}
   const fd=fs.openSync(file,'wx',0o600),owner=fs.fstatSync(fd);let release=true;
-  try{fs.fsyncSync(fd);const result=operation();if(result&&typeof result.then==='function'){release=false;throw Error('Schema-probe asynchronous guard operation denied; retained');}return result;}
+  try{
+    fs.fsyncSync(fd);const result=operation();
+    if(result!==null&&['object','function'].includes(typeof result)){
+      // Fence before inspection. Native Promise branding works across realms
+      // and cannot be hidden by an own `then`. Never invoke a then accessor or
+      // proxy trap; suspicious results and any inspection failure retain guard.
+      release=false;
+      if(types.isPromise(result)||types.isProxy(result)||typeof result==='function')throw Error('Schema-probe asynchronous guard result denied; retained');
+      let depth=0;
+      for(let at=result;at!==null;at=Object.getPrototypeOf(at)){
+        if(++depth>12||types.isProxy(at)||Object.hasOwn(Object.getOwnPropertyDescriptors(at),'then'))throw Error('Schema-probe thenable guard result denied; retained');
+      }
+      const snapshot=inputSnapshot(result);release=true;return snapshot;
+    }
+    return result;
+  }
   finally{fs.closeSync(fd);if(release){const current=fs.lstatSync(file);if(current.dev!==owner.dev||current.ino!==owner.ino||current.size!==0||current.isSymbolicLink())throw Error('Schema-probe guard ownership changed; retained');fs.unlinkSync(file);}}
 }
 export function readSchemaProbeClaim(){return withSchemaProbeGuard(()=>stableClaimEvidence().activation);}
