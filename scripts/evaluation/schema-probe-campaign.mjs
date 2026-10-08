@@ -61,27 +61,41 @@ export function publishSchemaProbeClaim({initialize,reviewedHead,reviews}){
   if(dirty.length)throw Error('Schema-probe reviewed source changed');
   verifySchemaProbePredecessor();
   const activation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead,reviews});
-  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace);
+  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace),marker=claim+'.attempt.json';
   // Parent directories must exist and be unlinked; publication never creates runtime.
   fs.realpathSync(path.dirname(claim));safeBytes(path.join(repo,predecessor+'pilot-budget.json'));
-  for(const file of [claim,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
-  let lock,output;
-  try{lock=fs.openSync(claim+'.lock','wx',0o600);verifySchemaProbePredecessor();output=fs.openSync(claim+'.next','wx',0o600);fs.writeFileSync(output,JSON.stringify({activation,sha256:hash(activation)})+'\n');fs.fsyncSync(output);fs.closeSync(output);output=undefined;fs.renameSync(claim+'.next',claim);return {claimDigest:sha(safeBytes(claim)),executionWindowStarted:false,paidRequests:0};}
-  finally{if(output!==undefined)fs.closeSync(output);if(lock!==undefined){fs.closeSync(lock);fs.unlinkSync(claim+'.lock');}}
+  for(const file of [claim,marker,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
+  let lock,output,attempt;
+  const serialized=JSON.stringify({activation,sha256:hash(activation)})+'\n';
+  try{
+    lock=fs.openSync(claim+'.lock','wx',0o600);
+    // The durable marker is never removed, even after a torn publication. A stale
+    // contender that passed prechecks cannot become a second publisher.
+    attempt=fs.openSync(marker,'wx',0o600);
+    fs.writeFileSync(attempt,JSON.stringify({schemaVersion:1,claimDigest:sha(serialized)})+'\n');fs.fsyncSync(attempt);fs.closeSync(attempt);attempt=undefined;
+    for(const file of [claim,claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe publication torn; replay denied');
+    verifySchemaProbePredecessor();
+    output=fs.openSync(claim+'.next','wx',0o600);fs.writeFileSync(output,serialized);fs.fsyncSync(output);fs.closeSync(output);output=undefined;
+    // Hard-link publication atomically refuses an existing destination; rename
+    // would replace it on some platforms. A leftover .next also stays held.
+    fs.linkSync(claim+'.next',claim);fs.unlinkSync(claim+'.next');
+    return {claimDigest:sha(safeBytes(claim)),executionWindowStarted:false,paidRequests:0};
+  }
+  finally{if(attempt!==undefined)fs.closeSync(attempt);if(output!==undefined)fs.closeSync(output);if(lock!==undefined){fs.closeSync(lock);fs.unlinkSync(claim+'.lock');}}
 }
 
 const proofs=new WeakMap();
 // Fake adapters are never accepted by a live ledger and this token is process-local.
-export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-probe-proof',status:'scaffold',executionWindow:null,newCountCalls:0,newGenerations:0,reservation:0,cost:null,held:361646,known:10929,exposure:372575,carriedCountCalls:5,carriedTrialSlots:4};const store=Object.freeze({read:()=>structuredClone(proofs.get(store))});proofs.set(store,state);return store;}
+export function offlineSchemaProbeStore(){const state={kind:'synthetic-schema-probe-proof',status:'scaffold',executionWindow:null,newCountCalls:0,consumedCountCalls:5,newGenerations:0,newTrialSlots:0,consumedTrialSlots:4,consumedSlotHistory:structuredClone(SCHEMA_PROBE_POLICY.consumedSlotHistory),reservation:0,cost:null,held:361646,known:10929,exposure:372575,carriedCountCalls:5,carriedTrialSlots:4};const store=Object.freeze({read:()=>structuredClone(proofs.get(store))});proofs.set(store,state);return store;}
 export async function runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow=false,prompt,clock=Date.now}){
   if(!proofs.has(store)||provider?.kind!=='fake'||authorizeSyntheticWindow!==true||typeof prompt!=='string')throw Error('Synthetic schema-probe authorization required; live unavailable');
   let s=store.read();if(s.status!=='scaffold')throw Error('Schema-probe already attempted; no replay or reset');
   const now=clock();if(!Number.isSafeInteger(now)||now<0)throw Error('Invalid schema-probe clock');
-  s.status='count-pending';s.executionWindow={startedAt:now,deadline:now+60000};s.newCountCalls=1;proofs.set(store,structuredClone(s));
-  const p=SCHEMA_PROBE_POLICY,packet={model:p.model,effort:p.effort,prompt,maxOutputTokens:p.maxOutputTokens,maxToolCalls:0,retries:0,diagnosticProjectionVersion:2,financialContractVersion:3};
+  s.status='count-pending';s.executionWindow={startedAt:now,deadline:now+60000};s.newCountCalls=1;s.consumedCountCalls+=1;s.newTrialSlots=1;s.consumedTrialSlots+=1;s.consumedSlotHistory.push({segment:SCHEMA_PROBE_POLICY.campaignId,trial:SCHEMA_PROBE_POLICY.trial,slots:1});proofs.set(store,structuredClone(s));
+  const p=SCHEMA_PROBE_POLICY,packet=freeze({model:p.model,effort:p.effort,prompt,maxOutputTokens:p.maxOutputTokens,maxToolCalls:0,retries:0,diagnosticProjectionVersion:2,financialContractVersion:3});
   try{
-    const certificate=await provider.count(packet);
-    if(!certificate||certificate.payloadHash!==hash(packet)||!Number.isSafeInteger(certificate.inputTokens)||certificate.inputTokens<0||certificate.inputTokens>32000||clock()<now||clock()>=s.executionWindow.deadline)throw Error('Exact schema-probe count required');
+    const certificate=freeze(structuredClone(await provider.count(packet)));
+    if(!certificate||Object.keys(certificate).sort().join()!==['payloadHash','inputTokens'].sort().join()||certificate.payloadHash!==hash(packet)||!Number.isSafeInteger(certificate.inputTokens)||certificate.inputTokens<0||certificate.inputTokens>32000||clock()<now||clock()>=s.executionWindow.deadline)throw Error('Exact schema-probe count required');
     const rate=apiConfig().models[p.model],reservation=maximumCost(rate,certificate.inputTokens,p.maxOutputTokens);
     if(reservation>p.trialCap||s.exposure+reservation>p.totalCap)throw Error('Schema-probe cap exhausted');
     s.status='generation-pending';s.newGenerations=1;s.reservation=reservation;s.held+=reservation;s.exposure+=reservation;proofs.set(store,structuredClone(s));

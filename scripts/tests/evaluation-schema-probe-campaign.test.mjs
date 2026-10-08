@@ -34,6 +34,7 @@ test('fake proof makes one exact count and one generation then stops with no rep
   assert.deepEqual(provider.calls.map(c=>c[0]),['count','generation']);assert.equal(result.status,'stopped');assert.equal(result.newCountCalls,1);assert.equal(result.newGenerations,1);
   assert.equal(result.exposure,372575+result.cost);assert.equal(result.known,10929+result.cost);assert.equal(result.held,361646);assert.equal(result.known+result.held,result.exposure);
   assert.equal(result.carriedCountCalls,5);assert.equal(result.carriedTrialSlots,4);
+  assert.equal(result.consumedCountCalls,6);assert.equal(result.newTrialSlots,1);assert.equal(result.consumedTrialSlots,5);assert.equal(result.consumedSlotHistory.reduce((n,h)=>n+h.slots,0),5);
   assert.deepEqual(provider.calls[0][1],provider.calls[1][1]);assert.equal(provider.calls[0][1].maxToolCalls,0);
   await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic'}),/no replay/);
   const reset=store.read();reset.status='scaffold';assert.equal(store.read().status,'stopped');assert.equal(store.write,undefined);
@@ -46,6 +47,7 @@ test('unknown generation holds its full reservation and a count mismatch never s
     assert.equal(result.status,'stopped');assert.equal(result.cost,null);assert.equal(result.known,10929);
     assert.equal(result.exposure,372575+result.reservation);assert.equal(result.held,361646+result.reservation);assert.equal(result.known+result.held,result.exposure);
     assert.equal(result.newGenerations,badCount?0:1);assert.equal(provider.calls.length,badCount?1:2);
+    assert.equal(result.newTrialSlots,1);assert.equal(result.consumedTrialSlots,5);assert.equal(result.consumedCountCalls,6);
     await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'again'}));
   }
 });
@@ -63,7 +65,7 @@ test('persisted pending fence forbids reentrant dispatch and expired count never
   const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>now});
   assert.equal(result.status,'stopped');assert.equal(result.newGenerations,0);assert.equal(result.exposure,372575);
 });
-test('disposable fake publication writes only one claim, preserves predecessor bytes and never starts a window',async t=>{
+async function publicationFixture(t){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'schema-probe-fake-'));
   t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
   const git=args=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true}).trim();
@@ -84,6 +86,10 @@ test('disposable fake publication writes only one claim, preserves predecessor b
   git(['add','scripts/evaluation/schema-probe-campaign.mjs']);commit();
   const current=git(['rev-parse','HEAD']),args={initialize:true,reviewedHead:current,reviews:reviews.map(r=>({...r,head:current}))};
   const fixture=await import(pathToFileURL(moduleFile).href);
+  return {root,args,fixture,before,claimFile:path.join(root,fixture.SCHEMA_PROBE_POLICY.claim)};
+}
+test('disposable fake publication writes only one claim, preserves predecessor bytes and never starts a window',async t=>{
+  const {root,args,fixture,before,claimFile}=await publicationFixture(t);
   const evidenceFile=Object.keys(before)[0];fs.appendFileSync(evidenceFile,'changed');assert.throws(()=>fixture.publishSchemaProbeClaim(args),/predecessor/);fs.writeFileSync(evidenceFile,before[evidenceFile]);
   const result=fixture.publishSchemaProbeClaim(args);assert.equal(result.executionWindowStarted,false);assert.equal(result.paidRequests,0);
   const claim=JSON.parse(fs.readFileSync(path.join(root,fixture.SCHEMA_PROBE_POLICY.claim)));
@@ -91,4 +97,52 @@ test('disposable fake publication writes only one claim, preserves predecessor b
   assert.equal(fs.existsSync(path.join(root,fixture.SCHEMA_PROBE_POLICY.workspace)),false);
   assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);
   for(const [file,raw]of Object.entries(before))assert.deepEqual(fs.readFileSync(file),raw);
+  const marker=JSON.parse(fs.readFileSync(claimFile+'.attempt.json'));assert.equal(marker.claimDigest,crypto.createHash('sha256').update(fs.readFileSync(claimFile)).digest('hex'));
+});
+test('stale concurrent contender cannot replace the winning claim after passing prechecks',async t=>{
+  const {args,fixture,claimFile}=await publicationFixture(t),original=fs.openSync;
+  const winnerArgs={...args,reviews:args.reviews.map((r,i)=>({...r,receiptDigest:String(i+3).repeat(64)}))};
+  let winner,winningBytes,interleaved=false;
+  fs.openSync=function(file,...rest){
+    if(file===claimFile+'.lock'&&!interleaved){
+      interleaved=true;fs.openSync=original;
+      winner=fixture.publishSchemaProbeClaim(winnerArgs);winningBytes=fs.readFileSync(claimFile);
+    }
+    return original.call(fs,file,...rest);
+  };
+  try{assert.throws(()=>fixture.publishSchemaProbeClaim(args),/EEXIST|attempted|replay/);}finally{fs.openSync=original;}
+  assert.equal(interleaved,true);assert.equal(winner.paidRequests,0);assert.deepEqual(fs.readFileSync(claimFile),winningBytes);
+  assert.equal(JSON.parse(winningBytes).activation.activation.reviews[0].receiptDigest,'3'.repeat(64));
+  assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);
+});
+test('torn marker, claim and interrupted publication remain held without overwriting evidence',async t=>{
+  for(const suffix of ['.attempt.json','','.next']){
+    const {args,fixture,claimFile}=await publicationFixture(t),file=claimFile+suffix;
+    fs.writeFileSync(file,'torn synthetic evidence');assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);
+    assert.equal(fs.readFileSync(file,'utf8'),'torn synthetic evidence');
+  }
+  const {args,fixture,claimFile}=await publicationFixture(t),original=fs.linkSync;
+  fs.linkSync=()=>{throw Error('synthetic publication interruption');};
+  try{assert.throws(()=>fixture.publishSchemaProbeClaim(args),/interruption/);}finally{fs.linkSync=original;}
+  assert.equal(fs.existsSync(claimFile),false);assert.equal(fs.existsSync(claimFile+'.attempt.json'),true);assert.equal(fs.existsSync(claimFile+'.next'),true);
+  const marker=fs.readFileSync(claimFile+'.attempt.json'),next=fs.readFileSync(claimFile+'.next');
+  assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);assert.deepEqual(fs.readFileSync(claimFile+'.attempt.json'),marker);assert.deepEqual(fs.readFileSync(claimFile+'.next'),next);
+});
+test('count and generation adapters cannot mutate the counted packet or certificate',async()=>{
+  for(const [key,value]of [['model','gpt-6-astra'],['maxToolCalls',1],['retries',2]]){
+    const store=offlineSchemaProbeStore(),provider=fake();provider.count=async packet=>{packet[key]=value;return {inputTokens:128,payloadHash:hash(packet)};};
+    const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000});
+    assert.equal(result.newGenerations,0);assert.equal(provider.calls.length,0);assert.equal(result.consumedTrialSlots,5);
+  }
+  const store=offlineSchemaProbeStore(),provider=fake();let returned;
+  provider.count=async packet=>{returned={inputTokens:128,payloadHash:hash(packet)};return returned;};
+  provider.send=async(packet,certificate)=>{
+    returned.inputTokens=99999;assert.equal(certificate.inputTokens,128);assert.throws(()=>{certificate.inputTokens=99999;},TypeError);assert.throws(()=>{packet.retries=2;},TypeError);
+    return {usage:{input:128,cachedInput:0,cacheWrite:0,output:40,reasoning:10,fees:0}};
+  };
+  const result=await runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic',clock:()=>1000});
+  assert.equal(result.newGenerations,1);assert.notEqual(result.cost,null);
+  const copy=store.read();copy.status='scaffold';copy.consumedTrialSlots=4;
+  await assert.rejects(runOfflineSchemaProbe({store:{read:()=>copy},provider,authorizeSyntheticWindow:true,prompt:'synthetic'}));
+  await assert.rejects(runOfflineSchemaProbe({store,provider,authorizeSyntheticWindow:true,prompt:'synthetic'}),/replay/);assert.equal(store.read().consumedTrialSlots,5);assert.equal(store.read().consumedCountCalls,6);
 });
