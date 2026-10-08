@@ -1,5 +1,6 @@
 import {consumeContinuationInitialization,requireContinuationReady,startContinuationWindow,validateContinuationRequest,CONTINUATION_TRIALS} from './continuation.mjs';
 import {guardLedgerOperation,consumeFreshInitialization} from './recovery.mjs';
+import {isRecoveredUnknown,postUnknownReady,validatePostUnknownState,haltPostUnknown,withPostUnknownValidation} from './post-unknown-recovery.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -22,7 +23,8 @@ export class BudgetLedger {
     return this.transaction(() => ({ version: 2, configHash: hash(this.config), lastTime: integer(this.clock(), 'clock'),
       overheadStart: { setup: null, final: null }, trialStart: null, blocked: false, pairs: [], trials: {}, requests: [], preflights: [] }), true);
   }
-  validate(state) {
+  validate(state){return withPostUnknownValidation(()=>this.validateOperation(state));}
+  validateOperation(state) {
     guardLedgerOperation(this.file,this.config.mode,{state});
     exactKeys(state, [...(state.version===4?['continuation','executionWindow']:state.version===3?['recovery']:[]),'version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
     if (![2,3,4].includes(state.version) || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
@@ -63,7 +65,7 @@ export class BudgetLedger {
       if (request.providerRequestId !== null && (typeof request.providerRequestId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(request.providerRequestId))) throw Error('Invalid provider ID');
       if (!['pending', 'unknown', 'complete'].includes(request.status)) throw Error('Invalid request status');
       if (request.status !== 'complete') {
-        pending++; if (request.cost !== null || request.usage !== null) throw Error('Unreconciled request');
+        if(!isRecoveredUnknown(state,request))pending++; if (request.cost !== null || request.usage !== null) throw Error('Unreconciled request');
       } else {
         if (request.cost !== actualCost(this.config.models[request.model], request.usage) || request.cost > request.reservation ||
             request.usage.input > request.inputBound || request.usage.output > request.outputBound) throw Error('Invalid reconciliation');
@@ -125,7 +127,8 @@ export class BudgetLedger {
       const next = initializing ? result : state; next.lastTime = now; this.write(next); return result;
     } finally { fs.closeSync(lockFd); fs.unlinkSync(lock); }
   }
-  ready(state) { requireContinuationReady(this,state);if(this.config.mode==='live')guardLedgerOperation(this.file,this.config.mode,{writing:true,state});if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
+  ready(state){return withPostUnknownValidation(()=>this.readyOperation(state));}
+  readyOperation(state) { requireContinuationReady(this,state);if(this.config.mode==='live')guardLedgerOperation(this.file,this.config.mode,{writing:true,state});if (!postUnknownReady(state)&&(state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete'))) throw Error('Unresolved reservation; dispatch held'); }
   pair(pairId, first, second) {
     return this.transaction((state) => {
       this.ready(state);id(pairId);id(first);id(second);if(state.version===4&&(first!==CONTINUATION_TRIALS[state.pairs.length*2]||second!==CONTINUATION_TRIALS[state.pairs.length*2+1]||pairId!==first.slice(0,-2)))throw Error('Continuation pair order denied');
@@ -190,7 +193,7 @@ export class BudgetLedger {
     return this.transaction(state => {
       const request = state.requests.find(r => r.id === requestId);
       if (!request || request.status !== 'pending') throw Error('Request cannot hold');
-      request.status = 'unknown'; state.blocked = true;
+      request.status = 'unknown'; state.blocked = true;haltPostUnknown(this);
     });
   }
   repairResult(trialId, defect, passed) {
@@ -229,7 +232,7 @@ export class BudgetLedger {
   holdPreflight(countId) {
     return this.transaction(state => {
       const count = state.preflights.find(p => p.id === countId); if (!count || count.status !== 'pending') throw Error('Preflight cannot hold');
-      count.status = 'unknown'; state.blocked = true;
+      count.status = 'unknown'; state.blocked = true;haltPostUnknown(this);
     });
   }
   deadline(trial, phase) {

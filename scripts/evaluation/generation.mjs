@@ -1,7 +1,8 @@
+import {haltPostUnknown} from './post-unknown-recovery.mjs';
 import {isFinancialRejection} from './openai-transport.mjs';
 import fs from 'node:fs';import path from 'node:path';
 export async function generate(ledger, provider, { prompt, requestId, trial = null, phase, model, effort, maxOutputTokens, defect = null }) {
-  if(fs.existsSync(path.join(path.dirname(ledger.file),'.sandbox-cleanup-hold.json'))){ledger.transaction(state=>{state.blocked=true;});throw Error('Sandbox cleanup unresolved; generation held');}ledger.ready(ledger.read());
+  if(fs.existsSync(path.join(path.dirname(ledger.file),'.sandbox-cleanup-hold.json'))){ledger.transaction(state=>{state.blocked=true;haltPostUnknown(ledger);});throw Error('Sandbox cleanup unresolved; generation held');}ledger.ready(ledger.read());
   if (!provider || !['fake', 'offline-api-fixture', 'live'].includes(provider.kind) || typeof provider.send !== 'function') throw Error('Invalid provider');
   if (provider.kind === 'live' && (ledger.config.mode !== 'live' || provider.liveEnabled !== true)) throw Error('blocked-live: explicit live mode required');
   if (provider.kind !== 'live' && ledger.config.mode !== 'offline') throw Error('Offline transport cannot produce paid trial receipts');
