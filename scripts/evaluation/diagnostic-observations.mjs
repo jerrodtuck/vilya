@@ -8,7 +8,18 @@ function observationDeadline(state, request, config) {
   const deadlines = [request.start + config.bounds.requestMs];
   if (request.trial !== null) {
     const trialStart = state.trials?.[request.trial]?.start;
-    if (!['planning','implementation','review','repair'].includes(request.phase) || !uint(trialStart) || !uint(state.trialStart) || trialStart < state.trialStart || request.start < trialStart) invalid();
+    // Version 4 starts its aggregate window at the first count, after beginTrial.
+    // Only that initial planning trial may therefore precede the aggregate clock.
+    const window = state.executionWindow, firstCount = state.preflights?.[0];
+    const firstCountWindow = state.version === 4 && window &&
+      Object.keys(window).sort().join('|') === ['startedAt','dispatchDeadline','finalDeadline'].sort().join('|') &&
+      uint(window.startedAt) && window.startedAt === state.trialStart &&
+      window.dispatchDeadline === window.startedAt + LIMITS.dispatchMs &&
+      window.finalDeadline === window.dispatchDeadline + LIMITS.finalMs &&
+      request.phase === 'planning' && request.start >= window.startedAt &&
+      firstCount?.start === window.startedAt && firstCount.requestId === request.id &&
+      firstCount.trial === request.trial && firstCount.phase === 'planning';
+    if (!['planning','implementation','review','repair'].includes(request.phase) || !uint(trialStart) || !uint(state.trialStart) || trialStart < state.trialStart && !firstCountWindow || request.start < trialStart) invalid();
     deadlines.push(trialStart + LIMITS.trialMs, state.trialStart + LIMITS.dispatchMs);
   } else {
     if (!['setup','final'].includes(request.phase)) invalid();
