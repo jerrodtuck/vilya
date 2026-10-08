@@ -3,3 +3,11 @@
 # Reviewed entry bytes must match their Git blobs across Windows checkouts.
 scripts/evaluation/schema-probe-launcher.ps1 text eol=lf
 scripts/evaluation/schema-probe-controller.mjs text eol=lf
+scripts/evaluation/schema-probe-campaign.mjs text eol=lf
+scripts/evaluation/money.mjs text eol=lf
+scripts/evaluation/openai-transport.mjs text eol=lf
+scripts/evaluation/diagnostics.mjs text eol=lf
+scripts/evaluation/generation.mjs text eol=lf
+scripts/evaluation/post-unknown-recovery.mjs text eol=lf
+scripts/evaluation/financial-inspector.mjs text eol=lf
+scripts/evaluation/verified-api-rates-2026-10-06.json text eol=lf

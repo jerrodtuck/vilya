@@ -19,17 +19,19 @@ function bytes(file){safe(file);const st=fs.statSync(file);if(!st.isFile()||st.s
 function authorization(head){const raw=bytes(SCHEMA_PROBE_PATHS.authorization),value=JSON.parse(raw);const expected={schemaVersion:1,campaignId:P.campaignId,reviewedHead:head,windowMinutes:90,paidProbeSlots:1,userAuthorized:true};if(!same(value,expected))throw Error('Separate fixed 90-minute/one-slot user authorization required');return digest(raw);}
 function publish(file,value){safe(file);const temp=file+'.next';const fd=fs.openSync(temp,'wx',0o600);try{fs.writeFileSync(fd,JSON.stringify(value)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.linkSync(temp,file);fs.unlinkSync(temp);}
 function entryHashes(){return Object.fromEntries(['bootstrap','controller','node'].map(k=>{const file=SCHEMA_PROBE_PATHS[k];safe(file);return [k,{path:file,sha256:digest(fs.readFileSync(file))}];}));}
-function binding(lease,head){const claim=readSchemaProbeClaimLocked(lease);if(claim.activation.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(SCHEMA_PROBE_PATHS.claim)),authorizationDigest:authorization(head),policyDigest:hash(P),entries:entryHashes()};}
+function binding(lease,head){const claim=readSchemaProbeClaimLocked(lease);if(claim.activation.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(SCHEMA_PROBE_PATHS.claim)),authorizationDigest:authorization(head),policyDigest:hash(P),entries:entryHashes(),moduleManifestDigest:verifiedManifestDigest};}
+let launcherConsumed=false,verifiedManifestDigest=null;
 function readLauncherAuthorization(args){
   // Windows Node reports pipe mode 0x1000 but isFIFO() is false there.
-  if(process.execArgv.length||canonical(process.execPath)!==canonical(SCHEMA_PROBE_PATHS.node)||(fs.fstatSync(0).mode&0xf000)!==0x1000)throw Error('Private PowerShell bootstrap pipe required');
-  const chunks=[];let length=0,chunk=Buffer.alloc(8192),n;while((n=fs.readSync(0,chunk,0,chunk.length,null))>0){length+=n;if(length>200000)throw Error('Launcher proof bound');chunks.push(Buffer.from(chunk.subarray(0,n)));}const proof=JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  exactKeys(proof,['schemaVersion','nonce','parentPid','head','args','credentialBytes','credentialIdentity','bootstrap','controller','node'],'launcher proof');
-  const entries=entryHashes();for(const k of ['bootstrap','controller','node']){exactKeys(proof[k],['path','sha256'],'launcher entry');if(canonical(proof[k].path)!==canonical(entries[k].path)||proof[k].sha256!==entries[k].sha256)throw Error('Launcher entry mismatch');}if(proof.schemaVersion!==1||!/^[a-f0-9]{64}$/.test(proof.nonce)||proof.parentPid!==process.ppid||!same(proof.args,args)||typeof proof.credentialBytes!=='string'||typeof proof.credentialIdentity!=='string')throw Error('Launcher proof mismatch');
-  const script='Get-CimInstance Win32_Process -Filter "ProcessId = '+process.ppid+'" | Select-Object ExecutablePath,CommandLine,ProcessId | ConvertTo-Json -Compress';
-  const parent=JSON.parse(execFileSync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,encoding:'utf8',timeout:5000}));
-  const escaped=SCHEMA_PROBE_PATHS.bootstrap.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),route=new RegExp('(?:^|\\s)-File\\s+(?:"'+escaped+'"|'+escaped+')(?:\\s|$)','i');
-  if(parent.ProcessId!==process.ppid||canonical(parent.ExecutablePath)!==canonical('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')||!route.test(parent.CommandLine)||!/(?:^|\s)-NoProfile(?:\s|$)/i.test(parent.CommandLine)||!/(?:^|\s)-NonInteractive(?:\s|$)/i.test(parent.CommandLine)||/--env-file|(?:^|\s)-Command(?:\s|$)/i.test(parent.CommandLine)||Object.keys(process.env).some(k=>!['OPENAI_API_KEY','SYSTEMROOT','WINDIR','PATH'].includes(k.toUpperCase())))throw Error('Untrusted bootstrap parent or environment');return proof;
+  if(launcherConsumed||process.execArgv.length||canonical(process.execPath)!==canonical(SCHEMA_PROBE_PATHS.node)||(fs.fstatSync(0).mode&0xf000)!==0x1000)throw Error('Private PowerShell bootstrap pipe required');launcherConsumed=true;
+  const chunks=[];let length=0,chunk=Buffer.alloc(1);for(;;){if(fs.readSync(0,chunk,0,1,null)!==1)throw Error('Private proof incomplete');if(chunk[0]===10)break;if(++length>200000)throw Error('Launcher proof bound');chunks.push(chunk[0]);}const proof=JSON.parse(Buffer.from(chunks).toString('utf8'));
+  exactKeys(proof,['schemaVersion','nonce','parentPid','head','args','manifest','manifestDigest','nativeTemp','pipeOwnerHandle','credentialBytes','credentialIdentity','bootstrap','controller','node'],'launcher proof');
+  const entries=entryHashes();for(const k of ['bootstrap','controller','node']){exactKeys(proof[k],['path','sha256'],'launcher entry');if(canonical(proof[k].path)!==canonical(entries[k].path)||proof[k].sha256!==entries[k].sha256)throw Error('Launcher entry mismatch');}if(proof.schemaVersion!==2||!/^[a-f0-9]{64}$/.test(proof.nonce)||proof.parentPid!==process.ppid||!same(proof.args,args)||typeof proof.credentialBytes!=='string'||typeof proof.credentialIdentity!=='string'||typeof proof.pipeOwnerHandle!=='string')throw Error('Launcher proof mismatch');
+  const nativeSource=fs.readFileSync(SCHEMA_PROBE_PATHS.bootstrap,'utf8').match(/Add-Type -TypeDefinition @'\r?\n([\s\S]*?)\r?\n'@/)[1],ps='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+  if(!/^[1-9][0-9]{0,15}$/.test(proof.pipeOwnerHandle))throw Error('Private handle shape');const script="$ErrorActionPreference='Stop'; Add-Type -TypeDefinition '"+nativeSource.replaceAll("'","''")+"'; $p=Get-CimInstance Win32_Process -Filter 'ProcessId = "+process.ppid+"'; @{pid=$p.ProcessId;exe=$p.ExecutablePath;argv=@([ProbeCredential]::Arguments($p.CommandLine));bound=[ProbeCredential]::BoundInput("+process.ppid+", '"+proof.pipeOwnerHandle+"')}|ConvertTo-Json -Depth 4 -Compress";
+  if(typeof proof.nativeTemp!=='string'||!path.isAbsolute(proof.nativeTemp)||!fs.statSync(safe(proof.nativeTemp)).isDirectory())throw Error('Native metadata temporary directory');const parent=JSON.parse(execFileSync(ps,['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,encoding:'utf8',timeout:5000,stdio:[0,'pipe','pipe'],env:{SystemRoot:'C:\\Windows',WINDIR:'C:\\Windows',PATH:'C:\\Windows\\System32',TEMP:proof.nativeTemp,TMP:proof.nativeTemp}}));
+  const expected=[ps,'-NoProfile','-NonInteractive','-File',SCHEMA_PROBE_PATHS.bootstrap,...args];if(parent.pid!==process.ppid||canonical(parent.exe)!==canonical(ps)||!Array.isArray(parent.argv)||parent.argv.length!==expected.length||parent.argv.some((arg,i)=>i===0||i===4?canonical(arg)!==canonical(expected[i]):arg!==expected[i])||parent.bound!==true||Object.keys(process.env).some(k=>!['OPENAI_API_KEY','SYSTEMROOT','WINDIR','PATH'].includes(k.toUpperCase())))throw Error('Untrusted exact bootstrap route or private pipe');
+  verifyModuleManifest(proof);return proof;
 }
 const fileIdentity=st=>({dev:String(st.dev),ino:String(st.ino),size:String(st.size),mtimeNs:String(st.mtimeNs),ctimeNs:String(st.ctimeNs),mode:String(st.mode),nlink:String(st.nlink)});
 const canonical=value=>process.platform==='win32'?path.resolve(value).toLowerCase():path.resolve(value);
@@ -42,8 +44,8 @@ function rejectWindowsReparse(paths){
   const script="$ErrorActionPreference='Stop'; foreach ($entry in @("+literals+")) { if (([IO.File]::GetAttributes($entry) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { exit 9 } }; exit 0";
   try{execFileSync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,stdio:'ignore',timeout:5000});}catch{throw Error('Unsupported Windows credential reparse metadata');}
 }
-function credentialPathVector(){
-  const file=SCHEMA_PROBE_PATHS.env,root=path.parse(file).root,parts=file.slice(root.length).split(path.sep),parents=[];let at=root;
+function credentialPathVector(file=SCHEMA_PROBE_PATHS.env){
+  const root=path.parse(file).root,parts=file.slice(root.length).split(path.sep),parents=[];let at=root;
   for(let i=0;i<=parts.length;i++){
     const st=fs.lstatSync(at,{bigint:true}),isFile=i===parts.length;
     if(st.isSymbolicLink()||(isFile?!st.isFile():!st.isDirectory()))throw Error('Unsafe credential file type or reparse path');
@@ -52,13 +54,14 @@ function credentialPathVector(){
     parents.push({path:at,real,dev:String(st.dev),ino:String(st.ino),mode:String(st.mode)});at=path.join(at,parts[i]);
   }
 }
-function credentialFile(){
-  const before=credentialPathVector(),fd=fs.openSync(SCHEMA_PROBE_PATHS.env,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW??0)|(fs.constants.O_NONBLOCK??0));
+function credentialFile(file=SCHEMA_PROBE_PATHS.env){
+  const before=credentialPathVector(file),fd=fs.openSync(file,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW??0)|(fs.constants.O_NONBLOCK??0));
   let raw;
   try{const start=fs.fstatSync(fd,{bigint:true});if(!start.isFile()||!same(fileIdentity(start),before.file.identity))throw Error('Credential descriptor identity changed');raw=fs.readFileSync(fd);const end=fs.fstatSync(fd,{bigint:true});if(!same(fileIdentity(start),fileIdentity(end))||BigInt(raw.length)!==start.size)throw Error('Credential descriptor changed during read');}
   finally{fs.closeSync(fd);}
-  const after=credentialPathVector();if(!same(before,after))throw Error('Credential path changed during descriptor read');return {raw,identity:before};
+  const after=credentialPathVector(file);if(!same(before,after))throw Error('Credential path changed during descriptor read');return {raw,identity:before};
 }
+function verifyModuleManifest(proof){if(!Array.isArray(proof.manifest)||!proof.manifest.length||proof.manifest.length>32||!/^[a-f0-9]{64}$/.test(proof.manifestDigest))throw Error('Module manifest required');let previous='',text='';const root=path.dirname(path.dirname(path.dirname(SCHEMA_PROBE_PATHS.controller)));for(const entry of proof.manifest){exactKeys(entry,['path','gitBlob','sha256','identity'],'module entry');if(!/^scripts\/evaluation\/(?:[a-z0-9-]+\.mjs|verified-api-rates-2026-10-06\.json)$/.test(entry.path)||entry.path<=previous||!/^[a-f0-9]{40}$/.test(entry.gitBlob)||!/^[a-f0-9]{64}$/.test(entry.sha256)||typeof entry.identity!=='string')throw Error('Module manifest shape');previous=entry.path;text+=entry.path+'\t'+entry.gitBlob+'\t'+entry.sha256+'\t'+entry.identity+'\n';const file=path.join(root,entry.path),pin=credentialFile(file);verifyBootstrapIdentity(entry.identity,pin);if(digest(pin.raw)!==entry.sha256||execFileSync('C:\\Program Files\\Git\\cmd\\git.exe',['rev-parse',proof.head+':'+entry.path],{cwd:root,encoding:'utf8',windowsHide:true,timeout:5000}).trim()!==entry.gitBlob)throw Error('Reviewed module changed');}if(digest(text)!==proof.manifestDigest||!proof.manifest.some(e=>path.join(root,e.path)===SCHEMA_PROBE_PATHS.controller))throw Error('Module manifest mismatch');verifiedManifestDigest=proof.manifestDigest;}
 function credentialBoundary(pinned=null){
   if(process.execArgv.length)throw Error('No env-file or Node options allowed');
   // The file is inspected privately, never loaded, logged, hashed or persisted.
