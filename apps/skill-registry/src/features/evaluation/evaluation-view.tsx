@@ -57,7 +57,8 @@ export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query:
       <button type="submit">Apply filters</button>
     </form>
     {filters.normalized && <p role="status">Repeated or invalid filter values were reset to all.</p>}
-    {prior && <><PriorCampaignView prior={prior} /><h2>Fresh campaign {snapshot.campaignId}</h2></>}
+    {prior && <><PriorCampaignView prior={prior} />{snapshot.continuation ? <h2>Campaign {snapshot.campaignId}</h2> : <h2>Fresh campaign {snapshot.campaignId}</h2>}</>}
+    {snapshot.continuation && <p role="status">Continuation {snapshot.continuation.segmentId}: four new API trials and six native trials. Historical known cost {money(snapshot.continuation.carriedKnownCostMicrodollars)} and holds {money(snapshot.continuation.carriedHeldMicrodollars)} stay counted once; {snapshot.continuation.consumedTrialSlots} trial slots and {snapshot.continuation.carriedCountCalls} count calls are already consumed. Behavior API trials are excluded from replay. Native behavior is a standalone control; behavior confirmation is unavailable.</p>}
     {unresolvedProviderRequests && <p role="status" className={styles.notice}>A provider request is pending or its result is unknown. Paid dispatch is held while it is reconciled. Reconciled API cost excludes any unknown charge; its reservation remains held.</p>}
     <h2>{prior ? 'Combined budget and unresolved funds' : 'Budget and unresolved funds'}</h2><div className={styles.cards}>
       <div className={styles.card}><h3>Reconciled API cost</h3>{money(snapshot.budget.reconciledCostMicrodollars)}<p>Includes setup, failures, repairs and review{prior ? ' across prior and fresh campaigns' : ''}.</p></div>

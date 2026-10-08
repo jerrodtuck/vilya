@@ -1,8 +1,9 @@
+import {consumeContinuationInitialization,requireContinuationReady,startContinuationWindow,validateContinuationRequest,CONTINUATION_TRIALS} from './continuation.mjs';
 import {guardLedgerOperation,consumeFreshInitialization} from './recovery.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { LIMITS, integer, exactKeys, validateConfig, maximumCost, actualCost } from './money.mjs';
+import { LIMITS, integer, exactKeys, validateConfig, maximumCost, actualCost, apiConfig } from './money.mjs';
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const id = value => { if (typeof value !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(value)) throw Error('Invalid ID'); return value; };
 const phaseBucket = phase => phase === 'review' || phase === 'repair' ? 'reviewRepair' : phase;
@@ -13,8 +14,9 @@ export class BudgetLedger {
     validateConfig(config);
     this.file = path.resolve(file); this.config = structuredClone(config); this.clock = clock;
   }
+  initializeContinuation(token){if(hash(this.config)!==hash(apiConfig()))throw Error('Fixed continuation API configuration required');const continuation=consumeContinuationInitialization(this.file,token);if(this.clock()<continuation.historicalLastTime)throw Error('Continuation clock precedes historical evidence');fs.mkdirSync(path.dirname(this.file),{recursive:true});return this.transaction(()=>({version:4,continuation,executionWindow:null,configHash:hash(this.config),lastTime:integer(this.clock(),'clock'),overheadStart:{setup:null,final:null},trialStart:null,blocked:false,pairs:[],trials:{},requests:[],preflights:[]}),true,true);}
   initializeRecovery(token){const recovery=consumeFreshInitialization(this.file,token);fs.mkdirSync(path.dirname(this.file),{recursive:true});return this.transaction(()=>({version:3,recovery,configHash:hash(this.config),lastTime:integer(this.clock(),'clock'),overheadStart:{setup:null,final:null},trialStart:null,blocked:false,pairs:[],trials:{},requests:[],preflights:[]}),true,true);}
-  requestId(local){id(local);const state=this.read();return id((state.recovery?.namespace??'')+local);}
+  requestId(local){id(local);const state=this.read();return id((state.continuation?.namespace??state.recovery?.namespace??'')+local);}
   initialize() {
     if (fs.existsSync(this.file)) throw Error('Ledger already exists; resume it');
     return this.transaction(() => ({ version: 2, configHash: hash(this.config), lastTime: integer(this.clock(), 'clock'),
@@ -22,14 +24,14 @@ export class BudgetLedger {
   }
   validate(state) {
     guardLedgerOperation(this.file,this.config.mode,{state});
-    exactKeys(state, [...(state.version===3?['recovery']:[]),'version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
-    if (![2,3].includes(state.version) || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
+    exactKeys(state, [...(state.version===4?['continuation','executionWindow']:state.version===3?['recovery']:[]),'version', 'configHash', 'lastTime', 'overheadStart', 'trialStart', 'blocked', 'pairs', 'trials', 'requests', 'preflights'], 'ledger');
+    if (![2,3,4].includes(state.version) || state.configHash !== hash(this.config) || typeof state.blocked !== 'boolean' || !Array.isArray(state.pairs) ||
         !Array.isArray(state.requests) || !Array.isArray(state.preflights) || !state.trials || typeof state.trials !== 'object' || Array.isArray(state.trials)) throw Error('Ledger/config mismatch');
     integer(state.lastTime, 'lastTime');
     exactKeys(state.overheadStart, ['setup', 'final'], 'overhead starts');
     for (const value of Object.values(state.overheadStart)) if (value !== null) integer(value, 'overhead start');
     for (const key of ['trialStart']) if (state[key] !== null) integer(state[key], key);
-    const trialIds = Object.keys(state.trials); if (trialIds.length > LIMITS.trials || state.pairs.length * 2 !== trialIds.length) throw Error('Invalid trial count');
+    if(state.version===4){if(hash(this.config)!==hash(apiConfig())||state.lastTime<state.continuation.historicalLastTime)throw Error('Continuation configuration/clock changed');if(state.executionWindow!==null){exactKeys(state.executionWindow,['startedAt','dispatchDeadline','finalDeadline'],'continuation window');Object.values(state.executionWindow).forEach(v=>integer(v,'continuation window time'));}else if(state.trialStart!==null)throw Error('Continuation window missing');state.pairs.forEach((p,i)=>{if(JSON.stringify(p.trials)!==JSON.stringify(CONTINUATION_TRIALS.slice(i*2,i*2+2))||p.id!==p.trials[0].slice(0,-2))throw Error('Continuation pair binding');});state.requests.forEach((r,i)=>validateContinuationRequest({...state,requests:state.requests.slice(0,i)},{...r,requestId:r.id}));}const trialIds = Object.keys(state.trials); if (state.version===4&&(trialIds.some(id=>!CONTINUATION_TRIALS.includes(id))||trialIds.length+state.continuation.carriedTrialSlots>LIMITS.trials||state.executionWindow!==null&&(state.executionWindow.startedAt!==state.trialStart||state.executionWindow.dispatchDeadline!==state.trialStart+LIMITS.dispatchMs||state.executionWindow.finalDeadline!==state.trialStart+LIMITS.dispatchMs+LIMITS.finalMs)))throw Error('Continuation allocation/window mismatch');if (trialIds.length > LIMITS.trials || state.pairs.length * 2 !== trialIds.length) throw Error('Invalid trial count');
     const seen = new Set();
     for (const pair of state.pairs) {
       exactKeys(pair, ['id', 'trials'], 'pair'); id(pair.id);
@@ -49,7 +51,7 @@ export class BudgetLedger {
     seen.clear(); let pending = 0;
     for (const request of state.requests) {
       exactKeys(request, ['id', 'trial', 'phase', 'model', 'effort', 'inputBound', 'outputBound', 'reservation', 'start', 'end', 'status', 'cost', 'usage', 'providerRequestId'], 'request');
-      id(request.id);if(state.version===3&&!request.id.startsWith(state.recovery.namespace))throw Error('Recovery request namespace'); if (seen.has(request.id)) throw Error('Duplicate request'); seen.add(request.id);
+      id(request.id);if([3,4].includes(state.version)&&!request.id.startsWith((state.continuation??state.recovery).namespace))throw Error('Recovery request namespace'); if (seen.has(request.id)) throw Error('Duplicate request'); seen.add(request.id);
       if (!phases.includes(request.phase) || !this.config.models[request.model] || !['low', 'medium', 'high', 'xhigh'].includes(request.effort)) throw Error('Invalid request metadata');
       if (request.trial !== null && !state.trials[request.trial]) throw Error('Unknown trial');
       if ((request.trial === null) !== ['setup', 'final'].includes(request.phase)) throw Error('Wrong request scope');
@@ -68,11 +70,11 @@ export class BudgetLedger {
       }
     }
     if (pending > 1 || (state.requests.some(r => r.status === 'unknown') && !state.blocked)) throw Error('Invalid in-flight state');
-    if (state.preflights.length+(state.recovery?.carriedPreflightCount??0) > 64) throw Error('Preflight limit exceeded');
+    if (state.preflights.length+((state.continuation??state.recovery)?.carriedPreflightCount??0) > 64) throw Error('Preflight limit exceeded');
     const preflightIds = new Set(); let activePreflights = 0;
     for (const count of state.preflights) {
       exactKeys(count, ['id','requestId','trial','phase','payloadHash','model','effort','serviceTier','pricingDate','billingInterpretation','status','start','inputTokens','providerRequestId'], 'preflight');
-      id(count.id); id(count.requestId);if(state.version===3&&!count.requestId.startsWith(state.recovery.namespace))throw Error('Recovery count namespace');
+      id(count.id); id(count.requestId);if([3,4].includes(state.version)&&!count.requestId.startsWith((state.continuation??state.recovery).namespace))throw Error('Recovery count namespace');
       if (preflightIds.has(count.id) || count.id !== `${count.requestId}_count` || !/^[a-f0-9]{64}$/.test(count.payloadHash) || !this.config.models[count.model] || !phases.includes(count.phase) || !['medium','high'].includes(count.effort) || count.serviceTier !== 'default' || count.pricingDate !== '2026-10-06' || count.billingInterpretation !== 'published-pricing-count-zero-2026-10-06') throw Error('Invalid preflight');
       preflightIds.add(count.id); integer(count.start, 'preflight time');
       if ((count.trial === null) !== ['setup','final'].includes(count.phase) || (count.trial !== null && !state.trials[count.trial])) throw Error('Invalid count scope');
@@ -87,7 +89,7 @@ export class BudgetLedger {
   charged(request) { return request.status === 'complete' ? request.cost : request.reservation; }
   sum(state, predicate = () => true) { return state.requests.filter(predicate).reduce((sum, request) => sum + this.charged(request), 0); }
   checkBudgets(state) {
-    const carry=state.recovery?.carriedExposure??0;const overhead = (state.recovery?.carriedOverhead??0)+this.sum(state, r => r.trial === null);
+    const carry=(state.continuation??state.recovery)?.carriedExposure??0;const overhead = ((state.continuation??state.recovery)?.carriedOverhead??0)+this.sum(state, r => r.trial === null);
     if (overhead > LIMITS.overhead || carry+this.sum(state) > LIMITS.total || carry+overhead + Object.keys(state.trials).length * LIMITS.trial > LIMITS.total) throw Error('Budget exhausted');
     for (const trial of Object.keys(state.trials)) {
       if (this.sum(state, r => r.trial === trial) > LIMITS.trial) throw Error('Trial budget exhausted');
@@ -123,22 +125,22 @@ export class BudgetLedger {
       const next = initializing ? result : state; next.lastTime = now; this.write(next); return result;
     } finally { fs.closeSync(lockFd); fs.unlinkSync(lock); }
   }
-  ready(state) { if(this.config.mode==='live')guardLedgerOperation(this.file,this.config.mode,{writing:true,state});if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
+  ready(state) { requireContinuationReady(this,state);if(this.config.mode==='live')guardLedgerOperation(this.file,this.config.mode,{writing:true,state});if (state.blocked || state.requests.some(r => r.status !== 'complete') || state.preflights.some(r => r.status !== 'complete')) throw Error('Unresolved reservation; dispatch held'); }
   pair(pairId, first, second) {
     return this.transaction((state) => {
-      this.ready(state); id(pairId); id(first); id(second);
+      this.ready(state);id(pairId);id(first);id(second);if(state.version===4&&(first!==CONTINUATION_TRIALS[state.pairs.length*2]||second!==CONTINUATION_TRIALS[state.pairs.length*2+1]||pairId!==first.slice(0,-2)))throw Error('Continuation pair order denied');
       if (first === second || state.pairs.some(p => p.id === pairId) || state.trials[first] || state.trials[second]) throw Error('Pair already allocated');
-      if (Object.keys(state.trials).length + 2 > LIMITS.trials || (state.recovery?.carriedExposure??0)+(state.recovery?.carriedOverhead??0)+this.sum(state, r => r.trial === null) + (Object.keys(state.trials).length + 2) * LIMITS.trial > LIMITS.total) throw Error('Matched pair cannot fit');
+      if (Object.keys(state.trials).length + 2 + (state.continuation?.carriedTrialSlots??0)> LIMITS.trials || ((state.continuation??state.recovery)?.carriedExposure??0)+((state.continuation??state.recovery)?.carriedOverhead??0)+this.sum(state, r => r.trial === null) + (Object.keys(state.trials).length + 2) * LIMITS.trial > LIMITS.total) throw Error('Matched pair cannot fit');
       state.pairs.push({ id: pairId, trials: [first, second] });
       for (const trial of [first, second]) state.trials[trial] = { start: null, repairs: {}, closed: false };
     });
   }
   begin(trialId) {
     return this.transaction((state, now) => {
-      this.ready(state); const trial = state.trials[trialId];
+      this.ready(state);if(state.version===4&&trialId!==CONTINUATION_TRIALS.find(id=>!state.trials[id]?.closed))throw Error('Continuation trial order denied');const trial = state.trials[trialId];
       if (!trial || trial.start !== null || Object.values(state.trials).some(t => t.start !== null && !t.closed)) throw Error('Trial cannot begin');
       if (state.trialStart !== null && now >= state.trialStart + LIMITS.dispatchMs) throw Error('Aggregate trial deadline');
-      state.trialStart ??= now; trial.start = now;
+      if(state.version!==4)state.trialStart ??= now;trial.start = now;
     });
   }
   close(trialId) {
@@ -146,7 +148,7 @@ export class BudgetLedger {
   }
   reserve({ requestId, trial = null, phase, model, effort, inputBound, outputBound, defect = null }) {
     return this.transaction((state, now) => {
-      this.ready(state); id(requestId);
+      this.ready(state);id(requestId);validateContinuationRequest(state,{requestId,trial,phase,model,effort});
       if (!phases.includes(phase) || !this.config.models[model] || !['low', 'medium', 'high', 'xhigh'].includes(effort)) throw Error('Unknown model/phase/effort');
       integer(inputBound, 'input bound'); integer(outputBound, 'output bound', 1);
       if (inputBound > this.config.bounds.maxInputTokens || outputBound > this.config.bounds.maxOutputTokens) throw Error('Token bound exceeded');
@@ -200,16 +202,17 @@ export class BudgetLedger {
   }
   beginPreflight(meta) {
     return this.transaction((state, now) => {
-      this.ready(state); id(meta.requestId);
-      if (state.preflights.length+(state.recovery?.carriedPreflightCount??0) >= 64 || state.preflights.some(p => p.requestId === meta.requestId) || state.requests.some(r => r.id === meta.requestId)) throw Error('Preflight limit/reuse');
+      this.ready(state);id(meta.requestId);validateContinuationRequest(state,meta);if(state.version===4){exactKeys(meta,['requestId','trial','phase','payloadHash','model','effort','serviceTier','pricingDate','billingInterpretation'],'continuation count');if(!/^[a-f0-9]{64}$/.test(meta.payloadHash)||meta.serviceTier!=='default'||meta.pricingDate!=='2026-10-06'||meta.billingInterpretation!=='published-pricing-count-zero-2026-10-06')throw Error('Continuation preflight metadata denied');}
+      if (state.preflights.length+((state.continuation??state.recovery)?.carriedPreflightCount??0) >= 64 || state.preflights.some(p => p.requestId === meta.requestId) || state.requests.some(r => r.id === meta.requestId)) throw Error('Preflight limit/reuse');
       if (meta.trial !== null) {
         const trial = state.trials[meta.trial];
-        if (!trial || trial.start === null || trial.closed || now >= trial.start + LIMITS.trialMs || now >= state.trialStart + LIMITS.dispatchMs) throw Error('Preflight trial deadline');
+        if (!trial || trial.start === null || trial.closed || now >= trial.start + LIMITS.trialMs || now >= (state.trialStart ?? now) + LIMITS.dispatchMs) throw Error('Preflight trial deadline');
       } else {
         if (!['setup','final'].includes(meta.phase)) throw Error('Preflight scope');
         state.overheadStart[meta.phase] ??= now;
         if (now >= state.overheadStart[meta.phase] + (meta.phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs)) throw Error('Preflight overhead deadline');
       }
+      if(state.version===4){startContinuationWindow(state,now,meta.phase);state.trialStart??=state.executionWindow.startedAt;}
       const count = { ...meta, id: `${meta.requestId}_count`, status: 'pending', start: now, inputTokens: null, providerRequestId: null };
       state.preflights.push(count); const deadline = meta.trial !== null ? Math.min(state.trials[meta.trial].start + LIMITS.trialMs, state.trialStart + LIMITS.dispatchMs) : Math.min(state.overheadStart[meta.phase] + (meta.phase === 'final' ? LIMITS.finalMs : LIMITS.overheadMs), meta.phase === 'final' && state.trialStart !== null ? state.trialStart + LIMITS.dispatchMs + LIMITS.finalMs : Infinity); return { ...structuredClone(count), deadline };
     });

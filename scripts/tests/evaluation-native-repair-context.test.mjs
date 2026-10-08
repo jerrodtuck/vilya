@@ -16,7 +16,7 @@ const moduleUrl=name=>pathToFileURL(path.resolve('scripts/evaluation',name)).hre
 const stub=path.join(temp,'workflow.mjs');
 fs.writeFileSync(stub,`export {loadFixtures,schedule,archiveFixture,phasePacket,context} from ${JSON.stringify(moduleUrl('workflow.mjs'))};\nexport let results=[{id:'focused',passed:true,code:0}];export const setResults=value=>results=value;export async function acceptance(){return results;}`);
 let bridge=fs.readFileSync(new URL('../evaluation/native-bridge.mjs',import.meta.url),'utf8');
-for(const name of ['native-usage.mjs','context.mjs','paths.mjs','workflow-protocol.mjs'])bridge=bridge.replaceAll(`'./${name}'`,JSON.stringify(moduleUrl(name)));
+for(const name of ['native-usage.mjs','context.mjs','paths.mjs','workflow-protocol.mjs','continuation.mjs','public-results.mjs'])bridge=bridge.replaceAll(`'./${name}'`,JSON.stringify(moduleUrl(name)));
 bridge=bridge.replace("'./workflow.mjs'",JSON.stringify(pathToFileURL(stub).href));
 const bridgeFile=path.join(temp,'native-bridge.mjs');fs.writeFileSync(bridgeFile,bridge);
 const {advanceNative}=await import(pathToFileURL(bridgeFile).href);
@@ -29,7 +29,7 @@ function setup(){
  for(const relative of manifest.fileOwnership){const file=path.join(root,relative.replace(/ \((generated|new)\)$/,''));fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,'original\n');}
  const state={schemaVersion:1,trial,arm:'A',fixture:'behavior',seed:manifest.seed,root,controllerHead:head,started:1000,deadline:100000,phaseStarted:1000,phase:'review',baseline:scopedContext(root,manifest),fullBaseline:context(root,manifest),plan:'settled',gates:[{id:'focused',passed:true,code:0}],review:null,attempts:[{ordinal:0,kind:'initial',started:1000,ended:1000,elapsedMs:0,outcome:'failed',gates:[{id:'focused',passed:true,code:0}],review:null}],nativePhases:[],nativeSessionIds:[],nativeUsageReceipts:[],repairs:0,terminal:false};
  const file=path.join(workspace,trial+'.native-state.json');const write=()=>fs.writeFileSync(file,JSON.stringify(state));write();let now=2000;
- const ledger={clock:()=>now++,close:()=>{},transaction:()=>{throw Error('Unexpected live transaction');}};
+ const ledger={read:()=>({version:2}),clock:()=>now++,close:()=>{},transaction:()=>{throw Error('Unexpected live transaction');}};
  return {workspace,root,state,file,write,ledger,read:()=>JSON.parse(fs.readFileSync(file))};
 }
 async function advance(c,text){

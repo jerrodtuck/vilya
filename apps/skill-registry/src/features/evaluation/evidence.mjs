@@ -47,7 +47,7 @@ export function evidenceSummary(snapshot) {
   const screeningComplete = snapshot.runs.length === 12 && pairs.every((p) => p.complete) && snapshot.runs.every((r) => hasCompleteAcceptedEvidence(r));
   const apiRuns = snapshot.runs.filter(r => r.environment === 'api');
   const freshRequests = [...apiRuns.flatMap(r => r.requests), ...(snapshot.overhead?.setupRequests ?? []), ...(snapshot.overhead?.finalRequests ?? [])];
-  const priorRequests = snapshot.schemaVersion === 2 ? [...snapshot.priorCampaign.runs.flatMap(r => r.requests), ...snapshot.priorCampaign.overhead.setupRequests, ...snapshot.priorCampaign.overhead.finalRequests] : [];
+  const priorRequests = [2,3].includes(snapshot.schemaVersion) ? [...snapshot.priorCampaign.runs.flatMap(r => r.requests), ...snapshot.priorCampaign.overhead.setupRequests, ...snapshot.priorCampaign.overhead.finalRequests] : [];
   const priorHeld = priorRequests.filter(p => p.status !== 'complete').reduce((sum, p) => sum + p.reservationMicrodollars, 0);
   const apiResolved = snapshot.budget?.heldReservationMicrodollars === priorHeld && apiRuns.every(r => r.requests.length > 0) && freshRequests.every(p => p.status === 'complete' && p.costMicrodollars !== null);
   const nativeObserved = snapshot.runs.filter((r) => r.environment === 'native').every((r) => r.nativePhases?.length > 0 && r.nativePhases.every((p) => p.status === 'observed' && p.attribution === 'verified' && p.disjointnessVerified === true));

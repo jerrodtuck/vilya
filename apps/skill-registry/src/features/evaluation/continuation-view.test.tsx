@@ -1,0 +1,18 @@
+// Synthetic sanitized projection only; never export as live evidence.
+import {expect,it} from 'vitest';
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {EvaluationList} from './evaluation-view';
+import {publicSnapshot} from '../../../../../scripts/evaluation/public-results.mjs';
+import {validateSnapshot} from './snapshot.mjs';
+import type {Snapshot} from './types';
+const syntheticProjection=publicSnapshot as unknown as (input:unknown)=>Snapshot;
+it('shows the same campaign continuation, carried funds and standalone behavior with unavailable confirmation',()=>{
+ const request={id:'fresh1_api_behavior_1_B_planning_1',trial:'api_behavior_1_B',phase:'planning',model:'gpt-6-astra',effort:'high',status:'unknown',start:1,end:null,reservation:213650,cost:null,usage:null};
+ const priorState={version:2,requests:[{...request,id:'api_behavior_1_A_planning_1',trial:'api_behavior_1_A',model:'gpt-6.1-sol',effort:'medium',reservation:42730}]};
+ const fresh=syntheticProjection({sourceHead:'a'.repeat(40),state:{version:3,recovery:{campaignId:'357-screening-2',namespace:'fresh1_',carriedExposure:42730},requests:[{...request,id:'fresh1_api_behavior_1_A_planning_1',trial:'api_behavior_1_A',model:'gpt-6.1-sol',effort:'medium',status:'complete',end:2,cost:10929},request]},priorState,priorReceipts:[{trial:'api_behavior_1_A',started:0,ended:2,accepted:false,attempts:[],historyComplete:false,environment:{controllerHead:'f8ff32bf73433e37e97c00f52dc043501cba453b'}}],receipts:['api_behavior_1_A','api_behavior_1_B'].map(trial=>({trial,started:0,ended:10,accepted:false,attempts:[],historyComplete:false}))});
+ const snapshot=validateSnapshot({...fresh,schemaVersion:3,continuation:{segmentId:'v2-continuation-1',protocolBase:'2556e61953225567842d10e6a68b5ef756859ccb',reviewedHead:'a'.repeat(40),protocolDigest:'4db4905c711660c645cab57f7ade9aff8e302997cc642c3320b1e5a87d594b5b',readinessDigest:'81825c69d01733339ca07bb742c5eccc8cb79eb8b5c5bd9d18abab6fbb6d1298',activationDigest:'b'.repeat(64),carriedKnownCostMicrodollars:10929,carriedHeldMicrodollars:256380,carriedCountCalls:3,consumedTrialSlots:2,excludedApiTrials:['api_behavior_1_A','api_behavior_1_B'],executionWindow:null},limitations:[...fresh.limitations,'behavior-confirmation-unavailable']});
+ const html=renderToStaticMarkup(createElement(EvaluationList,{snapshot,query:{}}));
+ expect(html).toContain('Continuation v2-continuation-1');expect(html).toContain('Campaign 357-screening-2');expect(html).toContain('four new API trials and six native trials');expect(html).toContain('holds $0.2564');expect(html).toContain('2 trial slots and 3 count calls');expect(html).toContain('behavior confirmation is unavailable');expect(html).toContain('Insufficient evidence for a production recommendation');
+ for(const change of [{carriedHeldMicrodollars:0},{protocolDigest:'0'.repeat(64)},{excludedApiTrials:['api_behavior_1_A']}])expect(()=>validateSnapshot({...snapshot,continuation:{...snapshot.continuation,...change}})).toThrow();
+});
