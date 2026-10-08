@@ -1,2 +1,5 @@
 # Shell scripts must check out LF everywhere — CRLF breaks bash (incl. Git Bash).
 *.sh text eol=lf
+# Reviewed entry bytes must match their Git blobs across Windows checkouts.
+scripts/evaluation/schema-probe-launcher.ps1 text eol=lf
+scripts/evaluation/schema-probe-controller.mjs text eol=lf
