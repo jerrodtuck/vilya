@@ -23,7 +23,7 @@ function UsageView({ usage }: { usage: Usage | null }) {
 function DiagnosticObservationView({ observation }: { observation: DiagnosticObservation }) {
   return <><p>Observed tokens; billing scope not validated. Response {observation.responseStatus}; observed {observation.observedAt}.</p><UsageView usage={observation.usage} /><p>Total {observation.usage.totalTokens}. These observations do not establish billed usage, cost or acceptance.</p></>;
 }
-function PriorCampaignView({ prior }: { prior: NonNullable<Snapshot['priorCampaign']> }) {
+function PriorCampaignView({ prior, continuation = false }: { prior: NonNullable<Snapshot['priorCampaign']>; continuation?: boolean }) {
   return <>
     <h2>Prior campaign failure</h2>
     <p>Campaign {prior.campaignId} stopped after one failed API behavior trial. Its attempt history is incomplete. This original failure is excluded from the 12 fresh scheduled trials and their comparisons. Combined historical actual cost and cost per accepted result remain unavailable while its charge is unknown.</p>
@@ -39,7 +39,7 @@ function PriorCampaignView({ prior }: { prior: NonNullable<Snapshot['priorCampai
         <UsageView usage={p.usage} /><p className={styles.codes}>{p.receiptId}</p>
       </article>)}
     </>}
-    <p role="status">The prior provider result remains unknown. Its $0.042730 reservation is included once in combined accounting. Fresh dispatch requires the separate recovery authorization and keeps this hold reserved.</p>
+    <p role="status">The prior provider result remains unknown. Its $0.042730 reservation is included once in combined accounting. {continuation ? 'Remaining dispatch requires the fixed continuation activation and keeps this hold reserved.' : 'Fresh dispatch requires the separate recovery authorization and keeps this hold reserved.'}</p>
   </>;
 }
 export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query: Record<string, string | string[] | undefined> }) {
@@ -57,9 +57,9 @@ export function EvaluationList({ snapshot, query }: { snapshot: Snapshot; query:
       <button type="submit">Apply filters</button>
     </form>
     {filters.normalized && <p role="status">Repeated or invalid filter values were reset to all.</p>}
-    {prior && <><PriorCampaignView prior={prior} />{snapshot.continuation ? <h2>Campaign {snapshot.campaignId}</h2> : <h2>Fresh campaign {snapshot.campaignId}</h2>}</>}
+    {prior && <><PriorCampaignView prior={prior} continuation={!!snapshot.continuation} />{snapshot.continuation ? <h2>Campaign {snapshot.campaignId}</h2> : <h2>Fresh campaign {snapshot.campaignId}</h2>}</>}
     {snapshot.continuation && <p role="status">Continuation {snapshot.continuation.segmentId}: four new API trials and six native trials. Historical known cost {money(snapshot.continuation.carriedKnownCostMicrodollars)} and holds {money(snapshot.continuation.carriedHeldMicrodollars)} stay counted once; {snapshot.continuation.consumedTrialSlots} trial slots and {snapshot.continuation.carriedCountCalls} count calls are already consumed. Behavior API trials are excluded from replay. Native behavior is a standalone control; behavior confirmation is unavailable.</p>}
-    {unresolvedProviderRequests && <p role="status" className={styles.notice}>A provider request is pending or its result is unknown. Paid dispatch is held while it is reconciled. Reconciled API cost excludes any unknown charge; its reservation remains held.</p>}
+    {unresolvedProviderRequests && <p role="status" className={styles.notice}>{snapshot.continuation ? 'Historical unknown charges remain reserved. Only the fixed reviewed continuation may dispatch remaining trials under its activation and limits; generic or unreviewed paid dispatch remains held.' : 'A provider request is pending or its result is unknown. Paid dispatch is held while it is reconciled.'} Reconciled API cost excludes any unknown charge; its reservation remains held.</p>}
     <h2>{prior ? 'Combined budget and unresolved funds' : 'Budget and unresolved funds'}</h2><div className={styles.cards}>
       <div className={styles.card}><h3>Reconciled API cost</h3>{money(snapshot.budget.reconciledCostMicrodollars)}<p>Includes setup, failures, repairs and review{prior ? ' across prior and fresh campaigns' : ''}.</p></div>
       <div className={styles.card}><h3>Held reservations</h3>{money(snapshot.budget.heldReservationMicrodollars)}<p>Unresolved requests remain reserved.</p></div>
