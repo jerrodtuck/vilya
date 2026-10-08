@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "357-schema-probe-1",
+  "status": "complete",
+  "countInputTokens": 19,
+  "generationHttpStatus": 200,
+  "financialSchema": "unresolved",
+  "newCountCalls": 1,
+  "newTrialSlots": 1,
+  "newHeldMicrodollars": 40048,
+  "knownCostMicrodollars": 10929,
+  "heldMicrodollars": 401694,
+  "exposureMicrodollars": 412623,
+  "financialContractVersion": 3,
+  "diagnosticProjectionVersion": 2,
+  "recognizedRejectedField": "billing",
+  "recognizedRejectedShape": "object",
+  "unclassifiedEnvelopeFields": 3,
+  "retries": 0,
+  "nativeTransferProof": false,
+  "productionRecommendation": false,
+  "provenance": {
+    "sourceHead": "ea86666cf1ee81664eedf38415883ecc6d8bc351",
+    "ledgerSha256": "9d4ebb544fad739d401d5cad553849a22e1fde62576ce59d96d132f6030ad27b",
+    "diagnosticsSha256": "8a4f5dc42007060e466ca945720307c2099dafe0b40a1400ce707f67f1560f79",
+    "predecessorResultsSha256": "f985c0c8d4e9163c9167337b2d90fe89545ed03b086272f12ba7d0f3675ef1b9"
+  }
+}
