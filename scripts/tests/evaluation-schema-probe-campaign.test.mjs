@@ -360,13 +360,13 @@ test('complete vectors catch late hold insertion and replacement of every paired
   for(const suffix of ['.blocked.json','.lock','.next']){
     const file=claimFile+suffix;let changed=false;
     fs.lstatSync=function(target,...rest){try{return originalStat.call(fs,target,...rest);}catch(error){if(target===file&&!changed&&error.code==='ENOENT'){changed=true;fs.writeFileSync(file,'late hold');}throw error;}};
-    try{assert.throws(()=>fixture.readSchemaProbeClaim(),/vector|held/);}finally{fs.lstatSync=originalStat;fs.unlinkSync(file);}
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.lstatSync=originalStat;fs.unlinkSync(file);}
     assert.equal(changed,true);
   }
   for(const suffix of ['','.attempt.json','.published.json']){
     const file=claimFile+suffix,original=originalRead(file);let changed=false;
     fs.readFileSync=function(target,...rest){const raw=originalRead.call(fs,target,...rest);if(target===file&&!changed){changed=true;fs.writeFileSync(file,Buffer.concat([original,Buffer.from(' ')]));}return raw;};
-    try{assert.throws(()=>fixture.readSchemaProbeClaim(),/vector/);}finally{fs.readFileSync=originalRead;fs.writeFileSync(file,original);}
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.readFileSync=originalRead;fs.writeFileSync(file,original);}
     assert.equal(changed,true);
   }
   fixture.readSchemaProbeClaim();
@@ -382,4 +382,40 @@ test('publisher final vector detects dirty edits and hold insertion during final
     try{assert.throws(()=>fixture.publishSchemaProbeClaim(args));}finally{fs.readFileSync=originalRead;fs.openSync=originalOpen;fs.closeSync=originalClose;}
     assert.equal(changed,true);assert.throws(()=>fixture.readSchemaProbeClaim());
   }
+});
+test('Git identity rejects replacement refs, grafts, shallow boundaries and object alternates',async t=>{
+  const {root,args,fixture,git}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  git(['replace','--graft',args.reviewedHead]);assert.throws(()=>fixture.readSchemaProbeClaim());git(['replace','--delete',args.reviewedHead]);
+  const common=git(['rev-parse','--path-format=absolute','--git-common-dir']);
+  for(const [relative,content]of [['info/grafts',args.reviewedHead+'\n'],['shallow',args.reviewedHead+'\n'],['objects/info/alternates',path.join(root,'unapproved-objects')+'\n']]){
+    const file=path.join(common,relative);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,content);
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.unlinkSync(file);}
+  }
+  let calls=0;const original=childProcess.execFileSync;
+  childProcess.execFileSync=function(binary,argv,options,...rest){if(binary==='git'){calls++;assert.equal(options.env.GIT_NO_REPLACE_OBJECTS,'1');}return original.call(childProcess,binary,argv,options,...rest);};syncBuiltinESMExports();
+  try{fixture.readSchemaProbeClaim();}finally{childProcess.execFileSync=original;syncBuiltinESMExports();}
+  assert.ok(calls>0);
+});
+test('second-capture predecessor reads and final record trailers reject pre-linearization mutations',async t=>{
+  const {root,args,fixture,claimFile}=await publicationFixture(t);fixture.publishSchemaProbeClaim(args);
+  const originalRead=fs.readFileSync,originalStat=fs.lstatSync,sourceFile=path.join(root,'fixture.txt'),sourceBytes=originalRead(sourceFile);
+  for(const relative of Object.keys(SCHEMA_PROBE_ORIGIN)){
+    const target=path.join(root,relative);let reads=0,changed=false;
+    fs.readFileSync=function(file,...rest){if(file===target&&++reads===2){changed=true;fs.appendFileSync(sourceFile,'second-capture dirty source');}return originalRead.call(fs,file,...rest);};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.readFileSync=originalRead;fs.writeFileSync(sourceFile,sourceBytes);}
+    assert.equal(changed,true);
+  }
+  for(const suffix of ['','.attempt.json','.published.json']){
+    const target=claimFile+suffix,bytes=originalRead(target);let reads=0,changed=false;
+    fs.readFileSync=function(file,...rest){if(file===target&&++reads===10){changed=true;fs.writeFileSync(target,Buffer.concat([bytes,Buffer.from(' ')]));}return originalRead.call(fs,file,...rest);};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.readFileSync=originalRead;fs.writeFileSync(target,bytes);}
+    assert.equal(changed,true);
+  }
+  for(const suffix of ['.blocked.json','.lock','.next']){
+    const target=claimFile+suffix;let reads=0,changed=false;
+    fs.lstatSync=function(file,...rest){if(file===target&&++reads===10){changed=true;fs.writeFileSync(target,'second-capture final trailer hold');}return originalStat.call(fs,file,...rest);};
+    try{assert.throws(()=>fixture.readSchemaProbeClaim());}finally{fs.lstatSync=originalStat;fs.unlinkSync(target);}
+    assert.equal(changed,true);
+  }
+  fixture.readSchemaProbeClaim();
 });

@@ -77,42 +77,59 @@ export function schemaProbeActivation(scaffold,args){
 function safeBytes(file){let at=path.parse(file).root;for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.existsSync(at)&&fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe symlink denied');}const st=fs.statSync(file);if(!st.isFile()||st.size>1000000)throw Error('Schema-probe evidence bound');return fs.readFileSync(file);}
 export function verifySchemaProbePredecessor(){for(const [relative,digest]of Object.entries(SCHEMA_PROBE_ORIGIN))if(sha(safeBytes(path.join(repo,relative)))!==digest)throw Error('Frozen schema-probe predecessor changed');return true;}
 function sourceSnapshot(reviewedHead){
-  const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
-  if(typeof reviewedHead!=='string'||currentHead!==reviewedHead)throw Error('Schema-probe reviewed HEAD changed');
-  execFileSync('git',['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,currentHead],{cwd:repo,stdio:'ignore',windowsHide:true});
-  const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:repo,encoding:'utf8',windowsHide:true}).split(/\r?\n/).filter(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/'));
-  if(dirty.length)throw Error('Schema-probe reviewed source changed');
-  verifySchemaProbePredecessor();
-  const afterHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
-  if(afterHead!==currentHead||afterHead!==reviewedHead)throw Error('Schema-probe source snapshot changed');
-  return currentHead;
+  const before=canonicalSource();verifySchemaProbePredecessor();const after=canonicalSource();
+  if(!equal(before,after))throw Error('Schema-probe source snapshot changed');
+  validateSource(after,reviewedHead);return after.head.trim();
+}
+const identityEnv=['GIT_DIR','GIT_COMMON_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES','GIT_SHALLOW_FILE','GIT_REPLACE_REF_BASE'];
+function gitRead(args){if(identityEnv.some(key=>process.env[key]))throw Error('Schema-probe Git identity override denied');return execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true,env:{...process.env,GIT_NO_REPLACE_OBJECTS:'1'}});}
+function fileRecord(file){try{fs.lstatSync(file);}catch(error){if(error.code!=='ENOENT')throw error;return {exists:false,bytes:null};}return {exists:true,bytes:safeBytes(file).toString('base64')};}
+function canonicalSource(){
+  const identity=gitRead(['rev-parse','--path-format=absolute','HEAD','HEAD^{tree}','--git-common-dir','--git-dir']).trim().split(/\r?\n/),head=identity[0]+'\n',tree=identity[1]+'\n',roots=identity.slice(2),status=gitRead(['status','--porcelain','--untracked-files=all']);
+  if(identity.length!==4||!/^[a-f0-9]{40}$/.test(identity[0])||!/^[a-f0-9]{40}$/.test(identity[1]))throw Error('Invalid schema-probe Git identity');
+  const index=gitRead(['ls-files','--stage','-v','-z']),indexFlags=index;
+  const staged=gitRead(['diff','--cached','--raw','--no-ext-diff','--no-textconv','-z','HEAD']),worktree=gitRead(['diff','--raw','--no-ext-diff','--no-textconv','-z']);
+  const replaceRefs=gitRead(['for-each-ref','refs/replace','--format=%(refname) %(objectname)']),parents=gitRead(['show','--no-patch','--format=%P','HEAD']);
+  const overrides={};
+  for(const root of new Set(roots))for(const relative of ['info/grafts','shallow','objects/info/alternates']){const file=path.resolve(repo,root,relative);overrides[file]=fileRecord(file);}
+  if(replaceRefs.trim()||Object.values(overrides).some(record=>record.exists))throw Error('Schema-probe source Git identity override denied');
+  let ancestor;try{gitRead(['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,head.trim()]);ancestor=true;}catch(error){if(error.status!==1)throw error;ancestor=false;}
+  const source={head,tree,status,index,indexFlags,staged,worktree,ancestry:{base:SCHEMA_PROBE_POLICY.sourceBase,ancestor,replaceRefs,parents,overrides}};
+  validateSource(source);return source;
+}
+function validateSource(source,expectedHead=null){
+  if(expectedHead!==null&&source.head.trim()!==expectedHead||!source.ancestry.ancestor||source.ancestry.replaceRefs.trim()||Object.values(source.ancestry.overrides).some(record=>record.exists)||source.staged||source.worktree||source.indexFlags.split('\0').some(line=>line&&(line[0]==='S'||line[0]===line[0].toLowerCase()))||source.status.split(/\r?\n/).some(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/')))throw Error('Schema-probe reviewed source or Git identity changed');
+}
+function claimRecords(){const records={},claim=path.join(repo,SCHEMA_PROBE_POLICY.claim);for(const suffix of ['', '.attempt.json','.published.json','.blocked.json','.lock','.next'])records[suffix]=fileRecord(claim+suffix);return records;}
+function canonicalBoundary(){
+  const before=canonicalSource(),records=claimRecords(),after=canonicalSource();
+  if(!equal(before,after))throw Error('Schema-probe source changed across record trailer');
+  const finalRecords=claimRecords();if(!equal(records,finalRecords))throw Error('Schema-probe records changed across source trailer');
+  return {source:after,records:finalRecords};
 }
 // Mandatory for any future execution integration. Marker presence never grants
 // execution: repeat this complete stable vector immediately before any network.
 function captureClaimEvidence(){
-  const git=args=>execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true});
-  const head=git(['rev-parse','HEAD']),status=git(['status','--porcelain','--untracked-files=all']);
-  const replaceRefs=git(['for-each-ref','refs/replace','--format=%(refname) %(objectname)']),parents=git(['show','--no-patch','--format=%P','HEAD']);
-  let ancestor;
-  try{git(['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,head.trim()]);ancestor=true;}
-  catch(error){if(error.status!==1)throw error;ancestor=false;}
+  const start=canonicalBoundary();
   const predecessors={};
   for(const relative of Object.keys(SCHEMA_PROBE_ORIGIN)){const raw=safeBytes(path.join(repo,relative));predecessors[relative]={bytes:raw.toString('base64'),sha256:sha(raw)};}
-  const records={},claim=path.join(repo,SCHEMA_PROBE_POLICY.claim);
-  for(const suffix of ['', '.attempt.json','.published.json','.blocked.json','.lock','.next']){
-    const file=claim+suffix;let present;
-    try{fs.lstatSync(file);present=true;}catch(error){if(error.code!=='ENOENT')throw error;present=false;}
-    records[suffix]=present?{exists:true,bytes:safeBytes(file).toString('base64')}:{exists:false,bytes:null};
-  }
-  return {head,status,ancestry:{base:SCHEMA_PROBE_POLICY.sourceBase,ancestor,replaceRefs,parents},predecessors,records};
+  const records=claimRecords(),end=canonicalBoundary();
+  if(!equal(start,end)||!equal(records,end.records))throw Error('Schema-probe evidence capture changed across trailer');
+  // The final trailer is the bounded linearization point. Writers must cooperate
+  // with the same publication/dispatch lock. Non-cooperating filesystem mutation
+  // after this trailer is outside the scaffold guarantee. The live controller
+  // must repeat this same bracketed capture under its dispatch lock immediately
+  // before network. No claim authorizes a network operation on its own.
+  return {...end.source,predecessors,records:end.records};
 }
-function stableClaimEvidence(expectedHead=null,expectedClaimDigest=null){
+function stableClaimEvidence(expectedHead=null,expectedClaimDigest=null,ownPublicationLock=false){
   const first=captureClaimEvidence(),second=captureClaimEvidence();
   if(!equal(first,second))throw Error('Schema-probe evidence vector changed');
   const vector=first;
-  if(!vector.ancestry.ancestor||vector.status.split(/\r?\n/).some(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/')))throw Error('Schema-probe reviewed source changed');
+  validateSource(vector,expectedHead);
   for(const [relative,digest]of Object.entries(SCHEMA_PROBE_ORIGIN))if(vector.predecessors[relative].sha256!==digest)throw Error('Frozen schema-probe predecessor changed');
-  for(const suffix of ['.lock','.next','.blocked.json'])if(vector.records[suffix].exists)throw Error('Schema-probe publication unfinished or held');
+  for(const suffix of ['.next','.blocked.json'])if(vector.records[suffix].exists)throw Error('Schema-probe publication unfinished or held');
+  if(ownPublicationLock?!vector.records['.lock'].exists||vector.records['.lock'].bytes!=='':vector.records['.lock'].exists)throw Error('Schema-probe publication lock changed or held');
   for(const suffix of ['','.attempt.json','.published.json'])if(!vector.records[suffix].exists)throw Error('Schema-probe publication missing');
   const raw=Buffer.from(vector.records[''].bytes,'base64'),record=inputSnapshot(JSON.parse(raw)),attempt=inputSnapshot(JSON.parse(Buffer.from(vector.records['.attempt.json'].bytes,'base64'))),published=inputSnapshot(JSON.parse(Buffer.from(vector.records['.published.json'].bytes,'base64')));
   inputKeys(record,['activation','sha256']);inputKeys(attempt,['schemaVersion','claimDigest']);inputKeys(published,['schemaVersion','claimDigest','reviewedHead']);
@@ -158,8 +175,7 @@ export function publishSchemaProbeClaim(args){
     // are unverified; completion requires this separate durable publication mark.
     sourceSnapshot(reviewedHead);
     output=fs.openSync(published,'wx',0o600);fs.writeFileSync(output,JSON.stringify({schemaVersion:1,claimDigest:sha(innerSerialized),reviewedHead:innerHead})+'\n');fs.fsyncSync(output);fs.closeSync(output);output=undefined;
-    fs.closeSync(lock);fs.unlinkSync(claim+'.lock');lock=undefined;
-    const {claimDigest}=stableClaimEvidence(reviewedHead,sha(innerSerialized));
+    const {claimDigest}=stableClaimEvidence(reviewedHead,sha(innerSerialized),true);
     return {claimDigest,executionWindowStarted:false,paidRequests:0};
   }
   catch(error){
