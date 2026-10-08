@@ -76,22 +76,27 @@ export function schemaProbeActivation(scaffold,args){
 }
 function safeBytes(file){let at=path.parse(file).root;for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);if(fs.existsSync(at)&&fs.lstatSync(at).isSymbolicLink())throw Error('Schema-probe symlink denied');}const st=fs.statSync(file);if(!st.isFile()||st.size>1000000)throw Error('Schema-probe evidence bound');return fs.readFileSync(file);}
 export function verifySchemaProbePredecessor(){for(const [relative,digest]of Object.entries(SCHEMA_PROBE_ORIGIN))if(sha(safeBytes(path.join(repo,relative)))!==digest)throw Error('Frozen schema-probe predecessor changed');return true;}
+function reviewedSourceHead(reviewedHead){
+  const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
+  if(typeof reviewedHead!=='string'||currentHead!==reviewedHead)throw Error('Schema-probe reviewed HEAD changed');
+  execFileSync('git',['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,currentHead],{cwd:repo,stdio:'ignore',windowsHide:true});
+  const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:repo,encoding:'utf8',windowsHide:true}).split(/\r?\n/).filter(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/'));
+  if(dirty.length)throw Error('Schema-probe reviewed source changed');
+  return currentHead;
+}
 // Publishing creates only an immutable claim. It cannot start a window or a count.
 // A paid execution path must be separately implemented, reviewed and authorized.
 export function publishSchemaProbeClaim(args){
   const cleanArgs=inputSnapshot(args);inputKeys(cleanArgs,['initialize','reviewedHead','reviews']);
   const {initialize,reviewedHead,reviews}=cleanArgs;
   if(initialize!==true)throw Error('Explicit schema-probe claim initialization required');
-  const currentHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
-  execFileSync('git',['merge-base','--is-ancestor',SCHEMA_PROBE_POLICY.sourceBase,currentHead],{cwd:repo,stdio:'ignore',windowsHide:true});
-  const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:repo,encoding:'utf8',windowsHide:true}).split(/\r?\n/).filter(l=>l&&!l.slice(3).startsWith('.claude/')&&!l.slice(3).startsWith('scripts/evaluation/runtime/')&&!l.slice(3).startsWith('apps/skill-registry/.evaluation/'));
-  if(dirty.length)throw Error('Schema-probe reviewed source changed');
+  const currentHead=reviewedSourceHead(reviewedHead);
   verifySchemaProbePredecessor();
   const activation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead,reviews});
-  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace),marker=claim+'.attempt.json';
+  const claim=path.join(repo,SCHEMA_PROBE_POLICY.claim),workspace=path.join(repo,SCHEMA_PROBE_POLICY.workspace),marker=claim+'.attempt.json',published=claim+'.published.json';
   // Parent directories must exist and be unlinked; publication never creates runtime.
   fs.realpathSync(path.dirname(claim));safeBytes(path.join(repo,predecessor+'pilot-budget.json'));
-  for(const file of [claim,marker,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
+  for(const file of [claim,marker,published,claim+'.lock',claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe claim already attempted; replay denied');
   let lock,output,attempt;
   const serialized=JSON.stringify({activation,sha256:hash(activation)})+'\n';
   try{
@@ -102,10 +107,18 @@ export function publishSchemaProbeClaim(args){
     fs.writeFileSync(attempt,JSON.stringify({schemaVersion:1,claimDigest:sha(serialized)})+'\n');fs.fsyncSync(attempt);fs.closeSync(attempt);attempt=undefined;
     for(const file of [claim,claim+'.next',workspace])if(fs.existsSync(file))throw Error('Schema-probe publication torn; replay denied');
     verifySchemaProbePredecessor();
-    output=fs.openSync(claim+'.next','wx',0o600);fs.writeFileSync(output,serialized);fs.fsyncSync(output);fs.closeSync(output);output=undefined;
+    const innerHead=reviewedSourceHead(reviewedHead),innerActivation=schemaProbeActivation(createSchemaProbeScaffold(),{reviewedHead,currentHead:innerHead,reviews});
+    const innerSerialized=JSON.stringify({activation:innerActivation,sha256:hash(innerActivation)})+'\n';
+    if(innerSerialized!==serialized)throw Error('Schema-probe activation snapshot changed');
+    output=fs.openSync(claim+'.next','wx',0o600);fs.writeFileSync(output,innerSerialized);fs.fsyncSync(output);fs.closeSync(output);output=undefined;
     // Hard-link publication atomically refuses an existing destination; rename
     // would replace it on some platforms. A leftover .next also stays held.
+    verifySchemaProbePredecessor();reviewedSourceHead(reviewedHead);
     fs.linkSync(claim+'.next',claim);fs.unlinkSync(claim+'.next');
+    // A mutation inside the link operation also fails closed. Claim bytes alone
+    // are unverified; completion requires this separate durable publication mark.
+    verifySchemaProbePredecessor();reviewedSourceHead(reviewedHead);
+    output=fs.openSync(published,'wx',0o600);fs.writeFileSync(output,JSON.stringify({schemaVersion:1,claimDigest:sha(innerSerialized),reviewedHead:innerHead})+'\n');fs.fsyncSync(output);fs.closeSync(output);output=undefined;
     return {claimDigest:sha(safeBytes(claim)),executionWindowStarted:false,paidRequests:0};
   }
   finally{if(attempt!==undefined)fs.closeSync(attempt);if(output!==undefined)fs.closeSync(output);if(lock!==undefined){fs.closeSync(lock);fs.unlinkSync(claim+'.lock');}}

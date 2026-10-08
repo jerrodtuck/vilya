@@ -86,7 +86,7 @@ async function publicationFixture(t){
   git(['add','scripts/evaluation/schema-probe-campaign.mjs']);commit();
   const current=git(['rev-parse','HEAD']),args={initialize:true,reviewedHead:current,reviews:reviews.map(r=>({...r,head:current}))};
   const fixture=await import(pathToFileURL(moduleFile).href);
-  return {root,args,fixture,before,claimFile:path.join(root,fixture.SCHEMA_PROBE_POLICY.claim)};
+  return {root,args,fixture,before,git,claimFile:path.join(root,fixture.SCHEMA_PROBE_POLICY.claim)};
 }
 test('disposable fake publication writes only one claim, preserves predecessor bytes and never starts a window',async t=>{
   const {root,args,fixture,before,claimFile}=await publicationFixture(t);
@@ -98,6 +98,7 @@ test('disposable fake publication writes only one claim, preserves predecessor b
   assert.throws(()=>fixture.publishSchemaProbeClaim(args),/replay/);
   for(const [file,raw]of Object.entries(before))assert.deepEqual(fs.readFileSync(file),raw);
   const marker=JSON.parse(fs.readFileSync(claimFile+'.attempt.json'));assert.equal(marker.claimDigest,crypto.createHash('sha256').update(fs.readFileSync(claimFile)).digest('hex'));
+  const published=JSON.parse(fs.readFileSync(claimFile+'.published.json'));assert.equal(published.claimDigest,marker.claimDigest);assert.equal(published.reviewedHead,args.reviewedHead);
 });
 test('stale concurrent contender cannot replace the winning claim after passing prechecks',async t=>{
   const {args,fixture,claimFile}=await publicationFixture(t),original=fs.openSync;
@@ -280,4 +281,23 @@ test('activation requires primitive strings before regex matching or receipt ded
     for(const wrap of [value=>[value],value=>[[value]],value=>new String(value),value=>Symbol(value)]){const changed=args();changed.reviews[0][field]=wrap(changed.reviews[0][field]);assert.throws(()=>schemaProbeActivation(scaffold,changed));}
   }
   const valid=schemaProbeActivation(scaffold,args());assert.equal(typeof valid.activation.reviews[0].receiptDigest,'string');assert.notEqual(valid.activation.reviews[0].receiptDigest,valid.activation.reviews[1].receiptDigest);
+});
+test('Git head, source and ancestry changes at lock acquisition or linking leave publication held',async t=>{
+  for(const checkpoint of ['lock','link'])for(const change of ['head','dirty','ancestry']){
+    const {root,args,fixture,git,claimFile}=await publicationFixture(t),originalOpen=fs.openSync,originalLink=fs.linkSync;
+    let changed=false;
+    const mutate=()=>{
+      changed=true;
+      if(change==='head')git(['-c','user.name=Synthetic probe','-c','user.email=offline@example.invalid','commit','--quiet','--allow-empty','-m','Unreviewed source head']);
+      else if(change==='dirty')fs.appendFileSync(path.join(root,'fixture.txt'),'unreviewed source edit');
+      else git(['replace','--graft',args.reviewedHead]);
+    };
+    if(checkpoint==='lock')fs.openSync=function(file,...rest){if(file===claimFile+'.lock'&&!changed)mutate();return originalOpen.call(fs,file,...rest);};
+    else fs.linkSync=function(from,to){if(to===claimFile&&!changed)mutate();return originalLink.call(fs,from,to);};
+    try{assert.throws(()=>fixture.publishSchemaProbeClaim(args));}finally{fs.openSync=originalOpen;fs.linkSync=originalLink;}
+    assert.equal(changed,true,checkpoint+' '+change);assert.equal(fs.existsSync(claimFile+'.attempt.json'),true);assert.equal(fs.existsSync(claimFile+'.published.json'),false);
+    assert.throws(()=>fixture.publishSchemaProbeClaim(args));
+    if(checkpoint==='lock')assert.equal(fs.existsSync(claimFile),false);
+    else assert.equal(fs.existsSync(claimFile),true); // Frozen bytes exist, but no completion marker authorizes them.
+  }
 });
