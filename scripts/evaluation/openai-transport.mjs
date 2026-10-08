@@ -39,13 +39,14 @@ export function parseResponse(data, request, inputBound, providerRequestId = nul
   for (const item of data.output) {
     if (item.type === 'reasoning') continue;
     if (item.type !== 'message' || item.role !== 'assistant' || item.status !== 'completed' || !Array.isArray(item.content)) fail();
+    if (item.phase === 'commentary') continue;
     for (const content of item.content) {
       if (content.type !== 'output_text' || typeof content.text !== 'string' ||
           (content.annotations != null && (!Array.isArray(content.annotations) || content.annotations.length))) fail();
       text.push(content.text);
     }
   }
-  if (!text.length) fail();
+  if (!text.length || !text.join('').trim()) fail();
   const safeId = typeof providerRequestId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(providerRequestId) ? providerRequestId : null;
   return { text: text.join(''), usage: counts, metadata: { providerRequestId: safeId } };
 }
