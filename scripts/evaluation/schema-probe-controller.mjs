@@ -12,12 +12,23 @@ const repo=fileURLToPath(new URL('../..',import.meta.url));
 const digest=v=>crypto.createHash('sha256').update(v).digest('hex');
 const hash=v=>digest(JSON.stringify(v));
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-export const SCHEMA_PROBE_PATHS=Object.freeze({workspace:path.join(repo,P.workspace),ledger:path.join(repo,P.workspace,'pilot-budget.json'),authorization:path.join(repo,'scripts/evaluation/runtime/schema-probe-357-1.authorization.json'),claim:path.join(repo,P.claim),prompt:path.join(repo,P.workspace,'probe.private.txt'),env:path.join(repo,'.env')});
+export const SCHEMA_PROBE_PATHS=Object.freeze({workspace:path.join(repo,P.workspace),ledger:path.join(repo,P.workspace,'pilot-budget.json'),authorization:path.join(repo,'scripts/evaluation/runtime/schema-probe-357-1.authorization.json'),claim:path.join(repo,P.claim),prompt:path.join(repo,P.workspace,'probe.private.txt'),env:'C:\\Users\\repo\\vilya\\.env.local',halt:path.join(repo,'scripts/evaluation/runtime/schema-probe-357-1.halt.json')});
 function safe(file){let at=path.parse(file).root;for(const part of file.slice(at.length).split(path.sep)){at=path.join(at,part);try{if(fs.lstatSync(at).isSymbolicLink())throw Error('Unsafe schema-probe path');}catch(e){if(e.code!=='ENOENT')throw e;}}return file;}
 function bytes(file){safe(file);const st=fs.statSync(file);if(!st.isFile()||st.size>1000000)throw Error('Schema-probe file bound');return fs.readFileSync(file);}
 function authorization(head){const raw=bytes(SCHEMA_PROBE_PATHS.authorization),value=JSON.parse(raw);const expected={schemaVersion:1,campaignId:P.campaignId,reviewedHead:head,windowMinutes:90,paidProbeSlots:1,userAuthorized:true};if(!same(value,expected))throw Error('Separate fixed 90-minute/one-slot user authorization required');return digest(raw);}
 function publish(file,value){safe(file);const temp=file+'.next';const fd=fs.openSync(temp,'wx',0o600);try{fs.writeFileSync(fd,JSON.stringify(value)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.linkSync(temp,file);fs.unlinkSync(temp);}
 function binding(lease,head){const claim=readSchemaProbeClaimLocked(lease);if(claim.activation.reviewedHead!==head)throw Error('Exact reviewed head required');return {head,claimDigest:digest(bytes(SCHEMA_PROBE_PATHS.claim)),authorizationDigest:authorization(head),policyDigest:hash(P)};}
+function credentialBoundary(pinned=null){
+  if(process.execArgv.length!==1||process.execArgv[0]!=='--env-file='+SCHEMA_PROBE_PATHS.env)throw Error('Exactly one fixed env-file flag required');
+  // The file is inspected privately, never loaded, logged, hashed or persisted.
+  const raw=bytes(SCHEMA_PROBE_PATHS.env).toString('utf8');if(raw.includes('\0')||raw.includes('$')||raw.includes('`')||raw.includes('\\')||raw.charCodeAt(0)===0xfeff)throw Error('Unsupported env-file syntax');
+  const fields=new Map();for(const line of raw.split(/\r?\n/)){if(!line.trim()||line.trimStart().startsWith('#'))continue;const match=/^([A-Z_][A-Z0-9_]*)=(.*)$/.exec(line);if(!match||fields.has(match[1]))throw Error('Duplicate or unsupported env-file assignment');let value=match[2];if(value.startsWith('"')||value.startsWith("'")){const quote=value[0];if(value.length<2||value.at(-1)!==quote||value.slice(1,-1).includes(quote))throw Error('Unsupported env-file quoting');value=value.slice(1,-1);}else if(/[\s"'#]/.test(value))throw Error('Unsupported env-file value');fields.set(match[1],value);}
+  const fixed=fields.get('OPENAI_API_KEY'),active=process.env.OPENAI_API_KEY;
+  if(typeof fixed!=='string'||!fixed.length||typeof active!=='string')throw Error('Fixed credential required');
+  const a=Buffer.from(fixed),b=Buffer.from(active);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)||pinned!==null&&(a.length!==pinned.length||!crypto.timingSafeEqual(a,pinned)))throw Error('Active credential differs from fixed env-file');return a;
+}
+const inert=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(inert);Object.freeze(value);}return value;};
+function summary(s){const r=s.requests[0],known=P.carry.known+(r?.cost??0),held=P.carry.held+(r&&r.status!=='complete'?r.reservation:0);return {status:'stopped',blocked:s.blocked,known,held,exposure:known+held,countCalls:P.carry.countCalls+s.preflights.length,consumedTrialSlots:P.carry.consumedTrialSlots+1,paidRequests:s.requests.length};}
 
 // Deliberately implements only the existing generation/transport guard interface.
 // No public reset, pair allocator, native path or subsequent trial is available.
@@ -25,7 +36,7 @@ class ProbeLedger {
   constructor(lease,head,bound,clock=Date.now){this.lease=lease;this.head=head;this.bound=Object.freeze({...bound});this.clock=clock;this.file=SCHEMA_PROBE_PATHS.ledger;this.config=apiConfig();}
   check(){const current=binding(this.lease,this.head);if(!same(current,this.bound))throw Error('Probe execution binding changed');return current;}
   boundEvidence(){if(authorization(this.head)!==this.bound.authorizationDigest||digest(bytes(SCHEMA_PROBE_PATHS.claim))!==this.bound.claimDigest)throw Error('Probe authorization/claim changed');return this.bound;}
-  read(){if(fs.existsSync(this.file+'.next'))throw Error('Probe replacement unfinished');const raw=bytes(this.file);if(this.expectedBytes!==undefined&&digest(raw)!==this.expectedBytes)throw Error('Probe state changed outside transaction');const envelope=JSON.parse(raw);exactKeys(envelope,['state','sha256'],'probe envelope');if(envelope.sha256!==hash(envelope.state))throw Error('Probe checksum mismatch');this.validate(envelope.state);this.expectedBytes=digest(raw);return envelope.state;}
+  read(){if(fs.existsSync(this.file+'.next'))throw Error('Probe replacement unfinished');const raw=bytes(this.file);if(this.expectedBytes!==undefined&&digest(raw)!==this.expectedBytes)throw Error('Probe state changed outside transaction');const envelope=JSON.parse(raw);exactKeys(envelope,['state','sha256'],'probe envelope');if(envelope.sha256!==hash(envelope.state))throw Error('Probe checksum mismatch');this.validate(envelope.state);this.expectedBytes=digest(raw);this.lastKnown=inert(structuredClone(envelope.state));return envelope.state;}
   validate(s){
     exactKeys(s,['version','binding','carry','consumedSlotHistory','lastTime','executionWindow','status','blocked','preflights','requests'],'probe state');
     const history=s.status==='initialized'?P.consumedSlotHistory:[...P.consumedSlotHistory,{segment:P.campaignId,trial:P.trial,slots:1}];
@@ -38,7 +49,7 @@ class ProbeLedger {
   }
   providerId(v){if(v!==null&&(typeof v!=='string'||!/^req_[A-Za-z0-9_-]{1,120}$/.test(v)))throw Error('Probe provider identifier');}
   scope(v){if(v.requestId!==P.requestId||v.trial!==P.trial||v.phase!=='implementation'||v.model!==P.model||v.effort!==P.effort)throw Error('Probe fixed request scope');}
-  write(s){this.validate(s);safe(this.file);const temp=this.file+'.next',fd=fs.openSync(temp,'wx',0o600),raw=JSON.stringify({state:s,sha256:hash(s)})+'\n';try{fs.writeFileSync(fd,raw);fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(temp,this.file);this.expectedBytes=digest(raw);}
+  write(s){this.validate(s);safe(this.file);const temp=this.file+'.next',fd=fs.openSync(temp,'wx',0o600),raw=JSON.stringify({state:s,sha256:hash(s)})+'\n';try{fs.writeFileSync(fd,raw);fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(temp,this.file);this.expectedBytes=digest(raw);this.lastKnown=inert(structuredClone(s));}
   transaction(change){const lock=this.file+'.lock',fd=fs.openSync(safe(lock),'wx',0o600);try{const s=this.read(),now=integer(this.clock(),'clock');if(now<s.lastTime)throw Error('Probe clock regressed');const result=change(s,now);s.lastTime=now;this.write(s);return result;}finally{fs.closeSync(fd);fs.unlinkSync(lock);}}
   ready(s){if(s.status==='stopped'||s.blocked||[...s.preflights,...s.requests].some(r=>r.status!=='complete'))throw Error('Probe stopped or unresolved');}
   beginPreflight(meta){return this.transaction((s,now)=>{this.ready(s);this.scope(meta);if(s.status!=='running'||s.preflights.length)throw Error('Probe count already attempted');s.executionWindow={startedAt:now,dispatchDeadline:now+5040000,finalDeadline:now+5400000};const c={...meta,id:P.requestId+'_count',status:'pending',start:now,inputTokens:null,providerRequestId:null};s.preflights.push(c);return {...c,deadline:now+15000};});}
@@ -49,30 +60,41 @@ class ProbeLedger {
   hold(id){return this.transaction(s=>{const r=s.requests[0];if(r?.id!==id||r.status!=='pending')throw Error('Probe hold');r.status='unknown';s.blocked=true;});}
   deadline(){return this.read().executionWindow.dispatchDeadline;}
   stop(){const lock=this.file+'.lock',fd=fs.openSync(safe(lock),'wx',0o600);try{const s=this.read();s.status='stopped';for(const r of [...s.preflights,...s.requests])if(r.status==='pending'){r.status='unknown';s.blocked=true;}this.write(s);}finally{fs.closeSync(fd);fs.unlinkSync(lock);}}
+  halt(){
+    // This snapshot was captured only after a validated durable read/write.
+    // No authorization or mutable ledger file is read on this failure path.
+    if(!this.lastKnown)throw Error('Probe trusted halt evidence missing');
+    const prior=this.lastKnown,s=structuredClone(prior);if(s.status==='initialized')s.consumedSlotHistory.push({segment:P.campaignId,trial:P.trial,slots:1});s.status='stopped';s.blocked=true;
+    for(const c of s.preflights)Object.assign(c,{status:'unknown',inputTokens:null,providerRequestId:null});
+    for(const r of s.requests)Object.assign(r,{status:'unknown',cost:null,usage:null,end:null,providerRequestId:null});
+    const record={schemaVersion:1,reason:'ledger-finalization-failed',priorStateSha256:hash(prior),lastKnownState:prior,state:s,countId:s.preflights[0]?.id??null,requestId:s.requests[0]?.id??null,...summary(s)};
+    const raw=Buffer.from(JSON.stringify({halt:record,sha256:hash(record)})+'\n'),fd=fs.openSync(safe(SCHEMA_PROBE_PATHS.halt),'wx',0o600),owner=fs.fstatSync(fd);try{fs.writeFileSync(fd,raw);fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
+    const current=fs.lstatSync(SCHEMA_PROBE_PATHS.halt);if(current.dev!==owner.dev||current.ino!==owner.ino||!bytes(SCHEMA_PROBE_PATHS.halt).equals(raw))throw Error('Probe halt publication changed; retain guard');return summary(s);
+  }
 }
 
 function parse(args){const v={};for(let i=0;i<args.length;i++){const k=args[i];if(k==='--live'){if(v[k])throw Error('Duplicate option');v[k]=true;}else if(['--workflow-protocol','--reviewed-head','--workspace','--ledger','--claim','--authorization','--prompt'].includes(k)&&!v[k]&&args[i+1])v[k]=args[++i];else throw Error('Invalid probe option');}if(!v['--live']||v['--workflow-protocol']!=='2'||!/^[a-f0-9]{40}$/.test(v['--reviewed-head']??''))throw Error('Explicit probe live protocol/head required');for(const key of ['workspace','ledger','claim','authorization','prompt'])if(v['--'+key]!==SCHEMA_PROBE_PATHS[key])throw Error('Exact probe paths required');return v;}
 export async function schemaProbeCLI(args){
-  const mode=args[0];if(!['--initialize','--run'].includes(mode))throw Error('Explicit probe action required');const v=parse(args.slice(1)),head=v['--reviewed-head'],lease=acquireSchemaProbeLease();
+  const mode=args[0];if(!['--initialize','--run'].includes(mode))throw Error('Explicit probe action required');const v=parse(args.slice(1)),head=v['--reviewed-head'],lease=acquireSchemaProbeLease();let releaseLease=true;
   try{
+    safe(SCHEMA_PROBE_PATHS.halt);if(fs.existsSync(SCHEMA_PROBE_PATHS.halt))throw Error('Schema probe durably halted; no restart');
     const bound=binding(lease,head);
     if(mode==='--initialize'){
       // Atomic directory creation is the permanent initialization attempt fence.
       safe(SCHEMA_PROBE_PATHS.workspace);fs.mkdirSync(SCHEMA_PROBE_PATHS.workspace);
       const state={version:1,binding:bound,carry:structuredClone(P.carry),consumedSlotHistory:structuredClone(P.consumedSlotHistory),lastTime:integer(Date.now(),'clock'),executionWindow:null,status:'initialized',blocked:false,preflights:[],requests:[]};publish(SCHEMA_PROBE_PATHS.ledger,{state,sha256:hash(state)});return {status:'initialized',executionWindowStarted:false,paidRequests:0};
     }
-    // The host must load only this fixed .env externally with Node's env-file flag.
-    if(!process.execArgv.includes('--env-file='+SCHEMA_PROBE_PATHS.env)||!process.env.OPENAI_API_KEY)throw Error('Fixed externally loaded .env required');
+    const pinnedCredential=credentialBoundary();
     const ledger=new ProbeLedger(lease,head,bound);const initial=ledger.read();if(initial.status!=='initialized'||fs.existsSync(ledger.file+'.lock'))throw Error('Probe already attempted; restart denied');
     publish(path.join(SCHEMA_PROBE_PATHS.workspace,'execution.attempt.json'),{schemaVersion:1,binding:bound});
-    ledger.transaction(s=>{if(s.status!=='initialized')throw Error('Probe already attempted; restart denied');s.status='running';s.consumedSlotHistory.push({segment:P.campaignId,trial:P.trial,slots:1});});
     try{
+      ledger.transaction(s=>{if(s.status!=='initialized')throw Error('Probe already attempted; restart denied');s.status='running';s.consumedSlotHistory.push({segment:P.campaignId,trial:P.trial,slots:1});});
       const prompt=bytes(SCHEMA_PROBE_PATHS.prompt).toString('utf8');
-      const provider=createOpenAITransport({liveEnabled:true,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,diagnosticGuard:event=>recordDiagnostic(ledger,event),preflightGuard:{begin:m=>ledger.beginPreflight(m),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:request=>{const r=ledger.read().requests[0];if(r?.status!=='pending'||r.id!==request.reservation?.id)throw Error('Probe reservation missing');return r;},fetchImpl:(...request)=>{ledger.check();const s=ledger.read(),count=request[0].endsWith('/input_tokens'),r=count?s.preflights[0]:s.requests[0],now=integer(ledger.clock(),'network clock');if(r?.status!=='pending'||now<s.lastTime||now>=Math.min(r.start+(count?15000:60000),s.executionWindow.dispatchDeadline))throw Error('Probe pre-network deadline');return globalThis.fetch(...request);}});
+      const provider=createOpenAITransport({liveEnabled:true,countBillingInterpretation:COUNT_BILLING_INTERPRETATION,diagnosticGuard:event=>recordDiagnostic(ledger,event),preflightGuard:{begin:m=>ledger.beginPreflight(m),complete:(id,r)=>ledger.completePreflight(id,r),hold:id=>ledger.holdPreflight(id)},reservationGuard:request=>{const r=ledger.read().requests[0];if(r?.status!=='pending'||r.id!==request.reservation?.id)throw Error('Probe reservation missing');return r;},fetchImpl:(...request)=>{ledger.check();const s=ledger.read(),count=request[0].endsWith('/input_tokens'),r=count?s.preflights[0]:s.requests[0],now=integer(ledger.clock(),'network clock');if(r?.status!=='pending'||now<s.lastTime||now>=Math.min(r.start+(count?15000:60000),s.executionWindow.dispatchDeadline))throw Error('Probe pre-network deadline');credentialBoundary(pinnedCredential);return globalThis.fetch(...request);}});
       await generate(ledger,provider,{prompt,requestId:P.requestId,trial:P.trial,phase:'implementation',model:P.model,effort:P.effort,maxOutputTokens:P.maxOutputTokens});
     }catch{/* Transport details and private content never enter controller output. */}
-    finally{ledger.stop();}
-    const s=ledger.read(),r=s.requests[0],known=P.carry.known+(r?.cost??0),held=P.carry.held+(r&&r.status!=='complete'?r.reservation:0);return {status:'stopped',blocked:s.blocked,known,held,exposure:known+held,countCalls:P.carry.countCalls+s.preflights.length,consumedTrialSlots:P.carry.consumedTrialSlots+1,paidRequests:s.requests.length};
-  }finally{closeSchemaProbeLease(lease);}
+    finally{try{ledger.stop();}catch{try{return ledger.halt();}catch{releaseLease=false;throw Error('Probe halt persistence failed; guard retained');}}}
+    return summary(ledger.read());
+  }finally{if(releaseLease)closeSchemaProbeLease(lease);}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){try{console.log(JSON.stringify(await schemaProbeCLI(process.argv.slice(2))));}catch{console.error('Schema probe held; preserve all evidence');process.exitCode=1;}}
