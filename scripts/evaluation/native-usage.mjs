@@ -167,5 +167,5 @@ async function main(args) {
   if (result.status !== 'observed') process.exitCode = 2;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main(process.argv.slice(2)).catch(() => { process.stderr.write('Native metadata import unavailable: invalid explicit input.\n'); process.exitCode = 2; });
+  main(process.argv.slice(2)).catch(() => { process.stderr.write('Native metadata unavailable: invalid explicit input.\n'); process.exitCode = 2; });
 }

@@ -23,8 +23,8 @@ export function buildResponsePayload(request) {
     service_tier: 'default', store: false, stream: false, background: false, truncation: 'disabled' };
 }
 
-export function validateFinancialResponse(data, request, inputBound) {
-  const inspection=inspectFinancialResponse(data,request,inputBound);if(!inspection.validated)fail();
+export function validateFinancialResponse(data, request, inputBound, contractVersion=FINANCIAL_CONTRACT_VERSION) {
+  const inspection=inspectFinancialResponse(data,request,inputBound,contractVersion);if(!inspection.validated)fail();
   const usage=data.usage;return {input:usage.input_tokens,cachedInput:usage.input_tokens_details.cached_tokens,cacheWrite:usage.input_tokens_details.cache_write_tokens,output:usage.output_tokens,reasoning:usage.output_tokens_details.reasoning_tokens,fees:0};
 }
 const financialRejections = new WeakSet();
@@ -32,8 +32,8 @@ export const isFinancialRejection = value => record(value) && financialRejection
 function rejectedFinancialResult(usage, metadata, observedAt) {
   const result = Object.freeze({ usage, metadata, observedAt }); financialRejections.add(result); return result;
 }
-export function parseResponse(data, request, inputBound, providerRequestId = null) {
-  const counts = validateFinancialResponse(data, request, inputBound);
+export function parseResponse(data, request, inputBound, providerRequestId = null, contractVersion=FINANCIAL_CONTRACT_VERSION) {
+  const counts = validateFinancialResponse(data, request, inputBound,contractVersion);
   if(data.status!=='completed')fail();
   const text = [];
   for (const item of data.output) {
@@ -53,8 +53,8 @@ export function parseResponse(data, request, inputBound, providerRequestId = nul
 
 export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = process.env, liveEnabled = false,
   offlineFixture = false, inputTokensForFixture, reservationGuard, preflightGuard,
-  countBillingInterpretation, diagnosticGuard, diagnosticProjectionVersion=2, timeoutMs = 60_000, clock = Date.now } = {}) {
-  if(![2,3].includes(diagnosticProjectionVersion))throw Error('Invalid diagnostic projection version');
+  countBillingInterpretation, diagnosticGuard, diagnosticProjectionVersion=2, financialContractVersion=FINANCIAL_CONTRACT_VERSION, timeoutMs = 60_000, clock = Date.now } = {}) {
+  if(![2,3,4].includes(diagnosticProjectionVersion)||![3,4].includes(financialContractVersion)||(diagnosticProjectionVersion===4)!==(financialContractVersion===4))throw Error('Invalid diagnostic projection version');
   if (!uint(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000) throw Error('Invalid transport deadline');
   if (offlineFixture && (typeof fetchImpl !== 'function' || fetchImpl === globalThis.fetch || typeof inputTokensForFixture !== 'function')) throw Error('Offline fixture requires injected fetch and token count');
   const certificates = new WeakSet(); const consumed = new WeakSet();
@@ -85,8 +85,8 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
         if (!response?.ok || response.redirected || response.url !== url){observe(scope,'http-rejected',fields);fail();}
         // Failed bodies may echo private content. Never read or include them in errors.
         let data;try{data=await response.json();}catch{observe(scope,'body-unavailable',fields);fail();}let finance = null;
-        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens},scope.inputBound):null,inspection,diagnosticProjection:projectFinancialDiagnostics(data,diagnosticProjectionVersion,{credential:env.OPENAI_API_KEY})};}
-        const observedAt=clock();observe(scope,'body-observed',{...fields,data,...(finance?{billingValidated:finance.billingValidated,billingFailureCode:finance.billingFailureCode,financialInspection:finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION,diagnosticProjection:finance.diagnosticProjection}:{})});if(controller.signal.aborted)fail();
+        if(financialValidator){const inspection=financialValidator(data);finance={billingValidated:inspection.validated,billingFailureCode:inspection.validated?null:'unsupported-financial-scope',usage:inspection.validated?validateFinancialResponse(data,{model:payload.model,maxOutputTokens:payload.max_output_tokens,tools:[],maxToolCalls:0},scope.inputBound,financialContractVersion):null,inspection,diagnosticProjection:projectFinancialDiagnostics(data,diagnosticProjectionVersion,{credential:env.OPENAI_API_KEY})};}
+        const observedAt=clock();observe(scope,'body-observed',{...fields,data,...(finance?{billingValidated:finance.billingValidated,billingFailureCode:finance.billingFailureCode,financialInspection:finance.inspection,financialContractVersion,diagnosticProjection:finance.diagnosticProjection}:{})});if(controller.signal.aborted)fail();
         return { data, providerRequestId, finance, observedAt };
       };
       return await Promise.race([receive(), timeout]);
@@ -144,8 +144,9 @@ export function createOpenAITransport({ fetchImpl = globalThis.fetch, env = proc
           held.inputBound !== bound || held.outputBound !== request.maxOutputTokens || !uint(held.reservation) ||
           !request.reservation || held.id !== request.reservation.id) throw Error('Reservation does not cover request');
       consumed.add(certificate); // Consumed even if request is lost: never blindly retry.
-      const scope={requestId:held.id,kind:'generation',inputBound:bound};const result = await post(ENDPOINT,payload,request.signal,timeoutMs,scope,data=>inspectFinancialResponse(data,request,bound));
-      let parsed;try{parsed=parseResponse(result.data,request,bound,result.providerRequestId);}catch{observe(scope,'schema-rejected',{data:result.data,providerRequestId:result.providerRequestId,billingValidated:result.finance.billingValidated,billingFailureCode:result.finance.billingFailureCode,financialInspection:result.finance.inspection,financialContractVersion:FINANCIAL_CONTRACT_VERSION,diagnosticProjection:result.finance.diagnosticProjection});if(result.finance.billingValidated)return rejectedFinancialResult(result.finance.usage,{providerRequestId:result.providerRequestId},result.observedAt);fail();}observe(scope,'response-accepted',{data:result.data,providerRequestId:result.providerRequestId});return parsed;
+      const financialRequest=financialContractVersion===4?{...request,tools:payload.tools}:request;
+      const scope={requestId:held.id,kind:'generation',inputBound:bound};const result = await post(ENDPOINT,payload,request.signal,timeoutMs,scope,data=>inspectFinancialResponse(data,financialRequest,bound,financialContractVersion));
+      let parsed;try{parsed=parseResponse(result.data,financialRequest,bound,result.providerRequestId,financialContractVersion);}catch{observe(scope,'schema-rejected',{data:result.data,providerRequestId:result.providerRequestId,billingValidated:result.finance.billingValidated,billingFailureCode:result.finance.billingFailureCode,financialInspection:result.finance.inspection,financialContractVersion,diagnosticProjection:result.finance.diagnosticProjection});if(result.finance.billingValidated)return rejectedFinancialResult(result.finance.usage,{providerRequestId:result.providerRequestId},result.observedAt);fail();}observe(scope,'response-accepted',{data:result.data,providerRequestId:result.providerRequestId});return parsed;
     }
   };
 }
