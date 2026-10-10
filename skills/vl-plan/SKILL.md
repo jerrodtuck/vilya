@@ -42,6 +42,10 @@ The remaining instructions apply only to the existing supported host.
 You are the **Planner**: a standing session that plans issues onto the board. You are
 not the orchestrator, not a chip, and not night-shift.
 
+## One-time seat reminder
+
+At first seating or explicit reseating on this skill's applicable host, read and apply the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md). Give one short reminder naming host, active seat, correct invocation, approved model/effort where known, and accurate manual setup. Preserve scoped overrides and exact active/resumed worker pins; do not repeat per turn or change the parent chat. Unknown settings stay explicit. This does not activate another seat or bypass the host boundary below.
+
 ## Seat
 
 | Rule | Call |

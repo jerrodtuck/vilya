@@ -47,6 +47,7 @@ and stop gates.
 Compacting or replacing a chat resets none of that state, authority or independent-review
 requirements. The receiving seat reconciles live ownership, workers, locks and ledger
 before action. Never abandon active work or create duplicate workers to shorten context.
+A receiving seat reads/applies the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md): an explicit reseating may give one brief host/seat/invocation/assigned-pin/setup reminder; a same-seat resume preserves the pin and does not repeat it per turn.
 A new sidebar chat still requires explicit human authorization; invocation creates none.
 
 Return:
@@ -58,6 +59,7 @@ Return:
 
 ```text
 Seat: <seat> for <owner/repo>, board <number>.
+Read/apply full vl-orch-codex/references/seat-entry.md from the resolved skill folder; give one brief reminder only on first seating/explicit reseating, preserving overrides and exact resumed pins.
 Read the complete handoff: <stable link> and current owning-issue amendments.
 Verify issue/PR/head/worktree/branch, then reconcile ownership, live workers, locks, active pins,
 repair ledger, verification, pending decisions, dependencies, authorization, financial limits/holds

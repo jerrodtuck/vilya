@@ -5,6 +5,7 @@ export function CodexOrchestration() {
   return <section id="codex-dispatch-path" data-host="codex">
     <h2>Codex desktop: plan → isolate → implement → verify</h2>
     <aside className="callout">
+      <p>At first seating or explicit reseating, expect one short host, seat, skill and setup reminder. Scoped overrides and active/resumed pins win; unknown settings stay explicit. Choose the approved model and reasoning in this chat’s model controls. A worker preserves its child pin without changing the parent chat. Same-seat resumes do not repeat the reminder.</p>
       <h3>Seat model: GPT-6.1 Sol · medium</h3>
       <p>Select Sol/medium in the Codex UI before invoking <code>$vl-orch-codex</code>. A skill cannot change the active chat&apos;s model or reasoning effort. The orchestrator can dispatch correctly pinned children for bounded phase work.</p>
     </aside>
