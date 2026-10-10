@@ -9,6 +9,14 @@ codex-prerequisites: "Repo config, issue and plan, git/GitHub access and managed
 
 # Start Feature (any stack)
 
+## Recognizable chat name
+
+At first seating/reseating, read and apply the shared
+[seat and task naming contract](../vl-handoff/references/seat-naming.md).
+Verify repo and actual role, preserve explicit human titles, and use supported
+exact-ID rename/readback or the exact manual fallback. Reconcile handoff ownership
+before canonical naming; titles grant no ownership or archival authority.
+
 ## Shared communication
 
 Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
