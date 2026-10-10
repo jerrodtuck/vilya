@@ -122,6 +122,14 @@ assert.deepEqual(readIssue(${JSON.stringify(repo)}, 69, ".", () => JSON.stringif
       assert.equal(result.status, 0, result.stderr);
       assert.equal(result.stdout, "");
       assert.equal(result.stderr, "");
+      for (const runnerArgs of [[], ["arbitrary-runner-argument"]]) {
+        const code = `const { requireOpen } = await import(${JSON.stringify(pathToFileURL(script).href)}); requireOpen(${JSON.stringify(valid)}, ${JSON.stringify(repo)}, 69);`;
+        const evalResult = spawnSync(process.execPath, ["--input-type=module", "-e", code, ...runnerArgs], { cwd, encoding: "utf8", windowsHide: true });
+        assert.equal(evalResult.error, undefined);
+        assert.equal(evalResult.status, 0, evalResult.stderr);
+        assert.equal(evalResult.stdout, "");
+        assert.equal(evalResult.stderr, "");
+      }
     }
   } finally { rmSync(cwd, { recursive: true, force: true }); }
 });
