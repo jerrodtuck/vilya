@@ -2,6 +2,23 @@
 
 Append-only ADR log — newest at top, `## YYYY-MM-DD — Title`. Grep by topic or issue #; captured via /vl-adr.
 
+## 2026-10-09 — General Python crucible with feature boundaries (#376)
+
+**Decision:** Add `vl-crucible-python` as the general Python variant. Retain ML, FastAPI and Django variants for their specialized concerns. The operator approved this choice on 2026-10-09 in the Vilya architect chat.
+
+**Options considered:**
+1. Reuse the ML variant everywhere — lowest delivery cost, but imports notebook, training and data-science assumptions into unrelated Python projects.
+2. **Add a general Python variant** — one additional skill and its delivery/routing checks; reuses the established review method. Chosen.
+3. Extract a generic inheritance/composition system across all variants — larger migration and loading complexity without evidence that this gap requires it.
+
+**Why:** The inspected master has three specialized Python variants and no generic one. Existing open/closed issue searches found their original #160 family and #175, not a general variant. Feature ownership and explicit import boundaries address this gap without introducing framework conventions.
+
+**Consequences:** #376 defines the architecture and delivery scope. The new variant preserves the byte-identical core prompt and severity/reporting contract from [#175](https://github.com/jerrodtuck/vilya/issues/175), with general Python examples elsewhere. Entrypoints import slices; slices import shared primitives. Cross-slice internal imports and cycles are prohibited. Necessary public-contract collaboration requires justification. Packaging, validation and enforcement choices remain proportional to the project; specialized reviews remain selectable, one variant per repo. Existing brownfield rules apply.
+
+Vilya orch owns planning, implementation and normal independent review. One bounded unit covers the skill and affected delivery/documentation. No new inheritance system, extra writing-audit agent, paid call or merge authorization.
+
+**Evidence:** [#376](https://github.com/jerrodtuck/vilya/issues/376); inspected master `1b8e15f1b58fd2b419656c1f3dc79fc3c7454fce`; prior entry `2026-07-18 — Crucible variants: narrow the shared-core claim to core prompt + severity contract; stack-adapt the straggler examples (#175)`. [PyPA](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/) supports packaging distinctions; [import-linter](https://import-linter.readthedocs.io/en/stable/contract_types/) documents boundary enforcement. The VSA policy is Vilya design intent; implementation and live adoption are unverified.
+
 ## 2026-10-09 — Interpret ASD-STE100 Issue 9 for Vilya planning (#373)
 
 **Decision:** Apply the complete Issue 9 rules and dictionary to the planning prose already approved under #341. Use one short Vilya interpretation and consult the source where needed. The operator requested this architect interpretation on 2026-10-09. It clarifies [the full-STE decision](https://github.com/jerrodtuck/vilya/issues/341#issuecomment-6092397095) and [implementation authority](https://github.com/jerrodtuck/vilya/issues/341#issuecomment-6092446002).

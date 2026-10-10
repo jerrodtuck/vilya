@@ -25,6 +25,7 @@ describe("levelOf", () => {
 
 describe("categorize", () => {
   it("buckets vl-* slugs into review / autonomous / recall / process", () => {
+    expect(categorize("vl-crucible-python")).toBe("review");
     expect(categorize("vl-crucible-nextjs")).toBe("review");
     expect(categorize("vl-night-shift")).toBe("autonomous");
     expect(categorize("vl-plan")).toBe("autonomous");
@@ -44,6 +45,7 @@ describe("stackOf", () => {
     expect(stackOf("vl-crucible-nextjs")).toBe("Next.js / React");
     expect(stackOf("vl-crucible-fastapi")).toBe("FastAPI / Python");
     expect(stackOf("vl-crucible-django")).toBe("Django / Python");
+    expect(stackOf("vl-crucible-python")).toBe("General Python");
     expect(stackOf("vl-crucible-ml")).toBe("Python ML / Data");
   });
 

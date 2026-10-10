@@ -227,10 +227,12 @@ cat "$root/docs/project-tracking/GITHUB-PROJECTS.md"`}</pre>
         <b>Pick your stack.</b> Blazor/.NET repo → install{" "}
         <code>vl-crucible-blazor</code>, test command <code>dotnet test</code>.
         Next.js repo → <code>vl-crucible-nextjs</code>, test command{" "}
-        <code>npm test &amp;&amp; npm run build</code>. Python repo →{" "}
-        <code>vl-crucible-fastapi</code> / <code>vl-crucible-django</code> /{" "}
-        <code>vl-crucible-ml</code>, test command <code>pytest</code>. Variant and
-        test command both go in the repo&apos;s config block.
+        <code>npm test &amp;&amp; npm run build</code>. General Python packages,
+        CLI tools, automation and jobs → <code>vl-crucible-python</code>.
+        FastAPI, Django and ML projects → their matching{" "}
+        <code>vl-crucible-fastapi</code>, <code>vl-crucible-django</code> or{" "}
+        <code>vl-crucible-ml</code>. Select one variant per repo. Record it and the
+        actual test command (for example <code>pytest</code>) in the config block.
       </div>
 
       <p>Codex model routing is in the host-specific setup above; the following model/Planner instructions apply to Claude Code and Cursor.</p>
