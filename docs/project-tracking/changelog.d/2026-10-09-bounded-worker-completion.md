@@ -1,0 +1,1 @@
+#368 defines accepted worker completion and compact result evidence. Related review and repairs retain the existing worker, pin and ledger until acceptance. Completed workers receive no unrelated assignments; needed environments and ownership survive retirement. Instruction delivery adds no disposal engine or context-release claim.
