@@ -197,6 +197,9 @@ files and exact pins; earlier hard stops apply immediately.
 
 Include each item in the actual dispatch prompt, even with inherited history:
 
+- Name full resolved resource paths and require reading the shared contracts; never replace
+  required sources with optional links or summaries.
+
 - Require the worker to read/apply full vl-adhd and vl-present from the resolved complete folders; Codex uses $vl-adhd / $vl-present or explicit source fallback. Preserve the full brief, literals, evidence, authority and stops.
 
 - Seat delivery: include the full Seat resolution and durable decision requests contract above: record questions on the issue at handoff, treat queued sends as unconfirmed, and re-read answers before escalation or ending work.
@@ -325,7 +328,12 @@ dispatch without one is a chip nobody is listening for.
 
 ## 2. The self-contained brief (the `prompt`)
 
-The chip has **zero** shared context, so the brief must stand alone. Include:
+The chip has **zero** shared context, so the bounded brief must stand alone. Use exact
+trusted issue/comment references and resolved full resource paths with required reading.
+Carry task-specific facts, authorization, gates and stops; do not paste full conversation
+history or repeatedly duplicate whole contracts and plans. Include:
+
+- Read and apply the full [shared efficient coordination and checkpoint contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356). Continue useful related repair work; recommend a fresh chat only at a safe checkpoint with a complete handoff. Replacement resets no gate, lock, pin, authority or repair count.
 
 - Require the worker to read/apply full vl-adhd and vl-present from their resolved complete folders; identify host, use supported /vl-adhd / /vl-present on Claude Code/Cursor or explicit source fallback. Preserve the full brief, literals, evidence, authority and stops.
 
@@ -335,8 +343,9 @@ The chip has **zero** shared context, so the brief must stand alone. Include:
 
 - **Repo + path** and the default branch.
 - **Issue #<N>** with its full goal + acceptance — do not make the chip re-derive it.
-- **Plan artifacts** — if the issue is `plan:ready`, paste the kickoff + verify plan (and any
-  locked fork decisions) from the issue into the brief so the chip does not invent a second plan.
+- **Plan artifacts** — if the issue is `plan:ready`, cite the exact kickoff + verify-plan
+  comments and locked decisions as required reading, then state the task-specific outcome,
+  ownership, constraints and gates so the chip does not invent a second plan.
   If the operator skipped Planner, the issue body + acceptance still stand; say so explicitly.
 - **Owning vertical slice** to work in; don't invent layer-cake / dumping-ground folders.
 - **Verify gate**: the repo's **Test command** + the routing (`tests-only` / `local-smoke` /

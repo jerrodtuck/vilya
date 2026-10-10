@@ -52,6 +52,62 @@ planning/review phase at its assigned tier, review/record its output and preserv
 implementation files, ownership and existing worker pins. Mid-chip changes require
 an explicit recorded decision within operator authority; real forks need operator choice.
 
+## Efficient coordination (#356)
+
+Do not pass full conversation history by default. Use a compact self-contained brief with
+goal and acceptance, scope and exclusions, ownership, dependencies, exact issue/comment references,
+immutable base and original-start SHAs, absolute checkout and branch, trusted authorization,
+exact model pin, gates, stops, and required contract paths. Resolve missing,
+stale, or inaccessible sources before action. Reuse a viable worker for repair when it
+preserves the correct checkout, pin, and repair ledger. Before replacing one, persist a
+handoff with the current head/diff, unresolved findings, attempts, evidence, ownership,
+and next targeted check. Replacement never resets repair counts or required gates.
+
+Initial independent review covers the full change and affected boundaries at an exact
+head. After repair, review the delta from the previously reviewed head plus affected
+boundaries and current amendments. Retain initial evidence and record both heads, the
+delta, findings, boundary coverage, and gate provenance. If initial coverage was
+insufficient, obtain it before relying on delta review. Self-report is never approval.
+
+Run each required gate once at the applicable head. Repeat or broaden only when changed
+source affects it, it failed, or unresolved risk warrants it; record the reason, command,
+head, and outcome. Batch independent reads, search before broad reads, bound excerpts and
+logs, and avoid unchanged reads. Use quiet bounded waits with backoff while preserving
+active-task persistence. These practices never waive identity/base validation, smoke,
+crucible, independent review, repair stops, or operator merge authority.
+
+Evaluate context strategy separately from model routing. Hold the fixture, phase models,
+efforts, gates, and rubric constant while comparing supported strategies such as full
+history, compact brief, and reused-worker repair. Record cached input, uncached input,
+cache-write input, output and reasoning counters where exposed; also record handoff rounds,
+repair attempts, elapsed time, acceptance, and cost per accepted change. Missing usage is
+unavailable, not zero. Separate subscription usage from dated API-equivalent estimates.
+Provider screenshots are historical evidence only unless their exact build, settings,
+date, and metering basis are verified. No paid run starts without current authorization.
+
+## Fresh-chat checkpoint (#356)
+
+At issue or PR completion, a settled architecture decision, or before unrelated work,
+assess whether this chat's history still helps the next task. Continue related work and
+repairs when continuity is useful. Recommend a fresh chat when the next task mainly needs
+a concise durable handoff and the remaining history is stale or unrelated. Concrete signals
+include redundant investigations, repeated correction of old decisions, bulky obsolete
+logs, or pressure reported by an exposed host indicator. Compaction alone is not failure.
+Do not infer a token percentage or impose a universal timer, turn count, or context limit.
+
+Before replacement, persist the exact goal and decisions; issue, PR, head, worktree and
+branch; ownership, active pins and live workers; repair ledger and verification; pending
+decisions, authorization and stops. Check the handoff for completeness. Replacement or
+compaction never resets gates, locks, authority, review independence or repair counts.
+An orchestrator replacement reconciles repo and board ownership, live workers and the
+dispatch lock before acting. Never abandon active work or create duplicate workers merely
+to shorten context. New sidebar chats still require explicit human authorization.
+
+Report the checkpoint briefly: `continue` or `recommend fresh chat`, concrete reason,
+handoff link and unresolved work. A skill cannot measure inaccessible context, force
+compaction or change the active chat model. Preserve useful autonomous progress while an
+optional reseat is pending.
+
 ## Repair ledger and stop
 
 Initial detection/reproduction is not a repair attempt. One attempt is a documented
@@ -121,6 +177,14 @@ and render tests validate instruction delivery, not runtime routing or full #329
 | Explicit Sol/high override only for issue A | Honor only A's scope; default Sol/medium for new issue B; preserve all active/resumed pins |
 | Usage cannot be observed | Record unavailable, not zero or inferred savings |
 | Meaningful targeted pass resolves defect; later regression occurs | Close entry on pass and link prior history for later regression |
+| Same model and fixture, different context strategy | Compare acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost; do not attribute the result to model routing |
+| Repair needs the same checkout and pin | Reuse the viable worker and ledger; replace only after a durable handoff, without resetting attempts |
+| Required gate passed and source is unchanged | Reuse the exact-head evidence; rerun only for failure, affected changes or unresolved risk |
+| Clean issue/PR completion and the next task is unrelated | Recommend a fresh chat with a complete durable handoff and unresolved work |
+| Long active repair still benefits from current evidence | Continue; length alone does not justify replacement |
+| Topic changes after a complete handoff | Recommend a fresh chat; do not create it without explicit authorization |
+| Context usage is not exposed | Record unknown; do not invent a percentage, timer or threshold |
+| Replacement resumes an unresolved defect | Reconcile ownership, live workers, dispatch lock and ledger before action; reset nothing |
 
 ## Installed update route
 

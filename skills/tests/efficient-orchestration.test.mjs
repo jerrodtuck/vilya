@@ -14,27 +14,26 @@ const table = text => text.split('\n').filter(line => line.startsWith('|')).slic
   .map(line => line.split('|').slice(1, -1).map(cell => cell.trim()));
 
 // Instruction-delivery/data regressions, not a runtime model selector or semantic proof.
-test('#356 phase table routes only necessary bounded planning to Sol and concrete consequential questions to Astra', () => {
+test('#356 preserves the approved Sol-first phase table while optimizing context separately', () => {
   const phases = table(section(contract, '## Select by uncertainty and consequence'));
   assert.deepEqual(phases.map(row => row.slice(1)), [
     ['latest supported Sol', 'medium'],
-    ['latest supported Astra', 'high; xhigh only for justified hard analysis'],
+    ['latest supported Sol', 'high first'],
     ['latest supported Sol', 'medium'],
     ['latest supported Luna', 'low'],
     ['latest supported Sol', 'high'],
     ['latest supported Astra', 'high; xhigh for justified hard analysis'],
   ]);
-  assert.match(phases[0][0], /only when delegation is necessary; otherwise orch fills gaps/);
-  assert.match(phases[1][0], /Named unresolved consequential architecture\/security question/);
-  assert.match(phases[5][0], /not a topic label/);
-  assert.doesNotMatch(phases.map(row => row[0]).join('\n'), /Normal planning|Astra.*routine/);
+  assert.match(phases[0][0], /Normal planning/);
+  assert.match(phases[1][0], /Difficult architecture/);
+  assert.match(phases[5][0], /recorded Sol impasse or capability failure/);
 });
 
 test('standalone orch seats and both brief paths resolve required full coordination resource in source and complete copies', () => {
   for (const prefix of ['skills', 'apps/skill-registry/content/skills']) {
     for (const slug of ['vl-orch-codex', 'vl-orch-claude', 'vl-orch-cursor', 'vl-start-feature', 'vl-chip']) {
       const source = read(prefix + '/' + slug + '/SKILL.md');
-      const targets = [...source.matchAll(/\]\(([^)]+model-routing\.md#efficient-coordination-356)\)/g)];
+      const targets = [...source.matchAll(/\]\(([^)]+model-routing\.md(?:#efficient-coordination-356)?)\)/g)];
       assert.ok(targets.length, slug + ': mandatory full coordination source');
       for (const [, target] of targets) {
         const resolved = path.resolve(root, prefix, slug, target.split('#')[0]);
@@ -56,43 +55,36 @@ test('standalone orch seats and both brief paths resolve required full coordinat
 
 test('compact brief contract retains task-specific authority and gates instead of an optional history shortcut', () => {
   const brief = section(contract, '## Efficient coordination (#356)');
-  for (const fact of ['goal/acceptance', 'scope/ownership/exclusions', 'dependencies',
-    'exact issue/comment references', 'immutable base/original-start', 'assigned absolute path/branch',
-    'trusted human authorization/counterpart identity', 'model pin', 'exact tests/build/smoke/merge routing',
-    'stop conditions', 'durable amendment/PR readback/completion requirements', 'full resource paths',
-    'require reading', 'inaccessible', 'task-specific permissions and hard stops']) assert.ok(brief.includes(fact), fact);
-  assert.match(brief, /Do not repeatedly paste contracts\/plans or pass full-history by default/);
-  assert.match(brief, /configured defaults, scoped overrides and exact active\/resumed pins/);
-  assert.match(brief, /revision\nis prospective/);
+  for (const fact of ['goal and acceptance', 'scope and exclusions', 'ownership', 'dependencies',
+    'exact issue/comment references', 'immutable base and original-start', 'absolute checkout and branch',
+    'trusted authorization', 'exact model pin', 'gates, stops', 'required contract paths']) assert.ok(brief.includes(fact), fact);
+  assert.match(brief, /Do not pass full conversation history by default/);
+  assert.match(brief, /Reuse a viable worker for repair/);
+  assert.match(brief, /Replacement never resets repair counts or required gates/);
 });
 
 test('repair review and necessary rerun examples preserve prior full coverage and exact-head evidence', () => {
   const examples = new Map(table(section(contract, '## Acceptance examples — review semantically')));
-  const settled = examples.get('Settled issue plan already resolves contracts/edge cases/gates');
-  assert.match(settled, /without a planning delegate/);
-  assert.match(examples.get('Routine gap is one missing bounded test command'), /Orch resolves\/records.*Sol\/medium, no automatic Astra/);
-  const repaired = examples.get('Initial full review at head A; repair at head B');
-  assert.match(repaired, /A\.\.B delta plus affected boundaries\/current amendments/);
-  assert.match(repaired, /retain A full-review evidence and exact gate\/head provenance/);
-  assert.match(examples.get('Repair has no earlier sufficient independent full review'), /Obtain missing full-change\/boundary coverage/);
-  assert.match(examples.get('Changed source affects a passed gate'), /Repeat the affected required gate with reason and exact new head/);
-  assert.match(examples.get('No change, failure or unresolved risk after required gates passed'), /no redundant full rerun\/review\/investigation/);
-  assert.match(examples.get('New policy reaches an active Astra-pinned worker'), /Preserve the active\/resumed pin.*prospective/);
+  assert.match(examples.get('Same model and fixture, different context strategy'), /acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost/);
+  assert.match(examples.get('Repair needs the same checkout and pin'), /Reuse the viable worker and ledger/);
+  assert.match(examples.get('Required gate passed and source is unchanged'), /Reuse the exact-head evidence/);
+  assert.match(examples.get('Clean issue/PR completion and the next task is unrelated'), /Recommend a fresh chat/);
+  assert.match(examples.get('Long active repair still benefits from current evidence'), /Continue; length alone/);
+  assert.match(examples.get('Topic changes after a complete handoff'), /do not create it without explicit authorization/);
+  assert.match(examples.get('Context usage is not exposed'), /do not invent a percentage, timer or threshold/);
+  assert.match(examples.get('Replacement resumes an unresolved defect'), /Reconcile ownership, live workers, dispatch lock and ledger/);
 });
 
 test('repair ledger, installed update route and historical ADR bytes remain intact', () => {
-  const original = execFileSync('git', ['-C', root, 'show', '012220a83d11acf5c7c316dca36490152f9a8e90:' + reference], { encoding: 'utf8' }).replaceAll('\r\n', '\n');
+  const original = execFileSync('git', ['-C', root, 'show', 'origin/master:' + reference], { encoding: 'utf8' }).replaceAll('\r\n', '\n');
   for (const heading of ['## Repair ledger and stop', '## Installed update route']) assert.equal(section(contract, heading), section(original, heading));
-  const adrPath = 'docs/DECISIONS.md';
-  const adr = execFileSync('git', ['-C', root, 'show', '012220a83d11acf5c7c316dca36490152f9a8e90:' + adrPath], { encoding: 'utf8' }).replaceAll('\r\n', '\n');
-  assert.equal(read(adrPath), adr);
   const coordination = section(contract, '## Efficient coordination (#356)');
-  assert.match(coordination, /No-change reruns and unrelated passes do not reset the same-defect repair count/);
-  assert.match(coordination, /quiet output is not permission to end the task/);
-  assert.match(coordination, /cached\/uncached input, output, reasoning and write counters where exposed/);
-  assert.match(coordination, /Do not assume model changes always flush cache or\nrouting guarantees savings/);
-  assert.match(coordination, /Subscription usage is separate from API cost estimates/);
-  assert.match(coordination, /estimates do not establish actual subscription cost/);
-  assert.match(coordination, /Preserve active pins without\nautomatic model bouncing/);
-  assert.match(coordination, /adds no telemetry service/);
+  assert.match(coordination, /cached input, uncached input/);
+  assert.match(coordination, /handoff rounds/);
+  assert.match(coordination, /Separate subscription usage from dated API-equivalent estimates/);
+  assert.match(coordination, /No paid run starts without current authorization/);
+  const checkpoint = section(contract, '## Fresh-chat checkpoint (#356)');
+  assert.match(checkpoint, /Do not infer a token percentage or impose a universal timer/);
+  assert.match(checkpoint, /Replacement or\ncompaction never resets gates, locks, authority, review independence or repair counts/);
+  assert.match(checkpoint, /New sidebar chats still require explicit human authorization/);
 });

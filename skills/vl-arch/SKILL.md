@@ -154,6 +154,14 @@ the required ruling exists; elapsed time is not approval. This rule adds no glob
 session registry, monitor, or receipt API. Include it in worker briefs as well as
 seat handoffs; durable issue reporting works independently of chat delivery.
 
+## Fresh-chat checkpoint
+
+Read and apply the full [shared checkpoint contract](../vl-orch-codex/references/model-routing.md#fresh-chat-checkpoint-356).
+After settled direction or a topic change, assess whether history still helps. Continue
+useful related work. Recommend a fresh chat only with a complete durable handoff; never
+abandon active work, reset gates or authority, or create a sidebar chat without explicit
+human authorization.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a
