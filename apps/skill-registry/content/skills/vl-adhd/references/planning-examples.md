@@ -15,18 +15,19 @@ Before implementation, resolve the brief base and record the actual original sta
 
 ### After
 
-1. Before implementation, record the brief base SHA.
-2. Record the original-start SHA.
-3. Compare the base and original start for equality or ancestry.
-4. Do not use a later worker HEAD for the comparison.
-5. If the base is missing or diverged, stop for reconciliation.
-6. If Git history has missing commits or Git gives an error, stop for reconciliation.
+1. Before implementation, find the commit for the brief base with Git.
+2. Record the full immutable SHA of that commit.
+3. Record the full immutable original-start SHA.
+4. Compare the base and original start for equality or ancestry.
+5. Do not use a later worker HEAD for the comparison.
+6. If the base is missing or diverged, stop for reconciliation.
+7. If Git history has missing commits or Git gives an error, stop for reconciliation.
 
 ### Preservation matrix
 
 | Dimension | Before / after |
 | --- | --- |
-| Actor / action | Assigned worker identifies base, records original start and compares their relationship. |
+| Actor / action | Assigned worker finds the brief-base commit with Git before recording its full SHA, records original start and compares their relationship. |
 | Condition / order | Full SHA identification precedes implementation. Missing/diverged base, incomplete history and Git errors remain stops. |
 | Quantity / obligation | Two immutable SHAs remain necessary. Later worker HEAD remains excluded. |
 | Permission / uncertainty | No permission to guess missing history or continue through errors is added. |
@@ -219,7 +220,7 @@ These are original Vilya observations, not copied definitions or a dictionary ex
 | Entries / physical pages | Use and disposition |
 | --- | --- |
 | READ 350, WRITE 431, RECORD 353 | Acquiring written data, writing instructions and retaining evidence fit the verb senses. Commands and simple forms fit the entries. |
-| COMPARE 195, KEEP 293, STOP 390 | Finding differences, retaining state and ending work fit these verbs. |
+| FIND 250, COMPARE 195, KEEP 293, STOP 390 | Discovering the referenced commit, finding differences, retaining state and ending work fit these verbs. |
 | DO 222, USE 420, MAKE SURE 306 | Procedures, tool function and verification fit these commands. |
 | CHECK/check 188–189, TEST/test 401 | Checking and test procedures use nouns; general check/test verb use is not approved. |
 | BEFORE 175, AFTER 158, UNTIL 418 | Conjunction/preposition positions preserve prerequisite order and duration. |
