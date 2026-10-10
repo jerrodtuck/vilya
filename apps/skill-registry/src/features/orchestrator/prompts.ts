@@ -151,6 +151,9 @@ export const DISPATCH_PRIORITY_ORCH_DOCTRINE = [
   HANDOFF_DISPATCH_MARKER_DOCTRINE,
 ].join(" ");
 
+const ACCEPTED_COMPLETION_CONTRACT = "Read and apply the full shared accepted worker completion contract from the resolved complete vl-orch-codex/references/model-routing.md, section Accepted worker completion (#368); its host-neutral unit boundary does not import Codex tools or model tiers. A PR or completion signal is not accepted completion: the owning orch verifies the declared unit, required gates, independent review and amendments. Keep the viable worker for related repairs until acceptance with its pin and ledger. At acceptance save compact result/evidence references, exact head, obligations and needed environment/ownership/setup/lock state. Consume that result; inspect raw child logs only for a specific unresolved question. Completed workers receive no unrelated assignments; new unrelated work gets a new compact self-contained brief, not completed full history. Preserve needed environments and ownership; release only task-owned locks when lifecycle permits and no active/dependent work needs them. Retirement does not archive chats or delete worktrees. Use only the actual host lifecycle capabilities; claim no disposal, memory/context/subscription release or ongoing idle-history charges.";
+const COMPLETION_PARENT_LABELS = new Set([CLAUDE_ORCH_PROMPT_LABEL, CURSOR_ORCH_PROMPT_LABEL]);
+
 export const PROMPTS: PromptGroup[] = ([
   {
     node: "ORCH",
@@ -497,6 +500,6 @@ Before any brief, board mutation, checkout creation (including managed create_wo
   ...group,
   items: group.items.map(item => ({
     ...item,
-    text: item.text.startsWith("#!/") || item.text.startsWith("gh workflow run") || item.text.startsWith("# Agent:") ? item.text : item.text.replace(/(\n\n|$)/, "\n\nIdentify the actual host. Read and apply the full vl-adhd writing policy and vl-present presentation contract from their resolved complete skill folders. On Codex use $vl-adhd / $vl-present when discovered; on Claude Code/Cursor use supported /vl-adhd / /vl-present, or explicitly read/apply source. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.\n\n")
+    text: item.text.startsWith("#!/") || item.text.startsWith("gh workflow run") || item.text.startsWith("# Agent:") ? item.text : item.text.replace(/(\n\n|$)/, "\n\nIdentify the actual host. Read and apply the full vl-adhd writing policy and vl-present presentation contract from their resolved complete skill folders. On Codex use $vl-adhd / $vl-present when discovered; on Claude Code/Cursor use supported /vl-adhd / /vl-present, or explicitly read/apply source. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.\n\n") + (COMPLETION_PARENT_LABELS.has(item.label) ? "\n\n" + ACCEPTED_COMPLETION_CONTRACT : "")
   })),
 }));
