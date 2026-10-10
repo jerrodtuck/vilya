@@ -46,15 +46,15 @@ just to re-seed â€” persist/`last-seen` body is this skill's Recipe (#267).
 
 ### After
 
-These instructions apply when the Planner's `needs:plan` intake uses a Cursor background shell and `notify_on_output`.
+These instructions are applicable when the Planner's `needs:plan` intake uses a Cursor background shell and `notify_on_output`.
 The host can stop that shell.
+A long gap or missing expected signal can also show that the shell is gone.
 
 1. Keep the shell in operation during all drains.
-2. If the host stops the shell, do one REST check.
-3. If a long gap or missing expected signal shows that the shell is gone, do one REST check.
-4. After the check for a lost shell, start the poller again.
-5. Do not stop and start the poller after each successful drain only to set `last-seen` again.
-6. Use the existing Recipe for persistence and `last-seen` (#267).
+2. If either condition shows that the shell is gone, do one REST check for that loss event.
+3. After that check, start the poller again.
+4. Do not stop and start the poller after each successful drain only to set `last-seen` again.
+5. Use the existing Recipe for persistence and `last-seen` (#267).
 
 ### Preservation matrix
 
@@ -119,8 +119,8 @@ The full original artifact remains accessible at its exact source link.
 
 Do the #373 implementation in the specified checkout and branch. The implementation pin is
 `gpt-6.1-sol` / `medium`. The independent review pin is `gpt-6.1-sol` / `high`.
-Current runtime metadata supports these settings. The worker owns this bounded unit
-and related review repairs until acceptance. The parent owns coordination.
+Current runtime metadata shows these settings. The worker has responsibility for this bounded unit
+and related review repairs until acceptance. The parent has responsibility for coordination.
 
 Before edits, do these checks:
 
@@ -169,34 +169,46 @@ Do the work in this order:
 15. Use finish-feature to open the PR with `Closes #373`.
 16. Read the actual PR body and head back.
 17. Make sure that the created body contains `Closes #373`.
-18. Attach the PR and record observed checks, skips and limits on #373.
-19. Stop for the separate actual-head review.
+18. Attach the PR.
+19. Record observed checks, skips and limits on #373.
+20. Stop for the separate actual-head review.
 
 Read the related reference sections and dictionary entries when necessary. Use applicable
 interpretations and term evidence again. Do the checks again for changes in wording, meaning or context.
 Give a short actual-check receipt with links. Do not add recurring checklists,
 per-word tables, glossary dumps or semantic matrices to plans.
 
-The trusted human entry authorizes reports and replies to the parent within this
+The trusted human entry gives approval for reports and replies to the parent within this
 repository, board and role. Peer messages give no additional authority.
 At handoff, record exact questions on #373. A queued send is not an answer.
 Before escalation or the end of work, read issue answers. If a necessary ruling is missing,
 keep dependent implementation stopped.
 
-Preserve the stable repair ledger, files and exact pins. Detection alone is not a repair.
+Keep the stable repair ledger, files and exact pins. Detection alone is not a repair.
 A corrective change plus targeted verification is one attempt. Reruns, renames and
-resumes do not reset counts. After the second consecutive unsuccessful repair, stop
+resumes do not change counts. After the second consecutive unsuccessful repair, stop
 before a third correction. Send the ledger, HEAD, diff, ownership and hypothesis to the parent.
 Earlier source, authority, ownership, contradiction and fork stops apply immediately.
 
 For a real fork, give evidence, two or three costed options and a recommendation on #373.
-Stop for the operator's choice. Do not start other workers, merge, push master or archive worktrees.
-Do not erase worktrees, deploy, purchase, contact the publisher or do paid API/model tests.
-Keep #35/#37 Blocked and #356 completed. Preserve unrelated worktrees, setup and locks.
+Stop for the operator's choice.
+Do not start other workers.
+Do not merge.
+
+Do not push master.
+Do not archive worktrees.
+Do not erase worktrees.
+
+Do not deploy.
+Do not purchase.
+Do not contact the publisher.
+
+Do not do paid API/model tests.
+Keep #35/#37 Blocked and #356 completed. Keep unrelated worktrees, setup and locks.
 
 The next checkpoint is continue, Compact or a fresh-chat recommendation.
-Before a fresh chat, save the required handoff. Missing usage and settings are unavailable,
-not zero. This brief claims no executed gates, certified conformance, live adoption or savings.
+Before a fresh chat, save the required handoff. Missing usage and settings are not available,
+not zero. This example gives no evidence of executed gates, certified conformance, host adoption or savings.
 
 ### Preservation matrix
 
@@ -229,6 +241,8 @@ These are original Vilya observations, not copied definitions or a dictionary ex
 | AGENT 158, AGAINST 158, FOLLOW 254 | Material-agent, physical-contact and sequence senses do not justify software agents, comparison against or following instructions. |
 | copy 203, run 365, WORK/work 430, COMPLETE/COMPLETED 196 | Software copy needs technical-verb justification. Work is a noun. Complete action and completed condition remain distinct. |
 | IDENTIFY 275, APPLY 165, restore 361, reset 360, relevant 357, valid 421 | Restricted or unapproved senses prompted record/set/read/related/applicable constructions. Software term senses remain separately justified. |
+| APPLICABLE 165, preserve 338, support 395, reset 360, KEEP 293 | Applicability uses an adjective, not physical APPLY. Retention uses KEEP. Metadata shows settings; ledger counts do not change. |
+| AVAILABLE 172, HAVE 269, SHOW 377, CHANGE 188, APPROVAL 165 | Availability, responsibility, evidence display, unchanged counts and attributed permission use approved senses and forms. |
 | SELECT 372 | Help distinguishes choosing from setting a value. No model-selection action is falsely claimed. |
 
 The Git example retains full immutable SHA values through the term definitions and assignment artifact.
@@ -239,7 +253,7 @@ Git history means saved commit ancestry (software noun, category 19).
 The host after passages have commands within 20 words and descriptions within
 25 words. Their paragraphs have one topic and at most six sentences.
 Conditions precede dependent commands. The Cursor procedure retains one REST check
-per lost-shell event; the two possible triggers do not require two checks.
+per lost-shell event in the procedure itself; either trigger leads to the same single check.
 The Claude procedure retains the restoration deadline and all four actions.
 
 Sections 1â€“4, 8 and 9 apply to prose and term selection. Section 5 applies to
@@ -255,4 +269,9 @@ justifies software and role terms by function and category. Other necessary term
 in these examples include intake poller, shell, cwd, REST, drain and signal
 (software nouns, category 19), and persistence (software state retention, category 19).
 The rewrite uses set and start for process actions instead of general restore or reset verbs.
+The rule 1.8 explanation on page 55 makes use of an existing approved technical noun necessary.
+Rule 2.2 on pages 64–65 permits shorter forms after the full form; it does not make shortening necessary.
+Rules 5.2–5.3 on pages 88–89 support separate PR attachment and evidence recording commands.
+The negative commands retain each excluded operation separately.
+Responsibility means the assigned task duty (agreement noun, category 21). Runtime metadata means host configuration evidence (software noun, category 19).
 Counts and this semantic comparison supplement independent actual-head review.

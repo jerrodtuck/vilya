@@ -28,7 +28,7 @@ An absent feature makes its rule inapplicable to that passage, not optional wher
 | 1.5 | Assign necessary technical nouns to a permitted subject category. |
 | 1.6 | Restrict other vocabulary to justified technical nouns or their components. |
 | 1.7 | Keep a technical noun out of verb positions without separate verb justification. |
-| 1.8 | Prefer the established software or Vilya term for the concept. |
+| 1.8 | If the company, industry or subject field has an approved technical noun for the concept, use that noun. |
 | 1.9 | If no company, industry or subject-field term is approved, select a clear term of at most three words. |
 | 1.10 | Replace local slang with terms the intended reader can understand. |
 | 1.11 | Keep one technical name for each concept throughout the plan. |
@@ -36,7 +36,7 @@ An absent feature makes its rule inapplicable to that passage, not optional wher
 | 1.13 | Keep technical verbs out of noun positions without separate noun justification. |
 | 1.14 | Use American spelling unless an applicable directive requires another spelling. Keep literal spelling unchanged. |
 | 2.1 | Limit ordinary noun groups to three words. Explain longer relations with prepositions. |
-| 2.2 | Give approved company, industry or subject-field longer technical nouns in full first. Then explain a shorter name or justified related hyphens. |
+| 2.2 | Give approved company, industry or subject-field longer technical nouns in full first. A shorter name or justified related hyphens are optional methods of clarification after the full form. |
 | 3.1 | Consult the entry for each verb's permitted forms. |
 | 3.2 | Use commands, infinitives, simple present, simple past, simple future or adjectival past participles. |
 | 3.3 | Use a listed past participle as a condition adjective before a noun or after be, become or stay. |
