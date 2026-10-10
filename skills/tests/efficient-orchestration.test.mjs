@@ -68,23 +68,20 @@ test('repair review and necessary rerun examples preserve prior full coverage an
   assert.match(examples.get('Same model and fixture, different context strategy'), /acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost/);
   assert.match(examples.get('Repair needs the same checkout and pin'), /Reuse the viable worker and ledger/);
   assert.match(examples.get('Required gate passed and source is unchanged'), /Reuse the exact-head evidence/);
-  assert.match(examples.get('Clean issue/PR completion and the next task is unrelated'), /Recommend a fresh chat/);
-  assert.match(examples.get('Long active repair still benefits from current evidence'), /Continue; length alone/);
-  assert.match(examples.get('Topic changes after a complete handoff'), /do not create it without explicit authorization/);
-  assert.match(examples.get('Context usage is not exposed'), /do not invent a percentage, timer or threshold/);
-  assert.match(examples.get('Replacement resumes an unresolved defect'), /Reconcile ownership, live workers, dispatch lock and ledger/);
 });
 
 test('repair ledger, installed update route and historical ADR bytes remain intact', () => {
   const original = execFileSync('git', ['-C', root, 'show', 'origin/master:' + reference], { encoding: 'utf8' }).replaceAll('\r\n', '\n');
   for (const heading of ['## Repair ledger and stop', '## Installed update route']) assert.equal(section(contract, heading), section(original, heading));
   const coordination = section(contract, '## Efficient coordination (#356)');
-  assert.match(coordination, /cached input, uncached input/);
-  assert.match(coordination, /handoff rounds/);
-  assert.match(coordination, /Separate subscription usage from dated API-equivalent estimates/);
+  assert.match(coordination, /cached, uncached and cache-write input/);
+  assert.match(coordination, /Deduplicate cumulative and forked counters/);
+  assert.match(coordination, /tool and handoff\s+rounds/);
+  assert.match(coordination, /client\/build\/context\/compaction settings/);
+  assert.match(coordination, /full logs outside the transcript/);
+  assert.match(coordination, /Preserve raw records and provenance/);
+  assert.match(coordination, /provider\/runtime\/accounting\nchanges from workflow effects/);
+  assert.match(coordination, /Separate\s+subscription usage from dated API-equivalent estimates/);
   assert.match(coordination, /No paid run starts without current authorization/);
-  const checkpoint = section(contract, '## Fresh-chat checkpoint (#356)');
-  assert.match(checkpoint, /Do not infer a token percentage or impose a universal timer/);
-  assert.match(checkpoint, /Replacement or\ncompaction never resets gates, locks, authority, review independence or repair counts/);
-  assert.match(checkpoint, /New sidebar chats still require explicit human authorization/);
+  assert.match(coordination, /\[`\$vl-handoff` checkpoint\]\(\.\.\/\.\.\/vl-handoff\/SKILL\.md\)/);
 });

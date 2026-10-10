@@ -269,6 +269,12 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
   deliverable without checking that issue's status at write time — aspirational prose in an
   issue body or kickoff is a false record.
 
+## Handoff milestone
+
+After a settled plan choose continue, built-in Compact, or recommend fresh chat. Plans add
+another checkpoint only for an unusual safe stop. For fresh chat, save and link
+[`vl-handoff`](../vl-handoff/SKILL.md) first.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a

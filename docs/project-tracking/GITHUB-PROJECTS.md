@@ -57,13 +57,10 @@ or unresolved risk. Batch independent reads, bound output and use quiet waits wi
 without ending active work. Context experiments hold model, fixture, effort, gates and
 rubric constant and record cache/input/output/reasoning counters, handoffs, repairs,
 elapsed time, acceptance and cost per accepted change. Missing counters are unavailable.
-At issue/PR completion, a settled decision or topic change, report `continue` or
-`recommend fresh chat`, a concrete reason, handoff link and unresolved work. Continue
-related repairs when continuity helps. Before replacement, persist exact issue/PR/head/
-worktree/branch, ownership, live workers, pins, repair ledger, verification, decisions,
-authorization and stops. The replacement reconciles repo/board ownership and dispatch
-lock and resets nothing. No universal timer, turn count or token percentage applies;
-creating a new sidebar chat still requires explicit human authorization.
+At the end of a work unit choose `continue`, built-in Compact, or `recommend fresh chat`
+and explain briefly. Before fresh chat, apply `$vl-handoff` to save the complete handoff
+and ready-to-paste starter requiring live ownership, worker, lock and ledger
+reconciliation. Invocation creates no sidebar chat and resets nothing.
 Other operators retain configured defaults absent their own authorization. Record
 exact model IDs, effort, phase, rationale, date, capability evidence, authorization source and override scope on the
 issue and brief. Explicit choices win only within their scope: #330–#332 Astra

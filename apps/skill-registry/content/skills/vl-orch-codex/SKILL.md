@@ -150,7 +150,7 @@ SOLID; no feature logic in the shared kernel or cross-feature internal imports.
 
 ## Efficient orchestration (#356)
 
-Read and apply the full [shared efficient coordination and checkpoint contract](references/model-routing.md#efficient-coordination-356).
+Read and apply the full [shared efficient coordination contract](references/model-routing.md#efficient-coordination-356).
 Use bounded self-contained briefs instead of full conversation inheritance. A brief
 retains goal and acceptance, scope and exclusions, ownership, dependencies, immutable
 base/original-start SHAs, absolute checkout and branch, trusted authorization, model pin,
@@ -170,6 +170,9 @@ history, compact brief, and reused-worker repair only where the host supports th
 cached and uncached input, cache writes, output/reasoning counters, handoff rounds, repair
 count, elapsed time, acceptance, and cost per accepted change. Missing counters are
 unavailable, not zero. No paid run starts without its own current authorization and budget.
+
+At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
+explain briefly. For fresh chat, save and link [`$vl-handoff`](../vl-handoff/SKILL.md) first.
 
 ## Model policy
 

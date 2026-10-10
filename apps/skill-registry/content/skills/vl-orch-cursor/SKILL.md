@@ -102,6 +102,9 @@ Astra escalation requires a named unresolved consequential architecture/security
 and concrete uncertainty/risk rationale, not a topic label; xhigh also needs hard-analysis
 justification. Ordinary Codex initial review remains a separate Sol/high reviewer.
 
+At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
+explain briefly. For fresh chat, save and link [`/vl-handoff`](../vl-handoff/SKILL.md) first.
+
 ## Planner + standing plan:ready poller
 
 Reuse sufficient settled plans. For the operator who adopted #356, orch resolves

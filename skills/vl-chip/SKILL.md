@@ -333,7 +333,7 @@ trusted issue/comment references and resolved full resource paths with required 
 Carry task-specific facts, authorization, gates and stops; do not paste full conversation
 history or repeatedly duplicate whole contracts and plans. Include:
 
-- Read and apply the full [shared efficient coordination and checkpoint contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356). Continue useful related repair work; recommend a fresh chat only at a safe checkpoint with a complete handoff. Replacement resets no gate, lock, pin, authority or repair count.
+- Read and apply the full [shared efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356). At a completed worker unit choose continue, built-in Compact, or recommend fresh chat. For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
 
 - Require the worker to read/apply full vl-adhd and vl-present from their resolved complete folders; identify host, use supported /vl-adhd / /vl-present on Claude Code/Cursor or explicit source fallback. Preserve the full brief, literals, evidence, authority and stops.
 

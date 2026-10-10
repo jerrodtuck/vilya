@@ -142,6 +142,11 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
   invoke source of truth**.
 - Never invent a second ritual name (`/chip-cursor`).
 
+## Handoff milestone
+
+At a completed worker unit choose continue, built-in Compact, or recommend fresh chat.
+For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a

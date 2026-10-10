@@ -156,11 +156,8 @@ seat handoffs; durable issue reporting works independently of chat delivery.
 
 ## Fresh-chat checkpoint
 
-Read and apply the full [shared checkpoint contract](../vl-orch-codex/references/model-routing.md#fresh-chat-checkpoint-356).
-After settled direction or a topic change, assess whether history still helps. Continue
-useful related work. Recommend a fresh chat only with a complete durable handoff; never
-abandon active work, reset gates or authority, or create a sidebar chat without explicit
-human authorization.
+After settled direction or a topic change choose continue, built-in Compact, or recommend
+fresh chat. For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
 
 ## New-model recalibration
 

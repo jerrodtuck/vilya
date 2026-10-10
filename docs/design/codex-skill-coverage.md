@@ -1,6 +1,6 @@
 # Codex skill coverage
 
-**Created: 2026-10-03** · **Last updated: 2026-10-03**
+**Created: 2026-10-03** · **Last updated: 2026-10-09**
 Owning issue: [#330](https://github.com/jerrodtuck/vilya/issues/330).
 Parent: [#329](https://github.com/jerrodtuck/vilya/issues/329).
 
@@ -54,6 +54,7 @@ Source tests and registry gate results are recorded in the owning PR/issue.
 | [vl-crucible-nextjs](../../skills/vl-crucible-nextjs/SKILL.md) | shared-compatible | $vl-crucible-nextjs | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged nextjs architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-cursor-handoff](../../skills/vl-cursor-handoff/SKILL.md) | other-host-only | Not applicable; assigned Codex worker brief | Cursor worker already rooted in its assigned worktree. | Cursor Worker A only; Codex workers use their self-contained vl-chip brief. | Reviewed; runtime pending; shared contract references |
 | [vl-finish-feature](../../skills/vl-finish-feature/SKILL.md) | codex-adapted | $vl-finish-feature | Assigned checkout, test toolchain, GitHub access and PR attachment tool. | Shared quality gates plus Codex PR attachment and durable worker reporting. | Reviewed; runtime pending; shared contract references |
+| [vl-handoff](../../skills/vl-handoff/SKILL.md) | shared-compatible | $vl-handoff | A safe work-unit boundary and a durable issue or PR where the complete checkpoint can be saved. | Shared KISS checkpoint chooses continue, built-in Compact, or a saved fresh-chat handoff without resetting authority or live state. | Reviewed; runtime pending; shared contract references |
 | [vl-history](../../skills/vl-history/SKILL.md) | shared-compatible | $vl-history | Repo config, git and authenticated GitHub read access. | Read-only issue and code history; no host lifecycle calls. | Reviewed; runtime pending; shared contract references |
 | [vl-merge-pr](../../skills/vl-merge-pr/SKILL.md) | codex-adapted | $vl-merge-pr | Codex orch seat, operator merge authorization, GitHub and attachment tools. | Codex orch verifies amendments/head/gates and preserves managed worktree lifecycle. | Reviewed; runtime pending; shared contract references |
 | [vl-night-shift](../../skills/vl-night-shift/SKILL.md) | unsupported-deferred | Not applicable; Codex unattended deferred | Existing supported unattended launcher; no Codex executor in this release. | Existing unattended behavior is preserved; a new Codex backend is deferred. | Reviewed; runtime pending; shared contract references |

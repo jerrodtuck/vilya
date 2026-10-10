@@ -7,3 +7,7 @@ defaults remain intact. Compact complete source-linked briefs, repair delta/boun
 with prior full-review evidence, exact-head provenance and justified gate repeats reduce
 redundant work without weakening authorization, preflight, smoke, review or repair stops.
 Reported usage attribution and savings remain unmeasured.
+
+`vl-handoff` packages the safe context checkpoint as an explicit reusable skill. It saves
+a complete durable handoff and ready-to-paste seat starter while preserving live ownership,
+locks, pins, repair counts, financial holds and review gates; invocation creates no chat.
