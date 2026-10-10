@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const fail = (message) => { throw new Error(message); };
@@ -72,9 +73,21 @@ export function readIssue(repo, number, cwd = process.cwd(), read = run) {
   return requireOpen(issue, repo, number);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+function isEntrypoint() {
+  if (!process.argv[1]) return false;
   try {
-    const [mode, repo, number, brief, originalStart] = process.argv.slice(2);
+    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    // Eval runners may supply non-file arguments; they do not identify this module as the CLI.
+    return false;
+  }
+}
+
+if (isEntrypoint()) {
+  try {
+    const args = process.argv.slice(2);
+    const [mode, repo, number, brief, originalStart] = args;
+    if ((mode === "issue" && args.length !== 3) || (mode === "base" && args.length !== 5)) fail("Use issue <owner/repo> <number> or base <owner/repo> <number> <brief-sha> <original-start-sha>");
     const result = mode === "issue" ? readIssue(repo, number) : mode === "base" ? checkBase(repo, number, brief, originalStart) : fail("Use issue <owner/repo> <number> or base <owner/repo> <number> <brief-sha> <original-start-sha>");
     process.stdout.write(JSON.stringify(result) + "\n");
   } catch (error) {
