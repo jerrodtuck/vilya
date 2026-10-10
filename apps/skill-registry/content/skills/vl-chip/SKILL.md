@@ -185,6 +185,8 @@ the amendment into the PR and verify it independently at the merge gate.
 
 ### Codex self-contained worker brief
 
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 Require the worker to read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
 before implementation, repair or resume, from the resolved canonical/installed complete
 folder. Include its routing, eligibility, independent-review and repair-ledger rules in
@@ -327,6 +329,8 @@ has no Monitor tool; that watcher *is* the equivalent. The monitor *is* the comp
 dispatch without one is a chip nobody is listening for.
 
 ## 2. The self-contained brief (the `prompt`)
+
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
 
 The chip has **zero** shared context, so the bounded brief must stand alone. Use exact
 trusted issue/comment references and resolved full resource paths with required reading.

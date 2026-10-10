@@ -210,6 +210,8 @@ unavailable usage is not zero. Token saving is a goal, not a guarantee or measur
 
 ## Dispatch and active-turn completion
 
+Read and apply the full [accepted worker completion contract](references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 Apply [vl-chip](../vl-chip/SKILL.md)'s Codex path for every implementation unit: one
 issue, branch, managed worktree and worker. Creating a subagent does not isolate files.
 Use an existing suitable attachment before creating a tree with an explicit starting
@@ -219,7 +221,7 @@ Discover current capabilities; if required tools are missing, report the limitat
 
 Native completion plus `wait_agent` / `list_agents` is the active-turn signal. Send
 amendments to an active worker with `send_message`; use `followup_task` to resume an idle
-child. Tool names here are dated examples, not a promise for every installation.
+child for related work within its pending unit. Tool names here are dated examples, not a promise for every installation.
 Use bounded waits and retain user-facing progress. Issues/PRs remain durable evidence.
 If the operator explicitly requested separate sidebar chats, app `wait_threads` and
 `send_message_to_thread` apply to their identifiers instead; do not create sidebar chats

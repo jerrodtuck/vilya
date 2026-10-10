@@ -131,6 +131,8 @@ If the repo isn't already known, detect it:
 
 ## Efficient orchestration (#356)
 
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 For the operator who adopted #356, reuse a sufficient settled issue plan without a
 planning delegate. Orch fills routine bounded gaps; delegate only a necessary bounded
 question. Read and apply the full [efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356)

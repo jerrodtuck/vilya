@@ -23,6 +23,8 @@ Explicit formats and fixed output contracts win; presentation grants no new auth
 
 ## Codex worker close-out
 
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 Use `$vl-finish-feature` or read/apply this source from the assigned absolute
 checkout. The ordered shared gates below still apply, including tests, fresh-base
 verification, mandatory stack crucible, fragment, routing and observed PR keyword.
