@@ -47,11 +47,10 @@ just to re-seed — persist/`last-seen` body is this skill's Recipe (#267).
 ### After
 
 These instructions are applicable when the Planner's `needs:plan` intake uses a Cursor background shell and `notify_on_output`.
-The host can stop that shell.
-A long gap or missing expected signal can also show that the shell is gone.
+Shell loss occurs when the host stops the shell or a long gap or missing expected signal shows shell loss.
 
 1. Keep the shell in operation during all drains.
-2. If one or both conditions occur, do only one REST check for that shell loss.
+2. If shell loss occurs, do only one REST check for that loss event.
 3. After that check, start the poller again.
 4. Do not stop and start the poller after each successful drain only to set `last-seen` again.
 5. Use the existing Recipe for persistence and `last-seen` (#267).
@@ -281,7 +280,7 @@ The rule 1.8 explanation on page 55 makes use of an existing approved technical 
 Rule 2.2 on pages 64-65 permits shorter forms after the full form; it does not make shortening necessary.
 Rules 5.2-5.3 on pages 88-89 support separate PR attachment and evidence recording commands.
 The negative commands retain each excluded operation separately.
-OCCUR 320 retains the alternative or joint loss conditions without two checks. ADD 155 increases task attachments; CONTAIN 201 and AGREE 159 retain inclusion and assignment consistency. IMMEDIATELY 276 retains the stop deadline.
+Cursor correction ordinal 3, post-planning allowance 1: OCCUR 320, WHEN 427, OR 323, SHOW 377, STOP 390, ONLY 321, IF 275 and DO 222 retain actual alternative loss triggers and one check. Their permitted functions, senses, forms and help fit these sentences. OR gives alternatives, not otherwise. Lowercase both on page 179 and introduction 145 is unapproved; GO 264 permits no gone form. Shell loss is a computer-process condition noun (category 19): the intake shell process has ended or is absent, as in the source contract. A gap or missing signal must show that condition; their mere occurrence is insufficient. The changed description has 20 words; the condition-first command has 13. The paragraph has two descriptive sentences. Check-before-restoration and successful-drain exclusions are unchanged. ADD 155 increases task attachments; CONTAIN 201 and AGREE 159 retain inclusion and assignment consistency. IMMEDIATELY 276 retains the stop deadline.
 Purchase means a transaction to acquire goods or services for payment; costs mean the financial or work expense of the alternatives (contract nouns, category 21). No approved dictionary entry accurately names those contract concepts.
 Git merge, Git push, worktree archival and deployment are computer-process nouns (category 19). Archival means saving a recoverable checkout snapshot before checkout removal. Deployment means releasing the application to a hosting environment. DO expresses the prohibited action without general technical verbs.
 PR attachment means the task record that links the created PR (software noun, category 19). ADD expresses increasing the task attachments. Corrective change, verification and detection are engineering-method nouns (category 7); the repair ledger gives their task-specific definitions.

@@ -144,6 +144,11 @@ test('real planning examples preserve protected host literals and keep delivery 
     assert.ok(section.includes('Condition / order'));
     assert.ok(section.includes('Quantity / obligation'));
     assert.ok(section.includes('Permission / uncertainty'));
+    if (title.startsWith('Cursor')) {
+      assert.match(after, /the host stops the shell or a long gap or missing expected signal shows shell loss/);
+      assert.equal((after.match(/do only one REST check/g) ?? []).length, 1);
+      assert.ok(after.indexOf('do only one REST check') < after.indexOf('After that check, start the poller again'));
+    }
   }
   const workerSection = cases.split('## Self-contained #373 worker brief\n')[1];
   const workerAfter = workerSection.split('### After\n')[1].split('### Preservation matrix\n')[0];
