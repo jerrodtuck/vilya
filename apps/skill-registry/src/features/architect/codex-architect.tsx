@@ -5,7 +5,9 @@ import type { PromptGroup } from "../../shared/ui/flow-map-types";
 
 export const CODEX_ARCHITECT: PromptGroup = {
   node: "ARCH", group: "Codex architect entry", c: "--arch",
-  items: [{ host: "codex", label: "Codex — Product Architect", skill: SKILL_SLUGS.architect, text: `Read and apply the full $vl-adhd writing policy and $vl-present presentation contract from their resolved complete skill folders, using supported Codex invocation or explicit source read/apply. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.
+  items: [{ host: "codex", label: "Codex — Product Architect", skill: SKILL_SLUGS.architect, text: `At first seating or explicit reseating, read/apply the full seat reminder contract in vl-orch-codex/references/seat-entry.md from the resolved complete skill folder. Give one short reminder naming detected host, active seat, correct host invocation, approved model/effort where known and concrete manual setup. Preserve scoped operator overrides and exact active/resumed worker pins. Do not repeat per turn, activate another seat or change a parent chat; state unknown settings honestly.
+
+Read and apply the full $vl-adhd writing policy and $vl-present presentation contract from their resolved complete skill folders, using supported Codex invocation or explicit source read/apply. Preserve complete facts, uncertainty, permissions, options/costs and stop/verification gates; fixed output contracts and explicit formats win. Loading these contracts does not activate a seat or expand authority.
 
 Before invoking $vl-arch, select GPT-6.1 Sol/high in the Codex UI. Skill invocation cannot change this active chat's model or reasoning effort. Keep this standing architect on Sol/high; Astra is a bounded escalation only after a recorded Sol impasse or capability failure.
 
@@ -24,6 +26,7 @@ export function CodexArchitect() {
   return <section className="panel" data-host="codex">
     <h2>Codex architect: direction and durable decisions</h2>
     <aside className="callout">
+      <p>At first seating or explicit reseating, expect one short host, seat, skill and setup reminder. Scoped overrides and active/resumed pins win; unknown settings stay explicit. Choose the approved model and reasoning in this chat’s model controls. Same-seat resumes do not repeat the reminder.</p>
       <h3>Seat model: GPT-6.1 Sol · high</h3>
       <p>Select Sol/high in the Codex UI before invoking <code>$vl-arch</code>. A skill supplies instructions; it cannot change the active chat&apos;s model or reasoning effort. Astra is a bounded escalation only after a recorded Sol impasse or capability failure.</p>
     </aside>
