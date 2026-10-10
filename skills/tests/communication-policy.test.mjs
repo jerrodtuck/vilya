@@ -145,6 +145,10 @@ test('real planning examples preserve protected host literals and keep delivery 
     assert.ok(section.includes('Quantity / obligation'));
     assert.ok(section.includes('Permission / uncertainty'));
   }
+  const workerSection = cases.split('## Self-contained #373 worker brief\n')[1];
+  const workerAfter = workerSection.split('### After\n')[1].split('### Preservation matrix\n')[0];
+  for (const field of ['C:\\Users\\jerro\\.codex\\worktrees\\373-full-ste-planning\\vilya', 'codex/373-full-ste-planning', '/root', '01a1234f-68d0-76a3-8c9f-043f089749db', '73572c3a3655115c27164018e8d386bccb508c1a']) assert.ok(workerAfter.includes(field), field);
+  new TextDecoder('utf-8', { fatal: true }).decode(fs.readFileSync(path.join(root, 'skills/vl-adhd/references/planning-examples.md')));
   for (const source of ['6092815687', '6092898857', 'd1f4ea9e7cd6e46b47aa9057209f99e78c0e9cfc4e27a5b07895b05c1a166431', 'codex/373-full-ste-planning', 'Closes #373']) assert.ok(cases.includes(source), source);
   assert.match(normalize(cases), /not instructions to execute these example tasks or a recurring planning template/);
   assert.ok(policy.includes('not recurring rule checklists') || policy.includes('Do not attach recurring rule checklists'));

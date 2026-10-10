@@ -51,7 +51,7 @@ The host can stop that shell.
 A long gap or missing expected signal can also show that the shell is gone.
 
 1. Keep the shell in operation during all drains.
-2. If either condition shows that the shell is gone, do one REST check for that loss event.
+2. If one or both conditions occur, do only one REST check for that shell loss.
 3. After that check, start the poller again.
 4. Do not stop and start the poller after each successful drain only to set `last-seen` again.
 5. Use the existing Recipe for persistence and `last-seen` (#267).
@@ -130,6 +130,13 @@ Before edits, do these checks:
 4. Make sure that checkout, branch, status and private setup agree with the assignment.
 5. Read all specified routing, seat-entry, chip, writing, presentation, crucible and finish contracts.
 
+| Assignment | Value |
+| --- | --- |
+| Checkout | `C:\Users\jerro\.codex\worktrees\373-full-ste-planning\vilya` |
+| Branch | `codex/373-full-ste-planning` |
+| Immutable base and original start | `73572c3a3655115c27164018e8d386bccb508c1a` |
+| Parent | `/root`, Codex orch, `jerrodtuck/vilya`, board `8`, chat `01a1234f-68d0-76a3-8c9f-043f089749db` |
+
 Use this unchanged Task data artifact for the settled scope, acceptance, source pin,
 ownership, exclusions, authority and stops:
 
@@ -157,7 +164,7 @@ Do the work in this order:
 3. Identify the eight recommendations separately.
 4. Give necessary technical terms their meaning, grammatical function and category.
 5. Add short links to the specified host and worker instructions.
-6. Update affected copied teaching and generated bundles.
+6. Change affected copied teaching and generated bundles.
 7. Make the bounded host and worker examples.
 8. Record actual dictionary and semantic checks for the examples.
 9. Keep the supplied PDF unchanged and outside public artifacts.
@@ -166,10 +173,10 @@ Do the work in this order:
 12. Do the specified tests, build, spacing scan, link and parity checks.
 13. Do the mandatory crucible review until its signal is `Ready`.
 14. Read #373 and #341 for amendments immediately before the PR.
-15. Use finish-feature to open the PR with `Closes #373`.
-16. Read the actual PR body and head back.
+15. Use finish-feature to make the PR with `Closes #373`.
+16. Read the actual PR body and head.
 17. Make sure that the created body contains `Closes #373`.
-18. Attach the PR.
+18. Add the PR attachment to the task.
 19. Record observed checks, skips and limits on #373.
 20. Stop for the separate actual-head review.
 
@@ -184,23 +191,23 @@ At handoff, record exact questions on #373. A queued send is not an answer.
 Before escalation or the end of work, read issue answers. If a necessary ruling is missing,
 keep dependent implementation stopped.
 
-Keep the stable repair ledger, files and exact pins. Detection alone is not a repair.
+Keep the stable repair ledger, files and exact pins. Detection without a corrective change is not a repair.
 A corrective change plus targeted verification is one attempt. Reruns, renames and
 resumes do not change counts. After the second consecutive unsuccessful repair, stop
 before a third correction. Send the ledger, HEAD, diff, ownership and hypothesis to the parent.
-Earlier source, authority, ownership, contradiction and fork stops apply immediately.
+Source, authority, ownership, contradiction and fork stops are immediately applicable.
 
-For a real fork, give evidence, two or three costed options and a recommendation on #373.
+For a real fork, give evidence, two or three alternatives with costs and a recommendation on #373.
 Stop for the operator's choice.
 Do not start other workers.
-Do not merge.
+Do not do a Git merge.
 
-Do not push master.
-Do not archive worktrees.
+Do not do a Git push to master.
+Do not do worktree archival.
 Do not erase worktrees.
 
-Do not deploy.
-Do not purchase.
+Do not do deployment.
+Do not make a purchase.
 Do not contact the publisher.
 
 Do not do paid API/model tests.
@@ -270,8 +277,13 @@ in these examples include intake poller, shell, cwd, REST, drain and signal
 (software nouns, category 19), and persistence (software state retention, category 19).
 The rewrite uses set and start for process actions instead of general restore or reset verbs.
 The rule 1.8 explanation on page 55 makes use of an existing approved technical noun necessary.
-Rule 2.2 on pages 64–65 permits shorter forms after the full form; it does not make shortening necessary.
-Rules 5.2–5.3 on pages 88–89 support separate PR attachment and evidence recording commands.
+Rule 2.2 on pages 64-65 permits shorter forms after the full form; it does not make shortening necessary.
+Rules 5.2-5.3 on pages 88-89 support separate PR attachment and evidence recording commands.
 The negative commands retain each excluded operation separately.
+OCCUR 320 retains the alternative or joint loss conditions without two checks. ADD 155 increases task attachments; CONTAIN 201 and AGREE 159 retain inclusion and assignment consistency. IMMEDIATELY 276 retains the stop deadline.
+Purchase means a transaction to acquire goods or services for payment; costs mean the financial or work expense of the alternatives (contract nouns, category 21). No approved dictionary entry accurately names those contract concepts.
+Git merge, Git push, worktree archival and deployment are computer-process nouns (category 19). Archival means saving a recoverable checkout snapshot before checkout removal. Deployment means releasing the application to a hosting environment. DO expresses the prohibited action without general technical verbs.
+PR attachment means the task record that links the created PR (software noun, category 19). ADD expresses increasing the task attachments. Corrective change, verification and detection are engineering-method nouns (category 7); the repair ledger gives their task-specific definitions.
+The protected Assignment artifact is repeated unchanged inside the After brief so that the brief identifies its checkout, branch and exact parent independently.
 Responsibility means the assigned task duty (agreement noun, category 21). Runtime metadata means host configuration evidence (software noun, category 19).
 Counts and this semantic comparison supplement independent actual-head review.
