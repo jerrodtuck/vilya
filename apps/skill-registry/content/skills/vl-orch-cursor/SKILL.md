@@ -27,6 +27,10 @@ Preserve facts, uncertainty, options/costs, permissions and stop/verification ga
 Explicit formats and fixed output contracts win; presentation grants no new authority.
 
 
+## One-time seat reminder
+
+At first seating or explicit reseating on this skill's applicable host, read and apply the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md). Give one short reminder naming host, active seat, correct invocation, approved model/effort where known, and accurate manual setup. Preserve scoped overrides and exact active/resumed worker pins; do not repeat per turn or change the parent chat. Unknown settings stay explicit. This does not activate another seat or bypass the host boundary below.
+
 ## Codex boundary — stop here
 
 Cursor orchestrator stays distinct; Codex uses vl-orch-codex.

@@ -1,0 +1,1 @@
+Seat entries and copied prompts now deliver one brief host-specific skill, approved model/effort and manual setup reminder at first seating or explicit reseating. Preserve overrides, unknown settings and active/resumed worker pins across Codex, Cursor and Claude Code. Closes #365.
