@@ -1,0 +1,1 @@
+The dispatch preflight CLI now executes through complete-folder junctions and symlinks. It rejects missing or extra CLI arguments with a nonzero STOP result while preserving safe imports and the existing issue/base checks. (#375)

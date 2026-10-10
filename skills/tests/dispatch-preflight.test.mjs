@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, symlinkSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { requireOpen, readIssue, referencesIssue, checkBase } from "../vl-chip/scripts/dispatch-preflight.mjs";
@@ -66,4 +67,61 @@ test("real Git equality, full-message hit, divergence, bounds and resumed worker
 test("CLI failure exits nonzero before emitting an accepted issue", () => {
   const result=spawnSync(process.execPath,[new URL("../vl-chip/scripts/dispatch-preflight.mjs",import.meta.url).pathname.replace(/^\/(\w:)/,"$1"),"issue","bad-repo","69"],{encoding:"utf8"});
   assert.equal(result.status,1);assert.equal(result.stdout,"");assert.match(result.stderr,/STOP/);
+});
+
+test("direct and linked-folder CLI execute identically and imports remain safe", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vilya-linked-preflight-"));
+  const skill = fileURLToPath(new URL("../vl-chip/", import.meta.url));
+  const linkedSkill = join(cwd, "installed-vl-chip");
+  const direct = join(skill, "scripts", "dispatch-preflight.mjs");
+  const linked = join(linkedSkill, "scripts", "dispatch-preflight.mjs");
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  const invoke = (script, args) => spawnSync(process.execPath, [script, ...args], { cwd, encoding: "utf8", windowsHide: true });
+  try {
+    // Junctions need no Windows symlink privilege; other hosts exercise a directory symlink.
+    symlinkSync(skill, linkedSkill, process.platform === "win32" ? "junction" : "dir");
+    assert.equal(realpathSync(linked), realpathSync(direct));
+    git("init");
+    git("-c", "user.name=Preflight Test", "-c", "user.email=test@example.invalid", "commit", "--allow-empty", "-m", "base");
+    const base = git("rev-parse", "HEAD");
+    const args = ["base", repo, "69", base, base];
+    const expected = { relation: "equal", base, originalStart: base, reviewed: 0 };
+    const directResult = invoke(direct, args);
+    const linkedResult = invoke(linked, args);
+    for (const result of [directResult, linkedResult]) {
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stderr, "");
+      assert.deepEqual(JSON.parse(result.stdout), expected);
+    }
+    assert.equal(linkedResult.stdout, directResult.stdout);
+    for (const invalid of [[], ["unknown"], ["issue"], ["issue", "bad-repo", "69"],
+      ["issue", repo, "69", "extra"], ["base", repo, "69", base],
+      ["base", repo, "69", base, base, "extra"], ["base", repo, "69", "HEAD", base]]) {
+      for (const script of [direct, linked]) {
+        const result = invoke(script, invalid);
+        assert.equal(result.error, undefined);
+        assert.equal(result.status, 1);
+        assert.equal(result.stdout, "");
+        assert.match(result.stderr, /^STOP: /);
+      }
+    }
+    // A real runner argv must not trigger the imported module's CLI guard.
+    const runner = join(cwd, "import-runner.mjs");
+    for (const script of [direct, linked]) {
+      writeFileSync(runner, `import { requireOpen, checkBase, referencesIssue, readIssue } from ${JSON.stringify(pathToFileURL(script).href)};
+import assert from "node:assert/strict";
+const issue = ${JSON.stringify(valid)};
+assert.equal(requireOpen(issue, ${JSON.stringify(repo)}, 69), issue);
+assert.equal(checkBase(${JSON.stringify(repo)}, 69, ${JSON.stringify(base)}, ${JSON.stringify(base)}).relation, "equal");
+assert.equal(referencesIssue("Fix #69", ${JSON.stringify(repo)}, 69), true);
+assert.deepEqual(readIssue(${JSON.stringify(repo)}, 69, ".", () => JSON.stringify(issue)), issue);
+`);
+      const result = invoke(runner, ["unknown"]);
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stdout, "");
+      assert.equal(result.stderr, "");
+    }
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
 });
