@@ -195,6 +195,7 @@ Keep the stable repair ledger, files and exact pins. Detection without a correct
 A corrective change plus targeted verification is one attempt. Reruns, renames and
 resumes do not change counts. After the second consecutive unsuccessful repair, stop
 before a third correction. Send the ledger, HEAD, diff, ownership and hypothesis to the parent.
+
 Source, authority, ownership, contradiction and fork stops are immediately applicable.
 
 For a real fork, give evidence, two or three alternatives with costs and a recommendation on #373.
