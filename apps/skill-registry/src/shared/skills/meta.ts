@@ -35,6 +35,7 @@ export function stackOf(slug: string): string {
   if (slug.endsWith("nextjs")) return "Next.js / React";
   if (slug.endsWith("fastapi")) return "FastAPI / Python";
   if (slug.endsWith("django")) return "Django / Python";
+  if (slug === "vl-crucible-python") return "General Python";
   if (slug.endsWith("-ml")) return "Python ML / Data"; // "-ml", not "ml": bare suffix would match slugs like *html
   return "any stack";
 }

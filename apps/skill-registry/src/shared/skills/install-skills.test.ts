@@ -61,6 +61,18 @@ for (const shell of ["ps1", "sh"] as const) {
       fs.writeFileSync(path.join(companion, "references/examples.md"), "reviewed update");
       expect(fs.readFileSync(path.join(f.user, ".agents/skills/vl-present/references/examples.md"), "utf8")).toBe("reviewed update");
     }, 30000);
+    it("discovers the complete general Python skill for Claude and Codex without registration", () => {
+      const f = fixture(shell);
+      const canonical = path.resolve("../../skills/vl-crucible-python");
+      const source = path.join(f.repo, "skills/vl-crucible-python");
+      fs.cpSync(canonical, source, { recursive: true });
+      f.run([flag("codex")]);
+      for (const hostRoot of [".claude/skills", ".agents/skills"]) {
+        const linked = path.join(f.user, hostRoot, "vl-crucible-python");
+        expect(fs.realpathSync(linked)).toBe(fs.realpathSync(source));
+        expect(fs.readFileSync(path.join(linked, "SKILL.md"))).toEqual(fs.readFileSync(path.join(canonical, "SKILL.md")));
+      }
+    }, 30000);
     it("refuses source overlap even through an ancestor directory alias", () => {
       const f = fixture(shell);
       expect(() => f.run([flag("target"), path.join(f.repo, "skills")])).toThrow();

@@ -5,7 +5,7 @@
 **Vilya is the Dev Loop system** — not a product like Anduin or NaryaCommand. It holds the
 canonical skills, the registry/flows site, the prompts, and the tracking template that every
 product repo copies. Built for **Claude Code + Cursor + Codex desktop**, with **per-stack crucible dialects**
-across frontend (Next.js, .NET/Blazor) and backend/Python (FastAPI, Django, ML) repos.
+across frontend (Next.js, .NET/Blazor) and backend/Python (general packages/CLI/jobs, FastAPI, Django, ML) repos.
 
 **Daytime is primary.** You orchestrate with skills; the board is the shared state. Night-shift
 runs that **same** chain unattended via GitHub Actions on each product repo.
@@ -25,6 +25,7 @@ vilya/
 │   ├── crucible-nextjs/        # review: same for feature-slice + server/client
 │   ├── crucible-fastapi/       # review: same, FastAPI dialect
 │   ├── crucible-django/        # review: same, Django dialect
+│   ├── crucible-python/        # review: general Python packages, CLI, automation/jobs
 │   ├── crucible-ml/            # review: same, Python ML/data dialect
 │   ├── planner/                # autonomous: drain needs:plan → plan:ready (Fable)
 │   └── night-shift/            # autonomous: daytime chain → opens PRs
@@ -51,6 +52,7 @@ See **HANDOFF.md** for the exact steps to bootstrap this in Claude Code. Live si
 - **Per-repo config is the only thing that varies** — each product you run the
   loop on gets its own `docs/project-tracking/GITHUB-PROJECTS.md` (board ids,
   shared-file rules, night-shift Actions topology).
+- **Python selection:** choose `vl-crucible-python` for general packages, CLI tools, automation and jobs; use the matching FastAPI, Django or ML variant for specialized projects. Select one variant per repo.
 - **Happy path:** `/start-feature` → implement → crucible → `/finish-feature` →
   `/merge-pr`. `/update-docs` is routing only.
 - **The registry app** reads `skills/` as its source of truth (via `SKILLS_DIR`)
