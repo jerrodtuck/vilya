@@ -210,3 +210,9 @@ Check that options/costs, approval and reasoning survive the rewrite. Confirm th
 the after version explains the same facts more clearly, without a stronger certainty
 claim or new permission. Matrices aid review; they are not proof. Keep any explicit
 operator format and the complete technical substance, even when the result is long.
+
+## Planning examples from existing host contracts (#373)
+
+The earlier hypothetical examples illustrate other-prose clarity defaults. Read the
+[actual host and worker source examples](planning-examples.md) for full-STE delivery evidence.
+Their detailed checks and preservation matrices are not recurring planning templates.

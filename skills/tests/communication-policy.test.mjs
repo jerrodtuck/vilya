@@ -85,10 +85,11 @@ test('policy preserves stable identity/credit and explicit precedence without ST
   assert.ok(policy.includes('codex-support: "shared-compatible"'));
   assert.ok(policy.includes('(MIT, © Ayoub Ghriss)'));
   assert.ok(policy.includes('https://github.com/ayghri/i-have-adhd'));
-  const rows = policy.split('## Five STE-inspired rules')[1].split('## Concise updates')[0].split('\n').filter(line => line.startsWith('|'));
-  assert.equal(rows.length, 7); // five chosen rules plus table header/separator
-  for (const rule of ['Short, complete sentences', 'Active voice', 'Consistent terms', 'Concrete instructions', 'Defined necessary jargon']) assert.equal(rows.filter(row => row.includes(rule)).length, 1);
-  for (const bound of ['Higher-priority instructions and explicit output contracts outrank', 'Explicit operator tone, depth or format preferences override', 'creates no new confirmation requirement', 'appearance alone does not prove conformance', 'Human semantic review is', 'HTTP 403']) assert.ok(normalize(policy).includes(bound));
+  const reference = read('skills/vl-adhd/references/ste-planning.md');
+  const expected = [14, 2, 7, 5, 5, 6, 3, 7, 4].flatMap((count, index) => Array.from({ length: count }, (_, rule) => `${index + 1}.${rule + 1}`));
+  assert.deepEqual([...reference.matchAll(/^\| (\d+\.\d+) \|/gm)].map(match => match[1]), expected);
+  assert.deepEqual([...reference.matchAll(/^\| (GR-\d) \|/gm)].map(match => match[1]), Array.from({ length: 8 }, (_, index) => `GR-${index + 1}`));
+  for (const bound of ['Higher-priority instructions and explicit output contracts outrank', 'Explicit operator tone, depth or format preferences override', 'creates no new confirmation requirement', 'appearance alone does not prove conformance', 'Human semantic review is', 'Reuse verified interpretations', 'Do not reload the full map or glossary for every plan', 'short receipt of actual checks']) assert.ok(normalize(policy).includes(bound));
   assert.ok(policy.includes('../vl-ask/SKILL.md#answer-format'));
   assert.doesNotMatch(policy, /Cap lists at 5|One topic at a time|under two\s+minutes|cut hedging adverbs|Scope — operator chat only/);
   for (const category of ['worker briefs', 'ADRs', 'specs', 'PR verification records']) assert.ok(normalize(policy).includes(category));
@@ -128,4 +129,23 @@ test('status preserves artifact type and issue identity without inventing a PR n
   // A matching numeric literal with a different artifact kind must be rejected.
   assert.throws(() => preserve(after.replace('Issue #742’s PR', 'PR #742')), { code: 'ERR_ASSERTION' });
   assert.equal(identities(after).filter(ref => ref.kind === 'pr').length, 0);
+});
+
+
+test('real planning examples preserve protected host literals and keep delivery evidence separate from routine plans', () => {
+  const cases = read('skills/vl-adhd/references/planning-examples.md');
+  for (const title of ['Codex — immutable base', 'Cursor — uncertain intake dependency', 'Claude Code — seat restoration']) {
+    const section = cases.split('## ' + title + '\n')[1]?.split('\n## ')[0];
+    assert.ok(section, title);
+    const before = section.split('### Before\n')[1].split('### After\n')[0];
+    const after = section.split('### After\n')[1].split('### Preservation matrix\n')[0];
+    assert.deepEqual([...new Set(literals(after))].sort(), [...new Set(literals(before))].sort(), title);
+    assert.ok(section.includes('Actor / action'));
+    assert.ok(section.includes('Condition / order'));
+    assert.ok(section.includes('Quantity / obligation'));
+    assert.ok(section.includes('Permission / uncertainty'));
+  }
+  for (const source of ['6092815687', '6092898857', 'd1f4ea9e7cd6e46b47aa9057209f99e78c0e9cfc4e27a5b07895b05c1a166431', 'codex/373-full-ste-planning', 'Closes #373']) assert.ok(cases.includes(source), source);
+  assert.match(normalize(cases), /not instructions to execute these example tasks or a recurring planning template/);
+  assert.ok(policy.includes('not recurring rule checklists') || policy.includes('Do not attach recurring rule checklists'));
 });
