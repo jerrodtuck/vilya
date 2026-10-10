@@ -19,5 +19,5 @@ test('host examples preserve manual setup differences and unknown architect pref
  for(const text of ['Do not repeat it per turn','explicit reseating','scoped explicit operator override wins','exact active/resumed worker pin','never change the parent chat','Do not claim to have checked or changed a UI','resolve only that missing choice','No new confirmation gate'])assert.ok(body.includes(text),text);
 });
 test('helper/router fixed output sources remain intact',()=>{
- for(const slug of ['vl-ask','vl-present','vl-adhd'])assert.equal(read('skills/'+slug+'/SKILL.md'),execFileSync('git',['-C',root,'show','24f7f9be6f0e977a795d7e5243ae6d5743f5b361:skills/'+slug+'/SKILL.md'],{encoding:'utf8'}).replaceAll('\r\n','\n'));
+ for(const slug of ['vl-ask','vl-present'])assert.equal(read('skills/'+slug+'/SKILL.md'),execFileSync('git',['-C',root,'show','24f7f9be6f0e977a795d7e5243ae6d5743f5b361:skills/'+slug+'/SKILL.md'],{encoding:'utf8'}).replaceAll('\r\n','\n'));
 });

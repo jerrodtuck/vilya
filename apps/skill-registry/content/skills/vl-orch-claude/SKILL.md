@@ -25,6 +25,12 @@ all authored prose, including complete briefs, ADRs, specs and PR evidence.
 Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
 Explicit formats and fixed output contracts win; presentation grants no new authority.
 
+For planning prose and worker instructions, apply
+[full STE and bounded brevity](../vl-adhd/SKILL.md#full-ste-for-planning-prose-373).
+Consult relevant references as needed and reuse still-valid checks. Record a short
+actual-check receipt in the existing plan review. Keep authority, stops and acceptance self-contained.
+If necessary checks are missing, stop before a readiness claim.
+
 
 ## One-time seat reminder
 

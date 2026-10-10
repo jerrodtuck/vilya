@@ -34,6 +34,12 @@ all authored prose, including complete briefs, ADRs, specs and PR evidence.
 Preserve facts, uncertainty, options/costs, permissions and stop/verification gates.
 Explicit formats and fixed output contracts win; presentation grants no new authority.
 
+For planning prose and worker instructions, apply
+[full STE and bounded brevity](../vl-adhd/SKILL.md#full-ste-for-planning-prose-373).
+Consult relevant references as needed and reuse still-valid checks. Record a short
+actual-check receipt in the existing plan review. Keep authority, stops and acceptance self-contained.
+If necessary checks are missing, stop before a readiness claim.
+
 
 ## Seat resolution and durable decision requests
 
@@ -205,6 +211,9 @@ a third correction and persist the ledger/HEAD/diff/ownership/hypothesis for orc
 Renames, no-change reruns, unrelated passes and resumes do not reset the count. Preserve
 files and exact pins; earlier hard stops apply immediately.
 
+Apply the shared full-STE planning policy to the actual worker instructions.
+Preserve all items below and require access to their unchanged source contracts.
+
 Include each item in the actual dispatch prompt, even with inherited history:
 
 - First worker entry/reseating: read/apply full ../vl-orch-codex/references/seat-entry.md from the resolved skill folder. Give one short host/worker/assigned-skill/exact-pin/manual-setup reminder. Preserve overrides and resumed pins; never switch the parent or repeat per turn.
@@ -343,6 +352,9 @@ dispatch without one is a chip nobody is listening for.
 Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
 
 Include the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md) in the worker entry. At first entry/reseating name detected host, worker, assigned skill/pin and accurate setup; preserve overrides/resumed pins, never switch the parent, and do not repeat per turn.
+
+Apply the shared full-STE planning policy to the actual worker instructions.
+Preserve the task facts and require access to unchanged source contracts.
 
 The chip has **zero** shared context, so the bounded brief must stand alone. Use exact
 trusted issue/comment references and resolved full resource paths with required reading.
