@@ -128,9 +128,10 @@ peer handoffs are record-only, never authority to jump priority or start work.
 Use [vl-start-feature](../vl-start-feature/SKILL.md)'s Codex path. You own `needs:plan`:
 read source and current issue evidence, write kickoff + verify plan + locked decisions,
 then remove `needs:plan` and set `plan:ready`. Existing settled plans are authoritative;
-do not re-plan. No standing Codex Planner seat. You may delegate a bounded read-only
-planning pass using the model policy below; review its evidence and publish the plan
-before dispatching implementation. Planning delegates never dispatch or implement.
+do not re-plan or automatically spawn a planning delegate. Orch fills routine bounded
+gaps; delegate only a necessary bounded question under the model policy below. Review
+its evidence and publish the plan before implementation dispatch. No standing Codex
+Planner seat. Planning delegates never dispatch or implement.
 
 Kickoff includes goal/acceptance, repo/default/base, owning slice and disjoint file
 ownership, dependencies, tests, merge routing (`tests-only` / `local-smoke` / `live-only`),
@@ -146,6 +147,32 @@ product board before dispatch. Status moves are best-effort when GraphQL is exha
 record status on the issue, do not hot-poll Projects. Keep new work on issues, one
 writer per shared tracker and one fragment per chip. Preserve VSA and outcome-oriented
 SOLID; no feature logic in the shared kernel or cross-feature internal imports.
+
+## Efficient orchestration (#356)
+
+Read and apply the full [shared efficient coordination contract](references/model-routing.md#efficient-coordination-356).
+Use bounded self-contained briefs instead of full conversation inheritance. A brief
+retains goal and acceptance, scope and exclusions, ownership, dependencies, immutable
+base/original-start SHAs, absolute checkout and branch, trusted authorization, model pin,
+exact gates and stops, and durable issue/comment references. Require workers to read the
+resolved complete contracts. Do not repeatedly paste whole plans or chat history.
+
+Reuse sufficient current evidence. Initial independent review covers the full change and
+affected boundaries at an exact head. After repair, review the delta plus affected
+boundaries and current amendments while retaining the initial review receipt. Record the
+reviewed and repaired heads and gate provenance. Run each required gate once; repeat only
+for changed source, a failure, or unresolved risk, and record why. Batch independent reads,
+bound excerpts and logs, and use quiet bounded waits with backoff. Quiet output never ends
+active work or weakens identity, base, repair-ledger, crucible, smoke, review, or merge gates.
+
+When evaluating context strategy, hold the model route and fixture constant. Compare full
+history, compact brief, and reused-worker repair only where the host supports them. Record
+cached and uncached input, cache writes, output/reasoning counters, handoff rounds, repair
+count, elapsed time, acceptance, and cost per accepted change. Missing counters are
+unavailable, not zero. No paid run starts without its own current authorization and budget.
+
+At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
+explain briefly. For fresh chat, save and link [`$vl-handoff`](../vl-handoff/SKILL.md) first.
 
 ## Model policy
 

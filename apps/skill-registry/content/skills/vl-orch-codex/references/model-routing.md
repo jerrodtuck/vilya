@@ -52,6 +52,49 @@ planning/review phase at its assigned tier, review/record its output and preserv
 implementation files, ownership and existing worker pins. Mid-chip changes require
 an explicit recorded decision within operator authority; real forks need operator choice.
 
+## Efficient coordination (#356)
+
+Do not pass full conversation history by default. Use a compact self-contained brief with
+goal and acceptance, scope and exclusions, ownership, dependencies, exact issue/comment references,
+immutable base and original-start SHAs, absolute checkout and branch, trusted authorization,
+exact model pin, gates, stops, and required contract paths. Resolve missing,
+stale, or inaccessible sources before action. Reuse a viable worker for repair when it
+preserves the correct checkout, pin, and repair ledger. Before replacing one, persist a
+handoff with the current head/diff, unresolved findings, attempts, evidence, ownership,
+and next targeted check. Replacement never resets repair counts or required gates.
+
+Initial independent review covers the full change and affected boundaries at an exact
+head. After repair, review the delta from the previously reviewed head plus affected
+boundaries and current amendments. Retain initial evidence and record both heads, the
+delta, findings, boundary coverage, and gate provenance. If initial coverage was
+insufficient, obtain it before relying on delta review. Self-report is never approval.
+
+Run each required gate once at the applicable head. Repeat or broaden only when changed
+source affects it, it failed, or unresolved risk warrants it; record the reason, command,
+head, and outcome. Batch independent reads, search before broad reads, bound excerpts and
+transcript logs, and avoid unchanged reads. Keep full logs outside the transcript; record
+their path and concise failure evidence. Use quiet bounded waits with backoff while preserving
+active-task persistence. These practices never waive identity/base validation, smoke,
+crucible, independent review, repair stops, or operator merge authority.
+
+Evaluate context strategy separately from model routing. Hold the fixture, phase models,
+efforts, gates, and rubric constant while comparing supported strategies such as full
+history, compact brief, and reused-worker repair. Record context strategy; exact trial date,
+model and effort; client/build/context/compaction settings; metering basis; tool and handoff
+rounds; repair attempts; reconstruction and cache effects; elapsed time; acceptance; and
+cost per accepted change. Record cached, uncached and cache-write input plus output and
+reasoning counters where exposed. Deduplicate cumulative and forked counters. Missing
+settings or usage are unavailable, not zero. Preserve raw records and provenance. Separate
+subscription usage from dated API-equivalent estimates and provider/runtime/accounting
+changes from workflow effects; do not compare unmatched conditions. Provider screenshots
+are historical evidence only unless their authenticity, build, settings, date and metering
+basis are verified. No paid run starts without current authorization.
+
+Use the reusable [`$vl-handoff` checkpoint](../../vl-handoff/SKILL.md) at safe milestones.
+It owns the continue/recommend-fresh decision, saved complete handoff and ready-to-paste
+starter contract. Invocation creates no chat and resets no gate, lock, pin, authority,
+review requirement or repair count.
+
 ## Repair ledger and stop
 
 Initial detection/reproduction is not a repair attempt. One attempt is a documented
@@ -121,6 +164,9 @@ and render tests validate instruction delivery, not runtime routing or full #329
 | Explicit Sol/high override only for issue A | Honor only A's scope; default Sol/medium for new issue B; preserve all active/resumed pins |
 | Usage cannot be observed | Record unavailable, not zero or inferred savings |
 | Meaningful targeted pass resolves defect; later regression occurs | Close entry on pass and link prior history for later regression |
+| Same model and fixture, different context strategy | Compare acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost; do not attribute the result to model routing |
+| Repair needs the same checkout and pin | Reuse the viable worker and ledger; replace only after a durable handoff, without resetting attempts |
+| Required gate passed and source is unchanged | Reuse the exact-head evidence; rerun only for failure, affected changes or unresolved risk |
 
 ## Installed update route
 

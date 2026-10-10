@@ -154,6 +154,11 @@ the required ruling exists; elapsed time is not approval. This rule adds no glob
 session registry, monitor, or receipt API. Include it in worker briefs as well as
 seat handoffs; durable issue reporting works independently of chat delivery.
 
+## Fresh-chat checkpoint
+
+After settled direction or a topic change choose continue, built-in Compact, or recommend
+fresh chat. For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a

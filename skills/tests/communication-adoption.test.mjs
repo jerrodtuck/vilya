@@ -10,7 +10,7 @@ const atBase=p=>execFileSync('git',['-C',root,'show','a015898e80898985d6e08a0938
 const catalog=fs.readdirSync(path.join(root,'skills')).filter(slug=>fs.existsSync(path.join(root,'skills',slug,'SKILL.md'))).sort();
 const adopters=catalog.filter(slug=>!['vl-adhd','vl-present'].includes(slug));
 test('every shipped skill accounts for full shared contracts without changing their sources',()=>{
- assert.equal(adopters.length,22);
+ assert.equal(adopters.length,23);
  for(const slug of adopters){const text=read('skills/'+slug+'/SKILL.md');assert.ok(text.search(/^# .+$/m)<text.indexOf('## Shared communication'),slug+' heading order');const adoption=text.split('## Shared communication')[1].split('\n## ')[0];for(const contract of ['../vl-adhd/SKILL.md','../vl-present/SKILL.md'])assert.ok(adoption.includes(contract),slug+contract);for(const phrase of ['Read and apply the full','all authored prose','permissions','stop/verification gates','Identify an unknown host'])assert.ok(adoption.includes(phrase),slug+phrase);}
  for(const slug of catalog){const text=read('skills/'+slug+'/SKILL.md'),parts=text.split('\n## New-model recalibration\n');assert.equal(parts.length,2,slug);for(const phrase of ['independent benchmark','lowest applicable proven seat','smallest matched fixture','operator-only','/evaluation'])assert.ok(parts[1].includes(phrase),slug+phrase);}
  for(const slug of ['vl-adhd','vl-present'])assert.equal(read('skills/'+slug+'/SKILL.md').split('\n## New-model recalibration\n')[0].replace(/\n+$/,'')+'\n',atBase('skills/'+slug+'/SKILL.md'));
@@ -35,7 +35,8 @@ test('ADR insertion preserves the full preamble and every historical byte',()=>{
 });
 test('only remaining coverage adoption statuses change while merged sibling rows stay exact',()=>{
  const base=atBase('docs/design/codex-skill-coverage.md'),current=read('docs/design/codex-skill-coverage.md');for(const slug of ['vl-adhd','vl-present'])assert.equal(current.split('\n').find(row=>row.startsWith('| ['+slug+']')),base.split('\n').find(row=>row.startsWith('| ['+slug+']')));
- assert.equal(current.replaceAll('Reviewed; runtime pending; shared contract references','Reviewed; runtime pending'),base);
+ const withoutHandoff=current.split('\n').filter(row=>!row.startsWith('| [vl-handoff]')).join('\n').replace('Last updated: 2026-10-09','Last updated: 2026-10-03');
+ assert.equal(withoutHandoff.replaceAll('Reviewed; runtime pending; shared contract references','Reviewed; runtime pending'),base);
 });
 
 test('complete generated folders preserve every regular resource byte and companion anchors',()=>{

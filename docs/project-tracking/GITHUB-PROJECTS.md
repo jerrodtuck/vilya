@@ -48,6 +48,19 @@ standing Codex architect on Sol/high in the UI; invoking a skill cannot change i
 chat model or reasoning effort. Read and apply the full
 [Codex routing and repair contract](../../skills/vl-orch-codex/references/model-routing.md)
 before selecting phases, dispatching, repairing or resuming.
+Issue #356 optimizes context without changing that route. Use bounded self-contained
+briefs with exact source references instead of full conversation history. Reuse viable
+workers for repair and preserve their ledgers. Initial review covers the full change;
+repair review covers the delta plus affected boundaries and current amendments. Run each
+required gate once at the applicable head, repeating only for affected changes, failure,
+or unresolved risk. Batch independent reads, bound output and use quiet waits with backoff
+without ending active work. Context experiments hold model, fixture, effort, gates and
+rubric constant and record cache/input/output/reasoning counters, handoffs, repairs,
+elapsed time, acceptance and cost per accepted change. Missing counters are unavailable.
+At the end of a work unit choose `continue`, built-in Compact, or `recommend fresh chat`
+and explain briefly. Before fresh chat, apply `$vl-handoff` to save the complete handoff
+and ready-to-paste starter requiring live ownership, worker, lock and ledger
+reconciliation. Invocation creates no sidebar chat and resets nothing.
 Other operators retain configured defaults absent their own authorization. Record
 exact model IDs, effort, phase, rationale, date, capability evidence, authorization source and override scope on the
 issue and brief. Explicit choices win only within their scope: #330–#332 Astra
