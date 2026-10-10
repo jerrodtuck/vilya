@@ -33,6 +33,14 @@ Cursor orchestrator stays distinct; Codex uses vl-orch-codex.
 Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
 The remaining instructions apply only to the existing supported host.
 
+## Recognizable chat name
+
+At first seating/reseating, read and apply the shared
+[seat and task naming contract](../vl-handoff/references/seat-naming.md).
+Verify repo and actual role, preserve explicit human titles, and use supported
+exact-ID rename/readback or the exact manual fallback. Reconcile handoff ownership
+before canonical naming; titles grant no ownership or archival authority.
+
 > Companions: [/vl-start-feature](../vl-start-feature/SKILL.md) (issue +
 > worktree + kickoff), [/vl-cursor-handoff](../vl-cursor-handoff/SKILL.md)
 > (Worker A **fallback** when not using Task chips),
@@ -66,7 +74,7 @@ restore the main clone with `move_agent_to_root` (cursor-app-control MCP) to the
 absolute path **before** the next orch action — board move, merge, prune, or kickoff. See
 [/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory post-merge return this closes (#303).
 
-**Chat title (optional, human scanning only):** Cursor chats may use `<repo-short>-orch` (same pattern as Claude Desktop standing seats) for easy scanning — there is **no** `ccd_session_mgmt` on Cursor; titles do not drive cross-session targeting.
+Use the shared naming contract for `<repo-short>-orch`; Cursor rename/readback must be verified or use the exact manual fallback.
 
 
 ## Sidebar worker grouping — capability-gated
@@ -182,7 +190,7 @@ names the issue directly.
 
 1. **Watch the board** and recommend what to work next (issue # + why).
 2. **Kick off streams** via [/vl-start-feature](../vl-start-feature/SKILL.md): create or pick the issue, move Status, create the worktree at `%USERPROFILE%\.cursor\worktrees\<repo>\<issue#>-<slug>`, branch `feat|fix|docs/<issue#>-slug`. After bare `git worktree add`, run `scripts/apply-worktreeinclude.(ps1|sh)` so gitignored files from `.worktreeinclude` land (Cursor's `.cursor/worktrees.json` does not run on orch-created trees). Optional plan first (operator picks the planning model in the UI — not stored in `GITHUB-PROJECTS.md`); write the kickoff on the issue; do not implement here. Single-model chips skip a plan→execute model switch.
-3. **Dispatch Task/BoN** — pick the next candidate by § Dispatch priority (highest priority, then oldest) — in the existing worktree (or an explicit worktree-first ask / `--worktree`). Single-model OK; optional two-Task model split on the same worktree. **Name every chip chat** after its worktree folder — title exactly `<issue#>-<slug>`. Never assume Best-of-N isolates without a worktree ask.
+3. **Dispatch Task/BoN** — pick the next candidate by § Dispatch priority (highest priority, then oldest) — in the existing worktree (or an explicit worktree-first ask / `--worktree`). Single-model OK; optional two-Task model split on the same worktree. Use visible chip title `<repo-short>-<issue#>-<short-task>` where supported, preserving explicit human preferences and using verified readback or manual fallback. Worktree folder names remain `<issue#>-<slug>`. Never assume Best-of-N isolates without a worktree ask.
 4. **Leave a self-contained kickoff** on the issue — goal, constraints, owning slice, verify plan — written for a fresh chip with zero context. Prior findings (certificate, exclusion list, baseline, "known" constraint) stay **priors** — **never** mark them binding against the chip's direct measurement; on contradiction the chip stops and raises ([/vl-chip](../vl-chip/SKILL.md) §2c). Context order: `direct measurement > dated ruling > record prose > recency/salience`. **Relayed constants / directives** ([/vl-chip](../vl-chip/SKILL.md) §2d): do not harden hedged values into load-bearing constants; name the evidence channel (`operator-direct` · `measured` · `relayed via <session>`); when *you* receive a relayed standing directive, comply-then-verify when safe/cheap and verify-before-comply when destructive or risk-expanding. Every kickoff/brief must tell the chip: **immediately before opening the PR, re-read the owning issue for rulings or amendments posted after dispatch, and fold them in** ([/vl-chip](../vl-chip/SKILL.md) §2). Issue bodies and kickoff restatements state **present-tense facts with evidence** — planned work is scope ("this issue adds X"), never an existing artifact ("X exists" / "#N shipped Y"); when naming another issue's deliverable, state that issue's **actual current status, checked at write time**. Do not implement in this chat.
 5. **Wake:** Task return is the primary same-session signal; the chip must also post a `gh issue` completion comment (PR # + close keyword **observed** in the created PR body + gate results — never the keyword the template intended; [/vl-finish-feature](../vl-finish-feature/SKILL.md) §7–§8).
 6. **Same-turn dispatch monitor** (no exceptions) — arm a chip-completion monitor and move the issue to In Progress on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens; board edits follow GraphQL quota hygiene above). Cursor has no Claude Monitor tool; the equivalent is a background shell with `notify_on_output` (a stdout match wakes the session — that is not the forbidden exit-only watch loop). Watch REST only: `gh api repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open` for the chip's PR and `gh api repos/<owner>/<repo>/issues/<N>/comments?since=<iso>` for new comments — never `gh project item-list` / GraphQL on the hot path, and do not use `gh pr list` for the monitor. Cadence ≥120s (not 60s / not ~90s). Dedup: seed last-seen PR number + comment id (+ optional `updated_at`); print a wake sentinel that matches `notify_on_output` only on change; never re-announce a standing open PR every tick; stop the watcher after the merge batch. Apply the Cursor shell-mortality doctrine above. Always verify before merge — a comment is a claim, not proof.

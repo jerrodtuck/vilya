@@ -49,6 +49,19 @@ requirements. The receiving seat reconciles live ownership, workers, locks and l
 before action. Never abandon active work or create duplicate workers to shorten context.
 A new sidebar chat still requires explicit human authorization; invocation creates none.
 
+## Seat title transfer
+
+Record the exact source host/chat ID/observed title and intended successor title.
+Apply the [shared naming contract](references/seat-naming.md): the receiver reads
+current amendments and reconciles ownership, workers, locks, pins, repair ledger,
+worktrees/setup and authority before canonical naming. Ownership conflicts STOP
+takeover/dispatch. Rename only verified source/successor IDs, preserve human title
+preferences, and read back both; unsupported or inaccessible targets get exact
+manual names with pending/unverified status. A retained source uses
+`<repo-short>-<seat>-previous-<short-chat-ID>` where supported. Keep the source
+unarchived whenever its needed environment or archive safety remains unresolved.
+Titles grant no ownership, archive/delete, branch-move or lock-release authority.
+
 ## Archive safety of the old owning chat
 
 Whenever recommending or transferring to a fresh chat, identify the **old owning chat**
@@ -118,6 +131,9 @@ Return:
 ```text
 Seat: <seat> for <owner/repo>, board <number>.
 Read the complete handoff: <stable link> and current owning-issue amendments.
+Source title: <observed title>; intended successor title: <resolved title or human override>.
+Successor: <host + exact ID, or pending>; retained source title: <resolved previous-short-ID or override>.
+Read/apply the shared naming contract after live reconciliation below and before taking a canonical title.
 Old owning chat: <host + exact ID>. Archive safety: <result>; reason/action: <evidence + action>.
 Recheck associated/attached trees, preservation, successor access and required local setup.
 Keep the old owner unarchived if safety remains unsafe or unverified.

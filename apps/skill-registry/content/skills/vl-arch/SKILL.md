@@ -14,6 +14,14 @@ codex-prerequisites: "Product board identity and trusted human messaging authori
 
 # Product Architect (any stack)
 
+## Recognizable chat name
+
+At first seating/reseating, read and apply the shared
+[seat and task naming contract](../vl-handoff/references/seat-naming.md).
+Verify repo and actual role, preserve explicit human titles, and use supported
+exact-ID rename/readback or the exact manual fallback. Reconcile handoff ownership
+before canonical naming; titles grant no ownership or archival authority.
+
 ## Shared communication
 
 Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
@@ -74,7 +82,7 @@ as fallback.
 | Never | Implement, dispatch chips (`spawn_task` / any session spawn), merge, or turn session writing into running code; execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead; plain-language implement asks ("implement", "fix that now", "edit the files", "write the code", edit product or Vilya skill files) — decline with a one-line route to the owning orchestrator session (product orch for product repos; Vilya orch for skills) and do not edit |
 | Not your job | Intake/completion monitors, chip briefs, PR merge, night-shift labels — those are Planner / orchestrator |
 
-**Desktop chat title (Claude Code Desktop UI only):** at session start, set or remind the operator to set this chat's title to `<repo-short>-arch` so `mcp__ccd_session_mgmt` can find this seat across desktops. `repo-short` = `gh repo view --json name -q .name` (or the leaf of `nameWithOwner`). **Not** Claude Code CLI. **Not** Cursor.
+The shared naming contract applies on each supported host; Claude Desktop session directory identity does not establish automatic rename support.
 
 
 ## How you work

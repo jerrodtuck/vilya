@@ -15,6 +15,14 @@ codex-prerequisites: "Cursor worker already rooted in its assigned worktree."
 
 # Cursor handoff (Worker A)
 
+## Recognizable chat name
+
+At first seating/reseating, read and apply the shared
+[seat and task naming contract](../vl-handoff/references/seat-naming.md).
+Verify repo and actual role, preserve explicit human titles, and use supported
+exact-ID rename/readback or the exact manual fallback. Reconcile handoff ownership
+before canonical naming; titles grant no ownership or archival authority.
+
 ## Shared communication
 
 Read and apply the full [vl-adhd writing policy](../vl-adhd/SKILL.md) and
@@ -73,7 +81,7 @@ Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe
 - This skill **is** Worker A (orchestrator did setup). **Worker B** is a different
   standing-order card for solo / no-orchestrator days — **A and B are mutually
   exclusive** per issue. Never follow the B path from this skill.
-- Chat title is exactly `<issue#>-<slug>` — 1:1 with the worktree folder name.
+- Visible worker title is `<repo-short>-<issue#>-<short-task>` where supported; preserve explicit human preferences and verify readback or give exact manual fallback. Worktree folder remains `<issue#>-<slug>`.
 - Read owner / repo / default branch / stack / crucible / test command from
   `docs/project-tracking/GITHUB-PROJECTS.md` (or `gh repo view`).
 

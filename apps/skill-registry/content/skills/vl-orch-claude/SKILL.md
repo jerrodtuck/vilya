@@ -32,6 +32,14 @@ Claude orchestrator stays distinct; Codex uses vl-orch-codex.
 Do not execute the procedure below in Codex. Not applicable in Codex; use $vl-orch-codex.
 The remaining instructions apply only to the existing supported host.
 
+## Recognizable chat name
+
+At first seating/reseating, read and apply the shared
+[seat and task naming contract](../vl-handoff/references/seat-naming.md).
+Verify repo and actual role, preserve explicit human titles, and use supported
+exact-ID rename/readback or the exact manual fallback. Reconcile handoff ownership
+before canonical naming; titles grant no ownership or archival authority.
+
 > Companions: [/vl-chip](../vl-chip/SKILL.md) (dispatch — **not** this seat),
 > [/vl-plan](../vl-plan/SKILL.md) (Fable plan loop),
 > [/vl-merge-pr](../vl-merge-pr/SKILL.md), [/vl-prune](../vl-prune/SKILL.md),
@@ -60,7 +68,7 @@ restore the main clone's cwd — leave the feature tree — **before** the next 
 move, merge, prune, or kickoff. See [/vl-merge-pr](../vl-merge-pr/SKILL.md) §5 for the mandatory
 post-merge return this closes (#303).
 
-**Desktop chat title (Claude Code Desktop UI only):** at session start, set or remind the operator to set this chat's title to `<repo-short>-orch` so `mcp__ccd_session_mgmt` can find this seat across desktops. `repo-short` = `gh repo view --json name -q .name` (or the leaf of `nameWithOwner`). **Not** Claude Code CLI. **Not** Cursor.
+The shared naming contract applies on each supported host; Claude Desktop session directory identity does not establish automatic rename support.
 
 
 ## Sidebar worker grouping — capability-gated
