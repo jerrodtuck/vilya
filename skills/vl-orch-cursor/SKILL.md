@@ -27,6 +27,10 @@ Preserve facts, uncertainty, options/costs, permissions and stop/verification ga
 Explicit formats and fixed output contracts win; presentation grants no new authority.
 
 
+## One-time seat reminder
+
+At first seating or explicit reseating on this skill's applicable host, read and apply the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md). Give one short reminder naming host, active seat, correct invocation, approved model/effort where known, and accurate manual setup. Preserve scoped overrides and exact active/resumed worker pins; do not repeat per turn or change the parent chat. Unknown settings stay explicit. This does not activate another seat or bypass the host boundary below.
+
 ## Codex boundary — stop here
 
 Cursor orchestrator stays distinct; Codex uses vl-orch-codex.
@@ -96,6 +100,8 @@ Read owner, repo, project number, labels, stack, and crucible/test config from
 `docs/project-tracking/GITHUB-PROJECTS.md`.
 
 ## Efficient orchestration (#356)
+
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
 
 For the operator who adopted #356, reuse a sufficient settled issue plan without a
 planning delegate. Orch fills routine bounded gaps; delegate only a necessary bounded

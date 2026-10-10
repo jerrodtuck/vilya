@@ -193,6 +193,8 @@ the amendment into the PR and verify it independently at the merge gate.
 
 ### Codex self-contained worker brief
 
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 Require the worker to read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
 before implementation, repair or resume, from the resolved canonical/installed complete
 folder. Include its routing, eligibility, independent-review and repair-ledger rules in
@@ -204,6 +206,8 @@ Renames, no-change reruns, unrelated passes and resumes do not reset the count. 
 files and exact pins; earlier hard stops apply immediately.
 
 Include each item in the actual dispatch prompt, even with inherited history:
+
+- First worker entry/reseating: read/apply full ../vl-orch-codex/references/seat-entry.md from the resolved skill folder. Give one short host/worker/assigned-skill/exact-pin/manual-setup reminder. Preserve overrides and resumed pins; never switch the parent or repeat per turn.
 
 - Name full resolved resource paths and require reading the shared contracts; never replace
   required sources with optional links or summaries.
@@ -335,6 +339,10 @@ has no Monitor tool; that watcher *is* the equivalent. The monitor *is* the comp
 dispatch without one is a chip nobody is listening for.
 
 ## 2. The self-contained brief (the `prompt`)
+
+Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
+Include the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md) in the worker entry. At first entry/reseating name detected host, worker, assigned skill/pin and accurate setup; preserve overrides/resumed pins, never switch the parent, and do not repeat per turn.
 
 The chip has **zero** shared context, so the bounded brief must stand alone. Use exact
 trusted issue/comment references and resolved full resource paths with required reading.

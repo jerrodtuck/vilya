@@ -95,6 +95,31 @@ It owns the continue/recommend-fresh decision, saved complete handoff and ready-
 starter contract. Invocation creates no chat and resets no gate, lock, pin, authority,
 review requirement or repair count.
 
+## Accepted worker completion (#368)
+
+A worker owns one settled task or slice with explicit exclusions, completion criteria,
+assigned checkout/branch and durable issue/PR evidence. A PR opening or native completion
+message is not accepted completion. The owning orch verifies the declared unit boundary,
+required gates, independent review and current amendments; record acceptance or what remains
+owed. Operator merge authority is separate. Keep the viable worker for related review
+findings and repairs until that boundary, using the existing pins and repair ledger.
+
+At accepted completion, save a compact result: outcome, issue/PR and exact head,
+acceptance and gate/review evidence references, limitations or remaining obligations,
+worker/environment ownership, needed checkout/branch/setup and lock/dependency state.
+The parent consumes that result and evidence references; inspect raw child logs only
+for a specific unresolved question. Completed workers receive no unrelated assignments.
+A new unrelated unit gets a new compact self-contained brief, not the completed worker's
+full history. Preserve needed environments and ownership. Release only task-owned locks
+when the owning lifecycle allows it and no active or dependent work needs them.
+
+Retirement means ending this unit's activity and unrelated reassignment, not chat archival
+or worktree deletion. Use only lifecycle capabilities actually exposed by the host;
+no destroy/dispose operation or memory, context or subscription release is established.
+Child working histories are isolated from the parent; summaries return, while independent
+child model/tool work adds workflow token use. Saved idle history alone does not establish
+ongoing charges. Keep the existing continue/Compact/fresh-chat checkpoint for the parent.
+
 ## Repair ledger and stop
 
 Initial detection/reproduction is not a repair attempt. One attempt is a documented
@@ -167,6 +192,11 @@ and render tests validate instruction delivery, not runtime routing or full #329
 | Same model and fixture, different context strategy | Compare acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost; do not attribute the result to model routing |
 | Repair needs the same checkout and pin | Reuse the viable worker and ledger; replace only after a durable handoff, without resetting attempts |
 | Required gate passed and source is unchanged | Reuse the exact-head evidence; rerun only for failure, affected changes or unresolved risk |
+| PR opened, native completion received, independent review still owed | Keep the unit pending; self-report/native completion is not accepted completion |
+| Related review finding before accepted completion | Keep the viable worker, exact pin and ledger for the same unit's repair |
+| Unit independently accepted; unrelated issue is next | Save compact result/evidence and ownership; end this unit and use a new compact brief for unrelated work |
+| Accepted unit still has a needed checkout/setup or dependent lock | Preserve environment/ownership; release only task-owned locks when lifecycle allows and no dependency needs them |
+| Completed child history remains inspectable | No disposal, parent-context contamination, ongoing idle-charge or memory-release claim; use exposed lifecycle only |
 
 ## Installed update route
 

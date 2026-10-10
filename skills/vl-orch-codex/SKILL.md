@@ -29,6 +29,10 @@ Preserve facts, uncertainty, options/costs, permissions and stop/verification ga
 Explicit formats and fixed output contracts win; presentation grants no new authority.
 
 
+## One-time seat reminder
+
+At first seating or explicit reseating on this skill's applicable host, read and apply the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md). Give one short reminder naming host, active seat, correct invocation, approved model/effort where known, and accurate manual setup. Preserve scoped overrides and exact active/resumed worker pins; do not repeat per turn or change the parent chat. Unknown settings stay explicit. This does not activate another seat or bypass the host boundary below.
+
 Invoke $vl-orch-codex when discovered, or explicitly read and apply this source.
 
 **Standing seat model:** select **GPT-6.1 Sol / medium** in the Codex UI before
@@ -218,6 +222,8 @@ unavailable usage is not zero. Token saving is a goal, not a guarantee or measur
 
 ## Dispatch and active-turn completion
 
+Read and apply the full [accepted worker completion contract](references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
+
 Apply [vl-chip](../vl-chip/SKILL.md)'s Codex path for every implementation unit: one
 issue, branch, managed worktree and worker. Creating a subagent does not isolate files.
 Use an existing suitable attachment before creating a tree with an explicit starting
@@ -227,7 +233,7 @@ Discover current capabilities; if required tools are missing, report the limitat
 
 Native completion plus `wait_agent` / `list_agents` is the active-turn signal. Send
 amendments to an active worker with `send_message`; use `followup_task` to resume an idle
-child. Tool names here are dated examples, not a promise for every installation.
+child for related work within its pending unit. Tool names here are dated examples, not a promise for every installation.
 Use bounded waits and retain user-facing progress. Issues/PRs remain durable evidence.
 If the operator explicitly requested separate sidebar chats, app `wait_threads` and
 `send_message_to_thread` apply to their identifiers instead; do not create sidebar chats
