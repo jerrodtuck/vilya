@@ -97,6 +97,7 @@ function CopyGenerated({ text }: { text: string }) {
 
   const copy = () => {
     if (!text || !navigator.clipboard?.writeText) return;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- #381 baseline: existing clipboard action has no rejection handler; preserve behavior in #381
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       clearTimeout(timer.current);

@@ -12,5 +12,6 @@ export default async function TrialPage({ params }: { params: Promise<{ runId: s
   if (result.status === 'missing') notFound();
   const run = findRun(result.snapshot, runId) as Run | null;
   if (!run) notFound();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- #381 baseline: existing evaluation JSON/type debt; boundary validation is deferred from #381
   return <TrialDetail run={run} generatedAt={result.snapshot.generatedAt} />;
 }

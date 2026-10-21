@@ -99,6 +99,24 @@ and isolates what varies; fake SOLID just adds indirection.
 
 ---
 
+## Automated checks and Crucible judgment
+
+Use three groups within the existing review method:
+
+1. **Enforced checks:** run configured dependency-boundary, unsafe-type and recognized async checks through established tools. Record actual commands and results. Preserve allowed public contracts and acyclic direction. Keep relevant indirect paths, aliases and type-only dependencies in graph checks.
+2. **Advisory signals:** file growth, broad catches, silent defaults, casts/double assertions, direct IO, lifetime smells and component duplication need context. Keep approximate size guidance and justified exceptions. A signal blocks only when a concrete defect independently warrants it. Do not convert advisory warnings into errors with blanket zero-warning settings.
+3. **Crucible judgment:** assess slice ownership, cohesion, useful abstractions, genuinely shared code, policy/handler extraction, state placement and refactor cost. Implementation count, route line limits and complexity scores do not replace this judgment. Keep the existing severity and concrete-refactor contract.
+
+Run tools before broad cleanup. Baseline legacy debt by exact site/rule or source/target/reason; retain enforcement for new violations. Keep tests as source-scoped consumers, and forbid production imports of tests. Exclude generated output without hiding handwritten adapters or production graph paths. Treat generation parity, migration history and affected workflow evidence as separate gates.
+
+Lint success does not prove dependency-injection completeness, deployed provider identity or successful runtime interaction. Exercise affected integration paths separately. During skill installation or sync, inspect and preserve deliberate repo-local extensions; do not replace product invariants with the generic variant.
+
+Use import-linter layers/forbidden for direction and protected/forbidden for private modules. Independence applies only where all collaboration is forbidden. A justified public contract needs named ownership, an exact interface and acyclic direction. Check the complete serving graph, including indirect paths to training code and external training-only dependencies; keep notebook and generated-stub restrictions.
+
+Use the repo's mypy/pyright and Ruff configuration for explicit/unsafe Any, named suppression codes and unused ignores. Require explanations for scoped exceptions in review. Where async exists, recognized Ruff ASYNC checks such as ASYNC210 detect known blocking calls, not all resource or concurrency errors. No Python runtime execution is claimed by Vilya's Next.js lint baseline.
+
+---
+
 ## VSA for Python/ML — presumptive 🔴 blockers (stack-specific)
 
 **No single named canon** has Bulletproof-React-level mindshare for Python ML/data — a finding, not
@@ -135,8 +153,8 @@ Blockers unless the author justifies clearly:
    / untyped payload where a **pydantic model** belongs. Validate at the boundary; pass typed
    objects inside.
 8. **Boundary rules unenforced** — the one-way-flow and no-cross-slice rules are lintable
-   (import-linter `layers` and `independence` contracts; `forbidden` for the serving→training
-   edge). A violation a contract would have caught is two findings: the violation, and 🟠 "add the
+   (import-linter `layers` / `protected` contracts; `forbidden` for indirect serving→training
+   paths and training-only dependencies). A violation a contract would have caught is two findings: the violation, and 🟠 "add the
    `.importlinter` contracts to the repo".
 
 ---
@@ -275,7 +293,7 @@ Good phrases:
 
 - `this belongs in the <slice> subpackage, not a package-wide utils/`
 - `don't import <slice>'s internals — compose the two slices at the entrypoint (or lift a truly shared contract into shared/)`
-- `these boundary rules belong in import-linter (layers / independence contracts) — add them so review stops catching this`
+- `these boundary rules belong in import-linter (layers / protected contracts) — add them so review stops catching this`
 - `the notebook proved it — promote it into the <slice> slice before the service path touches it`
 - `notebooks are leaf consumers — package code never imports from a notebook`
 - `training logic is reachable from the serving path — split the import graph and forbid the edge in import-linter`

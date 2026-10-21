@@ -14,7 +14,11 @@
     "build": "next build",
     "postbuild": "node scripts/scan-code-spacing.mjs",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint:types": "eslint src",
+    "lint:boundaries": "depcruise --config .dependency-cruiser.cjs src",
+    "lint": "npm run lint:types && npm run lint:boundaries",
+    "test:lint": "node --test scripts/lint/lint-fixtures.mjs"
   },
   "dependencies": {
     "geist": "^1.7.2",
@@ -24,10 +28,14 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "4.8.1",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "dependency-cruiser": "18.7.0",
+    "eslint": "10.13.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "8.72.0",
     "vitest": "^4.1.10"
   },
   "overrides": {

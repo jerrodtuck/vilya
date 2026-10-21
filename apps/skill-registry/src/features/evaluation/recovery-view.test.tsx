@@ -7,7 +7,9 @@ import { publicSnapshot } from '../../../../../scripts/evaluation/public-results
 describe('recovery results presentation', () => {
   it('shows original failure before twelve fresh trials with combined accounting and no recommendation', () => {
     const priorState = { version: 2, requests: [{ id: 'api_behavior_1_A_planning_1', trial: 'api_behavior_1_A', phase: 'planning', model: 'gpt-6.1-sol', effort: 'medium', status: 'unknown', start: 1, end: null, reservation: 42730, cost: null, usage: null }] };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- #381 baseline: existing evaluation JSON/type debt; boundary validation is deferred from #381
     const snapshot = publicSnapshot({ sourceHead: 'a'.repeat(40), state: { version: 3, requests: [], recovery: { campaignId: '357-screening-2', namespace: 'fresh1_', carriedExposure: 42730 } }, priorState, priorReceipts: [{ trial: 'api_behavior_1_A', started: 0, ended: 2, accepted: false, historyComplete: false, attempts: [], environment: { controllerHead: 'f8ff32bf73433e37e97c00f52dc043501cba453b' } }] });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- #381 baseline: existing evaluation JSON/type debt; boundary validation is deferred from #381
     const html = renderToStaticMarkup(createElement(EvaluationList, { snapshot, query: {} }));
     expect(html).toContain('Prior campaign failure');
     expect(html.indexOf('Prior campaign failure')).toBeLessThan(html.indexOf('Fresh campaign 357-screening-2'));
