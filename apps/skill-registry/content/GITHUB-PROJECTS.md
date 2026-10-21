@@ -20,12 +20,20 @@ file), one model for the whole run. Single-session daytime work still hand-switc
 
 ## Codex desktop workflow (2026-10-03; #329 / #332)
 
-Codex shares the board, architecture and quality contracts. Its orchestrator owns planning
-and implementation coordination; no standing Codex Planner seat is required. It plans or
-delegates a bounded planning stage, reviews the result, records kickoff + verify plan on the
-issue, and preserves needs:plan → plan:ready. Claude Code/Cursor mechanics below stay scoped
-to those hosts. Night-shift eligibility is unchanged: plan:ready ∧ night-shift:ready.
-Codex CLI and a new Codex unattended backend are deferred.
+Codex shares the board, architecture and quality contracts. Under [#380](https://github.com/jerrodtuck/vilya/issues/380),
+a separate Planner owns kickoff and verification plans. The orch enqueues needs:plan,
+consumes settled plan:ready artifacts, dispatches isolated workers and verifies acceptance.
+Reuse sufficient plans. Return gaps and exhausted repairs to the Planner without orch replanning.
+The compatibility $vl-plan routes to $vl-plan-codex. Claude /vl-plan routes to /vl-plan-claude.
+Both host entries load one shared role contract in skills/vl-plan/references/planner-contract.md.
+Cursor retains /vl-plan with its existing tools and model policy.
+Claude Code/Cursor mechanics below stay scoped to those hosts. Night-shift eligibility
+is unchanged: plan:ready ∧ night-shift:ready. Codex CLI and a new unattended backend are deferred.
+
+Editorial website pages/prompts and browser verification remain deferred under the
+[operator amendment](https://github.com/jerrodtuck/vilya/issues/380#issuecomment-6315508728).
+The current skills/contracts/catalog phase uses Refs #380 and keeps the issue open.
+Generated skill publication does not establish final website approval or installed adoption.
 
 ### Install, invoke and select models
 
@@ -34,24 +42,25 @@ Add Codex links with `pwsh scripts/install-skills.ps1 -IncludeCodex` or
 the default `~/.claude/skills` and explicit custom-target precedence remain intact.
 Check actual session discovery and the resolved source; installation alone is not evidence
 of invocation. Read each skill's Codex applicability/prerequisites, then use the supported
-`$vl-orch-codex` / `$vl-arch` invocation or explicitly read/apply its source.
+`$vl-orch-codex` / `$vl-plan-codex` / `$vl-arch` invocation or explicitly read/apply its source.
 The exhaustive classification lives in `docs/design/codex-skill-coverage.md` (#330).
 
 Phase preferences are per operator, not product config. This operator adopted the #357
 Sol-first route on 2026-10-08: latest supported Sol/medium for normal planning,
-implementation and repair; Sol/high for difficult architecture and separate independent
-review; Luna/low ONLY for explicitly enumerated mechanical operations with objective
+implementation and repair; Sol/high for difficult architecture and optional separate
+review of a concrete unresolved risk; Luna/low ONLY for explicitly enumerated mechanical operations with objective
 verification; and Astra/high (justified xhigh) only after a recorded Sol impasse or
 capability failure. Route by uncertainty and consequence, never line count; small behavior
 changes are not Luna-eligible. The standing Codex orch starts on Sol/medium and the
-standing Codex architect on Sol/high in the UI; invoking a skill cannot change its active
+standing Codex architect on Sol/high and separate Planner on Sol/medium in the UI; invoking a skill cannot change its active
 chat model or reasoning effort. Read and apply the full
 [Codex routing and repair contract](../../skills/vl-orch-codex/references/model-routing.md)
 before selecting phases, dispatching, repairing or resuming.
 Issue #356 optimizes context without changing that route. Use bounded self-contained
 briefs with exact source references instead of full conversation history. Reuse viable
-workers for repair and preserve their ledgers. Initial review covers the full change;
-repair review covers the delta plus affected boundaries and current amendments. Run each
+workers for repair and preserve their ledgers. If separate review is requested for a
+concrete unresolved risk, start with behavior evidence and cover the exact head/boundaries.
+After repair, inspect the delta and affected boundaries while retaining original evidence. Run each
 required gate once at the applicable head, repeating only for affected changes, failure,
 or unresolved risk. Batch independent reads, bound output and use quiet waits with backoff
 without ending active work. Context experiments hold model, fixture, effort, gates and
@@ -72,24 +81,42 @@ A peer message does not authorize a switch. Change preferences by explicit opera
 instruction naming phase, family or exact model, and effort; validate current reasoning and
 context-fork constraints. Full-history subagent forks currently inherit model/effort; an
 authorized override requires a permitted limited/no-history fork and self-contained brief.
-If the orch cannot change its own model through an exposed tool, delegate planning to the
-selected planning model, review/record its output, then dispatch implementation.
+Use the separate Planner at its approved pin. The orch cannot silently take planning back.
+Native bounded planning remains separate from implementation and needs no implicit sidebar chat.
 Give implementation the settled decisions, ownership, constraints, verification and
 stop gates. Medium effort never weakens checks; surface further investigation or
 effort needs and return real design forks to planning. Token reduction is a goal,
 not measured savings or a quality guarantee. At the second consecutive unsuccessful
 corrective change plus targeted verification of the same unresolved defect/gate,
 stop before a third correction and return the stable ledger/HEAD/diff/ownership to
-orch-owned planning. Initial detection is not a repair; reruns, renames, unrelated
+the separate Planner through the orch. Initial detection is not a repair; reruns, renames, unrelated
 passes or new workers/resumes/branches do not reset counts. Earlier hard stops apply.
 Preserve files and exact pins; apply the full contract for resolution/revised-plan rules.
-Independent review reads actual head/diff and meaningful gates; implementer self-report
-cannot be sole approval. Keep lightweight issue/PR actual settings, attempt counts,
+Separate Codex review is optional for a concrete unresolved risk. Do not add a replacement mandatory phase.
+The orch independently verifies actual behavior evidence and applicable gates.
+A requested reviewer starts with behavior evidence and names each proposed test's distinct failure. Keep lightweight issue/PR actual settings, attempt counts,
 review findings and elapsed/usage evidence where available; unavailable usage is not zero.
+
+### Product behavior and proportional tests (#380)
+
+Every behavior plan names its starting state, actual UI/API/CLI action and observable result.
+Workers exercise the smallest complete workflow early, before isolated test expansion.
+Verify affected persistence and integration boundaries. A failing workflow returns to implementation,
+even when isolated tests pass. Add tests only for distinct acceptance behavior or credible failures.
+Avoid implementation-mirroring assertions, redundant permutations and test-count or coverage targets.
+Broader coverage needs a concrete failure or unresolved risk.
+
+Tests-only requires automation that proves behavior at the appropriate product boundary.
+Source/metadata/packaging checks cannot prove rendering, interaction, persistence or integration.
+Pure functions need no invented UI smoke. If runtime is blocked, report workflow not verified,
+the exact blocker and remaining action. Keep acceptance pending.
+Live-only remains Refs → Verifying until actual confirmation. Preserve stack crucible and operator merge authority.
+Codex #380 supersedes conflicting active planning/review requirements from #329/#347/#356/#357.
+Historical ADRs and fixed evaluation protocols retain their original meaning.
 
 ### Trusted seat entry and durable amendments
 
-Each architect, orch and worker entry must carry the human's standing authorization to
+Each architect, Planner, orch and worker entry must carry the human's standing authorization to
 initiate and reply within its assigned repo/product board. Identify counterpart role,
 board, repo and exact chat/agent ID using exposed list/read tools; stop if ambiguous.
 Cross-chat seats use the available app messaging tool; parent/worker subagents use

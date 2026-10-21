@@ -5,14 +5,14 @@ repo config and current seat evidence. Resolve repo-short with
 `gh repo view --json name -q .name` in the verified checkout, or the verified
 `nameWithOwner` leaf. Do not guess from an old title or activate another role.
 Preserve an explicit human title preference, including a retained source preference.
-Otherwise use `<repo-short>-arch` or `<repo-short>-orch` for those seats.
+Otherwise use `<repo-short>-arch`, `<repo-short>-orch` or `<repo-short>-plan` for those seats.
 Other applicable seats use their actual role. Task/worker visible titles use
 `<repo-short>-<issue#>-<short-task>` where supported; keep branch/worktree names
 unchanged. A native child task name is not proof of a sidebar chat or rename capability.
 
 Apply naming once at entry or verified handoff, not every turn. A title is a
 navigation aid, never ownership, liveness, lock or archival authority. Keep actual
-source/successor IDs as identity after rename. No standing Codex Planner, new chat,
+source/successor IDs as identity after rename. Naming does not create a Planner, new chat,
 -active status suffix, bulk rename, registry or status monitor is required.
 
 ## Host capability and readback

@@ -7,7 +7,7 @@ description: >-
   or writes the board. Use when the operator says "/vl-ask", "Ask
   Vilya", or "who handles this".
 codex-support: "codex-adapted"
-codex-notes: "Routes Codex planning and coordination to vl-orch-codex; remains read-only."
+codex-notes: "Routes Codex planning to vl-plan-codex and coordination to vl-orch-codex; remains read-only."
 codex-invocation: "$vl-ask"
 codex-prerequisites: "Known target host and repo or product board; readable process canon."
 ---
@@ -31,10 +31,10 @@ Do not add a visual, heading or extra line. Presentation grants no new authority
 
 Use `$vl-ask` or read/apply this source. Preserve the fixed lane · prompt · why
 format and read-only boundary below. For Codex, a planning pass routes to
-`$vl-orch-codex` with `needs:plan`; that orch produces kickoff + verify artifacts
+`$vl-plan-codex` with `needs:plan`; that separate Planner produces kickoff + verify artifacts
 and `plan:ready`. In-flight work also routes to that orch. Direction still routes
 to `$vl-arch`; operator decisions remain operator-owned. Do not activate a
-standing Planner or any seat in this router. Steps naming Fable or the two other
+Planner or any seat in this router. Steps naming Fable or the two other
 orch seats below describe their own hosts only. Use `$vl-*` for supported Codex
 companions, or explicitly read/apply source; never claim slash-command parity.
 
@@ -67,7 +67,7 @@ Apply first: **does this change what we intended, or only what we'll do next?**
 1. **Changes intent** (vision, design, architecture, a prior call) →
    [/vl-arch](../vl-arch/SKILL.md) — ADR/spec first, then issues.
 2. **Needs a planning pass** (scope, verify plan, or forks unclear) → enqueue
-   `needs:plan` → standing Planner (Fable) drains to `plan:ready` — then
+   `needs:plan` → the host Planner drains to `plan:ready` — then
    Orchestrator.
 3. **New work, intent unchanged and already clear** (tweaks, polish, bugs) →
    issue on the board ([/vl-update-docs](../vl-update-docs/SKILL.md)

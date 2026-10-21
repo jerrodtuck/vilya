@@ -66,12 +66,16 @@ the Claude/Cursor default and explicit custom targets. Verify actual discovery a
 resolved source in the session, then use `$vl-orch-codex` or explicitly read/apply its
 SKILL.md. Installation alone is not invocation evidence.
 
-The Codex orch owns planning; no standing Planner seat is required. It records the accepted
-plan and verification routing on the issue before dispatching implementation in a verified
-isolated worktree. Subagent spawning alone is not isolation. Phase models are configurable:
+The separate `$vl-plan-codex` Planner owns kickoff and verification plans. The orch
+enqueues `needs:plan`, consumes settled `plan:ready` artifacts, and dispatches implementation
+in a verified isolated worktree. `$vl-plan` retains compatibility; Claude uses `/vl-plan-claude`
+and Cursor keeps `/vl-plan`. Both host adapters load one shared Planner role contract. Subagent spawning alone is not isolation. Phase models are configurable:
 resolve current planning/workhorse families from runtime capabilities, honor explicit operator
-pins, and preserve configured defaults without authorized overrides. Both seat entries carry
+pins, and preserve configured defaults without authorized overrides. Applicable seat entries carry
 trusted human authorization for messaging within the repo/product board.
+
+Website explanations and copied prompts remain deferred under #380 until operator workflow finalization.
+The links below can still show the previous policy. Generated skill/catalog publication is separate from that obligation.
 
 Start with [Setup](https://vilya.jerrodtuck.com/setup?host=codex),
 [Architect](https://vilya.jerrodtuck.com/architect?host=codex),

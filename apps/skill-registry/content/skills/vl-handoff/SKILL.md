@@ -41,11 +41,13 @@ helper behind the checkpoint, not a monitor, measurement system or runtime engin
 Before recommending a fresh chat, save one complete record on the owning issue or PR and
 return its stable link. Include the exact issue, PR, head, worktree and branch; decisions
 and unresolved work; ownership, live workers and locks; active pins; repair ledger and
-verification; pending decisions and dependencies; authorization, financial limits/holds
+verification, including workflow evidence and exact blocked obligations; pending decisions and dependencies; authorization, financial limits/holds
 and stop gates.
 
-Compacting or replacing a chat resets none of that state, authority or independent-review
-requirements. The receiving seat reconciles live ownership, workers, locks and ledger
+Compacting or replacing a chat resets none of that state, authority or applicable review
+requirements. Codex separate review is optional for a concrete unresolved risk (#380).
+A Codex Planner handoff preserves its separate role, plan ownership and host adapter.
+Plan gaps and exhausted repairs return through the orch to the Planner. The receiving seat reconciles live ownership, workers, locks and ledger
 before action. Never abandon active work or create duplicate workers to shorten context.
 A receiving seat reads/applies the full [seat reminder contract](../vl-orch-codex/references/seat-entry.md): an explicit reseating may give one brief host/seat/invocation/assigned-pin/setup reminder; a same-seat resume preserves the pin and does not repeat it per turn.
 A new sidebar chat still requires explicit human authorization; invocation creates none.

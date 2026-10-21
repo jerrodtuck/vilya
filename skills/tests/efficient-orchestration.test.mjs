@@ -72,7 +72,9 @@ test('repair review and necessary rerun examples preserve prior full coverage an
 
 test('repair ledger, installed update route and historical ADR bytes remain intact', () => {
   const original = execFileSync('git', ['-C', root, 'show', 'origin/master:' + reference], { encoding: 'utf8' }).replaceAll('\r\n', '\n');
-  for (const heading of ['## Repair ledger and stop', '## Installed update route']) assert.equal(section(contract, heading), section(original, heading));
+  assert.equal(section(contract, '## Installed update route'), section(original, '## Installed update route'));
+  const normalizeOwner = text => text.replaceAll('orch-owned planning', 'the separate Planner').replaceAll('orch planning decision', 'Planner decision');
+  assert.equal(section(contract, '## Repair ledger and stop'), normalizeOwner(section(original, '## Repair ledger and stop')));
   const coordination = section(contract, '## Efficient coordination (#356)');
   assert.match(coordination, /cached, uncached and cache-write input/);
   assert.match(coordination, /Deduplicate cumulative and forked counters/);

@@ -114,7 +114,8 @@ Other operators retain configured defaults; host model choices and active/resume
 change only through scoped human authorization, never by importing another host's tier.
 Astra escalation requires a named unresolved consequential architecture/security question
 and concrete uncertainty/risk rationale, not a topic label; xhigh also needs hard-analysis
-justification. Ordinary Codex initial review remains a separate Sol/high reviewer.
+justification. Under #380, separate Codex review is optional for a concrete unresolved risk.
+This does not alter this host's existing review requirements.
 
 At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
 explain briefly. For fresh chat, save and link [`/vl-handoff`](../vl-handoff/SKILL.md) first.

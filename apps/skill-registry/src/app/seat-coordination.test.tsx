@@ -12,7 +12,7 @@ import { PromptList } from "../shared/ui/prompt-list";
 // Regression fixtures for #326's two incidents. These validate published teaching,
 // not live seat discovery, transport delivery, or enforcement by a host.
 const seats = ["vl-plan", "vl-arch", "vl-orch-claude", "vl-orch-cursor", "vl-orch-codex"];
-const source = (seat: string) => readFileSync(resolve(process.cwd(), "../../skills", seat, "SKILL.md"), "utf8").replace(/\s+/g, " ");
+const source = (seat: string) => readFileSync(resolve(process.cwd(), "../../skills", seat, seat === "vl-plan" ? "references/planner-contract.md" : "SKILL.md"), "utf8").replace(/\s+/g, " ") + (seat === "vl-plan" ? readFileSync(resolve(process.cwd(), "../../skills/vl-plan-claude/SKILL.md"), "utf8").replace(/\s+/g, " ") : "");
 const groups = [...architect, CODEX_ARCHITECT, ...planner, ...orchestrator, ...CODEX_PROMPTS];
 const entries = groups.flatMap(group => group.items).filter(item => item.text.includes("Epic decomposition requires exactly one"));
 

@@ -2,7 +2,7 @@
 name: vl-start-feature
 description: Kick off a new feature or work stream on any repo's GitHub Projects board. Use when the user says "start on <feature/brief>", "pick up issue #N", "begin the <X> work", "work the next thing", or points at an issue. Sets up the issue, branch, and consult-first flow; pairs with /vl-finish-feature.
 codex-support: "codex-adapted"
-codex-notes: "Codex orch owns kickoff planning; managed setup precedes implementation."
+codex-notes: "Separate Codex Planner owns kickoff; managed setup precedes implementation."
 codex-invocation: "$vl-start-feature"
 codex-prerequisites: "Repo config, issue and plan, git/GitHub access and managed-worktree tools."
 ---
@@ -44,12 +44,12 @@ re-plan. Codex orch follows shared issue/board rules (§1), architecture/fork/wo
 rules (§4–§5) and verify-routing content (§6), with these host replacements:
 
 1. Complete the fresh OPEN/identity preflight above before board writes or managed
-   checkout creation. Reuse sufficient settled plans; orch fills routine bounded gaps.
-   Do not automatically create a planning delegate; necessary bounded delegation follows
-   [vl-orch-codex model policy](../vl-orch-codex/SKILL.md#model-policy).
-   Record kickoff + verify plan + settled forks on the issue before implementation;
-   remove `needs:plan` and add `plan:ready` only when ready. No standing Planner,
-   mandatory UI model-switch ritual, or other-host monitor. Reuse settled plans.
+   checkout creation. Reuse sufficient settled plans. If planning is needed, enqueue needs:plan
+   for the separate [$vl-plan-codex](../vl-plan-codex/SKILL.md) Planner. The Planner writes kickoff + verify plan + settled forks,
+   then removes needs:plan and adds plan:ready. The orch consumes the plan without replanning.
+   Return plan gaps and exhausted repairs to that Planner. Do not silently fill them.
+   New sidebar chats need explicit human request. Use exposed Codex tools only.
+   Idle recurring intake needs an explicitly authorized automation; active-turn waits do not persist.
 2. Inspect `list_artifacts` for a suitable existing managed worktree. Otherwise
    fetch/resolve the intended base and call exposed `create_worktree` with an
    **explicit starting ref** and `allowAsync: true`. The default is not necessarily
@@ -137,29 +137,35 @@ If the repo isn't already known, detect it:
    invent layer-cake or dumping-ground folders (.NET `Controllers/`·`Services/`·`Repositories/`, or
    a flat `components/`·`utils/` in JS/TS) for a feature.
 
+## Codex policy precedence (#380)
+
+For Codex, the separate Planner owns planning. This supersedes the #356 orch-owned
+planning exceptions below. Claude Code and Cursor keep their existing routes.
+Codex separate review is optional for a concrete unresolved risk. Preserve the stack
+crucible and operator merge authority. Do not dispatch a replacement mandatory review phase.
+
 ## Efficient orchestration (#356)
 
 Read and apply the full [accepted worker completion contract](../vl-orch-codex/references/model-routing.md#accepted-worker-completion-368). Define the accepted unit boundary in the brief. Keep related review/repair continuity until acceptance; then return compact result/evidence and needed environment/ownership state, and give unrelated work a new compact brief. Completion does not authorize archival, deletion or unsupported context release.
 
-For the operator who adopted #356, reuse a sufficient settled issue plan without a
-planning delegate. Orch fills routine bounded gaps; delegate only a necessary bounded
-question. Read and apply the full [efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356)
+On Claude Code/Cursor, the existing #356 scoped route can reuse a sufficient settled issue plan
+without a planning delegate. On Codex, reuse sufficient plans and return new gaps to the separate Planner. Read and apply the full [efficient coordination contract](../vl-orch-codex/references/model-routing.md#efficient-coordination-356)
 for compact complete source-linked briefs, initial full review versus repair delta plus
 affected boundaries, exact head/gate provenance, required gates once with justified
 repeats, bounded output and quiet waits/backoff with active-task persistence.
-It preserves all identity/base, authority, smoke, independent-review and repair stops.
+It preserves all identity/base, authority, smoke, applicable-review and repair stops.
 Other operators retain configured defaults; host model choices and active/resumed pins
 change only through scoped human authorization, never by importing another host's tier.
 Astra escalation requires a named unresolved consequential architecture/security question
 and concrete uncertainty/risk rationale, not a topic label; xhigh also needs hard-analysis
-justification. Ordinary Codex initial review remains a separate Sol/high reviewer.
+justification. Codex review is optional for a concrete unresolved risk, using Sol/high when requested.
 
 At a completed worker unit choose continue, built-in Compact, or recommend fresh chat.
 For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
 
 ## 3. Plan phase → then execute phase
 
-**Chip-flow / multi-session:** For the operator who adopted #356, reuse settled plans
+**Claude Code/Cursor chip-flow / multi-session:** For the operator who adopted #356, reuse settled plans
 and let orch fill routine bounded gaps without another planning agent. Other operators
 retain their existing **[/vl-plan](../vl-plan/SKILL.md)** route and configured host models;
 no orchestrator `/model` ritual is introduced.
@@ -244,11 +250,21 @@ State how the feature will be verified, **on the issue** (kickoff comment), so f
 read it instead of re-deciding. In chip-flow, that kickoff is written by [/vl-plan](../vl-plan/SKILL.md);
 in the single-session footnote, this skill writes it.
 
-- Which test projects / suites.
+- Starting state, actual UI/API/CLI action, and observable result for each behavior.
+- The smallest complete workflow to exercise early, before isolated test expansion.
+  Verify affected persistence and integration boundaries. If the workflow fails, return to implementation.
+- Tests for distinct acceptance behavior or credible regressions/failures. Use the smallest sufficient set.
+  Avoid implementation-mirroring assertions, redundant permutations, arbitrary coverage targets and test-count goals.
+  Broader coverage requires a concrete failure or unresolved risk.
+- Exact blocker and remaining obligation if runtime is unavailable: report workflow not verified.
+  Green isolated tests cannot satisfy missing product evidence. Keep acceptance pending.
+- Which applicable test projects / suites.
 - **Merge routing** — one of:
-  - `tests-only` — automated coverage is the whole story; PR will use `Closes #`.
+  - `tests-only` — automation proves affected behavior at the appropriate functional boundary;
+    source/metadata/packaging checks cannot prove rendering, interaction, persistence or integration.
+    A narrow pure-function change needs no invented UI smoke; PR will use `Closes #`.
   - `local-smoke` — a hands-on check is owed but runs locally (launch the app, drive the flow);
-    done **pre-merge** via `/vl-merge-pr`; PR still uses `Closes #`.
+    exercise the smallest complete workflow early and retain any declared operator confirmation **pre-merge** via `/vl-merge-pr`; PR still uses `Closes #`.
   - `live-only` — verification needs the live / deployed system (hardware, brokers, real CygNet);
     PR will use `Refs #` → **Verifying** → Done after live confirmation.
 - When step 1 is an unknown: the **Investigate-first / hard-stop** section (§4) — non-negotiable

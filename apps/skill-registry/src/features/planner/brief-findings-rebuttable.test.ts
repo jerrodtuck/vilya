@@ -10,7 +10,7 @@ const CONTEXT_ORDER =
 
 function plannerSkill(): string {
   return readFileSync(
-    path.resolve(__dirname, "../../../../../skills/vl-plan/SKILL.md"),
+    path.resolve(__dirname, "../../../../../skills/vl-plan/references/planner-contract.md"),
     "utf8",
   );
 }

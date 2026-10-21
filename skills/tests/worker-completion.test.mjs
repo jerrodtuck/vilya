@@ -9,9 +9,9 @@ const read = p => fs.readFileSync(path.join(root, p), 'utf8').replaceAll('\r\n',
 const contract = read('skills/' + resource);
 const scenarios = new Map(contract.split('## Acceptance examples')[1].split('## Installed update route')[0].split('\n').filter(s => s.startsWith('|')).slice(2).map(row => row.split('|').slice(1,3).map(s => s.trim())));
 test('completion scenarios distinguish pending evidence, related repair and new unrelated work', () => {
-  assert.match(scenarios.get('PR opened, native completion received, independent review still owed'), /pending.*not accepted completion/);
+  assert.match(scenarios.get('PR opened, native completion received, required workflow evidence still owed'), /pending.*not accepted completion/);
   assert.match(scenarios.get('Related review finding before accepted completion'), /viable worker, exact pin and ledger/);
-  assert.match(scenarios.get('Unit independently accepted; unrelated issue is next'), /compact result.*new compact brief/);
+  assert.match(scenarios.get('Unit accepted by orch; unrelated issue is next'), /compact result.*new compact brief/);
   assert.match(scenarios.get('Accepted unit still has a needed checkout/setup or dependent lock'), /Preserve environment[/]ownership.*no dependency/);
   assert.match(scenarios.get('Completed child history remains inspectable'), /No disposal.*idle-charge.*exposed lifecycle/);
 });

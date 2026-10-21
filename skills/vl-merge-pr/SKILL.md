@@ -42,7 +42,13 @@ unrelated chats retained; tool failures remain reported, not silently waived.
 For owed checkout checks prefer an existing suitable managed attachment; otherwise
 use the Codex worktree path in [vl-start-feature](../vl-start-feature/SKILL.md) with
 an explicit reviewed ref. Do not use §2's bare-git throwaway creation/removal for a
-managed tree. Tests-only needs no invented smoke; local-smoke remains operator-owned
+managed tree. Verify the early worker workflow evidence before acceptance.
+Source/packaging checks cannot substitute for product behavior. If runtime is blocked,
+record workflow not verified, the exact blocker and remaining obligation.
+Separate Codex review is optional for a concrete unresolved risk, not a default phase.
+A requested reviewer starts with behavior evidence and identifies each proposed test's distinct failure.
+Tests-only requires automation at the appropriate functional boundary and needs no invented smoke;
+any additional local-smoke confirmation remains operator-owned
 unless requested, and live-only remains Refs → Verifying until actual confirmation.
 After merge, target the main clone explicitly for all commands; verify its default
 branch/status without resetting work. The app does not promise a current-chat move

@@ -1,6 +1,6 @@
 # Codex skill coverage
 
-**Created: 2026-10-03** · **Last updated: 2026-10-09**
+**Created: 2026-10-03** · **Last updated: 2026-10-21**
 Owning issue: [#330](https://github.com/jerrodtuck/vilya/issues/330).
 Parent: [#329](https://github.com/jerrodtuck/vilya/issues/329).
 
@@ -44,30 +44,47 @@ Source tests and registry gate results are recorded in the owning PR/issue.
 |---|---|---|---|---|---|
 | [vl-adhd](../../skills/vl-adhd/SKILL.md) | shared-compatible | $vl-adhd | Readable skill and current seat context. | Shared clear writing for operator updates and complete durable records; facts and authority remain intact. | Reviewed; runtime pending |
 | [vl-adr](../../skills/vl-adr/SKILL.md) | shared-compatible | $vl-adr | Repo config, owning issue, authorized decision and GitHub write access. | Issue-first decision capture and single-writer history apply unchanged. | Reviewed; runtime pending; shared contract references |
-| [vl-arch](../../skills/vl-arch/SKILL.md) | codex-adapted | $vl-arch | Product board identity and trusted human messaging authorization in this seat entry. | Direction-only architect with trusted same-board Codex messaging. | Reviewed; runtime pending; shared contract references |
-| [vl-ask](../../skills/vl-ask/SKILL.md) | codex-adapted | $vl-ask | Known target host and repo or product board; readable process canon. | Routes Codex planning and coordination to vl-orch-codex; remains read-only. | Reviewed; runtime pending; shared contract references |
-| [vl-chip](../../skills/vl-chip/SKILL.md) | codex-adapted | $vl-chip | Codex orch seat, settled plan, managed-worktree and collaboration tools, trusted human messaging authorization. | Codex dispatch uses explicit managed checkout isolation and native completion. | Reviewed; runtime pending; shared contract references |
+| [vl-arch](../../skills/vl-arch/SKILL.md) | codex-adapted | $vl-arch | Product board identity and trusted human messaging authorization in this seat entry. | Direction-only architect with trusted same-board Codex messaging. | Reviewed; runtime pending |
+| [vl-ask](../../skills/vl-ask/SKILL.md) | codex-adapted | $vl-ask | Known target host and repo or product board; readable process canon. | Routes Codex planning to vl-plan-codex and coordination to vl-orch-codex; remains read-only. | Reviewed; runtime pending |
+| [vl-chip](../../skills/vl-chip/SKILL.md) | codex-adapted | $vl-chip | Codex orch seat, settled plan, managed-worktree and collaboration tools, trusted human messaging authorization. | Codex dispatch uses explicit managed checkout isolation and native completion. | Reviewed; runtime pending |
 | [vl-crucible-blazor](../../skills/vl-crucible-blazor/SKILL.md) | shared-compatible | $vl-crucible-blazor | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged blazor architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-crucible-django](../../skills/vl-crucible-django/SKILL.md) | shared-compatible | $vl-crucible-django | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged django architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-crucible-fastapi](../../skills/vl-crucible-fastapi/SKILL.md) | shared-compatible | $vl-crucible-fastapi | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged fastapi architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-crucible-ml](../../skills/vl-crucible-ml/SKILL.md) | shared-compatible | $vl-crucible-ml | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged ml architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
-| [vl-crucible-python](../../skills/vl-crucible-python/SKILL.md) | shared-compatible | $vl-crucible-python | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | General Python architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-crucible-nextjs](../../skills/vl-crucible-nextjs/SKILL.md) | shared-compatible | $vl-crucible-nextjs | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | Unchanged nextjs architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
+| [vl-crucible-python](../../skills/vl-crucible-python/SKILL.md) | shared-compatible | $vl-crucible-python | Matching stack source/diff and test toolchain; review authority does not grant implementation or merge authority. | General Python architecture, quality and remediation contract; read and apply directly. | Reviewed; runtime pending; shared contract references |
 | [vl-cursor-handoff](../../skills/vl-cursor-handoff/SKILL.md) | other-host-only | Not applicable; assigned Codex worker brief | Cursor worker already rooted in its assigned worktree. | Cursor Worker A only; Codex workers use their self-contained vl-chip brief. | Reviewed; runtime pending; shared contract references |
-| [vl-finish-feature](../../skills/vl-finish-feature/SKILL.md) | codex-adapted | $vl-finish-feature | Assigned checkout, test toolchain, GitHub access and PR attachment tool. | Shared quality gates plus Codex PR attachment and durable worker reporting. | Reviewed; runtime pending; shared contract references |
-| [vl-handoff](../../skills/vl-handoff/SKILL.md) | shared-compatible | $vl-handoff | A safe work-unit boundary and a durable issue or PR where the complete checkpoint can be saved. | Shared KISS checkpoint chooses continue, built-in Compact, or a saved fresh-chat handoff without resetting authority or live state. | Reviewed; runtime pending; shared contract references |
+| [vl-finish-feature](../../skills/vl-finish-feature/SKILL.md) | codex-adapted | $vl-finish-feature | Assigned checkout, test toolchain, GitHub access and PR attachment tool. | Shared quality gates plus Codex PR attachment and durable worker reporting. | Reviewed; runtime pending |
+| [vl-handoff](../../skills/vl-handoff/SKILL.md) | shared-compatible | $vl-handoff | A verified repo, board and owning issue or PR at a safe work boundary. | Small helper behind the shared continue/compact/fresh-chat checkpoint; creates no chat or authority. | Reviewed; runtime pending |
 | [vl-history](../../skills/vl-history/SKILL.md) | shared-compatible | $vl-history | Repo config, git and authenticated GitHub read access. | Read-only issue and code history; no host lifecycle calls. | Reviewed; runtime pending; shared contract references |
-| [vl-merge-pr](../../skills/vl-merge-pr/SKILL.md) | codex-adapted | $vl-merge-pr | Codex orch seat, operator merge authorization, GitHub and attachment tools. | Codex orch verifies amendments/head/gates and preserves managed worktree lifecycle. | Reviewed; runtime pending; shared contract references |
+| [vl-merge-pr](../../skills/vl-merge-pr/SKILL.md) | codex-adapted | $vl-merge-pr | Codex orch seat, operator merge authorization, GitHub and attachment tools. | Codex orch verifies amendments/head/gates and preserves managed worktree lifecycle. | Reviewed; runtime pending |
 | [vl-night-shift](../../skills/vl-night-shift/SKILL.md) | unsupported-deferred | Not applicable; Codex unattended deferred | Existing supported unattended launcher; no Codex executor in this release. | Existing unattended behavior is preserved; a new Codex backend is deferred. | Reviewed; runtime pending; shared contract references |
 | [vl-orch-claude](../../skills/vl-orch-claude/SKILL.md) | other-host-only | Not applicable; $vl-orch-codex | Claude Code host and its documented session/monitor capabilities. | Claude orchestrator stays distinct; Codex uses vl-orch-codex. | Reviewed; runtime pending; shared contract references |
-| [vl-orch-codex](../../skills/vl-orch-codex/SKILL.md) | codex-adapted | $vl-orch-codex | Main/default checkout, repo config, runtime capabilities and trusted same-board human messaging authorization. | Codex desktop planning and coordination seat; implementation stays in isolated workers. | Reviewed; runtime pending; shared contract references |
+| [vl-orch-codex](../../skills/vl-orch-codex/SKILL.md) | codex-adapted | $vl-orch-codex | Main/default checkout, repo config, runtime capabilities and trusted same-board human messaging authorization. | Codex desktop coordination seat with separate Planner ownership; implementation stays in isolated workers. | Reviewed; runtime pending |
 | [vl-orch-cursor](../../skills/vl-orch-cursor/SKILL.md) | other-host-only | Not applicable; $vl-orch-codex | Cursor host and its documented Task/worktree/monitor capabilities. | Cursor orchestrator stays distinct; Codex uses vl-orch-codex. | Reviewed; runtime pending; shared contract references |
-| [vl-plan](../../skills/vl-plan/SKILL.md) | other-host-only | Not applicable; $vl-orch-codex | Existing Claude/Cursor planning host; Codex routes to vl-orch-codex. | Standing Planner remains other-host-only; Codex orch owns the same planning artifacts. | Reviewed; runtime pending; shared contract references |
+| [vl-plan](../../skills/vl-plan/SKILL.md) | codex-adapted | $vl-plan | Known host, complete vl-plan folder and the applicable host adapter. | Compatibility entry routes to the distinct Codex Planner and one shared role contract. | Reviewed; runtime pending |
+| [vl-plan-claude](../../skills/vl-plan-claude/SKILL.md) | other-host-only | Not applicable in Codex; use $vl-plan-codex. | Claude Code host, complete vl-plan and vl-plan-claude folders, GitHub access and supported Monitor tools. | Claude Code Planner adapter; Codex uses vl-plan-codex. | Reviewed; runtime pending |
+| [vl-plan-codex](../../skills/vl-plan-codex/SKILL.md) | codex-adapted | $vl-plan-codex | Complete vl-plan and vl-plan-codex folders, verified repo/board, GitHub access and authorized Codex tools. | Codex Planner adapter loads the shared role and uses exposed Codex tools. | Reviewed; runtime pending |
 | [vl-present](../../skills/vl-present/SKILL.md) | shared-compatible | $vl-present | Task facts, audience and delivery context; discover actual tools and read the selected capability contract. | Host-neutral presentation selection; reuse verified capabilities and preserve evidence with readable fallbacks. | Reviewed; runtime pending |
 | [vl-product-map](../../skills/vl-product-map/SKILL.md) | shared-compatible | $vl-product-map | Repo sources, intended design and authenticated GitHub read access. | Read-only evidence survey; only caller-named issue comments are an exception. | Reviewed; runtime pending; shared contract references |
 | [vl-prune](../../skills/vl-prune/SKILL.md) | codex-adapted | $vl-prune | Codex orch seat, authorized close-out and managed attachment/archive tools. | Codex managed trees use archival by attachment identity; no filesystem deletion. | Reviewed; runtime pending; shared contract references |
-| [vl-start-feature](../../skills/vl-start-feature/SKILL.md) | codex-adapted | $vl-start-feature | Repo config, issue and plan, git/GitHub access and managed-worktree tools. | Codex orch owns kickoff planning; managed setup precedes implementation. | Reviewed; runtime pending; shared contract references |
+| [vl-start-feature](../../skills/vl-start-feature/SKILL.md) | codex-adapted | $vl-start-feature | Repo config, issue and plan, git/GitHub access and managed-worktree tools. | Separate Codex Planner owns kickoff; managed setup precedes implementation. | Reviewed; runtime pending |
 | [vl-update-docs](../../skills/vl-update-docs/SKILL.md) | shared-compatible | $vl-update-docs | Repo config and authorization for requested issue or document writes. | Shared issue-versus-document routing; preserve file ownership. | Reviewed; runtime pending; shared contract references |
+
+## #380 current-phase boundary
+
+The distinct vl-plan-codex and vl-plan-claude host adapters load one shared role contract
+in vl-plan/references/planner-contract.md. Whole-folder installation includes all three folders.
+Rerun the intended-host installer for newly added entries, then refresh the session and inspect resolved sources.
+The compatibility vl-plan command routes by known host and stops for an unknown host.
+Codex planning ownership, optional separate review and product evidence follow #380.
+Historical #329/#347 evidence and evaluation protocols are unchanged.
+
+Generated publication and catalog classification are current scope. Website editorial pages,
+copied entry prompts and browser verification remain deferred under the
+[operator amendment](https://github.com/jerrodtuck/vilya/issues/380#issuecomment-6315508728).
+This source/catalog delivery does not prove native discovery, installed refresh or full runtime adoption.
+Use Refs #380 and keep the whole issue open until the deferred obligation is complete.
 
 ## Host audit and routing boundaries
 
@@ -80,7 +97,8 @@ Source tests and registry gate results are recorded in the owning PR/issue.
   brief/finish entry each state trusted same-board initiation/reply prerequisites,
   counterpart role/board/repo/identifier selection and durable issue recording.
   Peer messages grant no reply, decision, model, implementation or merge authority.
-- `vl-ask` routes Codex planning to the orch. Other-host standing seats and Worker A
+- `vl-ask` routes Codex planning to vl-plan-codex; vl-plan retains explicit compatibility.
+  Both new host entries require one shared Planner contract. Cursor keeps its host resource. Other-host standing seats and Worker A
   stop before their Codex-inapplicable procedures. The blanket Cursor messaging
   impossibility claim in Worker A is replaced with an explicitly unverified capability
   boundary; its issue/PR coordination procedure remains unchanged.
