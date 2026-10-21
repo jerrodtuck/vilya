@@ -95,6 +95,24 @@ isolates what varies; fake SOLID just adds indirection.
 
 ---
 
+## Automated checks and Crucible judgment
+
+Use three groups within the existing review method:
+
+1. **Enforced checks:** run configured dependency-boundary, unsafe-type and recognized async checks through established tools. Record actual commands and results. Preserve allowed public contracts and acyclic direction. Keep relevant indirect paths, aliases and type-only dependencies in graph checks.
+2. **Advisory signals:** file growth, broad catches, silent defaults, casts/double assertions, direct IO, lifetime smells and component duplication need context. Keep approximate size guidance and justified exceptions. A signal blocks only when a concrete defect independently warrants it. Do not convert advisory warnings into errors with blanket zero-warning settings.
+3. **Crucible judgment:** assess slice ownership, cohesion, useful abstractions, genuinely shared code, policy/handler extraction, state placement and refactor cost. Implementation count, route line limits and complexity scores do not replace this judgment. Keep the existing severity and concrete-refactor contract.
+
+Run tools before broad cleanup. Baseline legacy debt by exact site/rule or source/target/reason; retain enforcement for new violations. Keep tests as source-scoped consumers, and forbid production imports of tests. Exclude generated output without hiding handwritten adapters or production graph paths. Treat generation parity, migration history and affected workflow evidence as separate gates.
+
+Lint success does not prove dependency-injection completeness, deployed provider identity or successful runtime interaction. Exercise affected integration paths separately. During skill installation or sync, inspect and preserve deliberate repo-local extensions; do not replace product invariants with the generic variant.
+
+Use the repository's compiler/analyzers for unsafe type operations, suppressed diagnostics and recognized async mistakes, including unawaited tasks and inappropriate async void. Require named, explained scoped exceptions; unused-suppression checks depend on the configured analyzer. Do not claim exhaustive resource/concurrency detection.
+
+Use established architecture tests for namespace/type dependency direction and private feature access. Preserve justified public contracts with named ownership, exact interfaces and acyclic direction. Check project files/references explicitly for forbidden sibling-product ProjectReference edges: type architecture tests alone can miss an unused project reference. Keep tests as consumers without exempting production-to-test dependencies. Vilya adds no .NET runtime or claim of analyzer execution in other repositories.
+
+---
+
 ## VSA for .NET — presumptive 🔴 blockers (stack-specific)
 
 Blockers unless the author justifies clearly:

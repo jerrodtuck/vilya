@@ -1,0 +1,1 @@
+- #381: Add executable registry dependency, unsafe-type and async lint checks with scoped legacy exceptions and real CLI fixtures. Keep advisory signals nonblocking and contextual design in all six Crucible variants; preserve repo-local extensions and separate runtime evidence.

@@ -99,6 +99,24 @@ and isolates what varies; fake SOLID just adds indirection.
 
 ---
 
+## Automated checks and Crucible judgment
+
+Use three groups within the existing review method:
+
+1. **Enforced checks:** run configured dependency-boundary, unsafe-type and recognized async checks through established tools. Record actual commands and results. Preserve allowed public contracts and acyclic direction. Keep relevant indirect paths, aliases and type-only dependencies in graph checks.
+2. **Advisory signals:** file growth, broad catches, silent defaults, casts/double assertions, direct IO, lifetime smells and component duplication need context. Keep approximate size guidance and justified exceptions. A signal blocks only when a concrete defect independently warrants it. Do not convert advisory warnings into errors with blanket zero-warning settings.
+3. **Crucible judgment:** assess slice ownership, cohesion, useful abstractions, genuinely shared code, policy/handler extraction, state placement and refactor cost. Implementation count, route line limits and complexity scores do not replace this judgment. Keep the existing severity and concrete-refactor contract.
+
+Run tools before broad cleanup. Baseline legacy debt by exact site/rule or source/target/reason; retain enforcement for new violations. Keep tests as source-scoped consumers, and forbid production imports of tests. Exclude generated output without hiding handwritten adapters or production graph paths. Treat generation parity, migration history and affected workflow evidence as separate gates.
+
+Lint success does not prove dependency-injection completeness, deployed provider identity or successful runtime interaction. Exercise affected integration paths separately. During skill installation or sync, inspect and preserve deliberate repo-local extensions; do not replace product invariants with the generic variant.
+
+Use import-linter layers/forbidden for shared/domain/config direction and protected/forbidden for private modules. Preserve public service/selector collaboration, named ownership and acyclic direction. Do not apply independence across apps that intentionally collaborate through those contracts.
+
+Use the repo's actual mypy/pyright and django-stubs setup, plus Ruff, for explicit/unsafe Any and suppression codes. Require named, explained scoped exceptions and unused-ignore checks. Apply recognized Ruff ASYNC checks such as ASYNC210 where async code exists; no exhaustive concurrency guarantee follows. Type checks do not replace boundary validation, ORM behavior or affected workflow evidence.
+
+---
+
 ## VSA for Django — presumptive 🔴 blockers (stack-specific)
 
 Blockers unless the author justifies clearly (canon: HackSoft Django Styleguide):
@@ -125,7 +143,8 @@ Blockers unless the author justifies clearly (canon: HackSoft Django Styleguide)
    IO belongs in middleware / a service / a task, not inlined into a view body or model method.
 6. **Ad-hoc branching** bolted onto an unrelated flow instead of a dedicated policy / service / app.
 7. **Boundary rules unenforced** — the no-cross-app and unidirectional rules are lintable
-   (import-linter `layers` / `independence` / `forbidden` contracts in `.importlinter`). A violation
+   (import-linter `layers` / `protected` / `forbidden` contracts in `.importlinter`;
+   preserve justified public collaboration and acyclic direction). A violation
    a contract would have caught is two findings: the violation, and 🟠 "add the boundary contracts
    to the repo".
 

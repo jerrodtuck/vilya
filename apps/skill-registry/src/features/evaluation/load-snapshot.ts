@@ -5,6 +5,7 @@ import { validateSnapshot } from './snapshot.mjs';
 export async function loadSnapshot() {
   try {
     const content = await readFile(path.join(process.cwd(), '.evaluation', 'results.json'), 'utf8');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- #381 baseline: existing evaluation JSON/type debt; boundary validation is deferred from #381
     return { status: 'ready' as const, snapshot: validateSnapshot(JSON.parse(content)) };
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return { status: 'missing' as const, snapshot: null };
