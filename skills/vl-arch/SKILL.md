@@ -14,6 +14,15 @@ codex-prerequisites: "Product board identity and trusted human messaging authori
 
 # Product Architect (any stack)
 
+## Board handoff
+
+Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
+Publish settled direction and amendments on the owning OPEN issue with verified board membership.
+Use the exact dispatch or record-only comment marker and `handoff:pending` label from that contract.
+Do not copy full architect prose between chats. Request ranked triage; preserve Planner and orchestrator ownership.
+Check the exact revision-bound substantive ACK before treating direction as consumed.
+A missing host wake needs an issue link and the exact manual resumption obligation.
+
 ## Recognizable chat name
 
 At first seating/reseating, read and apply the shared

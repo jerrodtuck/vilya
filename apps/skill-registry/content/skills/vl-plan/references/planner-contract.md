@@ -44,6 +44,15 @@ It declines another seat's skill or a plain-language implementation request with
 Invocation does not activate another seat or create a chat or recurring automation.
 Preserve trusted human messaging authorization, model pins and operator merge authority.
 
+## Board intake
+
+Read and apply the full [board-intake contract](../../vl-orch-codex/references/board-intake.md).
+The orch consumes architect direction and routes planning requests; this Planner retains needs:plan ownership.
+Preserve exact source revisions in issue handoffs and substantive consumption evidence.
+Use shared adaptive scheduling and durable revision bookkeeping for supported intake.
+A parked question remains on the issue; changed answers need reconciliation, not automatic implementation.
+Keep plan:ready as finished-plan meaning and preserve all readiness and decision gates.
+
 ## Planning loop
 
 1. Verify current repo, board, exact issue identity and OPEN state before mutations.

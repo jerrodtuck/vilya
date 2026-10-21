@@ -1,4 +1,4 @@
-// #237 / #270: /vl-chip monitor recipe is REST-only, ≥120s, with dedup — never gh pr list;
+// #237 / #270 / #384: REST-only active watches use durable revision/ACK state.
 // Cursor shells are mortal — re-arm without drain thrash.
 import fs from "node:fs";
 import path from "node:path";
@@ -15,17 +15,16 @@ function readChipSkill(): string {
 }
 
 describe("/vl-chip REST monitor (#237)", () => {
-  it("bans gh pr list and prescribes REST pulls + comments with ≥120s dedup", () => {
+  it("bans GraphQL polling and prescribes active cadence with durable revision dedup", () => {
     const skill = readChipSkill();
     expect(skill).toContain("REST-only hot path");
     expect(skill).toContain("pulls?head={owner}:{branch}&state=open");
     expect(skill).toContain("issues/{n}/comments?since={iso}");
-    expect(skill).toMatch(/≥120s|>=120s/);
-    expect(skill).toContain("Dedup guard");
-    expect(skill).toContain("last_pr_number");
-    expect(skill).toContain("last_comment_id");
-    expect(skill).toContain("wake sentinel");
-    expect(skill).toContain("re-announce a standing open PR every tick");
+    expect(skill).toContain("120-second checks for relevant active/expected handoffs");
+    expect(skill).toContain("board-intake.md");
+    expect(skill).toContain("Persist pending, emitted and consumed separately");
+    expect(skill).toContain("edited comments and parked answers");
+    expect(skill).toContain("Never re-announce a standing PR or unchanged decision gate");
     expect(skill).toContain("gh pr list");
     expect(skill).toMatch(/Never\*\* shell `gh pr list`/);
     expect(skill).toContain("gh project item-list");

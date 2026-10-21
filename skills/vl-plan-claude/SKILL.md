@@ -31,10 +31,12 @@ A session directory is not a rename API. Use observed capability/readback or man
 ## Intake and delivery
 
 Use the supported Claude Monitor tool for the existing Planner-owned needs:plan intake.
-Poll REST through gh at intervals of at least 120 seconds. Avoid GraphQL hot loops.
-Arm one poller at session start/idle. Keep it running across drains.
-Each tick compares the current open set with last-seen, then always sets last-seen = current set.
-Wake only when the set gains an issue. Do not kill/re-arm after each drain.
+Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
+Use REST and initial reconciliation, then idle delays 30, 120, 120, 300, 300, 600 seconds.
+Verify Monitor minimum cadence; document any supported fallback and detection delay. Honor Retry-After.
+Keep one healthy poller across drains. Persist pending/emitted/consumed revisions and reconcile durable ACKs on restart.
+Wake only for relevant changed work; paginate fully and cover edits and parked answers.
+Keep unchanged checks silent in the watcher layer. Never hot-poll GraphQL or seed away pending work.
 Never arm process/completion self-watches. The orch owns the standing plan:ready completion poller.
 Do not substitute an exit-only shell loop, Codex automation or Cursor notify_on_output.
 Missing Monitor capability leaves intake unverified; report the exact missing obligation.
