@@ -71,6 +71,9 @@ block. Nothing here is stack-specific — it drives .NET, Next.js, or any repo w
 
 ## 1. Behavior evidence and applicable suites green
 
+Read and apply the [shared impact and verification contract](../vl-plan/references/impact-verification.md).
+Confirm the actual impact map. Report selected/excluded checks, provenance, outcomes, elapsed time and remaining obligations.
+
 First record the smallest complete workflow result from early implementation.
 If blocked, report **workflow not verified**, the exact blocker and remaining action.
 Keep acceptance pending even when isolated tests pass. A pure-function change needs

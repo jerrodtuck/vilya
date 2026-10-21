@@ -99,6 +99,10 @@ review findings and elapsed/usage evidence where available; unavailable usage is
 
 ### Product behavior and proportional tests (#380)
 
+Read and apply the [shared impact and verification contract](../../skills/vl-plan/references/impact-verification.md).
+Planner plans carry the proportional map. Workers confirm actual dependencies and select checks for changed contracts and effects.
+Keep early integration, runtime provenance and distinct exercised/skipped/failed/blocked outcomes in the existing receipt.
+
 Every behavior plan names its starting state, actual UI/API/CLI action and observable result.
 Workers exercise the smallest complete workflow early, before isolated test expansion.
 Verify affected persistence and integration boundaries. A failing workflow returns to implementation,

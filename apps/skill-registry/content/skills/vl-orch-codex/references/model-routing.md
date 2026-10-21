@@ -168,6 +168,9 @@ The orch verifies acceptance evidence independently of implementer claims.
 
 ### Product behavior before test expansion (#380)
 
+Read and apply the [shared impact and verification contract](../../vl-plan/references/impact-verification.md).
+Use its proportional map, early integration and bounded checks within existing planning, repair and acceptance gates.
+
 Every behavior plan names the starting state, actual UI/API/CLI action and observable result.
 Verify affected persistence and integration boundaries. Exercise the smallest complete
 workflow early, before expanding isolated unit coverage. If that workflow fails, return
