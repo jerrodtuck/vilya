@@ -77,6 +77,10 @@ seat handoffs; durable issue reporting works independently of chat delivery.
 
 ## Fresh issue-state gate — every dispatch path
 
+Read and apply the [shared impact and verification contract](../vl-plan/references/impact-verification.md).
+Carry the plan's impact map and selected/excluded checks into every worker brief.
+Workers confirm actual dependencies and expand checks for new effects or failures.
+
 Before building a brief, changing board state/membership, creating a checkout, or
 spawning a worker, obtain a fresh successful read of the intended repository and
 issue. Consume state and identity from the issue read already needed for this

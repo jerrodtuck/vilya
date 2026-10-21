@@ -246,6 +246,9 @@ run before a real choice exists — see [/vl-chip](../vl-chip/SKILL.md) §2a.
 
 ## 6. Verify plan up front — including merge routing
 
+Read and apply the [shared impact and verification contract](../vl-plan/references/impact-verification.md).
+Keep its impact map, earliest feasible integration and check selection in the existing issue plan.
+
 State how the feature will be verified, **on the issue** (kickoff comment), so finish and merge
 read it instead of re-deciding. In chip-flow, that kickoff is written by [/vl-plan](../vl-plan/SKILL.md);
 in the single-session footnote, this skill writes it.

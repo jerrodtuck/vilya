@@ -340,6 +340,13 @@ the required ruling exists; elapsed time is not approval. This rule adds no glob
 session registry, monitor, or receipt API. Include it in worker briefs as well as
 seat handoffs; durable issue reporting works independently of chat delivery.
 
+## Affected verification
+
+Read and apply the [shared impact and verification contract](../vl-plan/references/impact-verification.md).
+Carry the plan's map and selected/excluded checks into the worker brief.
+Verify actual dependencies, early integration and observed outcomes before acceptance.
+Keep this host's review, tool and authority gates.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a

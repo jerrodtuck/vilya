@@ -2,16 +2,51 @@ name: Registry lint
 
 on:
   pull_request:
-    branches: [master, codex/380-codex-planner-workflow]
-    paths:
-      - 'apps/skill-registry/**'
-      - '.github/workflows/registry-lint.yml'
+    branches: [master, 'codex/**']
+  push:
+    branches: [master]
 
 permissions:
   contents: read
 
+concurrency:
+  group: registry-checks-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  select:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      lint: ${{ steps.select.outputs.lint }}
+      registry: ${{ steps.select.outputs.registry }}
+      skills: ${{ steps.select.outputs.skills }}
+      tooling: ${{ steps.select.outputs.tooling }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Select checks from exact event commits
+        id: select
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: node scripts/ci/select-checks.mjs "$BASE_SHA" "$HEAD_SHA" "$EVENT_NAME"
+      - name: Check changed whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: git -c core.whitespace=blank-at-eol,blank-at-eof diff --check "$BASE_SHA" "$HEAD_SHA" --
+
   lint:
+    needs: select
+    if: needs.select.outputs.lint == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
@@ -20,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -30,3 +65,69 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test:lint
+
+  registry:
+    needs: select
+    if: needs.select.outputs.registry == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/skill-registry
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/skill-registry/package-lock.json
+      - run: npm ci
+      # Keep full fast consumers. The separate Linux workflow adds a platform/count assertion.
+      - run: npm test
+      - run: npm run build
+
+  skills:
+    needs: select
+    if: needs.select.outputs.skills == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: node --test skills/tests/*.test.mjs
+      - run: node apps/skill-registry/scripts/sync-skills.mjs
+      - run: node apps/skill-registry/scripts/sync-github-projects-template.mjs
+      - run: node apps/skill-registry/scripts/sync-night-shift-template.mjs
+      - name: Require committed generation parity
+        run: |
+          git diff --exit-code -- apps/skill-registry/content
+          status=$(git status --porcelain --untracked-files=all -- apps/skill-registry/content)
+          if [ -n "$status" ]; then
+            printf '%s\n' "$status"
+            echo 'Generated delivery differs from the committed tree' >&2
+            exit 1
+          fi
+
+  tooling:
+    needs: select
+    if: needs.select.outputs.tooling == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/ci/*.test.mjs
