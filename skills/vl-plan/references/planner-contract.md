@@ -23,6 +23,16 @@ Consult relevant references as needed and reuse still-valid checks. Record a sho
 actual-check receipt in the existing plan review. Keep authority, stops and acceptance self-contained.
 If necessary checks are missing, stop before a readiness claim.
 
+The Planner owns semantic preservation checks for plans, kickoffs and worker instructions.
+Check actor, action, scope, sequence, obligation, permission, uncertainty, acceptance and stop conditions against the approved meaning.
+Record a short actual-check receipt within the existing plan. Do not add a signoff artifact or review stage.
+
+For settled scope, complete these checks without separate human wording confirmation.
+Do not withhold plan:ready only because the operator has not reviewed the wording.
+Ask only for genuine unresolved decisions or approvals required by the applicable authority.
+Preserve safety, credential, financial, merge, deployment and other explicit authorization gates.
+Do not invent approvals from style guidance or claim that the operator personally reviewed the wording.
+
 
 ## Role and authority
 

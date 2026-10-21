@@ -70,9 +70,17 @@ Report skipped checks and limits. Usage unavailable is not zero.
 
 Do the [source, dictionary and meaning checks](references/ste-planning.md#existing-plan-review)
 within the existing plan review. Check all applicable rules and preserve actor, action,
-condition, order, quantity, obligation, permission and uncertainty. Human semantic review is
-required. If necessary source access or checks are missing, stop before a readiness
-or conformance claim.
+condition, order, quantity, obligation, permission and uncertainty.
+The Planner owns semantic preservation checks for plans, kickoffs and worker instructions.
+Check scope, sequence, acceptance and stop conditions against the approved meaning.
+If necessary source access or checks are missing, stop before a readiness or conformance claim.
+
+Under [#380](https://github.com/jerrodtuck/vilya/issues/380#issuecomment-6316173986),
+settled plans need no separate human wording confirmation for this operator's Vilya workflow.
+Do not withhold plan:ready only because the operator has not reviewed the wording.
+Ask the operator only for genuine unresolved decisions or approvals required by the applicable authority.
+Preserve safety, credential, financial, merge, deployment and other explicit authorization gates.
+Do not infer new approvals from style guidance or claim that the operator personally reviewed the wording.
 
 Give a short receipt of actual checks with links to reusable evidence. Expand only for
 an exception, failed check or unresolved question. Do not attach recurring rule checklists,

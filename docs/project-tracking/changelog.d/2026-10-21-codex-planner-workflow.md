@@ -6,6 +6,8 @@
 - Make separate Codex review optional for concrete unresolved risk. Preserve stack crucible and operator merge authority.
 - Require early product workflow evidence and tests tied to distinct behavior or credible failures.
 - Publish complete generated skill folders and catalog metadata.
+- Assign semantic preservation checks to the Planner. Settled plans need no separate human wording confirmation;
+  preserve genuine unresolved decisions and applicable authorization gates.
 
 Refs #380. Website editorial pages, copied prompts and browser verification remain deferred until operator finalization.
 Source checks do not establish installed refresh or full runtime adoption.
