@@ -32,8 +32,8 @@ test('semantic checkpoint cases remain distinct', () => {
 test('applicable seats use short milestone references to the shared skill', () => {
   for (const slug of ['vl-arch', 'vl-orch-codex', 'vl-orch-claude', 'vl-orch-cursor',
     'vl-plan', 'vl-chip', 'vl-start-feature', 'vl-cursor-handoff']) {
-    const body = read(`skills/${slug}/SKILL.md`);
-    assert.ok(body.includes('../vl-handoff/SKILL.md'), slug);
+    const body = read(slug === 'vl-plan' ? 'skills/vl-plan/references/planner-contract.md' : `skills/${slug}/SKILL.md`);
+    assert.ok(body.includes(slug === 'vl-plan' ? '../../vl-handoff/SKILL.md' : '../vl-handoff/SKILL.md'), slug);
     assert.match(body, /choose\s+continue, built-in Compact, or recommend\s+fresh chat/i, slug);
     assert.ok(body.split('../vl-handoff/SKILL.md').length - 1 <= 2, `${slug}: duplicated handoff policy`);
   }

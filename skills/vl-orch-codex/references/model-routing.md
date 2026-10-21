@@ -6,9 +6,16 @@ in [vl-orch-codex](../SKILL.md), never changes ownership or operator merge autho
 This operator approved the original policy on 2026-10-03 in
 [#347 direction/ADR](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975011992),
 with the [settled plan](https://github.com/jerrodtuck/vilya/issues/347#issuecomment-5975070688).
-Issue #357 revised the planning route on 2026-10-08 using current independent
+Issue #357 revised the model route on 2026-10-08 using current independent
 benchmark screening and a matched Vilya probe. Other operators retain configured
 defaults absent their own authorization.
+
+Issue [#380](https://github.com/jerrodtuck/vilya/issues/380) supersedes the earlier
+orch-owned planning and unconditional separate-review requirements for this operator.
+The separate Planner owns plans. The orch consumes them and verifies acceptance.
+Historical ADRs and fixed evaluation protocols retain their original meaning.
+Shared callers on Claude Code/Cursor preserve their host-owned planning and mandatory
+review gates. Codex-specific ownership and optional-review changes do not override them.
 
 ## Select by uncertainty and consequence
 
@@ -22,7 +29,7 @@ metadata and official documentation at setup/dispatch; validate before selecting
 | Difficult architecture, conflicting evidence or consequential uncertainty | latest supported Sol | high first |
 | Implementation from a complete settled plan | latest supported Sol | medium |
 | Explicitly enumerated mechanical operations with objective verification | latest supported Luna | low |
-| Independent review by a separate reviewer | latest supported Sol | high |
+| Optional separate review for a concrete unresolved risk | latest supported Sol | high |
 | Consequential design/security escalation after recorded Sol impasse or capability failure | latest supported Astra | high; xhigh for justified hard analysis |
 
 Route by uncertainty and consequence, never line count or the word easy. Do not add
@@ -32,7 +39,7 @@ bounded Astra escalation. Luna is ONLY
 for explicitly bounded mechanical operations such as approved text replacements,
 formatting or explicit config edits with objective verification. A small behavior
 change, an uncertain choice or a workflow-policy decision is not eligible: use Sol
-with a settled plan, or return uncertainty to orch-owned planning. Planning resolves
+with a settled plan, or return uncertainty to the separate Planner. Planning resolves
 owning slice, contracts, edge cases, exclusions, verification and stop conditions
 before implementation. A plan gap returns to planning; no weaker quality gate.
 
@@ -47,8 +54,8 @@ substitution, older-family fallback or unapproved effort increase.
 
 Full-history forks currently inherit and cannot override model/effort; recheck the
 exposed contract. Selected-model delegation uses supported limited/no-history forks
-and a self-contained brief. If the orch cannot switch itself, delegate a bounded
-planning/review phase at its assigned tier, review/record its output and preserve
+and a self-contained brief. If the orch cannot switch itself, use the separate Planner or an optional bounded
+review at its assigned tier, record its output and preserve
 implementation files, ownership and existing worker pins. Mid-chip changes require
 an explicit recorded decision within operator authority; real forks need operator choice.
 
@@ -63,8 +70,8 @@ preserves the correct checkout, pin, and repair ledger. Before replacing one, pe
 handoff with the current head/diff, unresolved findings, attempts, evidence, ownership,
 and next targeted check. Replacement never resets repair counts or required gates.
 
-Initial independent review covers the full change and affected boundaries at an exact
-head. After repair, review the delta from the previously reviewed head plus affected
+If a concrete unresolved risk warrants separate review, record that risk and its scope.
+The optional reviewer starts with product behavior evidence, then inspects the actual PR head/diff and affected boundaries. After repair, review the delta from the previously reviewed head plus affected
 boundaries and current amendments. Retain initial evidence and record both heads, the
 delta, findings, boundary coverage, and gate provenance. If initial coverage was
 insufficient, obtain it before relying on delta review. Self-report is never approval.
@@ -75,7 +82,7 @@ head, and outcome. Batch independent reads, search before broad reads, bound exc
 transcript logs, and avoid unchanged reads. Keep full logs outside the transcript; record
 their path and concise failure evidence. Use quiet bounded waits with backoff while preserving
 active-task persistence. These practices never waive identity/base validation, smoke,
-crucible, independent review, repair stops, or operator merge authority.
+crucible, required behavior evidence, repair stops, or operator merge authority.
 
 Evaluate context strategy separately from model routing. Hold the fixture, phase models,
 efforts, gates, and rubric constant while comparing supported strategies such as full
@@ -100,7 +107,7 @@ review requirement or repair count.
 A worker owns one settled task or slice with explicit exclusions, completion criteria,
 assigned checkout/branch and durable issue/PR evidence. A PR opening or native completion
 message is not accepted completion. The owning orch verifies the declared unit boundary,
-required gates, independent review and current amendments; record acceptance or what remains
+required gates, product behavior evidence, any specifically requested review and current amendments; record acceptance or what remains
 owed. Operator merge authority is separate. Keep the viable worker for related review
 findings and repairs until that boundary, using the existing pins and repair ledger.
 
@@ -139,23 +146,45 @@ errors/tests, a replacement worker, resumed session or new branch cannot reset t
 same unresolved failure's count. At the second consecutive unsuccessful repair
 attempt, STOP before a third correction. Persist the ledger, changes tried, exact
 failed gate, current HEAD/diff, worktree/worker ownership and unresolved hypothesis
-on the owning issue; return to orch-owned planning, preserving files and exact pins.
+on the owning issue; return to the separate Planner, preserving files and exact pins.
 All earlier hard stops apply immediately; this does not grant two attempts to
 unapproved destructive operations or work beyond authority.
 
 A meaningful targeted pass resolving the defect closes its entry; a later regression
 retains linked history. A planning handoff never silently resets the count. Any revised
-plan/repair allowance requires an explicit recorded orch planning decision within
+plan/repair allowance requires an explicit recorded Planner decision within
 operator authority, preserving history; a real design fork stops for operator choice.
 
 ## Verification and receipts
 
-Complete briefs and all existing tests/build, mandatory stack crucible, required
-smoke, independent review and operator merge gates remain intact at every tier.
-Independent review is separate from implementer self-report: orch assigns a separate
-reviewer at Sol/high (Astra/high or justified xhigh for consequential design/security).
-The reviewer inspects actual PR head/diff and meaningful test evidence, current
-issue/parent amendments and these scenarios. The implementer cannot be sole approval.
+Complete briefs, applicable tests/build, mandatory stack crucible, required product
+workflow evidence and operator merge authority remain intact at every tier.
+Separate review is optional for a concrete unresolved risk. Record the reason and scope.
+Do not replace the removed unconditional reviewer with another mandatory review phase.
+A requested reviewer uses Sol/high, with Astra escalation only under the phase policy.
+The reviewer starts with behavior evidence and current issue/parent amendments.
+Each requested new test identifies the distinct failure it catches.
+The orch verifies acceptance evidence independently of implementer claims.
+
+### Product behavior before test expansion (#380)
+
+Every behavior plan names the starting state, actual UI/API/CLI action and observable result.
+Verify affected persistence and integration boundaries. Exercise the smallest complete
+workflow early, before expanding isolated unit coverage. If that workflow fails, return
+to implementation. Green isolated tests cannot satisfy missing product evidence.
+
+Add tests only for distinct acceptance behavior or a credible regression/failure.
+Use the smallest set that proves those risks. Avoid implementation-mirroring assertions,
+redundant permutations, arbitrary coverage targets and test-count goals. Broader coverage
+needs a concrete failure or unresolved risk.
+
+Use tests-only when automation proves the affected product behavior at the appropriate boundary.
+Source/metadata/packaging checks cannot prove rendering, interaction, persistence or integration.
+A narrow pure-function change can use its functional boundary without invented UI smoke.
+If the real workflow is blocked, report **workflow not verified**, the exact blocker,
+and the remaining action. Keep acceptance pending. Preserve live-only → Verifying
+until actual confirmation. A task-owned preview may run with verified ownership and
+explicit authorization. Shared-host smoke remains probe-never-manage.
 
 For a new model or a broad recalibration, screen current independent benchmark
 intelligence, coding/agentic performance, latency and price first. Challenge the
@@ -177,8 +206,8 @@ and render tests validate instruction delivery, not runtime routing or full #329
 | Conflicting architecture evidence risks data loss | Sol/high first; if it records a specific unresolved consequential question, dispatch one bounded Astra/high consultation; xhigh requires separate hard-analysis rationale |
 | Approved replacement of three named headings, expected text diff specified | Luna/low only for those enumerated edits; verify exact diff and applicable gates |
 | One-line retry condition changes behavior | Reject Luna; Sol/medium from a settled plan or planning for unresolved choices |
-| Implementer reports green gates | Assign a separate Sol/high reviewer to the actual head/diff and meaningful evidence; self-report is not approval |
-| Security boundary/design has consequential risk | Separate Sol/high review first; Astra/high only after a recorded impasse or capability failure; xhigh only with justified hard-analysis rationale |
+| Implementer reports green gates | Verify actual behavior evidence and gates; optional separate review needs a concrete unresolved risk |
+| Security boundary/design has consequential risk | Record the risk and request bounded Sol/high review where needed; Astra/high only after a recorded impasse or capability failure; xhigh only with justified hard-analysis rationale |
 | Initial targeted gate fails | Detection only, zero repairs; record failure before corrective work |
 | Corrective change 1 has failing targeted check | Attempt 1, unsuccessful count 1; preserve hypothesis/change/check evidence |
 | Corrective change 2 has inconclusive targeted check | Attempt 2, unsuccessful count 2; STOP before third correction, issue ledger + planning handoff |
@@ -192,9 +221,9 @@ and render tests validate instruction delivery, not runtime routing or full #329
 | Same model and fixture, different context strategy | Compare acceptance, counters, handoffs, repairs, elapsed time and accepted-change cost; do not attribute the result to model routing |
 | Repair needs the same checkout and pin | Reuse the viable worker and ledger; replace only after a durable handoff, without resetting attempts |
 | Required gate passed and source is unchanged | Reuse the exact-head evidence; rerun only for failure, affected changes or unresolved risk |
-| PR opened, native completion received, independent review still owed | Keep the unit pending; self-report/native completion is not accepted completion |
+| PR opened, native completion received, required workflow evidence still owed | Keep the unit pending; self-report/native completion is not accepted completion |
 | Related review finding before accepted completion | Keep the viable worker, exact pin and ledger for the same unit's repair |
-| Unit independently accepted; unrelated issue is next | Save compact result/evidence and ownership; end this unit and use a new compact brief for unrelated work |
+| Unit accepted by orch; unrelated issue is next | Save compact result/evidence and ownership; end this unit and use a new compact brief for unrelated work |
 | Accepted unit still has a needed checkout/setup or dependent lock | Preserve environment/ownership; release only task-owned locks when lifecycle allows and no dependency needs them |
 | Completed child history remains inspectable | No disposal, parent-context contamination, ongoing idle-charge or memory-release claim; use exposed lifecycle only |
 

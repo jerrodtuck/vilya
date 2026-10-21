@@ -9,6 +9,8 @@ export const SKILL_SLUGS = {
   updateDocs: "vl-update-docs",
   prune: "vl-prune",
   planner: "vl-plan",
+  plannerCodex: "vl-plan-codex",
+  plannerClaude: "vl-plan-claude",
   nightShift: "vl-night-shift",
   cursorHandoff: "vl-cursor-handoff",
   architect: "vl-arch",
@@ -33,6 +35,8 @@ export const SKILL_INVOKES = {
   updateDocs: `/${SKILL_SLUGS.updateDocs}`,
   prune: `/${SKILL_SLUGS.prune}`,
   planner: `/${SKILL_SLUGS.planner}`,
+  plannerCodex: "$" + SKILL_SLUGS.plannerCodex,
+  plannerClaude: `/${SKILL_SLUGS.plannerClaude}`,
   nightShift: `/${SKILL_SLUGS.nightShift}`,
   cursorHandoff: `/${SKILL_SLUGS.cursorHandoff}`,
   architect: `/${SKILL_SLUGS.architect}`,
@@ -50,6 +54,8 @@ export const SKILL_INVOKES = {
 export const AUTONOMOUS_SLUGS = new Set<string>([
   SKILL_SLUGS.nightShift,
   SKILL_SLUGS.planner,
+  SKILL_SLUGS.plannerCodex,
+  SKILL_SLUGS.plannerClaude,
 ]);
 
 export const RECALL_SLUGS = new Set<string>([
@@ -60,6 +66,8 @@ export const RECALL_SLUGS = new Set<string>([
 /** Standing-session seats — invocationOf labels these distinctly from model+manual. */
 export const STANDING_SESSION_SLUGS = new Set<string>([
   SKILL_SLUGS.planner,
+  SKILL_SLUGS.plannerCodex,
+  SKILL_SLUGS.plannerClaude,
   SKILL_SLUGS.architect,
   SKILL_SLUGS.orchestrator,
   SKILL_SLUGS.orchestratorCursor,

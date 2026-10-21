@@ -161,7 +161,7 @@ the `spawn_task` and monitor procedures below apply only to the other hosts.
    to load it from the resolved complete skill folder. Apply the [Codex phase policy](../vl-orch-codex/SKILL.md#model-policy): for the
    operator who adopted #357 on 2026-10-08, select the latest supported Sol/medium
    model for normal planning and implementation. Use Luna/low ONLY for enumerated
-   mechanical work with objective verification and Sol/high for independent review.
+   mechanical work with objective verification and Sol/high for optional separate review of a concrete unresolved risk.
    Astra/high (justified xhigh) is a bounded escalation only after a recorded Sol
    impasse or capability-specific failure on consequential design/security work. Route by
    uncertainty and consequence; small behavior changes are not Luna-eligible. Other
@@ -203,11 +203,11 @@ Read and apply the full [accepted worker completion contract](../vl-orch-codex/r
 
 Require the worker to read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
 before implementation, repair or resume, from the resolved canonical/installed complete
-folder. Include its routing, eligibility, independent-review and repair-ledger rules in
+folder. Include its routing, eligibility, optional-review, product-evidence and repair-ledger rules in
 the actual entry; a bare model pin or optional link does not deliver the contract.
 Initial detection is not a repair attempt; at the second consecutive unsuccessful
 corrective change plus targeted verification of the same unresolved defect, STOP before
-a third correction and persist the ledger/HEAD/diff/ownership/hypothesis for orch planning.
+a third correction and persist the ledger/HEAD/diff/ownership/hypothesis through the orch to the separate Planner.
 Renames, no-change reruns, unrelated passes and resumes do not reset the count. Preserve
 files and exact pins; earlier hard stops apply immediately.
 
@@ -254,6 +254,16 @@ Include each item in the actual dispatch prompt, even with inherited history:
   Real forks and measurement contradicting priors: evidence + 2–3 costed options +
   recommendation on the issue, then hard stop for operator choice. Investigate-first
   is non-negotiable. Relayed constants/directives follow §2c–§2d.
+- For behavior work, require the plan's starting state, actual UI/API/CLI action and observable result.
+  Exercise the smallest complete workflow early, before isolated test expansion. Verify affected persistence
+  and integration boundaries. A failing workflow returns to implementation despite green isolated tests.
+  Add tests only for distinct acceptance behavior or credible failure. Avoid redundant permutations,
+  implementation-mirroring assertions and coverage/test-count targets. Broader coverage needs a concrete risk.
+  Tests-only requires automation at the appropriate product boundary; pure functions need no invented UI smoke.
+  Source/packaging checks cannot prove interaction, rendering, persistence or integration. If blocked, report
+  workflow not verified, the exact blocker and remaining obligation. Keep acceptance pending.
+  Separate Codex review is optional for a concrete unresolved risk, never a default replacement phase.
+  A requested reviewer starts with behavior evidence and names each new test's distinct failure.
 - Mandatory stack crucible until Ready, then finish-feature. Immediately before PR,
   re-read owning issue **and parent** for amendments and incorporate them. Title
   `#<N> <outcome>`; routing keyword Closes/Refs from the verify plan. Read the created

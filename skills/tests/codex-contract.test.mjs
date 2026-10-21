@@ -81,7 +81,7 @@ test('dispatch, merge and prune admit Codex orch without granting workers a seat
     assert.match(entry, /vl-orch-codex/);
   }
   assert.match(skills['vl-arch'], /Direction only: never implement/);
-  assert.match(skills['vl-ask'], /Do not activate a\nstanding Planner or any seat/);
+  assert.match(skills['vl-ask'], /Do not activate a\nPlanner or any seat/);
 });
 
 test('trusted messaging must be present in every Codex seat and worker entry', () => {
@@ -149,4 +149,23 @@ test('sidebar grouping is explicit, repo-scoped, capability-gated and independen
   }
   assert.match(skills['vl-orch-codex'], /On tool failure retain and report the already-created worker ID/);
   assert.match(skills['vl-merge-pr'], /Verify the sidebar-grouping amendment independently/);
+});
+
+test('Planner host entries and compatibility resolve one complete shared role', () => {
+  const resource = 'skills/vl-plan/references/planner-contract.md';
+  for (const slug of ['vl-plan-codex', 'vl-plan-claude']) {
+    const link = [...skills[slug].matchAll(/\]\(([^)]+planner-contract\.md)\)/g)][0]?.[1];
+    assert.ok(link, slug);
+    assert.equal(path.resolve(root, 'skills', slug, link), path.resolve(root, resource));
+    assert.ok(skills[slug].includes('missing shared resource stops planning'));
+  }
+  for (const route of ['vl-plan-codex', 'vl-plan-claude', 'references/cursor.md']) assert.ok(skills['vl-plan'].includes(route));
+  for (const source of [resource, 'skills/vl-plan/references/cursor.md']) {
+    for (const [, target] of read(source).matchAll(/\]\(([^)]+)\)/g)) {
+      if (/^[a-z]+:|^\//i.test(target)) continue;
+      assert.ok(fs.existsSync(path.resolve(root, path.dirname(source), target.split('#')[0])), source + ': ' + target);
+    }
+  }
+  assert.ok(read(resource).includes('smallest complete workflow early'));
+  assert.ok(read(resource).includes('Green isolated tests cannot satisfy missing product evidence'));
 });

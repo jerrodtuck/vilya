@@ -7,6 +7,7 @@ Resolve the host from current trusted session context, the active role from its 
 | Host / seat | Invocation and existing policy | Concrete manual step |
 | --- | --- | --- |
 | Codex desktop orchestrator | $vl-orch-codex; this operator's standing GPT-6.1 Sol / Medium reasoning | Select the approved model and reasoning in this chat's model controls. |
+| Codex desktop Planner | $vl-plan-codex ($vl-plan compatibility); this operator's standing GPT-6.1 Sol / Medium reasoning | Select the approved model and reasoning in this Planner chat's model controls. |
 | Codex desktop architect | $vl-arch; this operator's standing GPT-6.1 Sol / High reasoning | Select the approved model and reasoning in this chat's model controls. |
 | Codex bounded worker / review | Assigned self-contained vl-chip brief and exact phase model/effort pin | Use the assigned child pin; if manual setup is needed, select it in that worker chat's controls, never change the parent chat. |
 | Cursor orchestrator | /vl-orch-cursor; approved Sonnet route unless scoped operator settings say otherwise | Select the approved model in this conversation's model dropdown. |
@@ -14,7 +15,7 @@ Resolve the host from current trusted session context, the active role from its 
 | Cursor Planner | /vl-plan; existing Fable policy where configured | Select the approved planning model in this conversation's model dropdown. |
 | Cursor worker | Assigned Task/BoN brief, /vl-cursor-handoff for Worker A, or /vl-start-feature for Worker B; preserve assigned pin / approved Sonnet route | Use the worker conversation's model dropdown when exposed; Worker A first opens the assigned worktree with File → Open Folder or cursor <path>. Never switch the parent. |
 | Claude Code orchestrator / chip | /vl-orch-claude for the seat; assigned /vl-chip brief for a chip; Sonnet via private .claude/settings.local.json inherited through .worktreeinclude | Check the existing local model setting and worktree inheritance. Missing/conflicting setup uses the existing setup gate; do not print secrets, rewrite private config or use orchestrator /model as the Planner. |
-| Claude Code Planner | /vl-plan; existing Fable policy where configured | Start the Planner with claude --model fable or the verified equivalent selector. |
+| Claude Code Planner | /vl-plan-claude (/vl-plan compatibility); existing Fable policy where configured | Start the Planner with claude --model fable or the verified equivalent selector. |
 | Claude Code architect | /vl-arch; resolve the operator's approved architect model | Use the verified Claude Code model selector or startup --model setting for this seat. Do not assume an architect model or effort from the Planner/chip settings. |
 
 Read the owning seat and [Codex routing contract](model-routing.md) for applicable authority and overrides. Claude/Cursor policies remain in their owning seat manifests and [start-feature](../../vl-start-feature/SKILL.md); product config does not store operator model choices. Fable/Sonnet names above describe existing policy, not a fabricated provider version or capability. Name reasoning/effort only when the host supports it and the approved setting is known.

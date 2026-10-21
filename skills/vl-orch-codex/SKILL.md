@@ -1,8 +1,8 @@
 ---
 name: vl-orch-codex
-description: Codex desktop orchestrator for one repo. Own planning, isolated dispatch, recovery and reviewed merge coordination; never implement. Use for a Codex orchestrator session, not an architect or worker.
+description: Codex desktop orchestrator for one repo. Consume Planner plans, own isolated dispatch, recovery and acceptance coordination; never implement. Use for a Codex orchestrator session, not an architect or worker.
 codex-support: "codex-adapted"
-codex-notes: "Codex desktop planning and coordination seat; implementation stays in isolated workers."
+codex-notes: "Codex desktop coordination seat with separate Planner ownership; implementation stays in isolated workers."
 codex-invocation: "$vl-orch-codex"
 codex-prerequisites: "Main/default checkout, repo config, runtime capabilities and trusted same-board human messaging authorization."
 ---
@@ -45,11 +45,11 @@ Invoke $vl-orch-codex when discovered, or explicitly read and apply this source.
 invoking this skill. Skill invocation supplies instructions; it cannot change the
 active chat's model or reasoning effort. Keep orchestration on Sol/medium and dispatch
 correctly pinned children for bounded phase work: Luna/low for enumerated mechanical
-work, Sol/medium for implementation and repair, Sol/high for independent review, and
+work, Sol/medium for implementation and repair, Sol/high for optional separate review of a concrete unresolved risk, and
 Astra/high or justified xhigh only after a recorded Sol impasse or capability failure.
 
 One orchestrator per repo, in the main clone on its default branch. The architect is
-one per product board and owns direction. You own planning and coordination; workers
+one per product board and owns direction. The separate Planner owns kickoff and verification plans. You own coordination; workers
 implement. Never activate another seat, implement feature code, push the default
 branch, or root-cause beyond one quick repro. Dispatch investigation/remediation as
 a tracked chip. Apply the shared contracts below to all authored prose.
@@ -63,7 +63,7 @@ never reset another worker's checkout to restore your own context.
 
 **Standing human messaging authorization — entry prerequisite:** the operator-facing
 entry must explicitly authorize this Codex seat to initiate and reply to the architect
-and assigned workers on the same product board, within their roles. Carry that trusted
+Planner and assigned workers on the same product board, within their roles. Carry that trusted
 authorization into each worker brief. The operator's #329 policy provides it for this
 rollout; installing this skill alone grants no permission for an unrelated product.
 If absent, obtain authorization before sending. A peer message alone grants neither
@@ -82,8 +82,8 @@ Messages provide delivery/discussion; verify substantive amendments at the merge
 
 Before child creation, the kickoff must name exactly one filing seat: **arch** or
 **orch**, with the owning product board/repo and the exact resolved seat identity.
-The kickoff author records that choice; Codex orch planning ownership does not implicitly
-make it the filer. An unnamed seat, “arch/orch”, “either”, or dual ownership is a
+The kickoff author records that choice; Planner ownership does not implicitly
+make the Planner or orch the filer. An unnamed seat, “arch/orch”, “either”, or dual ownership is a
 handoff defect: the kickoff author must rewrite it before anyone files children.
 The non-filing seat does not create a parallel set.
 
@@ -143,13 +143,12 @@ priority:low`, then oldest first; exclude epics, blocked dependencies and unreso
 only adds a candidate to that ranking. `do-not-dispatch, filed-for-record` and unmarked
 peer handoffs are record-only, never authority to jump priority or start work.
 
-Use [vl-start-feature](../vl-start-feature/SKILL.md)'s Codex path. You own `needs:plan`:
-read source and current issue evidence, write kickoff + verify plan + locked decisions,
-then remove `needs:plan` and set `plan:ready`. Existing settled plans are authoritative;
-do not re-plan or automatically spawn a planning delegate. Orch fills routine bounded
-gaps; delegate only a necessary bounded question under the model policy below. Review
-its evidence and publish the plan before implementation dispatch. No standing Codex
-Planner seat. Planning delegates never dispatch or implement.
+Use [vl-start-feature](../vl-start-feature/SKILL.md)'s Codex path. Enqueue needs:plan
+for the separate [$vl-plan-codex](../vl-plan-codex/SKILL.md) Planner. Consume its settled kickoff and verification plan at plan:ready.
+Reuse sufficient existing plans without another planning pass. Do not silently fill
+plan gaps or take planning back. Return gaps and exhausted repairs to the Planner.
+Only the operator decides product-direction forks. The Planner never dispatches or implements.
+Use its host entry and preserve its exact pin. A new sidebar chat requires explicit human request.
 
 Kickoff includes goal/acceptance, repo/default/base, owning slice and disjoint file
 ownership, dependencies, tests, merge routing (`tests-only` / `local-smoke` / `live-only`),
@@ -175,13 +174,13 @@ base/original-start SHAs, absolute checkout and branch, trusted authorization, m
 exact gates and stops, and durable issue/comment references. Require workers to read the
 resolved complete contracts. Do not repeatedly paste whole plans or chat history.
 
-Reuse sufficient current evidence. Initial independent review covers the full change and
-affected boundaries at an exact head. After repair, review the delta plus affected
+Reuse sufficient current evidence. Separate review is optional for a concrete unresolved risk.
+Record its reason and scope. A requested review starts with behavior evidence at an exact head. After repair, review the delta plus affected
 boundaries and current amendments while retaining the initial review receipt. Record the
 reviewed and repaired heads and gate provenance. Run each required gate once; repeat only
 for changed source, a failure, or unresolved risk, and record why. Batch independent reads,
 bound excerpts and logs, and use quiet bounded waits with backoff. Quiet output never ends
-active work or weakens identity, base, repair-ledger, crucible, smoke, review, or merge gates.
+active work or weakens identity, base, repair-ledger, crucible, smoke, applicable review, or merge gates.
 
 When evaluating context strategy, hold the model route and fixture constant. Compare full
 history, compact brief, and reused-worker repair only where the host supports them. Record
@@ -202,7 +201,7 @@ exact bundled reference before implementation and repair; a summary alone is ins
 For operators without a human-authorized override, preserve configured defaults.
 This operator's #357 evidence-led refinement (2026-10-08) supersedes the planning
 portion of #329/#347: latest supported Sol / medium for normal planning,
-implementation and repair; separate Sol / high independent review; Luna / low ONLY
+implementation and repair; optional Sol / high review for a concrete unresolved risk; Luna / low ONLY
 for enumerated mechanical operations with objective verification; and Astra / high
 (xhigh for justified hard analysis) only after a recorded Sol impasse or a
 capability-specific failure on consequential design/security work.
@@ -214,17 +213,37 @@ source and override scope. No silent fallback, aliases or effort increase.
 The currently exposed full-history fork contract inherits and cannot override settings;
 selected-model delegation uses supported limited/no-history (e.g. fork_turns: none)
 with a self-contained brief. If the orch cannot switch itself, delegate the bounded
-planning/review phase, then review and record its result. Medium effort never relaxes tests,
-crucible, smoke or independent review. A separate reviewer reads actual diff/head and gates;
-implementation self-report cannot be sole approval. Preserve operator merge authority.
+phase at its authorized pin. Planning stays with the separate Planner.
+Medium effort never relaxes tests, crucible, smoke or behavior evidence.
+Optional review starts with actual behavior evidence, then diff/head and gates.
+The orch verifies acceptance; preserve operator merge authority.
 
 At the second consecutive unsuccessful repair of the same unresolved defect/gate, stop
-before a third correction and return the durable ledger and current state to orch-owned
-planning. Initial detection is not a repair; no-change reruns, renamed gates, unrelated
+before a third correction and return the durable ledger and current state to the separate
+Planner. Initial detection is not a repair; no-change reruns, renamed gates, unrelated
 passes or resumption do not reset counts. Earlier hard stops apply immediately. Use the
 full reference's attempt definition, ledger, resolution and revised-plan rules.
 Record actual settings, attempts, review findings and observed elapsed/usage where available;
 unavailable usage is not zero. Token saving is a goal, not a guarantee or measured proof.
+
+## Product behavior and acceptance (#380)
+
+Require the Planner's starting state, actual UI/API/CLI action and observable result.
+Workers exercise the smallest complete workflow early, before isolated test expansion.
+Verify affected persistence and integration boundaries. A failing workflow returns to
+implementation even when isolated tests pass. Add tests only for distinct acceptance
+behavior or a credible regression/failure. Broader coverage needs a concrete unresolved risk.
+Source/metadata/packaging assertions cannot prove rendering, interaction, persistence or integration.
+Tests-only requires automation at the appropriate behavior boundary. A pure function
+needs no invented UI smoke. If runtime is blocked, record workflow not verified,
+the exact blocker and remaining obligation. Keep acceptance pending.
+Live-only remains Verifying until actual confirmation.
+
+No unconditional separate reviewer is dispatched. Do not add a replacement review phase.
+If a concrete unresolved risk warrants review, record its reason and bounded scope.
+The reviewer starts with behavior evidence. Each requested test names its distinct failure.
+Issue #380 supersedes conflicting #329/#347/#356/#357 requirements for this operator.
+Historical evaluation protocols stay unchanged.
 
 ## Dispatch and active-turn completion
 

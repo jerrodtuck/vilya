@@ -1,9 +1,44 @@
 # Planner flow
 
 **Created:** 2026-07-19  
-**Last updated:** 2026-07-19  
+**Last updated:** 2026-10-21
 **Owning issues:** [#203](https://github.com/jerrodtuck/vilya/issues/203) (epic), [#204](https://github.com/jerrodtuck/vilya/issues/204) (docs), [#206](https://github.com/jerrodtuck/vilya/issues/206) (skill + start-feature), [#207](https://github.com/jerrodtuck/vilya/issues/207) (eligibility), [#208](https://github.com/jerrodtuck/vilya/issues/208) (`/planner` site), [#255](https://github.com/jerrodtuck/vilya/issues/255) (Planner intake Monitor), [#261](https://github.com/jerrodtuck/vilya/issues/261) (orchestrator standing `plan:ready` poller), [#267](https://github.com/jerrodtuck/vilya/issues/267) (persist intake across drains), [#270](https://github.com/jerrodtuck/vilya/issues/270) (Cursor shell teardown)
 **Status:** Docs + labels + skills + eligibility landed (#204–#207); `/planner` teaching surface (skill invoke `/vl-plan`) landed in #208; Setup/differences model-routing rewrite remains #209; skill rename canonized in #257/#260; intake Monitor (#255) amends idle/monitor clause from #203; #261 makes orchestrator standing `plan:ready` poller the required completion wake (per-enqueue reinforcement); #267 amends lifecycle to persist one poller across drains; Cursor monitor-shell teardown/re-arm taught in #270
+
+## Current host entries (#380)
+
+[Issue #380](https://github.com/jerrodtuck/vilya/issues/380) adds explicit host adapters:
+
+- Codex: $vl-plan-codex, with $vl-plan compatibility, using approved Sol/medium.
+- Claude Code: /vl-plan-claude, with /vl-plan compatibility, retaining Fable and Monitor intake.
+- Cursor: /vl-plan retains its configured Fable route and mortal shell intake.
+
+All adapters load skills/vl-plan/references/planner-contract.md as the single authoritative role contract.
+Host tools, setup and delivery differ; scope, outputs, acceptance, boundaries and handoff standards do not.
+A missing shared resource or unknown host stops planning before readiness.
+The Codex Planner owns kickoff/verification plans. The orch consumes sufficient plans without replanning.
+Plan gaps and exhausted repairs return through the orch to the Planner.
+Only the operator decides product-direction forks. No entry creates a chat or grants messaging authority.
+
+Codex uses exposed native collaboration for an established parent relationship or authorized exact-chat tools.
+Recurring idle intake needs an explicitly authorized Codex automation; active-turn waits do not persist.
+Claude uses supported Monitor/session tools and host confirmation. Cursor keeps notify_on_output.
+Do not borrow another host's tools or infer liveness from transport.
+Preserve pins, exact identity, ownership, ledger, evidence and remaining obligations at handoff.
+
+Every behavior plan names starting state, actual UI/API/CLI action and observable result.
+Exercise the smallest complete workflow early, including affected persistence/integration boundaries.
+Green isolated tests cannot accept a failing workflow. Add tests only for distinct behavior or credible failure.
+Tests-only needs proof at the appropriate functional boundary; pure functions need no invented UI smoke.
+Source/packaging assertions cannot prove interaction or integration. Blocked runtime means workflow not verified,
+an exact blocker, and a remaining action. Live-only stays Verifying until confirmation.
+Codex separate review is optional for concrete unresolved risk. Other-host review rules remain scoped.
+Keep stack quality checks and operator merge authority.
+
+The current-phase delivery is skills/contracts/catalog source. Editorial website/prompt changes
+and browser verification remain deferred until operator workflow finalization. Use Refs #380.
+Do not close #380 or claim website delivery, native discovery or full runtime adoption from these source checks.
+Historical sections below describe Claude/Cursor mechanisms and retain their host scope.
 
 ## Intent
 
@@ -37,7 +72,7 @@ This spec is the durable story for the seat. Canon label tables (`#205`), skills
 v1 enqueue is the `needs:plan` label. The operator does **not** manually brief each
 issue into Planner chat.
 
-## Loop behavior
+## Claude Code / Cursor loop behavior
 
 1. Standing Planner session polls for `needs:plan` and drains the queue.
 2. For each issue: write kickoff + verify plan (and costed fork options when needed)
@@ -54,7 +89,7 @@ issue into Planner chat.
 5. Do **not** monitor the Planner process or session. Planner is not a chip. Completion
    watches stay orchestrator-owned; intake is Planner-owned.
 
-## Intake Monitor (Planner-owned)
+## Claude Code / Cursor intake Monitor (Planner-owned)
 
 Sessions do not message each other. Host wake only reaches the session that armed it.
 Without an intake alarm, an idle Planner is asleep until pinged — that contradicts
@@ -68,7 +103,7 @@ Without an intake alarm, an idle Planner is asleep until pinged — that contrad
 **Forbidden for Planner:** process/session self-watch; completion watches on your own
 `plan:ready` / kickoff (orchestrator owns those); sibling-chat pings as the default wake.
 
-## Standing plan:ready poller (orchestrator-owned)
+## Claude Code / Cursor standing plan:ready poller (orchestrator-owned)
 
 Twin of Planner intake (#255 / #261). Host wake only reaches the session that armed it;
 per-enqueue arming is easy to skip under load, so the seat that needs Planner finish owns

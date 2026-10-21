@@ -151,6 +151,11 @@ The complete map establishes coverage, not a compulsory full-map reread at every
 Detailed matrices below are #373 delivery evidence, not recurring plan attachments.
 Do not emit per-plan rule checklists, per-word tables or glossary dumps.
 
+The Planner owns these semantic preservation checks for plans, kickoffs and worker instructions.
+For settled scope, complete them without a separate human wording confirmation.
+Ask only for genuine unresolved decisions or approvals required by the applicable authority.
+Keep existing authorization gates and do not claim that the operator personally reviewed the wording.
+
 Do these checks within the existing plan review:
 
 1. Identify the procedural passages, descriptive passages and protected artifacts.

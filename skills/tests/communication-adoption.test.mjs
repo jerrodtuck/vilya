@@ -8,12 +8,14 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8').replaceAll('\r\n','\n');
 const atBase=p=>execFileSync('git',['-C',root,'show','a015898e80898985d6e08a0938baaa536a6f9bf2:'+p],{encoding:'utf8'}).replaceAll('\r\n','\n');
 const catalog=fs.readdirSync(path.join(root,'skills')).filter(slug=>fs.existsSync(path.join(root,'skills',slug,'SKILL.md'))).sort();
+const plannerEntries = new Set(['vl-plan','vl-plan-codex','vl-plan-claude']);
+const effective = slug => plannerEntries.has(slug) ? read('skills/vl-plan/references/planner-contract.md') : read('skills/'+slug+'/SKILL.md');
 const adopters=catalog.filter(slug=>!['vl-adhd','vl-present'].includes(slug));
 test('every shipped skill accounts for full shared contracts without changing their sources',()=>{
  assert.ok(adopters.length>=23);
  assert.ok(adopters.includes('vl-crucible-python'));
- for(const slug of adopters){const text=read('skills/'+slug+'/SKILL.md');assert.ok(text.search(/^# .+$/m)<text.indexOf('## Shared communication'),slug+' heading order');const adoption=text.split('## Shared communication')[1].split('\n## ')[0];for(const contract of ['../vl-adhd/SKILL.md','../vl-present/SKILL.md'])assert.ok(adoption.includes(contract),slug+contract);for(const phrase of ['Read and apply the full','all authored prose','permissions','stop/verification gates','Identify an unknown host'])assert.ok(adoption.includes(phrase),slug+phrase);}
- for(const slug of catalog){const manifest=read('skills/'+slug+'/SKILL.md');const text=slug==='vl-adhd'?read('skills/vl-adhd/references/model-recalibration.md'):manifest,parts=text.split('\n## New-model recalibration\n');assert.equal(parts.length,2,slug);for(const phrase of ['independent benchmark','lowest applicable proven seat','smallest matched fixture','operator-only','/evaluation'])assert.ok(parts[1].includes(phrase),slug+phrase);if(slug==='vl-adhd'){const original=execFileSync('git',['-C',root,'show','73572c3a3655115c27164018e8d386bccb508c1a:skills/vl-adhd/SKILL.md'],{encoding:'utf8'}).replaceAll('\r\n','\n');assert.equal(parts[1],original.split('\n## New-model recalibration\n')[1]);assert.ok(manifest.includes('If the operator asks about a newly released model or routing recalibration, read [the recalibration reference](references/model-recalibration.md).'));assert.doesNotMatch(manifest,/## New-model recalibration|smallest matched fixture/);assert.ok(text.includes('from the vl-adhd skill folder'));new TextDecoder('utf-8',{fatal:true}).decode(fs.readFileSync(path.join(root,'skills/vl-adhd/references/model-recalibration.md')));}}
+ for(const slug of adopters){const text=effective(slug);assert.ok(text.search(/^# .+$/m)<text.indexOf('## Shared communication'),slug+' heading order');const adoption=text.split('## Shared communication')[1].split('\n## ')[0];for(const contract of [...(plannerEntries.has(slug) ? ['../../vl-adhd/SKILL.md','../../vl-present/SKILL.md'] : ['../vl-adhd/SKILL.md','../vl-present/SKILL.md'])])assert.ok(adoption.includes(contract),slug+contract);for(const phrase of ['Read and apply the full','all authored prose','permissions','stop/verification gates','Identify an unknown host'])assert.ok(adoption.includes(phrase),slug+phrase);}
+ for(const slug of catalog){const manifest=read('skills/'+slug+'/SKILL.md');const text=slug==='vl-adhd'?read('skills/vl-adhd/references/model-recalibration.md'):effective(slug),parts=text.split('\n## New-model recalibration\n');assert.equal(parts.length,2,slug);for(const phrase of ['independent benchmark','lowest applicable proven seat','smallest matched fixture','operator-only','/evaluation'])assert.ok(parts[1].includes(phrase),slug+phrase);if(slug==='vl-adhd'){const original=execFileSync('git',['-C',root,'show','73572c3a3655115c27164018e8d386bccb508c1a:skills/vl-adhd/SKILL.md'],{encoding:'utf8'}).replaceAll('\r\n','\n');assert.equal(parts[1],original.split('\n## New-model recalibration\n')[1]);assert.ok(manifest.includes('If the operator asks about a newly released model or routing recalibration, read [the recalibration reference](references/model-recalibration.md).'));assert.doesNotMatch(manifest,/## New-model recalibration|smallest matched fixture/);assert.ok(text.includes('from the vl-adhd skill folder'));new TextDecoder('utf-8',{fatal:true}).decode(fs.readFileSync(path.join(root,'skills/vl-adhd/references/model-recalibration.md')));}}
  for(const slug of ['vl-present'])assert.equal(read('skills/'+slug+'/SKILL.md').split('\n## New-model recalibration\n')[0].replace(/\n+$/,'')+'\n',atBase('skills/'+slug+'/SKILL.md'));
 });
 test('both complete worker brief paths load contracts and retain their operational gates',()=>{
@@ -23,7 +25,7 @@ test('both complete worker brief paths load contracts and retain their operation
 });
 test('communication edits preserve coordination while the authorized routing resource stays explicit',()=>{
  const routing=read('skills/vl-orch-codex/references/model-routing.md');
- for(const fact of ['Issue #357 revised the planning route','| Normal planning | latest supported Sol | medium |','recorded Sol impasse or capability failure','screen current independent benchmark'])assert.ok(routing.includes(fact),fact);
+ for(const fact of ['Issue #357 revised the model route','| Normal planning | latest supported Sol | medium |','recorded Sol impasse or capability failure','screen current independent benchmark'])assert.ok(routing.includes(fact),fact);
  assert.doesNotMatch(routing,/\| Normal planning \| latest supported Astra \| high \|/);
  for(const slug of adopters){const body=read('skills/'+slug+'/SKILL.md');assert.doesNotMatch(body,/operator-chat voice|Operator-facing chat.*follows|in plain chat(?: text)? before|stay[s]? long-form/);}
 });
@@ -35,10 +37,11 @@ test('ADR insertion preserves the full preamble and every historical byte',()=>{
  for(const fact of ['strict ASD-STE100','restrictive vocabulary','controlled dictionary','design intent','untested at decision time','5974655990','separate from design intent'])assert.ok(current.slice(boundary,oldStart).toLowerCase().includes(fact.toLowerCase()));
  for(const fact of ['GPT-6.1 Sol/high','GPT-6.1 Sol/medium','cannot change the active chat model','recorded Sol impasse','6068335492'])assert.ok(current.slice(boundary,oldStart).includes(fact),fact);
 });
-test('only remaining coverage adoption statuses change while merged sibling rows stay exact',()=>{
- const base=atBase('docs/design/codex-skill-coverage.md'),current=read('docs/design/codex-skill-coverage.md');for(const slug of ['vl-present'])assert.equal(current.split('\n').find(row=>row.startsWith('| ['+slug+']')),base.split('\n').find(row=>row.startsWith('| ['+slug+']')));
- const withoutHandoff=current.split('\n').filter(row=>!row.startsWith('| [vl-handoff]')&&!row.startsWith('| [vl-crucible-python]')).join('\n').replace('Last updated: 2026-10-09','Last updated: 2026-10-03');
- assert.equal(withoutHandoff.replaceAll('Reviewed; runtime pending; shared contract references','Reviewed; runtime pending'),base);
+test('coverage preserves unaffected adoption evidence while #380 updates active Planner classifications',()=>{
+ const base=atBase('docs/design/codex-skill-coverage.md'), current=read('docs/design/codex-skill-coverage.md');
+ for(const slug of ['vl-present','vl-adhd']) assert.equal(current.split('\n').find(row=>row.startsWith('| ['+slug+']')),base.split('\n').find(row=>row.startsWith('| ['+slug+']')));
+ for(const slug of ['vl-plan','vl-plan-codex','vl-plan-claude']) assert.ok(current.includes('| ['+slug+']'));
+ assert.ok(current.includes('Website editorial pages'));
 });
 
 test('complete generated folders preserve every regular resource byte and companion anchors',()=>{

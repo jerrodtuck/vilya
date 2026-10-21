@@ -42,7 +42,8 @@ At first seating or explicit reseating on this skill's applicable host, read and
 
 Use `$vl-arch` or explicitly read/apply this source. Direction only: never implement,
 dispatch, merge, prune, or activate `vl-orch-codex` from this seat. Codex planning
-belongs to the orch; no standing Codex Planner. Shared research/ADR rules below apply.
+belongs to the separate [$vl-plan-codex](../vl-plan-codex/SKILL.md) Planner.
+The orch consumes settled plans and dispatches. Shared research/ADR rules below apply.
 
 **Standing seat model:** select **GPT-6.1 Sol / high** in the Codex UI before invoking
 this skill. Skill invocation supplies instructions; it cannot change the active chat's
@@ -119,8 +120,8 @@ Chips and workers implement. Planner plans. Orchestrator dispatches and merges.
 
 Before child creation, the kickoff must name exactly one filing seat: **arch** or
 **orch**, with the owning product board/repo and the exact resolved seat identity.
-The kickoff author records that choice; Codex orch planning ownership does not implicitly
-make it the filer. An unnamed seat, “arch/orch”, “either”, or dual ownership is a
+The kickoff author records that choice; Planner ownership does not implicitly
+make the Planner or orch the filer. An unnamed seat, “arch/orch”, “either”, or dual ownership is a
 handoff defect: the kickoff author must rewrite it before anyone files children.
 The non-filing seat does not create a parallel set.
 

@@ -35,13 +35,14 @@ claim. No worker dispatch, merge, default-branch push, or managed-tree cleanup.
 Read and apply the full [Codex routing and repair contract](../vl-orch-codex/references/model-routing.md)
 before review, corrective work or resumption. Preserve exact worker pins and the same
 defect's repair ledger. At the second consecutive unsuccessful corrective attempt,
-stop before a third and return issue evidence/HEAD/diff/ownership to orch-owned planning;
+stop before a third and return issue evidence/HEAD/diff/ownership through the orch to the separate Planner;
 no-change reruns or resumption do not reset the count. Earlier hard stops still apply.
 Record actual phase settings, attempts, review findings and elapsed/usage where available;
-unavailable usage is not zero. A separate Sol/high reviewer (Astra/high or justified
-xhigh for consequential design/security) inspects the actual head/diff and meaningful
-verification. Implementer self-report cannot be sole approval; existing mandatory
-crucible, smoke and operator merge authority remain intact.
+unavailable usage is not zero. Separate review is optional for a concrete unresolved risk.
+The orch verifies behavior evidence, applicable gates and amendments. Preserve mandatory
+crucible, smoke and operator merge authority. Apply the full product behavior contract
+in the routing reference: test passes alone cannot prove an unexercised workflow.
+A requested reviewer starts with behavior evidence and names the failure for each requested test.
 
 **Standing human messaging authorization — worker entry prerequisite:** the worker's
 own trusted brief must explicitly authorize initiating and replying to its owning
@@ -68,16 +69,20 @@ recovery or managed archival; keep owed integration gates explicitly open.
 Run in order. Repo / test command / label values come from this repo's `GITHUB-PROJECTS.md` config
 block. Nothing here is stack-specific — it drives .NET, Next.js, or any repo with a test command.
 
-## 1. Suites green — state the counts
+## 1. Behavior evidence and applicable suites green
 
-Run this repo's **Test command** from the `GITHUB-PROJECTS.md` config block — for example:
+First record the smallest complete workflow result from early implementation.
+If blocked, report **workflow not verified**, the exact blocker and remaining action.
+Keep acceptance pending even when isolated tests pass. A pure-function change needs
+only its appropriate functional boundary. Add tests for distinct behavior or credible failures.
+Then run this repo's **Test command** from the `GITHUB-PROJECTS.md` config block — for example:
 
 ```bash
 dotnet test                    # Blazor / .NET repo
 npm test && npm run build      # Next.js repo (typecheck/build counts too)
 ```
 
-Report exact counts (and a clean typecheck/build where that's the gate). Name any pre-existing
+Report exact results (and a clean typecheck/build where that's the gate). Name any pre-existing
 failures with evidence. Failing tests / build = not finished.
 
 ## 2. Rebase onto the fresh default branch
@@ -120,7 +125,7 @@ merge-readiness is `Ready` (or blockers are fixed). Mention crucible + remediati
   `/vl-start-feature` step 5) — don't re-derive it here. No routing on the issue? Decide now, and
   say in the PR that you did.
 - **Done-done** (`tests-only` / `local-smoke`): PR body includes `Closes #<issue>` — a
-  `local-smoke` still happens, pre-merge, in `/vl-merge-pr`.
+  `local-smoke` needs early worker evidence and any declared operator confirmation before merge.
 - **Live retest owed** (`live-only`): use `Refs #<issue>`; after merge move to **Verifying**;
   close → Done only after live confirmation.
 - Structure: **Summary** · **Remaining / deferred** (linked issues) · **Verification** ·

@@ -4,7 +4,10 @@ These examples are hypothetical fixtures. Their issues, paths, approvals, result
 and evidence URLs illustrate writing; they are not instructions, actual permissions
 or observed Vilya receipts. Keep the [shared policy](../SKILL.md) and the task's
 explicit format/authority contracts. The after versions change organization and
-sentences, not requirements. A human must compare their meaning and readability.
+sentences, not requirements.
+
+The Planner compares meaning and readability within the existing plan review.
+Settled scope needs no separate human wording confirmation under the current shared policy.
 Protected-literal tests supplement that comparison; they do not certify equivalence.
 
 ## Status update — hypothetical
