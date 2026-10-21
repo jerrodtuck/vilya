@@ -123,6 +123,10 @@ and concrete uncertainty/risk rationale, not a topic label; xhigh also needs har
 justification. Under #380, separate Codex review is optional for a concrete unresolved risk.
 This does not alter this host's existing review requirements.
 
+Before finalizing an accepted unit or batch, apply the [completion reconciliation contract](../vl-orch-codex/references/board-intake.md#completion-reconciliation).
+Continue eligible authorized work in the active turn; otherwise report actual issue dispositions and precise gates.
+Do not end with an unperformed continuation promise or claim that a final message arms future intake.
+
 At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
 explain briefly. For fresh chat, save and link [`/vl-handoff`](../vl-handoff/SKILL.md) first.
 

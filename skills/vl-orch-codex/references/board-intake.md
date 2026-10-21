@@ -35,6 +35,27 @@ Apply `needs:decision` and the existing blocked-state procedure. Stop dependent 
 Register the issue as a parked watch. Keep its question and authoritative answers on the issue.
 Do not repeat the request because time elapsed. Re-read answers before escalation or ending work.
 
+## Completion reconciliation
+
+After an accepted unit or batch, the orchestrator reconciles remaining authorized scope before finalizing the turn.
+Reconcile relevant active workers, the current queue and substantive issue amendments once at this boundary.
+Reuse sufficient current evidence and inspect relevant changes.
+If eligible authorized work remains, continue during the active turn under existing ranking, settled plans, ownership and dependencies.
+A locally chosen batch boundary does not complete an open-ended authorized queue request.
+An open epic or Todo status does not authorize dispatch. Preserve operator holds and all existing authority gates.
+
+If no eligible work remains, report actual issue-by-issue dispositions and each precise remaining gate.
+Distinguish delivered/unmerged, held for approval, deferred/parked, unresolved decision/dependency and epics requiring reconciliation.
+Identify genuinely ready next work when present; do not manufacture implementation from an unresolved obligation.
+Use commentary for next actions during work. Final reports describe performed actions and outstanding obligations.
+Never finalize with an unperformed promise to reconcile, continue or check the remaining queue.
+Do not rescan full issue bodies or rerun tests merely to stay active.
+
+Active-turn continuation is not a persistent wake. A final message does not arm a watcher.
+When future intake is expected, name the actual supported authorized wake and its observed status.
+If authorization or capability is absent, report intake unarmed and its exact resumption obligation.
+This completion check creates no automation, daemon, service, role or authority to resume parked work.
+
 ## Schedule and silent checks
 
 Perform one initial reconciliation. After successive unchanged reconciliations, delay `30, 120, 120, 300, 300, 600` seconds.
