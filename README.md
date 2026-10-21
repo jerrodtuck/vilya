@@ -74,8 +74,8 @@ resolve current planning/workhorse families from runtime capabilities, honor exp
 pins, and preserve configured defaults without authorized overrides. Applicable seat entries carry
 trusted human authorization for messaging within the repo/product board.
 
-Website explanations and copied prompts remain deferred under #380 until operator workflow finalization.
-The links below can still show the previous policy. Generated skill/catalog publication is separate from that obligation.
+The #380 website phase reconciles explanations and copied prompts with merged Planner, impact, intake and health contracts.
+Verify actual browser/clipboard evidence separately from source publication and installed-session adoption.
 
 Start with [Setup](https://vilya.jerrodtuck.com/setup?host=codex),
 [Architect](https://vilya.jerrodtuck.com/architect?host=codex),

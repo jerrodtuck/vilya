@@ -83,7 +83,8 @@ describe("#347 full contract delivery", () => {
     expect(entry).toContain("Read and apply the full resolved vl-orch-codex/references/model-routing.md");
     for (const route of ["Astra/high", "xhigh only", "Sol/medium", "Luna/low ONLY", "Sol/high for difficult architecture"]) expect(entry).toContain(route);
     for (const rule of ["small behavior change", "Initial detection/reproduction is not a repair attempt", "targeted verification is one attempt", "No-change reruns", "second consecutive unsuccessful repair attempt STOP before a third correction", "current HEAD/diff", "earlier hard stops", "unavailable usage is not zero"]) expect(entry.toLowerCase()).toContain(rule.toLowerCase());
-    expect(entry).toContain("implementer cannot be sole approval");
+    expect(entry).toContain("Separate Codex review is optional for a concrete unresolved risk");
+    expect(entry).toContain("mandatory stack Crucible");
     expect(entry).toContain("preserving history");
     // This checks the exported entry, not neighboring page text or an aggregate of cards.
     const resource = fs.readFileSync("content/skills/vl-orch-codex/references/model-routing.md", "utf8");

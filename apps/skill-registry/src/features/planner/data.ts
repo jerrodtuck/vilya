@@ -24,7 +24,7 @@ export const NODES: Record<string, FlowNode> = {
     bodyHtml: `
     <p>Poll open issues labeled <code>needs:plan</code> (highest priority, then oldest).</p>
     <ul><li>If the operator names an issue, plan that one — apply <code>needs:plan</code> if missing so the transition is visible.</li>
-    <li>When the queue is empty, arm one intake Monitor if needed (≥120s, every-tick <code>last-seen</code> sync, wake only when the open set <b>gains</b> an issue). Leave it running across drains — do not kill/re-arm to re-seed. Stay standing — do not wait for a ping.</li></ul>`,
+    <li>When the queue is empty, arm one intake Monitor if needed (initial reconciliation; idle 30/120/120/300/300/600 seconds capped at 600; active expected handoffs 120 seconds; provider limits/Retry-After win). Leave it running across drains — do not kill/re-arm to re-seed. Stay standing — do not wait for a ping.</li></ul>`,
   },
   RECALL: {
     kicker: "Ground the brief",
@@ -52,7 +52,7 @@ export const NODES: Record<string, FlowNode> = {
     <li>Prior findings (certificate, exclusion list, baseline, "known" constraint) stay <b>priors</b> — never mark them binding against the chip's direct measurement. Context order: <code>direct measurement &gt; dated ruling &gt; record prose &gt; recency/salience</code>.</li>
     <li><b>Relayed constants / directives</b> — hedges are non-constants; comply-then-verify (safe/cheap) vs verify-before-comply (destructive); name the evidence channel (<code>operator-direct</code> · <code>measured</code> · <code>relayed via &lt;session&gt;</code>).</li>
     <li><b>Present-tense facts</b> — issue bodies and kickoff restatements state present-tense facts with evidence. Planned work is scope (&quot;this issue adds X&quot;), never an existing artifact (&quot;X exists&quot; / &quot;#N shipped Y&quot;). Referenced issues get <b>actual current status, checked at write time</b>.</li>
-    <li>Explicit: chips/workers implement; Planner does not.</li></ul>`,
+    <li>Name starting state, actual UI/API/CLI action and observable result. Map upstream assumptions/downstream effects, persistence and integration. Run the earliest feasible thin workflow before isolated tests expand.</li><li>The Planner checks meaning without routine human wording confirmation. Keep genuine decisions and required approvals. Select affected lint/type/build and behavior checks with finite CI budgets.</li><li>Explicit: chips/workers implement; Planner does not.</li></ul>`,
   },
   FORK: {
     kicker: "Decision fork",

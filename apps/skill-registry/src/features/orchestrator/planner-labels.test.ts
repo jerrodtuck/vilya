@@ -33,11 +33,11 @@ describe("Planner / night-shift eligibility labels (#207)", () => {
   });
 
   it("standing plan:ready poller is orch-owned; intake is Planner-owned (#255/#261)", () => {
-    expect(PLANNER_ORCH_DOCTRINE).toContain("standing plan:ready poller");
-    expect(PLANNER_ORCH_DOCTRINE).toContain("not the sole wake path");
-    expect(PLANNER_ORCH_DOCTRINE).toContain("Never monitor the Planner process or session");
-    expect(PLANNER_ORCH_DOCTRINE).toMatch(/Intake polling for needs:plan is Planner-owned/i);
-    expect(PLANNER_ORCH_DOCTRINE).toContain("Chip completion monitors stay per-dispatch");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("orch owns plan:ready/active completion");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("Silent unchanged watcher checks");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("No process/completion self-watches for Planner");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("Planner owns needs:plan intake");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("Active-worker/expected-handoff watches use 120 seconds");
   });
 
   it("keeps Claude and Cursor standing orders on the shared Planner doctrine", () => {

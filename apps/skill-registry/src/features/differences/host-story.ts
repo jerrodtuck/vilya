@@ -28,16 +28,16 @@ export const HOST_FLOWS: Record<
   { objective: string; defaultPath: string; steps: FlowStep[]; advanced: string[] }
 > = {
   codex: {
-    objective: "Run the Codex desktop workflow with orch-owned planning and explicitly isolated chips.",
-    defaultPath: "Orch plans → plan:ready → isolated subagent → PR + issue evidence → operator merge → managed archival.",
+    objective: "Run the Codex desktop workflow with separate Planner ownership and explicitly isolated chips.",
+    defaultPath: "Planner kickoff → plan:ready → orch consumes → isolated subagent → PR + issue evidence → operator merge → managed archival.",
     steps: [
-      { id: "orch", label: "Orchestrator", blurb: "One per repo; planning and dispatch coordination", board: "issue" },
-      { id: "plan", label: "Planning stage", blurb: "Orch or selected-model subagent records kickoff + verify plan", board: "verify" },
+      { id: "orch", label: "Orchestrator", blurb: "One per repo; consumes plans and coordinates dispatch/acceptance", board: "issue" },
+      { id: "plan", label: "Separate Planner", blurb: "$vl-plan-codex records kickoff + verify plan; $vl-plan compatibility", board: "verify" },
       { id: "chip", label: "Isolated implementation", blurb: "Verify absolute checkout, branch and starting ref before writing", board: "status" },
       { id: "done", label: "PR + durable comment", blurb: "Native active-turn waits; independent evidence review", board: "pr" },
       { id: "merge", label: "Authorized close-out", blurb: "Operator merge; inspect managed attachment before archival", board: "merge" },
     ],
-    advanced: ["No standing Codex Planner seat. Models and reasoning are configurable per phase from current capabilities.", "Ordinary delegation uses subagents. New sidebar chats require an explicit human request.", "Codex CLI and a new Codex unattended backend are deferred. Existing night-shift eligibility is unchanged.", "Tool-contract evidence is verified; the full runtime cycle and interrupted recovery remain an epic integration gate."],
+    advanced: ["Separate Codex Planner at approved Sol/medium. Plan gaps and exhausted repairs return through the orch; optional separate review needs concrete risk. Keep mandatory Crucible.", "Ordinary delegation uses subagents. New sidebar chats require an explicit human request.", "Codex CLI and a new Codex unattended backend are deferred. Existing night-shift eligibility is unchanged.", "Tool-contract evidence is verified; the full runtime cycle and interrupted recovery remain an epic integration gate."],
   },
   cc: {
     objective:
@@ -46,7 +46,7 @@ export const HOST_FLOWS: Record<
       "Enqueue Planner → plan:ready → spawn_task chip → completion comment → orch merge.",
     steps: [
       { id: "orch", label: "Orchestrator", blurb: "One seat per repo; owns dispatch + merge queue", board: "issue" },
-      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — standing /vl-plan", board: "verify" },
+      { id: "plan", label: "Planner (Fable)", blurb: "Required for chip-flow — /vl-plan-claude (/vl-plan compatibility)", board: "verify" },
       { id: "chip", label: "spawn_task chip", blurb: "Own worktree + branch; Sonnet execute", board: "status" },
       { id: "done", label: "PR + comment", blurb: "Chip stops; Monitor wakes orch", board: "pr" },
       { id: "merge", label: "Merge + prune", blurb: "Operator /vl-merge-pr from main clone", board: "merge" },

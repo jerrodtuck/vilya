@@ -22,7 +22,7 @@ export function OverviewView() {
         turn you into the <b>architect</b> who sets direction, the{" "}
         <b>planner</b> who plans onto the board, and the{" "}
         <b>orchestrator</b> who dispatches it: one architect seat per product
-        board, one orchestrator per repo, and one Planner per repo on Claude
+        board, one orchestrator per repo, and a separate Planner on Codex and Claude
         Code chip-flow (Cursor daytime Planner is optional — see{" "}
         <Link href="/differences">Desktop differences</Link>). You point them by day,
         decide at the forks, and keep the board honest. Night-shift runs that{" "}
@@ -30,7 +30,7 @@ export function OverviewView() {
         repo; Claude Code, Cursor and Codex share the board and quality contracts.
       </p>
 
-      <p className="note">On <Link href="/orch?host=codex">Codex desktop</Link>, the orch owns planning and dispatches explicitly isolated implementation chips; no standing Planner is required. Start with <Link href="/setup?host=codex">Codex setup</Link> and <Link href="/architect?host=codex">architect entry</Link>. Codex CLI and a new unattended backend are deferred.</p>
+      <p className="note">On <Link href="/orch?host=codex">Codex desktop</Link>, the separate Planner owns kickoff and verification; the orch consumes settled plans and dispatches isolated implementation chips. Start with <Link href="/setup?host=codex">Codex setup</Link> and <Link href="/architect?host=codex">architect entry</Link>, then <Link href="/planner?host=codex">Planner entry</Link> and <Link href="/orch?host=codex">orch handoff</Link>. Codex CLI and a new unattended backend are deferred.</p>
 
       <div className="rolestrip" aria-label="Role order">
         <span className="rolechip" style={{ ["--rc" as string]: "var(--arch)" }}>
@@ -52,8 +52,8 @@ export function OverviewView() {
         </span>
         <span className="arrow">→</span>
         <span className="rolechip" style={{ ["--rc" as string]: "var(--start)" }}>
-          <b>The chain</b>
-          <span>daytime loop, below</span>
+          <b>Workers</b>
+          <span>implement · workflow proof · PR</span>
         </span>
       </div>
 
@@ -74,6 +74,15 @@ export function OverviewView() {
       </div>
 
       <FoundingWhy />
+
+      <section className="panel" aria-labelledby="workflow-evidence-heading">
+        <h2 id="workflow-evidence-heading">Prove the useful path</h2>
+        <p>Before isolated test expansion, name the starting state, actual UI/API/CLI action and observable result. Exercise the earliest feasible thin workflow, including affected persistence and integration. Record actual URL/build/head/mode and relevant service, conversation and provider identity.</p>
+        <p>Use a proportional upstream/downstream impact map to select checks. Deterministic lint enforces configured boundaries, unsafe types and Promise handling. Size and other advisory signals need context; Crucible supplies architectural judgment. Lint success and unit totals do not prove a working product. Pure functions need only their appropriate functional boundary.</p>
+        <p>The Planner owns meaning checks without routine human wording signoff. Keep genuine approvals. CI has finite budgets; select affected checks, explain exclusions and retain the two-unsuccessful-repair stop. Separate Codex review needs concrete unresolved risk; stack Crucible remains mandatory.</p>
+        <p><Link href="/skills/vl-workflow-health"><code>vl-workflow-health</code></Link> is a bounded audit of source adoption, workflow proof, coordination and context. It adds no permanent seat or mandatory gate. Choose continue, Compact or fresh-chat handoff from observed drift and relevance, not age or compaction counts.</p>
+        <p>Board handoffs require dispatch markers and handoff:pending, followed by exact revision-bound substantive ACKs. Reconcile initially; idle delays are 30/120/120/300/300/600 seconds capped at 600. Actionable work resets; unchanged gates do not. Active-worker/expected-handoff watches use 120 seconds; provider minimums/Retry-After win. Unchanged checks stay silent. Reconcile eligible authorized queue work before ending an accepted batch. Codex recurring intake still needs separate authorization and supported tools.</p>
+      </section>
 
       <CommunicationGuide />
 

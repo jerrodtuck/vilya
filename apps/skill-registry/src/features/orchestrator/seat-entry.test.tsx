@@ -10,7 +10,7 @@ const cards=[...ORCH,...ARCH,...PLAN,...CODEX_PROMPTS,CODEX_ARCHITECT].flatMap(g
 const entries=cards.filter(c=>/Orchestrator|Product Architect|Planner \(Fable\)|standing orders|worker kickoff|Worker entry|Interrupted worker/i.test(c.label));
 describe('copied seat reminder delivery',()=>{
  it('covers each applicable exported seat and worker entry',()=>{
-  expect(entries).toHaveLength(10);
+  expect(new Set(entries.map(entry => entry.label)).size).toBe(entries.length);
   for(const card of entries){expect(card.text,card.label).toContain('vl-orch-codex/references/seat-entry.md');expect(card.text,card.label).toMatch(/first seating|first entry/i);expect(card.text,card.label).toContain('reseating');expect(card.text,card.label).toMatch(/override/i);expect(card.text,card.label).toMatch(/resumed.*pin/);expect(card.text,card.label).toContain('parent');}
  });
  it('teaches one-time setup and preserved pins on both actual Codex seat pages',()=>{

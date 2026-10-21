@@ -5,14 +5,16 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/planner", useRouter: ()
 import { PlannerView } from "./planner-view";
 
 describe("Codex planning route", () => {
-  it("routes to orch-owned planning without exposing a standing Planner entry", () => {
+  it("exposes the separate Codex Planner entry and settled-plan handoff", () => {
     current.host = "codex";
     const html = renderToStaticMarkup(<PlannerView />);
-    expect(html).toContain("No standing Codex Planner seat is required");
+    expect(html).toContain("Separate Codex Planner");
+    expect(html).toContain("$vl-plan-codex");
+    expect(html).toContain("without replanning");
     expect(html).toContain("/orch?host=codex");
     expect(html).toContain("plan:ready ∧ night-shift:ready");
     expect(html).not.toContain("Planner prompt library");
-    for (const term of ["Sol/medium", "Sol/high", "Luna/low", "recorded Sol impasse", "cannot change the active chat", "references/model-routing.md", "second consecutive unsuccessful repair", "renamed gates do not reset counts"]) expect(html).toContain(term);
+    for (const term of ["Sol/medium", "Sol/high", "Luna/low", "recorded Sol impasse", "cannot change the active chat", "references/model-routing.md", "second consecutive unsuccessful repair", "Renamed gates do not reset counts"]) expect(html).toContain(term);
   });
   it.each(["cc", "cursor"])("preserves %s planning teaching", host => {
     current.host = host;

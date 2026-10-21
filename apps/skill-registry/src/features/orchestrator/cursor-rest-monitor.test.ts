@@ -9,7 +9,7 @@ import {
   GRAPHQL_QUOTA_DOCTRINE,
   HOST_MONITOR_MECHANISMS,
   ORCH_PLAN_READY_POLLER,
-  ORCH_PLAN_READY_POLLER_BASH,
+  ORCH_PLAN_READY_INTAKE_GUIDE,
   PLANNER_ORCH_DOCTRINE,
   PROMPTS,
 } from "./prompts";
@@ -28,8 +28,8 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(CURSOR_DISPATCH_MONITOR).toContain("pulls?head=");
     expect(CURSOR_DISPATCH_MONITOR).toContain("gh api repos/");
     expect(CURSOR_DISPATCH_MONITOR).toContain("issues/<N>/comments");
-    expect(CURSOR_DISPATCH_MONITOR).toMatch(/≥120s|>=120s/);
-    expect(CURSOR_DISPATCH_MONITOR).toContain("not 60s / not ~90s");
+    expect(CURSOR_DISPATCH_MONITOR).toContain("cadence is 120 seconds");
+    expect(CURSOR_DISPATCH_MONITOR).toContain("Retry-After");
     expect(CURSOR_DISPATCH_MONITOR).toContain("wake sentinel");
     expect(CURSOR_DISPATCH_MONITOR).toContain("never re-announce a standing open PR");
     expect(CURSOR_DISPATCH_MONITOR).toContain("never gh project item-list");
@@ -54,8 +54,8 @@ describe("Cursor REST chip monitor (#223)", () => {
     const dispatch = text.slice(text.indexOf("In the same turn as every chip dispatch"));
     expect(dispatch).toContain("Monitor tool");
     expect(dispatch).toContain("exit-only background shell watch loop");
-    expect(dispatch).toContain("pulls?head=");
-    expect(dispatch).toMatch(/≥120s|>=120s/);
+    expect(dispatch).toContain("filtered by PR title #<N>");
+    expect(dispatch).toContain("active-worker cadence 120 seconds");
     expect(dispatch).toContain("wake only on change");
     expect(dispatch).toContain("not gh pr list");
     expect(dispatch).toContain("still never gh pr list");
@@ -70,21 +70,12 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(HOST_MONITOR_MECHANISMS).toContain("notify_on_output");
     expect(HOST_MONITOR_MECHANISMS).toContain("never gh project item-list");
     expect(HOST_MONITOR_MECHANISMS).toContain("gh pr list is GraphQL");
-    expect(ORCH_PLAN_READY_POLLER).toContain(HOST_MONITOR_MECHANISMS);
-    expect(PLANNER_ORCH_DOCTRINE).toContain(HOST_MONITOR_MECHANISMS);
+    expect(ORCH_PLAN_READY_POLLER).toContain("Claude uses its exposed Monitor tool");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("notify_on_output");
   });
 
   it("standing plan:ready poller recipe is REST + gain-only + not sole-enqueue (#261)", () => {
-    expect(ORCH_PLAN_READY_POLLER).toContain("standing plan:ready poller");
-    expect(ORCH_PLAN_READY_POLLER).toMatch(/≥120s|>=120s/);
-    expect(ORCH_PLAN_READY_POLLER).toContain("label:plan:ready");
-    expect(ORCH_PLAN_READY_POLLER).toContain("wake sentinel");
-    expect(ORCH_PLAN_READY_POLLER).toContain("gains at least one issue number");
-    expect(ORCH_PLAN_READY_POLLER).toContain("never re-announce the same standing set");
-    expect(ORCH_PLAN_READY_POLLER).toContain("not the sole wake path");
-    expect(ORCH_PLAN_READY_POLLER).toContain("Never monitor the Planner process or session");
-    expect(ORCH_PLAN_READY_POLLER).toContain("Chip completion monitors stay per-dispatch");
-    expect(ORCH_PLAN_READY_POLLER).toMatch(/Intake polling for needs:plan is Planner-owned/i);
+    for (const term of ["initial reconciliation", "30/120/120/300/300/600", "capped at 600", "expected-handoff watches use 120", "Retry-After", "Silent unchanged", "exact source revisions", "Planner owns needs:plan intake", "orch owns plan:ready/active completion"]) expect(ORCH_PLAN_READY_POLLER).toContain(term);
     expect(PLANNER_ORCH_DOCTRINE).toContain(ORCH_PLAN_READY_POLLER);
   });
 
@@ -96,8 +87,8 @@ describe("Cursor REST chip monitor (#223)", () => {
     expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("kill/re-arm after every successful drain");
     expect(CURSOR_SHELL_TEARDOWN_DOCTRINE).toContain("process-lifetime parity");
     expect(CURSOR_DISPATCH_MONITOR).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
-    expect(ORCH_PLAN_READY_POLLER).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
-    expect(PLANNER_ORCH_DOCTRINE).toContain(CURSOR_SHELL_TEARDOWN_DOCTRINE);
+    expect(ORCH_PLAN_READY_POLLER).toContain("assumes mortal shells");
+    expect(PLANNER_ORCH_DOCTRINE).toContain("reconciles before re-arm when dead");
   });
 });
 
@@ -124,32 +115,25 @@ describe("Copy-paste REST bash card for the plan:ready poller (#311)", () => {
   it("explicitly bans gh issue list --json alongside the existing gh pr list / gh project item-list bans", () => {
     expect(GRAPHQL_QUOTA_DOCTRINE).toContain("gh issue list --json");
     expect(HOST_MONITOR_MECHANISMS).toContain("gh issue list --json");
-    expect(ORCH_PLAN_READY_POLLER).toContain("gh issue list --json");
+    expect(ORCH_PLAN_READY_POLLER).toContain("never hot-poll Projects/GraphQL");
     expect(CURSOR_DISPATCH_MONITOR).toContain("gh issue list --json");
   });
 
-  it("ORCH_PLAN_READY_POLLER_BASH is a runnable copy-paste form of the doctrine above", () => {
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("#!/usr/bin/env bash");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh api -X GET search/issues");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("label:plan:ready");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toMatch(/>=120s/);
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("sleep 150");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("WAKE: plan:ready gained #");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gained=$(comm -13");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("always re-seed last-seen = current set");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh issue list --json (GraphQL)");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh pr list (GraphQL)");
-    expect(ORCH_PLAN_READY_POLLER_BASH).toContain("gh project item-list (GraphQL)");
+  it("ORCH_PLAN_READY_INTAKE_GUIDE is a runnable copy-paste form of the doctrine above", () => {
+    expect(ORCH_PLAN_READY_INTAKE_GUIDE).toBe(ORCH_PLAN_READY_POLLER);
+    expect(ORCH_PLAN_READY_INTAKE_GUIDE).toContain("vilya-handoff-ack:v1");
+    expect(ORCH_PLAN_READY_INTAKE_GUIDE).toContain("complete pagination");
+    expect(ORCH_PLAN_READY_INTAKE_GUIDE).not.toContain("sleep 150");
   });
 
   it("the ORCH standing-orders group carries the bash card as an exact copy of the constant", () => {
     const orch = PROMPTS.find((g) => g.node === "ORCH");
     expect(orch).toBeDefined();
     const card = orch!.items.find((i) =>
-      i.label.startsWith("Standing plan:ready poller")
+      i.label.startsWith("Standing plan:ready")
     );
     expect(card).toBeDefined();
-    expect(card!.text).toBe(ORCH_PLAN_READY_POLLER_BASH);
+    expect(card!.text.startsWith(ORCH_PLAN_READY_INTAKE_GUIDE)).toBe(true);
     expect(card!.host).toBeUndefined();
   });
 });

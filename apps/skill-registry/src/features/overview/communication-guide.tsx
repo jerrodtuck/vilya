@@ -19,8 +19,8 @@ Decision: use editable diagram plus complete text; operator text-only overrides 
 Model: retain <authorized exact model/effort pin>; no peer-authorized switch. No measured usage/savings supplied.
 Verification: source node/arrow comparison, resolved links and required repo tests/build, stack crucible then finish-feature; report exact results/counts/skips and rendering/keyboard limits separately. Source tests do not prove runtime acceptance.
 Stops: unknown identity/authority/history or contradictory source facts stop dependent work; post findings, 2–3 options with costs and recommendation on owning issue, await required operator decision. Record decision request at handoff, treat queued messages as unconfirmed, reread issue before escalation/ending.
-Repairs: initial detection is not an attempt; corrective change plus targeted verification is. Retain stable ledger/history/pin; after second consecutive unsuccessful attempt stop before third and return HEAD/diff/ownership/hypothesis to orch planning; earlier stops apply immediately.
-Close-out: reread issue/parent amendments before PR, use declared Closes/Refs routing, read actual body/head back, attach PR and post observed keyword/results/limits. Separate actual-head reviewer required; no implementer-only approval or merge authorization.`;
+Repairs: initial detection is not an attempt; corrective change plus targeted verification is. Retain stable ledger/history/pin; after second consecutive unsuccessful attempt stop before third and return HEAD/diff/ownership/hypothesis through the orch to the separate Planner; earlier stops apply immediately.
+Close-out: reread issue/parent amendments before PR, use declared Closes/Refs routing, read actual body/head back, attach PR and post observed keyword/results/limits. Codex separate review is optional for concrete unresolved risk; keep mandatory stack Crucible and operator merge authority. Preserve other-host review requirements.`;
 
 export function CommunicationGuide() {
   const [textOnly, setTextOnly] = useState(false);
@@ -33,7 +33,7 @@ export function CommunicationGuide() {
     <p>Seats and workers read the full <Link href="/skills/vl-adhd">shared writing policy</Link> and <Link href="/skills/vl-present">presentation contract</Link>. Keep complete facts, uncertainty and evidence in briefs and records. These illustrative examples teach selection; they are not live project state or proof of installed-session adoption.</p>
     <p>Use the actual host’s supported invocation: Codex <code>$vl-adhd</code> / <code>$vl-present</code>; Claude Code or Cursor <code>/vl-adhd</code> / <code>/vl-present</code>, or read/apply the resolved complete sources. Discover tools and read the selected provider instructions before producing output.</p>
     <h3>Short status stays prose</h3>
-    <p>Issue #742’s PR needs separate review. It changes documentation only. Its PR number is not supplied. No merge authorization exists. Usage is unavailable, not zero.</p>
+    <p>Issue #742’s PR needs evidence checks and any applicable risk review. It changes documentation only. Its PR number is not supplied. No merge authorization exists. Usage is unavailable, not zero.</p>
     <label><input type="checkbox" checked={textOnly} onChange={event => setTextOnly(event.target.checked)} /> Explain the flow in text only</label>
     <h3>Relationships use an editable diagram and text</h3>
     <p>{FLOW_TEXT}</p>
