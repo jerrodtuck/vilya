@@ -70,6 +70,7 @@ Source tests and registry gate results are recorded in the owning PR/issue.
 | [vl-prune](../../skills/vl-prune/SKILL.md) | codex-adapted | $vl-prune | Codex orch seat, authorized close-out and managed attachment/archive tools. | Codex managed trees use archival by attachment identity; no filesystem deletion. | Reviewed; runtime pending; shared contract references |
 | [vl-start-feature](../../skills/vl-start-feature/SKILL.md) | codex-adapted | $vl-start-feature | Repo config, issue and plan, git/GitHub access and managed-worktree tools. | Separate Codex Planner owns kickoff; managed setup precedes implementation. | Reviewed; runtime pending |
 | [vl-update-docs](../../skills/vl-update-docs/SKILL.md) | shared-compatible | $vl-update-docs | Repo config and authorization for requested issue or document writes. | Shared issue-versus-document routing; preserve file ownership. | Reviewed; runtime pending; shared contract references |
+| [vl-workflow-health](../../skills/vl-workflow-health/SKILL.md) | shared-compatible | $vl-workflow-health | Verified repo/board, bounded evidence access and readable shared audit, planning and handoff contracts. | Host-neutral bounded read-only audit; recommendations grant no repair or lifecycle authority. | Reviewed; runtime pending |
 
 ## #380 current-phase boundary
 
