@@ -10,11 +10,12 @@ import { PromptList } from "../../shared/ui/prompt-list";
 import { PROMPTS } from "./prompts";
 
 describe("planner prompt skill metadata (#254)", () => {
-  it("standing-orders card maps to vl-plan and renders the affordance", () => {
+  it("host entries map to the shared-compatible commands and render affordances", () => {
     const plan = PROMPTS.find((g) => g.node === "PLAN");
     expect(plan).toBeDefined();
     const card = plan!.items[0];
-    expect(card.skill).toBe(SKILL_SLUGS.planner);
+    expect(card.skill).toBe(SKILL_SLUGS.plannerClaude);
+    expect(plan!.items.find(item => item.host === "cursor")?.skill).toBe(SKILL_SLUGS.planner);
 
     const html = renderToStaticMarkup(<PromptList group={plan!} />);
     expect(html).toContain(SKILL_AFFORDANCE_LEAD);

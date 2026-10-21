@@ -83,19 +83,19 @@ describe("Dispatch priority order (#314)", () => {
 });
 
 describe("Handoff priority marker (#314)", () => {
-  it("requires an explicit dispatch: or do-not-dispatch marker on cross-session mentions", () => {
+  it("requires the exact handoff marker and pending label on cross-session mentions", () => {
     expect(HANDOFF_DISPATCH_MARKER_DOCTRINE).toContain("dispatch:");
     expect(HANDOFF_DISPATCH_MARKER_DOCTRINE).toContain(
       "do-not-dispatch, filed-for-record",
     );
     expect(HANDOFF_DISPATCH_MARKER_DOCTRINE).toMatch(
-      /not a dispatch cue by itself/i,
+      /handoff:pending requests ranked triage/i,
     );
   });
 
   it("unmarked peer handoffs are treated as record-only, not a dispatch cue", () => {
     expect(HANDOFF_DISPATCH_MARKER_DOCTRINE).toMatch(
-      /unmarked peer handoff carries neither meaning/i,
+      /unmarked handoffs are record-only/i,
     );
     expect(HANDOFF_DISPATCH_MARKER_DOCTRINE).toMatch(/record-only/i);
   });

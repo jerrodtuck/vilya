@@ -29,14 +29,14 @@ export function CardinalityDiagram() {
         repo&apos;s main clone). A standing{" "}
         <Link href="/planner">Planner</Link> (Fable) is required for Claude
         Code chip-flow and night-shift prep; on Cursor daytime it is optional.
-        Codex gives planning to its orch, with no standing Planner.
+        Codex has a separate Planner ($vl-plan-codex); the orch consumes settled plans.
         Full rationale on the <Link href="/architect">Architect page</Link>.
       </p>
       <div className="card-diagram" style={{ marginTop: 14 }}>
         <svg
           viewBox="0 0 620 258"
           role="img"
-          aria-label="One product board: its architect fans out over that product's repo columns; each repo column runs its own orchestrator, chips, and PRs. Other product boards have their own architect."
+          aria-label="One product board: its architect fans out over that product's repo columns; each repo column has Planner to orchestrator, chips, and PRs. Other product boards have their own architect."
         >
           <defs>
             <marker
@@ -120,7 +120,7 @@ export function CardinalityDiagram() {
                 textAnchor="middle"
                 style={{ fontSize: "12.5px" }}
               >
-                Orchestrator
+                Planner → Orch
               </text>
               <path
                 className="edge"

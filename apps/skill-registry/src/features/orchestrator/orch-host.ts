@@ -10,7 +10,7 @@ import { CODEX_PROMPTS } from "./codex-prompts";
 export const ORCH_PAGE_HREF = "/orch";
 
 export const ORCH_INTRO_BY_HOST: Record<DesktopHostId, string> = {
-  codex: 'Codex orch owns planning. Follow the <a href="#codex-dispatch-path">isolated subagent path</a>.',
+  codex: 'Codex orch consumes the separate Planner’s settled plan and owns dispatch/acceptance. Follow the <a href="#codex-dispatch-path">isolated subagent path</a>.',
   cc: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Claude Code orch</b>, follow the <a href="#${CLAUDE_DISPATCH_PANEL_ID}">spawn_task chip path</a> above — daytime default is <code>${SKILL_INVOKES.chip}</code> → <code>spawn_task</code> (Monitor + issue comment wake).`,
   cursor: `This is a <b>menu, not a sequence</b>: pick the <b>one</b> card matching this session's role — never stack cards. Once you seat the <b>Cursor orch</b>, follow the <a href="#${CURSOR_DISPATCH_PANEL_ID}">Task/BoN Cursor path</a> above — daytime default is worktree-first Task/BoN chips (Task return + issue comment wake). Worker A (<code>/${CURSOR_HANDOFF_SKILL}</code>) is the collapsed fallback when not using Task chips.`,
 };

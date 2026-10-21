@@ -2,7 +2,7 @@
 // label transitions + Planner-owned intake + orch standing plan:ready poller.
 import { describe, expect, it } from "vitest";
 import { FLOWS, NODES } from "./data";
-import { PLANNER_NEEDS_PLAN_INTAKE_BASH, PROMPTS } from "./prompts";
+import { PLANNER_NEEDS_PLAN_INTAKE_GUIDE, PROMPTS } from "./prompts";
 
 function collectStrings(value: unknown): string {
   if (typeof value === "string") return value;
@@ -24,20 +24,20 @@ describe("Planner doctrine (#208 / #255 / #261 / #267)", () => {
     expect(text).toMatch(/never implement/i);
     expect(text).toMatch(/never dispatch/i);
     expect(text).toMatch(/never merge/i);
-    expect(text).toMatch(/standing plan:ready poller/i);
+    expect(text).toContain("orch owns plan:ready/active completion");
     expect(text).toContain("mortal");
     expect(text).toContain("re-arm");
     expect(text).toContain("#270");
     expect(text).toContain("#267");
-    expect(text).toContain("#261");
+    expect(text).toContain("board-intake.md");
   });
 
   it("standing orders require intake Monitor when idle (#255)", () => {
     const standing = PROMPTS.find((g) => g.node === "PLAN");
     const text = standing?.items.map((i) => i.text).join("\n") ?? "";
-    expect(text).toMatch(/intake Monitor/i);
-    expect(text).toMatch(/≥120s|>=120s/);
-    expect(text).toMatch(/gains an issue/i);
+    expect(text).toContain("Planner owns needs:plan intake");
+    expect(text).toContain("30/120/120/300/300/600");
+    expect(text).toContain("Newly actionable work resets");
     expect(text).toContain("notify_on_output");
     expect(text).toContain("Monitor tool");
     expect(text).toMatch(/process\/completion self-watches/i);
@@ -49,9 +49,9 @@ describe("Planner doctrine (#208 / #255 / #261 / #267)", () => {
     const text = standing?.items.map((i) => i.text).join("\n") ?? "";
     expect(text).toMatch(/running across drains/i);
     expect(text).toMatch(/do not kill\/re-arm/i);
-    expect(text).toMatch(/last-seen\s*=\s*current set/i);
+    expect(text).toContain("Keep pending, emitted and consumed separate");
     expect(text).toMatch(/#270/);
-    expect(text).toMatch(/standing plan:ready poller/i);
+    expect(text).toContain("orch owns plan:ready/active completion");
     expect(NODES.QUEUE.bodyHtml).toMatch(/across drains/i);
     expect(NODES.QUEUE.bodyHtml).toMatch(/kill\/re-arm/i);
     const handoff = PROMPTS.find((g) => g.node === "HANDOFF");
@@ -78,34 +78,25 @@ describe("Planner doctrine (#208 / #255 / #261 / #267)", () => {
   });
 });
 
-describe("Copy-paste REST bash card for needs:plan intake (#311)", () => {
+describe("Adaptive host procedure for needs:plan intake (#380)", () => {
   it("standing orders explicitly ban gh issue list --json alongside gh pr list", () => {
     const standing = PROMPTS.find((g) => g.node === "PLAN");
     const text = standing?.items.map((i) => i.text).join("\n") ?? "";
-    expect(text).toContain("gh issue list --json");
+    expect(text).toContain("never hot-poll Projects/GraphQL");
   });
 
-  it("PLANNER_NEEDS_PLAN_INTAKE_BASH is a runnable copy-paste form of the intake recipe", () => {
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("#!/usr/bin/env bash");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh api -X GET search/issues");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("label:needs:plan");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toMatch(/>=120s/);
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("sleep 150");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("WAKE: needs:plan gained #");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gained=$(comm -13");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("always re-seed last-seen = current set");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh issue list --json (GraphQL)");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh pr list (GraphQL)");
-    expect(PLANNER_NEEDS_PLAN_INTAKE_BASH).toContain("gh project item-list (GraphQL)");
+  it("PLANNER_NEEDS_PLAN_INTAKE_GUIDE links the shared adaptive intake procedure", () => {
+    for (const term of ["initial reconciliation", "30/120/120/300/300/600", "Retry-After", "vilya-handoff-ack:v1", "complete pagination", "Silent unchanged"]) expect(PLANNER_NEEDS_PLAN_INTAKE_GUIDE).toContain(term);
+    expect(PLANNER_NEEDS_PLAN_INTAKE_GUIDE).not.toContain("sleep 150");
   });
 
-  it("the PLAN standing-orders group carries the bash card as an exact copy of the constant", () => {
+  it("the PLAN standing-orders group carries the shared host procedure", () => {
     const standing = PROMPTS.find((g) => g.node === "PLAN");
     expect(standing).toBeDefined();
     const card = standing!.items.find((i) =>
       i.label.startsWith("Standing needs:plan intake")
     );
     expect(card).toBeDefined();
-    expect(card!.text).toBe(PLANNER_NEEDS_PLAN_INTAKE_BASH);
+    expect(card!.text.startsWith(PLANNER_NEEDS_PLAN_INTAKE_GUIDE)).toBe(true);
   });
 });

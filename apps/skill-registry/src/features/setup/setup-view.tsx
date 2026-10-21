@@ -70,7 +70,7 @@ const STEPS: SetupStep[] = [
   {
     text: (
       <>
-        Add the autonomy labels: <code>{needsPlan}</code> (enqueue for planning; Codex orch owns the stage),{" "}
+        Add the autonomy labels: <code>{needsPlan}</code> (enqueue for the host Planner; Codex uses $vl-plan-codex),{" "}
         <code>{planReady}</code> (kickoff + verify plan on the issue),{" "}
         <code>{nightShiftReady}</code> (safe for unattended night-shift), and{" "}
         <code>{needsDecision}</code> (the loop sets this at a fork).

@@ -24,7 +24,7 @@ export type PlanExecuteBlock = {
 export const PLAN_EXECUTE_BLOCKS: PlanExecuteBlock[] = [
   {
     title: "Claude Code — Planner session is the plan seat.",
-    body: 'Chip flow is **not** "orchestrator `/model` plans → chip executes." Planning for chip flow belongs to a standing [Planner](/planner) session on **Fable** (`claude --model fable` or session `/model`). That session writes the kickoff + verify plan onto the issue and labels `plan:ready`. The orchestrator dispatches and monitors; it is not the planning seat. `spawn_task` has no model parameter.',
+    body: 'Chip flow is **not** "orchestrator `/model` plans → chip executes." Planning for chip flow belongs to a standing [Planner](/planner) session using `/vl-plan-claude` (`/vl-plan` compatibility) on **Fable** (`claude --model fable` or session `/model`). That session writes the kickoff + verify plan onto the issue and labels `plan:ready`. The orchestrator dispatches and monitors; it is not the planning seat. `spawn_task` has no model parameter.',
   },
   {
     title: "Chips (and the orchestrator) execute on Sonnet",

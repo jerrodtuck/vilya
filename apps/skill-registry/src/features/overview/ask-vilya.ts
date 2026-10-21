@@ -23,7 +23,7 @@ Keep exactly lane · exact next prompt/command · one-line why with canon citati
 
 Ask Vilya — route me: <what you want to do, or the question you have>
 
-First identify the desktop. On Codex, use supported dollar skill invocation or read/apply its source. Codex planning belongs to ${SKILL_INVOKES.orchestratorCodex} (no standing Planner); its workflow is /orch?host=codex. Existing host routing follows below.
+First identify the desktop. On Codex, use supported dollar skill invocation or read/apply its source. Codex planning belongs to $vl-plan-codex ($vl-plan compatibility); use /planner?host=codex. The orch consumes settled plans and coordinates dispatch at /orch?host=codex. Claude uses /vl-plan-claude (/vl-plan compatibility); Cursor retains /vl-plan. Existing host routing follows below.
 
 Apply the routing test: does this change what we intended, or only what we'll do next?
 

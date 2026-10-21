@@ -24,7 +24,7 @@ export function ArchitectView() {
           <span className="you">You</span> are the architect
         </h1>
         <p className="lead">
-          Your output is issues, ADRs, and specs — never running code. Recall
+          Define the user problem, smallest useful outcome, scope, non-goals and priority recommendations. Your output is issues, ADRs and specs — never running code. Assess available outcome feedback without inventing usefulness from test counts. Recall
           what&apos;s been tried, ground every claim in as-built or
           as-intended, and stop at every real fork with a stated
           recommendation. Click a <b>flow</b> to light its path, or click any{" "}
