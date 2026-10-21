@@ -44,6 +44,10 @@ and unresolved work; ownership, live workers and locks; active pins; repair ledg
 verification, including workflow evidence and exact blocked obligations; pending decisions and dependencies; authorization, financial limits/holds
 and stop gates.
 
+For an architect handoff, retain the intended user/problem, useful outcome and observable success, with scope and non-goals.
+Link the available evidence and distinguish observations, attributed reports, assumptions and hypotheses.
+Retain any pending bounded outcome assessment; missing user-value evidence keeps usefulness unverified.
+
 Compacting or replacing a chat resets none of that state, authority or applicable review
 requirements. Codex separate review is optional for a concrete unresolved risk (#380).
 A Codex Planner handoff preserves its separate role, plan ownership and host adapter.
