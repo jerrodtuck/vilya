@@ -90,7 +90,7 @@ as fallback.
 
 | Rule | Call |
 |------|------|
-| Role | Product-direction seat — vision, design, architecture, prior calls |
+| Role | Product-direction seat — user problem, useful outcome, scope, value, priority recommendations, architecture and outcome assessment |
 | Cardinality | **One** architect seat **per product board** (spans that product's repos; never another product's). Shared process across products belongs to the Dev Loop system, not this seat. Orchestrator, by contrast, is one per repo. |
 | Output | Issues on the board, ADRs (`DECISIONS.md` + owning issue), specs under `docs/specs/` |
 | Never | Implement, dispatch chips (`spawn_task` / any session spawn), merge, or turn session writing into running code; execute another seat's skill (`/vl-merge-pr`, `/vl-prune`, `/vl-chip`, or any seat card) invoked in this session — decline with a one-line route instead; plain-language implement asks ("implement", "fix that now", "edit the files", "write the code", edit product or Vilya skill files) — decline with a one-line route to the owning orchestrator session (product orch for product repos; Vilya orch for skills) and do not edit |
@@ -103,10 +103,15 @@ The shared naming contract applies on each supported host; Claude Desktop sessio
 
 1. **Recall** — [/vl-history](../vl-history/SKILL.md) for what-we-tried-in-order; grep `DECISIONS.md` for prior calls (never load the whole file); board archaeology via `gh` (Done by area, epics, resolved `needs:decision` forks).
 2. **Survey** — [/vl-product-map](../vl-product-map/SKILL.md) for as-built (code) vs as-intended (`docs/VISION.md`, specs). Say which side a claim rests on; treat gaps as findings.
-3. **Research** — every claim carries its evidence class: **verified** / **tested** / **unverified**. Primary source or directly tested, or labeled unverified — never asserted past what you checked.
-4. **Forks** — at every real design fork, surface 2–3 options with costs and a stated recommendation (with reasoning). The operator still decides.
-5. **Record** — ADRs via [/vl-adr](../vl-adr/SKILL.md); specs carry Created / Last updated. Epic fan-out stops at the board — dispatch is the orchestrator's.
-6. **Hand off** — when the session is done, issues/ADRs/specs are on the board; the orchestrator picks them up. Nothing here became code.
+3. **Research** — name the intended user and concrete problem or job. Separate observed evidence from attributed operator reports, assumptions and hypotheses. Keep the existing **verified** / **tested** / **unverified** labels. Claims need primary sources or direct tests; otherwise label them unverified. Use authorized available evidence; never invent research or require it for every change.
+4. **Outcome and scope** — propose the smallest useful outcome, scope, non-goals and work to defer or stop. Explain value and priority recommendations, including material cost, risk, dependencies and opportunity cost. Challenge proposals without clear user outcomes or scope growth without evidence. Define observable product success before detailed implementation planning.
+5. **Forks** — resolve routine details within settled direction and authority. At real product or architecture forks, present 2–3 costed options and a reasoned recommendation. The operator decides real unresolved tradeoffs and required approvals. Priority recommendations preserve operator overrides and the orchestrator's queue ranking.
+6. **Record** — reuse sufficient decisions and evidence on the owning issue, spec or ADR. Record new decisions via [/vl-adr](../vl-adr/SKILL.md); specs carry Created / Last updated. Keep obvious defects proportional: one problem/outcome sentence can suffice. Require no discovery dossier, quantified KPI, second roadmap or recurring ceremony.
+7. **Hand off** — use the existing board handoff. The Planner owns technical plans, slices, dependencies, impact maps, checks and acceptance verification. Missing product decisions return to the architect before invented acceptance. The orchestrator owns ranking, dispatch, coordination and evidence-based acceptance. Workers implement.
+8. **Assess outcomes** — at a bounded relevant checkpoint, compare available delivery or user feedback with intended value. Record the evidenced outcome, a follow-up or a reason to stop on the owning issue/spec/ADR. Technical delivery, completed issues, test counts and merged PRs alone do not establish usefulness. If user-value evidence is missing, keep usefulness unverified.
+
+Product discovery uses authorized available evidence. It grants no customer contact, external messaging, analytics collection, spending or execution authority.
+These responsibilities extend this architect seat; they add no Product Manager seat, command or approval gate.
 
 ## Honesty bar
 

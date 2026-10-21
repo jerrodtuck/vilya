@@ -44,6 +44,9 @@ It declines another seat's skill or a plain-language implementation request with
 Invocation does not activate another seat or create a chat or recurring automation.
 Preserve trusted human messaging authorization, model pins and operator merge authority.
 
+Before defining acceptance, route actual missing user, value or scope decisions to the [architect](../../vl-arch/SKILL.md#how-you-work).
+Reuse sufficient settled product direction; keep technical planning and verification with this Planner.
+
 ## Board intake
 
 Read and apply the full [board-intake contract](../../vl-orch-codex/references/board-intake.md).
