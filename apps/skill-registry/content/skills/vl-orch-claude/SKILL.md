@@ -131,16 +131,19 @@ route. Enqueue opt-in needs:plan only when that route is needed; preserve kickof
 plan and plan:ready artifacts. Never activate another seat by invoking its skill.
 Night-shift prep still requires plan:ready and night-shift:ready; no eligibility waiver.
 
-**At session start and when idle**, arm **one** standing `plan:ready` poller (if
-none is running) so Planner finish wakes this session without relying on
-same-turn memory at `needs:plan` enqueue:
-
-- Cadence ≥120s (not 60s / not ~90s).
-- REST-first — never `gh project item-list` / GraphQL on the hot path (`gh pr list` is GraphQL; so is `gh issue list --json` — never either). Copy-paste bash recipe: site `/orch` card "Standing plan:ready poller—copy-paste REST bash".
-- Each tick: re-fetch open issues with `label:plan:ready state:open`; compute gains vs last-seen; always set last-seen = current set (including empty); print a wake sentinel only when the set gains at least one issue number — never re-announce the same standing set; not on shrinks alone.
-- Host: Claude Code **Monitor** tool. Leave the poller running; re-seed last-seen every tick — do not kill/re-arm after every wake just to re-seed (#267).
-- Same-turn per-enqueue completion board Monitor for that issue remains reinforcement, not the sole wake path.
-- Never monitor the Planner process or session. Chip completion monitors stay per-dispatch. Intake polling for `needs:plan` is Planner-owned.
+Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
+At session start/idle, reconcile `handoff:pending`, `plan:ready` and registered parked issues through REST.
+Keep needs:plan intake Planner-owned. Preserve same-turn completion watches and existing PR matching.
+Use initial reconciliation, then idle delays 30, 120, 120, 300, 300, 600 seconds, capped at 600.
+Keep relevant active/expected watches at 120 seconds. Honor provider minimums and Retry-After.
+Persist observed, pending, emitted and consumed revisions; emit only bounded new reconciliation wakes.
+Do not seed away unacknowledged work or wake repeatedly for unchanged policy gates.
+Paginate fully and cover edited old comments, body/label changes and parked answers.
+Post substantive revision-bound ACKs before removing handoff:pending after a complete reconciliation.
+Use the exposed Claude Monitor/wake tool. Verify its minimum cadence and lifetime contract.
+Do not import Cursor shell lifetime guarantees or use an exit-only loop.
+Keep healthy watches across drains. Never poll Projects/GraphQL or monitor the Planner process.
+Verify effective source, issue, board, marker and pending ACK before blaming a missing signal.
 
 Daytime may proceed without `plan:ready` when the issue is already clear (attended judgment); when `plan:ready` is on, the brief must carry those plan artifacts.
 
@@ -197,6 +200,15 @@ board, never chip it. An unmarked peer handoff carries neither meaning: treat
 it as record-only until it carries one of these two markers or the operator
 names the issue directly.
 
+## Board handoffs and parked answers
+
+Board intake uses the exact dispatch/record-only comment markers and handoff:pending label in the shared contract.
+Legacy chat dispatch: requests retain ranked-triage meaning; board polling requires the machine-readable source marker.
+Unmarked and record-only sources never dispatch. Pending intake never bypasses plan, dependency or authority gates.
+When parking a fork, require the worker's options on the owning issue and needs:decision before returning.
+Register that issue for answer, edit and label reconciliation. Keep the same question durable; do not repeat unchanged wakes.
+Resume only after reading the actual required ruling. #379 standing merge authorization remains separate and unresolved.
+
 ## Dispatch via /vl-chip
 
 Every unit is dispatched by invoking [/vl-chip](../vl-chip/SKILL.md) — chosen
@@ -217,7 +229,7 @@ Sonnet via `.claude/settings.local.json` (gitignored; worktrees inherit via
 
 In the same turn as every chip dispatch — no exceptions — do two things:
 
-1. Arm a **Monitor** — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop — watching REST for the chip's PR (`gh api …/pulls?state=open`, then filter `.[] | select(.title | startswith("#<N> "))`; **not** `head=<owner>:<branch>` — the chip's `claude/*` branch carries no issue number, so `head=` never matches; not `gh pr list`) and the issue for new comments (`gh api …/issues/<N>/comments?since=<iso>`), cadence ≥120s with dedup (seed last-seen PR number + comment id; wake only on change — never re-announce a standing open PR).
+1. Arm a **Monitor** — the Monitor tool, each stdout line streaming to the session as a live event; never an exit-only background shell watch loop — watching REST for the chip's PR (`gh api …/pulls?state=open`, then filter `.[] | select(.title | startswith("#<N> "))`; **not** `head=<owner>:<branch>` — the chip's `claude/*` branch carries no issue number, so `head=` never matches; not `gh pr list`) and the issue for new comments (`gh api …/issues/<N>/comments?since=<iso>`), at 120-second relevant active cadence using the shared durable revision/ACK contract, including edited comments and parked answers. Never re-announce a standing open PR or unchanged gate.
 2. Move the issue to **In Progress** on the project board (GitHub's built-in workflows only cover added→Todo and closed/merged→Done — the dispatch move is yours or it never happens; board edits follow GraphQL quota hygiene above).
 
 That monitor is the completion signal, and the chip's issue comment is what it picks

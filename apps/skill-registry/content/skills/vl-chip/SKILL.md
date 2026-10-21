@@ -452,14 +452,19 @@ operator pick (issue comment or attended relay) → then implement.**
 
 Do **not** use this gate to replace Planner for ordinary `plan:ready` issues. A plan that already
 locked the fork is execute work, not investigate-first. Mid-implementation design forks that are
-**not** investigate-first still stop with options on the issue (daytime wait / night-shift
-`needs:decision`) — same honesty bar, different marking.
+**not** investigate-first still stop with options on the issue and `needs:decision` (daytime wait / night-shift
+blocked intake) — same honesty bar, different marking.
 
 ### Non-negotiable
 
 Recommendation on the issue is required; **auto-picking is forbidden**, including when findings
 seem obvious. The options comment **is** the completion report for that stop (§2). The
 orchestrator's REST monitor (§3) picks up that comment — do not invent a second channel.
+
+At every fork, post exact options, costs and recommendation on the owning issue before returning.
+Apply needs:decision and the existing Blocked-state procedure; do not leave the fork only in a Task return.
+The owning orch registers the parked issue under the shared board-intake contract.
+Preserve required rulings, existing repair limits and operator merge authority.
 
 ## 2b. Shared app-host smoke — probe, never manage
 
@@ -554,25 +559,20 @@ Issue-comment monitoring is **the same for both paths** — always by issue numb
 |----------|---------|
 | `GET /repos/{owner}/{repo}/issues/{n}/comments?since={iso}` | new issue comments (or list + compare ids) |
 
-**Cadence:** **≥120s** between ticks (not 60s, not ~90s).
-
-**Dedup guard** (required):
-
-1. On arm, seed `last_pr_number` (empty if none), `last_comment_id`, and optionally `updated_at`.
-2. Each tick, fetch this dispatch path's PR-detection recipe (table above) plus the issue-comments
-   endpoint.
-3. Print a **wake sentinel** (stdout line that matches Cursor `notify_on_output`, or that the
-   Claude Monitor tool surfaces) **only when** the PR number appears/changes or a newer comment
-   id arrives.
-4. **Do not** re-announce a standing open PR every tick — silence is correct when nothing changed.
-5. Stop the watcher after the merge batch for that chip set.
+Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
+Use 120-second checks for relevant active/expected handoffs. Idle intake uses its stepped schedule.
+Honor provider minimum cadence and Retry-After. Failures and partial pagination never advance cursors.
+Use complete updated-time observations with overlap and revision hashes, including edited comments and parked answers.
+Persist pending, emitted and consumed separately; reconcile durable substantive ACKs at startup.
+Emit a bounded wake for a new relevant revision only. Never re-announce a standing PR or unchanged decision gate.
+Do not seed away unacknowledged work. Retire watches only after consumption and closure of obligations.
 
 ### Mechanism by host
 
 | Host | How to arm | Do not |
 |------|------------|--------|
-| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on a loop that shells the **REST** recipe for the dispatch path above (≥120s, dedup) — `spawn_task` chips use the **title-match** PR recipe, never `head=`, since their branch carries no issue number. If the Monitor shells `gh`, use only those REST calls. | An **exit-only** background shell watch loop (detects in the output file but never notifies while running); `gh pr list`; `gh project item-list` / GraphQL hot polls; using the `head=` recipe on a Claude chip's random branch |
-| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on the same **REST** recipe, **≥120s**, with the dedup guard above — Cursor daytime/night-shift branches embed the issue #, so `head=` is correct here. Cursor has **no** Monitor tool — this watcher *is* the equivalent. **Host limit:** those shells are **mortal** — Cursor may tear them down quietly. Teach **arm → assume mortal → re-arm** when the session notices death, after long gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just to re-seed (re-seed `last-seen` every tick — #267). | `gh pr list` (GraphQL); `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes); exit-only watch loops; assuming process-lifetime parity with Claude's Monitor tool |
+| **Claude Code** | **Monitor tool** (each stdout line streams as a live event) on a loop that shells the **REST** recipe for the dispatch path above (120-second active checks; shared revision/ACK state) — `spawn_task` chips use the **title-match** PR recipe, never `head=`, since their branch carries no issue number. If the Monitor shells `gh`, use only those REST calls. | An **exit-only** background shell watch loop (detects in the output file but never notifies while running); `gh pr list`; `gh project item-list` / GraphQL hot polls; using the `head=` recipe on a Claude chip's random branch |
+| **Cursor** | Background shell + **`notify_on_output`** (stdout match wakes the session) on the same **REST** recipe, **120-second active checks**, with the revision/ACK contract above — Cursor daytime/night-shift branches embed the issue #, so `head=` is correct here. Cursor has **no** Monitor tool — this watcher *is* the equivalent. **Host limit:** those shells are **mortal** — Cursor may tear them down quietly. Teach **arm → assume mortal → re-arm** when the session notices death, after long gaps, or when an expected signal is missing: one REST check, then re-arm if the shell is gone. Do **not** arm-once-and-forget. Do **not** kill/re-arm after every successful drain just to re-seed (persist reconciled state every tick — #267). | `gh pr list` (GraphQL); `gh project item-list` / GraphQL on the hot path (Projects GraphQL can exhaust the hourly budget in minutes); exit-only watch loops; assuming process-lifetime parity with Claude's Monitor tool |
 
 Why not `send_message`: **`mcp__ccd_session_mgmt__send_message` always prompts the user for
 confirmation by product contract** — no permission rule silences it (twice-tested) — so it can

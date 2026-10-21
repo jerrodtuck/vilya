@@ -59,6 +59,13 @@ Do not borrow Claude Monitor, Cursor notify_on_output, or a persistent shell wor
 If no persistent wake is authorized, report intake unarmed and the remaining obligation.
 Do not invent unattended liveness or a Codex CLI backend.
 
+## Adaptive intake boundary
+
+Apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
+Keep native event delivery; recurring intake remains separately authorized and unarmed by this policy.
+Report unavailable silent model-free variable cadence honestly. Do not implement a polling backend.
+Reconcile pending revisions and parked answers before action; retain substantive ACKs separately from emitted transport.
+
 ## Review and handoff
 
 Codex separate review is optional for a concrete unresolved risk (#380).

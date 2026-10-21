@@ -135,6 +135,19 @@ Before any brief, board mutation, checkout creation (including managed create_wo
 
 Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe) and carry the recorded issue identity, base and original-start evidence into the worker brief. Before implementation, resolve the brief base and record the actual original starting commit as full immutable SHAs. Check equality/ancestry against that original start, not a later worker HEAD. If the base is missing, diverged, history is incomplete or Git errors, stop and reconcile. For an ancestor base inspect full messages in brief-base..original-start, bounded to 256 commits; larger ranges stop for a scoped reconciliation. Exact local #N, owner/repo#N or matching GitHub issue URL references are possible duplicate signals: reconcile delivered substance, never assume shipped from a number alone. Do not match #690/#169 for #69 or another repo's reference. Resume with the recorded original start so worker commits are not misclassified as pre-existing shipped work.
 
+## Board intake and parked answers
+
+Read and apply the full [board-intake contract](references/board-intake.md).
+Reconcile pending handoffs and registered parked issues through the owning issue.
+Use exact machine-readable source/ACK markers and durable revision bookkeeping.
+Preserve ranked triage, separate Planner ownership and exact issue/authority gates.
+Unmarked and record-only sources never dispatch. Unchanged decision gates never create repeated fresh wakes.
+Keep native event-driven child delivery and active-turn waits. Persistent watches remain unarmed without separate human authorization.
+Do not create a daemon, CLI backend or fixed-interval model loop.
+Verify actual silent variable-cadence support before any authorized automation claim.
+At a fork, require issue-recorded options and needs:decision, then register the parked answer obligation.
+Read the required ruling before resumption. #379 standing merge authorization remains separate and unresolved.
+
 ## Plan, then dispatch
 
 Rank dispatchable issues by `priority:critical > priority:high > priority:medium >
