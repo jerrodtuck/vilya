@@ -6,7 +6,8 @@ description: >-
   *-probe-*), Claude chips (.claude/worktrees on claude/*), and night-shift / Claude daytime
   (.claude/worktrees on feat|fix|docs/<issue#>-*). Dry-run by default; --apply removes
   eligible worktrees after squash-merge and authorizes scoped kills of lock holders whose
-  cmdline names that worktree. Use when the user says "prune", "prune worktrees",
+  cmdline names that worktree, plus removal of each eligible worktree's chip-labelled and
+  orphaned per-worktree Docker containers, volumes and images. Use when the user says "prune", "prune worktrees",
   "/vl-prune", or after /vl-merge-pr hands off cleanup. Run from the main clone —
   never from inside a worktree being removed.
 codex-support: "codex-adapted"
@@ -34,7 +35,8 @@ Explicit formats and fixed output contracts win; presentation grants no new auth
 Only `vl-orch-codex` may use this path; architect, router, planner and workers
 decline. Use `$vl-prune` for dry-run, `$vl-prune --apply` for authorized close-out.
 For Codex-managed trees follow this section and **stop**; never fall through to the
-legacy filesystem removal, orphan scans, branch deletion or process-kill flow below.
+legacy filesystem removal, orphan scans, branch deletion or process-kill flow below
+(step 5's Docker rows are the one exception).
 
 1. Discover attached trees via `list_artifacts` in the owning chat. Use the exact
    returned worktree `identityKey`, not a guessed directory or branch glob. If the
@@ -54,6 +56,8 @@ legacy filesystem removal, orphan scans, branch deletion or process-kill flow be
    may be snapshot commits, not unstaged files). Registration failure uses
    `attach_worktree` with the returned workspace path. Chat `set_thread_archived`
    is a separate UI action and does not prove worktree cleanup.
+5. After a verified archive, apply the Docker rows of §3b, §5b and §5c to that tree's
+   branch and folder. This is the only part of the flow below that applies to Codex trees.
 
 > Companion: [/vl-merge-pr](../vl-merge-pr/SKILL.md) squash-merges and **hands off** here;
 > [/vl-start-feature](../vl-start-feature/SKILL.md) creates the worktrees this skill removes;
@@ -157,6 +161,15 @@ Optional scope (when the operator names it):
    `worktree list` — leftover after a failed/locked remove): `$HOME/.cursor/worktrees/<repo>/`,
    `<main-clone>/.claude/worktrees/`, and `…/_work/<repo>/<repo>/.claude/worktrees/`. Orphans
    still count.
+5. When `docker` answers on this machine, take one Docker inventory for §3b (skip with a
+   note when Docker is not installed or not running):
+
+   ```bash
+   docker ps -a --size --format '{{.ID}}\t{{.Names}}\t{{.State}}\t{{.Size}}\t{{.Labels}}'
+   docker volume ls --format '{{.Name}}\t{{.Labels}}'
+   docker image ls --format '{{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.Labels}}'
+   docker system df -v   # volume sizes
+   ```
 
 ## 3. Eligibility (all must hold)
 
@@ -197,6 +210,31 @@ matching only; closed-out / clean / not-cwd remain agent-side git checks.
 Task pool names under `.cursor/worktrees/`), `worktree-*` Claude pools, anything outside
 `.cursor/worktrees/<repo>/`.
 
+### 3b. Docker items of an eligible worktree (#395)
+
+Chips label their Docker items `project=<repo-short>` and `chip=<branch>`
+([/vl-chip](../vl-chip/SKILL.md) §2e) and remove them at close-out
+([/vl-finish-feature](../vl-finish-feature/SKILL.md) §7a). Prune removes what remains.
+Only a worktree that passes gates 1–6 gets Docker rows. Classify each inventory item
+against that worktree:
+
+| Match | Verdict |
+|-------|---------|
+| `chip=` label equals the worktree's branch or folder | `eligible (chip label)` |
+| No `chip=` label; name is the worktree's default Compose name — image or container `<worktree>-…` (e.g. `<worktree>-dev`), volume `<worktree>_…` (e.g. `<worktree>_venv`) — and any `com.docker.compose.project` label equals the worktree's Compose project | `eligible (orphan)` |
+| A matching item with a `project=` label for another repo | `skip (other project)` |
+| A matching item with `shared=true` (shared image, package cache) | `skip (shared)` |
+| A matching container that is running | `skip (running)` |
+| Anything else (another chip, the project's shared image, unlabelled unrelated items) | not listed |
+
+`<worktree>` is the folder's Compose project name: lowercase, only `a-z 0-9 _ -`, no leading
+`-` or `_`. A name match belongs to the **longest** matching folder: pass the main clone and
+every other worktree folder, so `foo` never claims `foo-bar_venv`.
+
+**Recipe (testable):** `classifyDockerItem` in
+`apps/skill-registry/src/features/orchestrator/prune-docker-eligibility.ts` — label and name
+matching only; worktree gates and the `docker` calls stay agent-side.
+
 ## 4. Dry-run output
 
 For each candidate print one row:
@@ -211,7 +249,17 @@ PATH | BRANCH | PR | REMOTE | VERDICT
 ...  | claude/… | — | — | skip (live session)
 ```
 
-End with counts: `N eligible · M skipped · apply with /vl-prune --apply`.
+Under each eligible worktree row, list its §3b Docker rows with sizes:
+
+```text
+  docker | KIND | NAME | SIZE | VERDICT
+  docker | image | <worktree>-dev:latest | 1.52GB | eligible (orphan)
+  docker | volume | <worktree>_venv | 840MB | eligible (orphan)
+  docker | container | <worktree>-dev-run-1a2b | 12MB | skip (running)
+  docker | volume | uv-cache | 3.1GB | skip (shared)
+```
+
+End with counts: `N eligible · M skipped · D Docker items (≈S GB) · apply with /vl-prune --apply`.
 
 When a dry-run detects a lock holder on an **eligible** row, add a preview line (do **not**
 kill):
@@ -243,6 +291,36 @@ git fetch --prune
   scoped kills for that eligible row — no second operator ask. Do not invent force deletes
   that skip eligibility.
 - Re-run dry-run at the end and show what remains (including any kills performed).
+
+## 5b. Apply — Docker items
+
+For each eligible worktree, re-check its §3b rows immediately before removal. Remove only
+`eligible (chip label)` and `eligible (orphan)` rows, in this order:
+
+```bash
+docker rm <container-id> …     # stopped containers only; no -f
+docker volume rm <volume> …
+docker image rm <image-id> …    # no -f; an image still in use stays
+```
+
+- Never touch `skip (…)` rows: another project's items, running containers, `shared=true`
+  items. The project's shared image and unlabelled unrelated items are never rows at all.
+- Report a running container by name for the operator to stop; prune does not stop it.
+- A failed removal (in use, missing) is a reported skip, not a reason to force.
+- Report each removed item (kind, name, size) and the total size freed.
+
+### 5c. Operator step — compact Docker Desktop's disk (Windows)
+
+Docker Desktop keeps its data in a WSL virtual disk (`docker_data.vhdx`). That file does
+not shrink when images and volumes are removed. After a large prune, tell the operator
+the space comes back only after compaction, which is an operator step (prune never runs it):
+
+```powershell
+wsl --shutdown
+Optimize-VHD -Path "<path>\docker_data.vhdx" -Mode Full   # elevated; Hyper-V module
+```
+
+The usual path is `%LOCALAPPDATA%\Docker\wsl\disk\docker_data.vhdx`; confirm it on the machine.
 
 ## 5a. Lock holder — Permission denied on a locked worktree
 
@@ -317,6 +395,10 @@ continue others.
   can clear a `.claude/worktrees/*` row.
 - Never kill processes that do not name the target worktree; never skip eligibility to
   force-delete.
+- Docker cleanup follows the worktree's eligibility: no Docker rows for a skipped worktree.
+  Never remove another project's items, a running container, `shared=true` items or the
+  project's shared image. Report sizes freed, and say that `docker_data.vhdx` still needs
+  operator compaction (§5c) before the disk space returns.
 - Never claim prune cleans **all** Cursor BoN / Parallel pools — only §3a gated probes
   (`eligible (probe)`); arbitrary pool folders stay skipped.
 - After `/vl-merge-pr`, `/vl-prune --apply` (or a dry-run the operator reviews) is normal

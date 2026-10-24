@@ -160,18 +160,51 @@ Assert the body contains the **expected keyword for this issue's merge routing**
 the PR opened without the keyword. Receipt: anduin-admin #91 / PR #95 opened with no clos*
 keyword; squash left the issue open while the chip reported `Closes #91` from the template.
 
+## 7a. Docker close-out — remove this branch's items (#395)
+
+Skip this step when this branch created no Docker items. Otherwise, remove them before the
+completion report. The labels come from [/vl-chip](../vl-chip/SKILL.md) §2e
+(`project=<repo-short>`, `chip=<branch>`).
+
+1. List the items with this branch's label, with sizes:
+
+   ```bash
+   docker ps -a --size --filter "label=chip=<branch>" --format '{{.ID}} {{.Names}} {{.State}} {{.Size}}'
+   docker volume ls --filter "label=chip=<branch>" --format '{{.Name}}'
+   docker image ls --filter "label=chip=<branch>" --format '{{.Repository}}:{{.Tag}} {{.ID}} {{.Size}}'
+   docker system df -v   # volume sizes
+   ```
+
+2. Remove them in this order: containers, then volumes, then images.
+
+   ```bash
+   docker rm -f <container-id> …    # only containers with this branch's chip= label
+   docker volume rm <volume> …
+   docker image rm <image-id> …
+   ```
+
+3. Keep every item with `shared=true`, the project's shared dev image and shared package
+   caches. Never remove an item without this branch's `chip=` label.
+4. Report what was removed (kind, name, size) in the completion comment (§8). If a removal
+   fails (for example, an image in use by another container), report the item and the error.
+
+A shared app host is not this branch's item; it stays probe-never-manage
+([/vl-chip](../vl-chip/SKILL.md) §2b). Leftovers from failed close-outs are `/vl-prune`'s job.
+
 ## 8. Completion report — observed, not intended
 
 When this skill opens a PR, the chip/worker completion comment on the issue must state the
 keyword **observed** in the created PR body (after §7), e.g. `observed: Closes #317 in PR body`
 or `observed: Refs #317 in PR body` — **never** the keyword the brief/template intended.
 §7 failed or keyword still absent → do not claim success; say the keyword is missing.
+When §7a ran, the comment also lists the Docker items removed and any removal that failed.
 
 ## Honesty bar
 
 Report failed tests, skipped steps, crucible findings not yet fixed, and "not live-verified"
 plainly. A completion comment that asserts `Closes #<N>` / `Refs #<N>` without a §7 read-back
 is a defect — same bar as "a comment is a claim, not proof," applied to the claim-producing side.
+Do not report done while this branch's labelled Docker items remain, unless the report names them.
 
 ## New-model recalibration
 

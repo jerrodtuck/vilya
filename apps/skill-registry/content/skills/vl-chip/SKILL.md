@@ -236,7 +236,8 @@ Include each item in the actual dispatch prompt, even with inherited history:
   goal/acceptance, repo/default/base ref+SHA, absolute assigned checkout and branch.
 - Owned paths, integration order/dependencies, architecture/quality rules, out-of-scope
   work, test command and verification/merge routing; do not claim runtime evidence
-  from prose/tests. Shared app-host smoke is probe-never-manage (§2b).
+  from prose/tests. Shared app-host smoke is probe-never-manage (§2b). Docker use
+  follows §2e (labels, `--rm`, shared image, labelled close-out cleanup).
 - Exact authorized model/effort selection or inherited configured defaults, phase,
   date, authorization source, override scope, runtime capabilities and fork
   restrictions; no peer-authorized model switch. Carry settled planning decisions,
@@ -400,6 +401,10 @@ history or repeatedly duplicate whole contracts and plans. Include:
 - **Shared-host smoke** (only when the verify gate smokes a running app host): the chip follows the
   probe-never-manage contract in §2b — probe, don't start/kill/restart; a config need discovered
   mid-smoke is a fork on the issue, not a restart.
+- **Docker hygiene** (only when the chip uses Docker): copy §2e into the brief — `--rm` for
+  one-off commands, `project=<repo-short>` + `chip=<branch>` labels on every item the chip
+  creates, the project's shared dev image when it has one, no other chip's scripts or
+  containers, and labelled cleanup at `/vl-finish-feature` §7a.
 - **Close-out**: **`/vl-finish-feature`** (not a hand-rolled PR) — after the crucible gate above reads
   **Ready**, it opens the PR **titled `#<N> <name>`** with the merge-routing keyword
   (`Closes #<N>` or `Refs #<N>`), plus the `changelog.d/` fragment + spec status. Finish-feature
@@ -534,6 +539,41 @@ When recording a fact or directive, name its **evidence channel** — `operator-
 Receipt (wording inspiration only): a hedged cutoff hardened into a load-bearing constant
 (+6.6d error); a confidentiality directive arrived via architect relay → comply-then-verify.
 
+## 2e. Docker hygiene — share images, label and remove per-chip state (#395)
+
+All chips on one machine share one Docker host and one disk. Per-worktree copies of
+read-only content fill that disk. Receipt (2026-10-24): one product's chips left 255
+copies of one 1.5 GB dev image, about 300 per-worktree volumes (218 GB) and idle
+`docker compose run` shells. Share read-only content. Keep writable state per chip.
+Remove that state at close-out.
+
+When the chip uses Docker, obey these rules:
+
+1. **Use `--rm` for one-off commands.** Run `docker run --rm …` or `docker compose run --rm …`.
+   Do not leave idle shells or long `sleep` containers.
+2. **Label every item that the chip creates.** Put `project=<repo-short>` and `chip=<branch>`
+   on each container, volume and image. Use `--label` with `docker run`, `docker compose run`,
+   `docker build` and `docker volume create`. The value of `chip=` is the chip's branch
+   (`claude/<slug>`, or `feat|fix|docs/<issue#>-<slug>`).
+3. **Reuse the project's shared dev image.** When the project names one (one image per
+   dependency set, named by the project), use it. Do not build a per-worktree copy.
+   If the image for the current dependency set is missing, build it once under the project's
+   name. Label it `project=<repo-short>` and `shared=true`, with no `chip=` label.
+4. **Keep writable state per chip.** Use a bind mount of the worktree or a chip-labelled
+   volume for `venv`, `node_modules` and build output. Shared package caches carry
+   `shared=true` and no `chip=` label.
+5. **Never run another chip's scripts or containers.** Do not exec into, stop or remove a
+   container with another `chip=` label or another worktree's Compose project. Do not run
+   scripts from another worktree's path. Do not set `COMPOSE_PROJECT_NAME` to a shared name
+   for writable state. A shared app host stays probe-never-manage (§2b).
+6. **Remove the chip's items at close-out.** `/vl-finish-feature` §7a removes the items with
+   this chip's `chip=` label before the completion report. `/vl-prune` removes leftovers.
+
+If the project's Compose file cannot add the labels, the default Compose project name (the
+worktree folder) identifies the chip's items. `/vl-prune` matches that name as an orphan.
+The project's own repo records its shared image name, cache volumes and Compose labels;
+project-specific Compose changes are that project's issues, not chip improvisation.
+
 ## 3. After dispatch — the monitor is the signal
 
 The orchestrator's **monitor — armed in the same turn as the dispatch, no exceptions** — is the
@@ -610,6 +650,8 @@ When the PR is up, **review the chip's commits** against the verify + crucible b
 - Never harden a hedged relayed value into a load-bearing constant, and never treat
   verify-before-comply as optional for destructive or risk-expanding relayed directives (§2d) —
   record the evidence channel (`operator-direct` · `measured` · `relayed via <session>`).
+- Never build a per-worktree copy of a shared dev image, leave unlabelled or idle Docker items,
+  or touch another chip's containers (§2e). Report the Docker items removed at close-out.
 - Never open a PR without the **pre-PR issue re-read** (#313) — fold in post-dispatch rulings /
   amendments; a brief that omits that instruction is defective.
 - Never write planned work as if it already exists when authoring or amending an issue body, and
