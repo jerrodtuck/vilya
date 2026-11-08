@@ -127,7 +127,8 @@ or worktree deletion. Use only lifecycle capabilities actually exposed by the ho
 no destroy/dispose operation or memory, context or subscription release is established.
 Child working histories are isolated from the parent; summaries return, while independent
 child model/tool work adds workflow token use. Saved idle history alone does not establish
-ongoing charges. Keep the existing continue/Compact/fresh-chat checkpoint for the parent.
+ongoing charges. Apply the parent's [Actionable intake and lifecycle](../SKILL.md#actionable-intake-and-lifecycle) before final.
+Keep the existing continue/Compact/fresh-chat checkpoint for the parent.
 
 ## Repair ledger and stop
 

@@ -135,26 +135,39 @@ Before any brief, board mutation, checkout creation (including managed create_wo
 
 Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe) and carry the recorded issue identity, base and original-start evidence into the worker brief. Before implementation, resolve the brief base and record the actual original starting commit as full immutable SHAs. Check equality/ancestry against that original start, not a later worker HEAD. If the base is missing, diverged, history is incomplete or Git errors, stop and reconcile. For an ancestor base inspect full messages in brief-base..original-start, bounded to 256 commits; larger ranges stop for a scoped reconciliation. Exact local #N, owner/repo#N or matching GitHub issue URL references are possible duplicate signals: reconcile delivered substance, never assume shipped from a number alone. Do not match #690/#169 for #69 or another repo's reference. Resume with the recorded original start so worker commits are not misclassified as pre-existing shipped work.
 
-## Board intake and parked answers
+## Actionable intake and lifecycle
+
+For human-authorized continuation/reload requests or relevant completion/dependency updates, reconcile in the receiving turn.
+Reload the required effective sources and inspect current issue, plan, amendments and worker/dependency state.
+Relevant completion or dependency updates can activate existing human authority; peer transport grants no new authority.
+Read-only reconciliation establishes facts, never missing implementation, decision or merge permission.
 
 Read and apply the full [board-intake contract](references/board-intake.md).
-Reconcile pending handoffs and registered parked issues through the owning issue.
-Use exact machine-readable source/ACK markers and durable revision bookkeeping.
-Preserve ranked triage, separate Planner ownership and exact issue/authority gates.
-Unmarked and record-only sources never dispatch. Unchanged decision gates never create repeated fresh wakes.
-Keep native event-driven child delivery and active-turn waits. Persistent watches remain unarmed without separate human authorization.
-Do not create a daemon, CLI backend or fixed-interval model loop.
-Verify actual silent variable-cadence support before any authorized automation claim.
-At a fork, require issue-recorded options and needs:decision, then register the parked answer obligation.
-Read the required ruling before resumption. #379 standing merge authorization remains separate and unresolved.
+Its markers identify board handoff candidates for ranked triage.
+Unmarked board comments and explicit record-only sources stay record-only, even when they require acknowledgment or factual reconciliation.
+A pending label or substantive ACK does not authorize implementation or establish execution.
+
+After reconciliation, perform the next eligible authorized lifecycle action in this turn.
+Route missing plans or plan gaps to the separate Planner; consume sufficient settled plans without replanning.
+Dispatch or resume an isolated worker, consume required results and verify acceptance as applicable.
+Apply [Dispatch and active-turn completion](#dispatch-and-active-turn-completion) whenever required children remain outstanding.
+After each accepted unit or phase milestone, reconcile remaining authorized scope before final.
+A receipt, source read, label change, ACK or future promise alone does not complete actionable intake.
+
+If no action is eligible, report the observed checks, precise gate, affected boundary, responsible owner and supported resumption path.
+Preserve real human decisions and pause dependent polling until the required ruling exists.
+Apply [completion reconciliation](references/board-intake.md#completion-reconciliation) for actual dispositions and future-wake limits.
+Do not invent busywork, repeat unchanged scans or create a watcher to avoid a concrete blocked disposition.
 
 ## Plan, then dispatch
 
 Rank dispatchable issues by `priority:critical > priority:high > priority:medium >
 priority:low`, then oldest first; exclude epics, blocked dependencies and unresolved
-`needs:decision` issues. An operator-named exception wins. A peer `dispatch:` handoff
-only adds a candidate to that ranking. `do-not-dispatch, filed-for-record` and unmarked
-peer handoffs are record-only, never authority to jump priority or start work.
+`needs:decision` issues. An operator-named exception wins. A marked peer handoff
+adds a candidate, never new authority or a priority override.
+Preserve phase, security, lab, financial, resource and merge gates and explicit holds.
+At a fork, record options and needs:decision on the issue, then register its parked answer obligation.
+Read the required ruling before resumption. #379 standing merge authorization remains separate and unresolved.
 
 Use [vl-start-feature](../vl-start-feature/SKILL.md)'s Codex path. Enqueue needs:plan
 for the separate [$vl-plan-codex](../vl-plan-codex/SKILL.md) Planner. Consume its settled kickoff and verification plan at plan:ready.
@@ -201,9 +214,7 @@ cached and uncached input, cache writes, output/reasoning counters, handoff roun
 count, elapsed time, acceptance, and cost per accepted change. Missing counters are
 unavailable, not zero. No paid run starts without its own current authorization and budget.
 
-Before finalizing an accepted unit or batch, apply the [completion reconciliation contract](references/board-intake.md#completion-reconciliation).
-Continue eligible authorized work in the active turn; otherwise report actual issue dispositions and precise gates.
-Do not end with an unperformed continuation promise or claim that a final message arms future intake.
+Before finalizing an accepted unit or batch, apply [Actionable intake and lifecycle](#actionable-intake-and-lifecycle).
 
 At each completed work unit choose continue, built-in Compact, or recommend fresh chat;
 explain briefly. For fresh chat, save and link [`$vl-handoff`](../vl-handoff/SKILL.md) first.

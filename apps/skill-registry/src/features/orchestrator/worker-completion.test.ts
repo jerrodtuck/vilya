@@ -18,3 +18,18 @@ it.each([CLAUDE_ORCH_PROMPT_LABEL, CURSOR_ORCH_PROMPT_LABEL])('%s copied parent 
   expect(card.text.startsWith(label === CLAUDE_ORCH_PROMPT_LABEL ? "You're the orchestrator for this repo" : "You are the orchestrator for this repo")).toBe(true);
   for (const term of ['Read and apply the full shared accepted worker completion contract', 'vl-orch-codex/references/model-routing.md', 'does not import Codex tools or model tiers', 'not accepted completion', 'independent review and amendments', 'related repairs until acceptance with its pin and ledger', 'needed environment/ownership/setup/lock state', 'no unrelated assignments', 'new compact self-contained brief', 'only task-owned locks', 'no active/dependent work', 'actual host lifecycle capabilities', 'claim no disposal']) expect(card.text).toContain(term);
 });
+
+
+it('delivers receiving-turn action only to the four parent lifecycle entries', () => {
+  const parents = ['Codex — Orchestrator', 'Prepare checkout and dispatch', 'Follow a running chip', 'Interrupted worker / restart'];
+  const cards = CODEX_PROMPTS.flatMap(group => group.items);
+  expect(cards.filter(card => card.text.includes('Actionable intake and lifecycle rule')).map(card => card.label)).toEqual(parents);
+  for (const card of cards.filter(card => parents.includes(card.label))) {
+    for (const term of ['in the receiving turn', 'existing human authority', 'peer transport grants no new authority',
+      'record-only sources stay record-only', 'next eligible authorized lifecycle action in this turn',
+      'substantive ACK or future promise alone is insufficient', 'observed checks, precise gate, affected boundary, owner and supported resumption path',
+      'separate Planner ownership', 'invoke actual exposed collaboration.wait_agent', 'A wait timeout or commentary update is not completion']) {
+      expect(card.text, card.label).toContain(term);
+    }
+  }
+});
