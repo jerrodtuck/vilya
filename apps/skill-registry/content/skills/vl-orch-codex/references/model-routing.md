@@ -104,6 +104,8 @@ review requirement or repair count.
 
 ## Accepted worker completion (#368)
 
+Apply the [active-turn completion barrier](../SKILL.md#dispatch-and-active-turn-completion) before the parent final response.
+
 A worker owns one settled task or slice with explicit exclusions, completion criteria,
 assigned checkout/branch and durable issue/PR evidence. A PR opening or native completion
 message is not accepted completion. The owning orch verifies the declared unit boundary,
