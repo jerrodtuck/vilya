@@ -26,6 +26,9 @@ Include this exact marker shape, with the source comment's REST numeric ID, exac
 ```
 
 Validate the receiver's identity and authority. The marker alone is not substantive consumption or approval.
+An ACK records revision consumption and route; it does not establish the resulting lifecycle action.
+For Codex receiving-turn execution, apply [Actionable intake and lifecycle](../SKILL.md#actionable-intake-and-lifecycle).
+Existing human-authorized work can require reconciliation of record-only facts without granting new implementation authority.
 An acknowledgment consumes only its exact revision. Transport acceptance, label removal and local emission never consume it.
 Before removing `handoff:pending`, reconcile all source revisions again. Retain the label if any revision remains unconsumed.
 A concurrent amendment stays pending. A stable pending question or policy gate does not create repeated fresh wakes.
