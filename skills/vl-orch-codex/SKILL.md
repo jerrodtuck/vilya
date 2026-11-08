@@ -273,15 +273,29 @@ ref. Verify the returned absolute path and issue branch, then dispatch the full 
 Never use Claude `spawn_task`, Cursor app-control or `notify_on_output` as Codex tools.
 Discover current capabilities; if required tools are missing, report the limitation.
 
-Native completion plus `wait_agent` / `list_agents` is the active-turn signal. Send
-amendments to an active worker with `send_message`; use `followup_task` to resume an idle
-child for related work within its pending unit. Tool names here are dated examples, not a promise for every installation.
-Use bounded waits and retain user-facing progress. Issues/PRs remain durable evidence.
-If the operator explicitly requested separate sidebar chats, app `wait_threads` and
-`send_message_to_thread` apply to their identifiers instead; do not create sidebar chats
-as an implementation-subtask shortcut. New sidebar chats require explicit human request.
+Give each dispatched unit finite scope and an expected deadline. Dispatch the child,
+then perform available independent work. While required child results remain outstanding,
+invoke the actual exposed `collaboration.wait_agent` before the parent final response.
+Consume terminal results, verify acceptance evidence, then reconcile eligible authorized
+work and amendments before finalizing. Native completion events are the primary signal.
+Use `list_agents` only for bounded lifecycle reconciliation or unresolved status, never a polling loop.
 
-An active wait does not persist after the turn/session ends. Later wakeups require a
+A wait timeout or commentary update is not completion. Resume bounded native waits
+while required work remains within its deadline. Keep unchanged waits quiet; do not
+repeat issue reads or routine status messages. At deadline expiry, reconcile once.
+Record the actual blocker and supported cancellation or pending disposition. Preserve
+ownership, collected results, actual failures and interruptions. If a human decision
+is required, stop dependent work and surface it. Elapsed time grants no approval.
+
+Send amendments to an active worker with `send_message`; use `followup_task` to resume
+an idle child for related work within its pending unit. Discover actual exposed tools;
+these names do not promise support in every installation. Issues/PRs remain durable evidence.
+Use app `wait_threads` only for explicitly separate sidebar chats, never for native children.
+Use `send_message_to_thread` with those exact chat identifiers. New sidebar chats require
+explicit human request. This barrier needs no heartbeat or persistent watcher.
+External idle monitoring retains its silent capped adaptive backoff unchanged.
+
+Claim no wait after the final response, app shutdown or session loss. Later wakeups require a
 separately authorized automation using current automation tools, quiet when unchanged.
 No standing shell monitor or new Codex CLI/unattended backend is supplied by this release.
 Existing night-shift eligibility stays `night-shift:ready ∧ plan:ready ∧ ¬needs:decision
