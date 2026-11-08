@@ -291,8 +291,8 @@ Send amendments to an active worker with `send_message`; use `followup_task` to 
 an idle child for related work within its pending unit. Discover actual exposed tools;
 these names do not promise support in every installation. Issues/PRs remain durable evidence.
 Use app `wait_threads` only for explicitly separate sidebar chats, never for native children.
-Use `send_message_to_thread` with those exact chat identifiers. New sidebar chats require
-explicit human request. This barrier needs no heartbeat or persistent watcher.
+Use `send_message_to_thread` with those exact chat identifiers.
+New sidebar chats require explicit human request. This barrier needs no heartbeat or persistent watcher.
 External idle monitoring retains its silent capped adaptive backoff unchanged.
 
 Claim no wait after the final response, app shutdown or session loss. Later wakeups require a
