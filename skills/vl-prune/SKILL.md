@@ -167,9 +167,15 @@ Optional scope (when the operator names it):
    ```bash
    docker ps -a --size --format '{{.ID}}\t{{.Names}}\t{{.State}}\t{{.Size}}\t{{.Labels}}'
    docker volume ls --format '{{.Name}}\t{{.Labels}}'
-   docker image ls --format '{{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.Labels}}'
+   docker image ls -a --no-trunc --quiet
    docker system df -v   # volume sizes
    ```
+
+   Deduplicate the image IDs, then run `docker image inspect <image-id> …` for JSON
+   `Id`, `RepoTags`, `Size` and `Config.Labels`. Image-list formatting does not expose
+   `.Labels`; do not treat missing inspection data as an empty label map. Report failed
+   inspections as skipped. Retain each image's full ID and classify all its tags before
+   removal; a protected tag protects the entire image. Deduplicate removal by full ID.
 
 ## 3. Eligibility (all must hold)
 
@@ -294,7 +300,9 @@ git fetch --prune
 
 ## 5b. Apply — Docker items
 
-For each eligible worktree, re-check its §3b rows immediately before removal. Remove only
+For each eligible worktree, inspect each exact object's current labels and container
+running state, then re-check its §3b rows immediately before removal. Skip inspection
+failures or unknown state. Remove only
 `eligible (chip label)` and `eligible (orphan)` rows, in this order:
 
 ```bash

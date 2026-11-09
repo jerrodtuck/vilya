@@ -7,3 +7,6 @@ items before the completion report. `/vl-prune` lists and removes an eligible wo
 orphaned per-worktree Docker items, skips other projects, running containers and shared caches,
 reports sizes freed, and names the operator's `docker_data.vhdx` compaction step. The registry adds
 the tested `classifyDockerItem` recipe.
+
+Close-out requires matching project and chip labels and immediate inspection before removal.
+Image inventory reads labels from image inspection; failed inspection skips deletion.

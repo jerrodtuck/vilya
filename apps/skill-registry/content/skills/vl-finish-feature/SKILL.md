@@ -166,19 +166,23 @@ Skip this step when this branch created no Docker items. Otherwise, remove them 
 completion report. The labels come from [/vl-chip](../vl-chip/SKILL.md) §2e
 (`project=<repo-short>`, `chip=<branch>`).
 
-1. List the items with this branch's label, with sizes:
+1. List the items with this project's and branch's labels, with sizes:
 
    ```bash
-   docker ps -a --size --filter "label=chip=<branch>" --format '{{.ID}} {{.Names}} {{.State}} {{.Size}}'
-   docker volume ls --filter "label=chip=<branch>" --format '{{.Name}}'
-   docker image ls --filter "label=chip=<branch>" --format '{{.Repository}}:{{.Tag}} {{.ID}} {{.Size}}'
+   docker ps -a --size --filter "label=project=<repo-short>" --filter "label=chip=<branch>" --format '{{.ID}} {{.Names}} {{.State}} {{.Size}}'
+   docker volume ls --filter "label=project=<repo-short>" --filter "label=chip=<branch>" --format '{{.Name}}'
+   docker image ls --filter "label=project=<repo-short>" --filter "label=chip=<branch>" --format '{{.Repository}}:{{.Tag}} {{.ID}} {{.Size}}'
    docker system df -v   # volume sizes
    ```
 
-2. Remove them in this order: containers, then volumes, then images.
+2. Immediately before each removal, inspect the exact container, volume or image by ID/name.
+   Require both `project=<repo-short>` and `chip=<branch>` to match. Check container/volume
+   `Labels` or image `Config.Labels`, and container `State.Running`. Skip inspection failures,
+   mismatches, running containers, `shared=true` items and the project's shared image/caches.
+   Remove verified items in this order: containers, then volumes, then images.
 
    ```bash
-   docker rm -f <container-id> …    # only containers with this branch's chip= label
+   docker rm <container-id> …       # verified stopped containers only; no -f
    docker volume rm <volume> …
    docker image rm <image-id> …
    ```

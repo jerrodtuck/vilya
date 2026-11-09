@@ -137,6 +137,11 @@ describe("prune docker eligibility (#395)", () => {
     expect(finish).toContain("## 7a. Docker close-out");
     expect(finish).toContain('label=chip=<branch>');
     expect(finish).toContain("Report what was removed");
+    // A reused branch name in another repo must never authorize close-out there.
+    expect(finish).toContain('--filter "label=project=<repo-short>" --filter "label=chip=<branch>"');
+    expect(finish).toContain("Immediately before each removal, inspect the exact");
+    expect(finish).toContain("Skip inspection failures,");
+    expect(finish).not.toContain("docker rm -f");
 
     const prune = readSkill("vl-prune");
     expect(prune).toContain("### 3b. Docker items of an eligible worktree (#395)");
@@ -145,5 +150,9 @@ describe("prune docker eligibility (#395)", () => {
     expect(prune).toContain("docker_data.vhdx");
     expect(prune).toContain("Optimize-VHD");
     expect(prune).toContain("wsl --shutdown");
+    // Image-list templates cannot supply labels; missing labels must not enable deletion.
+    expect(prune).toContain("docker image inspect <image-id>");
+    expect(prune).toContain("do not treat missing inspection data as an empty label map");
+    expect(prune).not.toContain("{{.Size}}\\t{{.Labels}}'\n   docker system");
   });
 });
