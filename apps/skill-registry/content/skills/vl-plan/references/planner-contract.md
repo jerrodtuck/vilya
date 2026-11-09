@@ -49,6 +49,11 @@ Reuse sufficient settled product direction; keep technical planning and verifica
 
 ## Board intake
 
+Apply [coordinated pause/resume](../../vl-orch-codex/references/board-intake.md#coordinated-pause-intake-and-resume-intake) before queue discovery, startup or rearm.
+The owning orch coordinates one scoped command. Consume its authorized scoped intent without transferring Planner ownership.
+While paused, finish current planning and necessary in-flight decisions; do not take the next unrelated queue item.
+Preserve independently paused mechanisms and decision holds on resume; report actual state rather than transport acceptance.
+
 Read and apply the full [board-intake contract](../../vl-orch-codex/references/board-intake.md).
 The orch consumes architect direction and routes planning requests; this Planner retains needs:plan ownership.
 Preserve exact source revisions in issue handoffs and substantive consumption evidence.

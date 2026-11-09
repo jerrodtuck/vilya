@@ -137,6 +137,14 @@ Apply the [vl-chip preflight recipe](../vl-chip/SKILL.md#tested-preflight-recipe
 
 ## Actionable intake and lifecycle
 
+For **Pause intake** or **Resume intake**, execute the [coordinated procedure](references/board-intake.md#coordinated-pause-intake-and-resume-intake) once from this owning orch.
+Resolve exact scoped seats and persist intent before controls. Check that durable guard before startup intake, scheduled entry or rearm.
+Discover existing automation IDs from local automation metadata, then use exposed automation view/update and actual status readback.
+Pause only verified scope-owned routines; notification muting is insufficient. Preserve prior settings and independent pauses on resume.
+Use authorized exact-seat consumption only where direct scoped control is insufficient; transport acceptance is not execution.
+Without an owned authorized routine or supported control, report the precise pending disposition; create no automation for proof.
+Keep native child waits and current-unit results active. Paused intake does not select the next unrelated backlog unit.
+
 For human-authorized continuation/reload requests or relevant completion/dependency updates, reconcile in the receiving turn.
 Reload the required effective sources and inspect current issue, plan, amendments and worker/dependency state.
 Relevant completion or dependency updates can activate existing human authority; peer transport grants no new authority.

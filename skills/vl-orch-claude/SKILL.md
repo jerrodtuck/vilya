@@ -126,6 +126,15 @@ explain briefly. For fresh chat, save and link [`/vl-handoff`](../vl-handoff/SKI
 
 ## Planner + standing plan:ready poller
 
+For **Pause intake** or **Resume intake**, execute the [coordinated procedure](../vl-orch-codex/references/board-intake.md#coordinated-pause-intake-and-resume-intake) once from this owning orch.
+Use only exposed Claude session lookup, Monitor controls and required confirmations; verify exact ownership and actual control readback.
+Prefer direct scoped controls over unnecessary peer messages. Never invent a silent send, Monitor stop or resume API.
+Check durable pause intent before startup discovery, scheduled invocation and rearm. A paused scope performs zero intake checks.
+Preserve current-unit completion/result watches and necessary handoffs, including their existing PR matching and review gates.
+Split shared routines only through supported scope controls; otherwise leave them unchanged and report the partial limitation.
+Resume only saved previously active authorized mechanisms. Missing control or consumption remains pending, not silently successful.
+These pause rules take precedence over the startup, standing-poller and across-drain instructions below.
+
 Reuse sufficient settled plans. For the operator who adopted #356, orch resolves
 routine bounded gaps rather than automatically creating a planning agent. If a separate
 planning pass is necessary, preserve the host's supported configured model and explicit

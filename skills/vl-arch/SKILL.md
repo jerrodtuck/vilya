@@ -16,6 +16,12 @@ codex-prerequisites: "Product board identity and trusted human messaging authori
 
 ## Board handoff
 
+Apply the [coordinated pause/resume guard](../vl-orch-codex/references/board-intake.md#coordinated-pause-intake-and-resume-intake) before scoped discovery, startup or rearm.
+The owning orch coordinates one scoped command; retain Architect ownership and unrelated product/repo responsibilities.
+While paused, finish current authorized direction and necessary in-flight decisions/handoffs without new unrelated backlog intake.
+Narrow shared routines only through supported controls; otherwise leave them unchanged and report the exact partial limitation.
+Preserve independent pauses and actual prior authorized settings on resume. No routine means none, without creating one.
+
 Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
 Publish settled direction and amendments on the owning OPEN issue with verified board membership.
 Use the exact dispatch or record-only comment marker and `handoff:pending` label from that contract.

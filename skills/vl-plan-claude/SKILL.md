@@ -30,6 +30,12 @@ A session directory is not a rename API. Use observed capability/readback or man
 
 ## Intake and delivery
 
+Before startup intake, scheduled invocation or rearm, apply the [scoped pause guard](../vl-orch-codex/references/board-intake.md#coordinated-pause-intake-and-resume-intake).
+The owning orch coordinates one command through actual exposed Monitor controls or authorized seat consumption, preserving host confirmations.
+During pause, perform zero new queue checks; retain current planning and necessary in-flight handoffs.
+Resume only previously active authorized mechanisms with saved settings; retain independent pauses and report missing control as pending.
+These rules override the keep-running instructions below; no routine is created to pause it.
+
 Use the supported Claude Monitor tool for the existing Planner-owned needs:plan intake.
 Read and apply the full [shared board-intake contract](../vl-orch-codex/references/board-intake.md).
 Use REST and initial reconciliation, then idle delays 30, 120, 120, 300, 300, 600 seconds.
