@@ -226,12 +226,16 @@ against that worktree:
 
 | Match | Verdict |
 |-------|---------|
-| `chip=` label equals the worktree's branch or folder | `eligible (chip label)` |
+| `chip=` label equals the worktree's branch or folder, and `project=` matches this repo | `eligible (chip label)` |
 | No `chip=` label; name is the worktree's default Compose name — image or container `<worktree>-…` (e.g. `<worktree>-dev`), volume `<worktree>_…` (e.g. `<worktree>_venv`) — and any `com.docker.compose.project` label equals the worktree's Compose project | `eligible (orphan)` |
 | A matching item with a `project=` label for another repo | `skip (other project)` |
 | A matching item with `shared=true` (shared image, package cache) | `skip (shared)` |
 | A matching container that is running | `skip (running)` |
 | Anything else (another chip, the project's shared image, unlabelled unrelated items) | not listed |
+
+A `chip=` label without a nonempty `project=` label is not ownership evidence; do not
+remove that item or fall back to orphan matching. Legacy orphan matching applies only
+when no `chip=` label exists, under the separate name/Compose rule above.
 
 `<worktree>` is the folder's Compose project name: lowercase, only `a-z 0-9 _ -`, no leading
 `-` or `_`. A name match belongs to the **longest** matching folder: pass the main clone and

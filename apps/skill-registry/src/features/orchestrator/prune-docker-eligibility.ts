@@ -95,6 +95,8 @@ function matchReason(item: DockerItem, target: DockerPruneTarget): MatchReason {
   const labels = item.labels ?? {};
   const chip = labels[CHIP_LABEL]?.trim();
   if (chip) {
+    // A branch/folder may be reused by another repo; chip alone is not ownership.
+    if (!labels[PROJECT_LABEL]?.trim()) return "not ours";
     const keys = [target.worktreeFolder, target.branch ? stripRefsHeads(target.branch) : ""];
     return keys.includes(stripRefsHeads(chip)) ? "eligible (chip label)" : "not ours";
   }

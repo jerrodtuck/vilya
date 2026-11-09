@@ -44,7 +44,7 @@ describe("prune docker eligibility (#395)", () => {
     );
     expect(
       classifyDockerItem(
-        { kind: "image", name: "x:1", labels: { chip: "blissful-tereshkova-fc6c3f" } },
+        { kind: "image", name: "x:1", labels: { project: "explainreel", chip: "blissful-tereshkova-fc6c3f" } },
         target,
       ),
     ).toBe("eligible (chip label)");
@@ -54,6 +54,14 @@ describe("prune docker eligibility (#395)", () => {
         target,
       ),
     ).toBe("not ours");
+  });
+
+  it("does not infer project ownership from a reused branch label", () => {
+    const generic: DockerPruneTarget = { repo: "vilya", worktreeFolder: "fix", branch: "fix" };
+    expect(classifyDockerItem({ kind: "volume", name: "fix_venv", labels: { chip: "fix" } }, generic))
+      .toBe("not ours");
+    expect(classifyDockerItem({ kind: "volume", name: "fix_venv", labels: { chip: "fix", project: "other" } }, generic))
+      .toBe("skip (other project)");
   });
 
   it("finds orphaned per-worktree Compose names", () => {
