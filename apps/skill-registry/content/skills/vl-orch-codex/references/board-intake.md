@@ -40,6 +40,10 @@ Do not repeat the request because time elapsed. Re-read answers before escalatio
 
 ## Completion reconciliation
 
+Apply the scoped pause guard below before discovering or selecting new queue work.
+During a pause, reconcile only current authorized units and their necessary results, decisions and handoffs.
+The continuation contract does not authorize taking the next unrelated backlog unit while intake is paused.
+
 After an accepted unit or batch, the orchestrator reconciles remaining authorized scope before finalizing the turn.
 Reconcile relevant active workers, the current queue and substantive issue amendments once at this boundary.
 Reuse sufficient current evidence and inspect relevant changes.
@@ -61,6 +65,9 @@ This completion check creates no automation, daemon, service, role or authority 
 
 ## Schedule and silent checks
 
+Paused intake performs ZERO intake checks. It does not continue capped polling or merely mute output.
+Native child completion and necessary current-unit handling remain independent of intake scheduling.
+
 Perform one initial reconciliation. After successive unchanged reconciliations, delay `30, 120, 120, 300, 300, 600` seconds.
 Continue at 600 seconds. Newly actionable revisions reset idle progression; unchanged gates do not.
 Relevant active-worker or expected-handoff watches use 120 seconds. Keep unrelated idle streams separate.
@@ -78,6 +85,78 @@ Use complete issue listings rather than truncated search results where search li
 Fetch full substance only for relevant changes and before action. Own ACKs and unrelated comments do not become actionable revisions.
 Label removals, parked answers and relevant body changes need normalized revisions too; include stable source identity and hashed content.
 If a changed pending gate needs no new action, reconcile it without emitting another actionable revision.
+
+## Coordinated Pause intake and Resume intake
+
+The operator gives **Pause intake** or **Resume intake** once to the owning orchestrator.
+Use this existing entry for Codex and Claude Code; no separate command skill is needed.
+The orchestrator coordinates the established orchestrator, separate Planner and product Architect without taking over their role work.
+One scoped human request authorizes this coordination through supported controls and transport, subject to host-required confirmations.
+
+### Resolve and record before controls
+
+Reuse established scope when verified. Resolve the actual repository, product board and exact three seat identities through supported host lookup.
+Ask only when product or seat selection is genuinely ambiguous.
+A temporary native planning delegate does not establish a permanent Planner identity.
+Inventory only actual scope-owned discovery mechanisms and their exact IDs, ownership, status and relevant settings.
+Record **none** for a seat without a routine; never create one to pause it.
+
+Before changing controls, save the pause intent on the existing owning issue and read it back.
+Use the durable comment identity as the stable pause identity, or retain an existing pause identity for repeated commands.
+Record the source request, repo/board, exact seat IDs, mechanism IDs, prior status/settings and continuing active units.
+Include each observed or pending disposition. Link subsequent results and resume evidence to this same record.
+Use existing host state for schedule bookkeeping; do not create a registry, controller, daemon or scheduler.
+If persistence fails, stop before control changes. Preserve unresolved or conflicting evidence for bounded reconciliation.
+
+### Pause and guard every entry
+
+Stop new queue intake and recurring discovery owned by the recorded scope, including runs that would produce no notification.
+Prefer supported direct centralized controls when ownership and scope are exact.
+Do not send cross-chat messages solely to stop a known centrally controlled schedule.
+Where seat consumption is necessary, use authorized transport and require substantive consumption plus actual control readback.
+Queued delivery, ACK-only messages, DONT_NOTIFY, hidden output and silence do not prove that checks stopped.
+
+At startup, scheduled invocation and rearm, read the effective durable scoped pause before queue discovery or rearming.
+A stale scheduled invocation must refuse new intake and rearm while that pause remains effective.
+Missing, corrupt or conflicting pause evidence requires bounded reconciliation before new intake; never silently assume resumed state.
+This guard read and necessary current-unit reconciliation are control operations, not permission for periodic queue checks.
+Keep pending work and decisions discoverable on existing issues without periodic reminders.
+
+Preserve active workers, native completion waits, result collection, verification and necessary in-flight decisions or handoffs.
+Finish current authorized units, then stop before the next unrelated backlog unit.
+Do not archive, delete or rename sessions, close issues, release locks, remove worktrees or cancel workers.
+Keep unrelated Architect responsibilities active. Narrow a shared routine only through supported scope controls.
+If the routine cannot be split safely, leave it unchanged and name the resulting partial limitation.
+
+### Resume the same scope
+
+Resolve the same pause identity and current ownership. Reconcile its relevant queue and amendments once before restoring intake.
+Restore only mechanisms that this pause stopped and that were previously active and authorized, using their saved relevant settings.
+Preserve independently paused mechanisms, decision holds, parked work, rank, deferred work and #360 deferral.
+Resume grants no partial-write resumption, blocked implementation, new routine, new session or removal of protections.
+Resolve conflicting current settings before writing; do not overwrite a newer independent pause.
+Record actual restored readback and clear only the corresponding scoped pause.
+If restoration is partial, retain unresolved per-mechanism pause obligations and report them explicitly.
+Repeated pause/resume commands reuse the record and observed state without duplicate watchers or repeated setting churn.
+
+After that one resume reconciliation, restart unchanged delays at `30, 120, 120, 300, 300, 600` seconds, capped at 600.
+Only newly actionable work resets progression; unchanged gates do not.
+Use silent supported watcher/control checks without unsupported model-free claims.
+Errors are not empty queues. Honor provider minimum cadence and Retry-After, even above the cap.
+Native child completion remains event-driven and does not wait for intake backoff.
+
+### Consolidated result and proof
+
+Return one result with an explicit **paused**, **resumed**, **pending** or **none** disposition for each of the three seats.
+Include exact mechanism readback, continuing active work, unrelated scope retained and the precise remaining resumption action.
+If a capability or required confirmation is missing, name it and the shortest single-orchestrator completion path.
+Do not claim another seat changed from transport acceptance or instruction parity.
+
+Exercise the existing orchestrator entry against safe owned state, including durable reload, stale-entry refusal and prior-state restoration.
+Retain independent pauses, unrelated Architect scope and #360; verify current-unit result handling separately.
+An instruction/state walkthrough proves only those boundaries. Source checks do not prove actual stopped scheduler runs.
+Without an existing authorized owned routine, scheduler stop/resume acceptance remains pending; never create one for proof.
+Record Codex and Claude Code observations separately. An unavailable host remains runtime UNVERIFIED.
 
 ## Pure helper and persistence boundary
 
