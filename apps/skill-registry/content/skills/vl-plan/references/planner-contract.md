@@ -166,6 +166,7 @@ Post on the issue (not a private note). Cover:
 
 Read and apply the [shared impact and verification contract](impact-verification.md).
 Include its proportional impact map, early integration, selected checks and observed outcomes in the existing plan.
+Apply its [proportional TEST proof](impact-verification.md#proportional-test-proof-384) rules for scope, consent, infrastructure and acceptance.
 
 Every behavior plan names its starting state, actual UI/API/CLI action and observable result.
 Verify affected persistence and integration boundaries. Exercise the smallest complete workflow early,

@@ -57,6 +57,41 @@ An unchanged row contract permits existing `src/features/version-diff/diff.test.
 A changed row contract also needs affected consumer checks.
 This example does not authorize an algorithm edit.
 
+## Proportional TEST proof (#384)
+
+For a bounded TEST proof, record these facts in the existing issue plan:
+
+- Actual outcome and exact disposable environment/target.
+- Available recovery and the operator's scoped risk acceptance.
+- Existing approved entry/mechanism, smallest real action and independent readback.
+
+A few clear lines are sufficient. Separate proof requirements from production deployment,
+independently trusted approvals and reusable product features.
+A direct CLI can prove the write engine. It cannot establish GUI behavior or production readiness.
+Keep those outcomes separate when required.
+
+Reuse sufficient trusted human authorization within its actual scope.
+A plan alone grants no execution authority. After concrete authorization, continue the eligible work through supported tools.
+Do not subdivide settled consent into invented approval gates or assign routine commands to the operator.
+Report actual host, OS or product denials precisely. Stop for real restrictions or unresolved decisions.
+
+Before proposing signing, enrollment, rotation/revocation, approval pages, brokers, permanent monitors or provisioning infrastructure,
+name the explicit requirement or concrete applicable threat/failure.
+Explain why the existing mechanism is insufficient and the addition's incremental value/cost.
+Without that need, omit or defer it. Do not require a security dossier or approval ceremony on every task.
+
+Preserve actual credentials, native platform identity, production separation and target/collision limits.
+Snapshot acceptance covers only the declared disposable environment.
+It grants no production, other-user, paid-provider, restore or cleanup authority.
+Do not weaken production interfaces for a proof. Product owners must explicitly reconcile superseded running controls.
+Vilya instruction changes do not remove them automatically.
+
+Record the actual next eligible action or genuine blocker, then follow the owning lifecycle through acceptance.
+Distinguish plan/dispatch evidence from executed effects and successful readback.
+Retain failed, partial and Unknown outcomes without inventing success or retry authority.
+Apply the shared continuation contract in [board intake](../../vl-orch-codex/references/board-intake.md#completion-reconciliation).
+Host adapters retain tool/lifecycle differences and explicit planning/review decisions; they do not expand proof scope.
+
 ## Select bounded checks
 
 Run applicable formatting/lint, type/build and behavior checks for the affected surface.

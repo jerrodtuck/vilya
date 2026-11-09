@@ -173,6 +173,12 @@ Report failed tests, skipped steps, crucible findings not yet fixed, and "not li
 plainly. A completion comment that asserts `Closes #<N>` / `Refs #<N>` without a §7 read-back
 is a defect — same bar as "a comment is a claim, not proof," applied to the claim-producing side.
 
+## Proportional TEST verification
+
+Read and apply the [proportional TEST proof contract](../vl-plan/references/impact-verification.md#proportional-test-proof-384).
+Keep the declared outcome, scoped consent, smallest action/readback and actual restrictions in the existing issue plan.
+Extra infrastructure needs a concrete requirement or applicable threat; preserve host planning/review gates and honest outcome limits.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a
