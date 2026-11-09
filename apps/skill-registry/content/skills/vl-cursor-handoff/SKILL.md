@@ -159,6 +159,12 @@ You're the implementer for issue `#<N>`, working **only** in this worktree.
 At a completed worker unit choose continue, built-in Compact, or recommend fresh chat.
 For fresh chat, save and link [`vl-handoff`](../vl-handoff/SKILL.md) first.
 
+## Proportional TEST verification
+
+Read and apply the [proportional TEST proof contract](../vl-plan/references/impact-verification.md#proportional-test-proof-384).
+Keep the declared outcome, scoped consent, smallest action/readback and actual restrictions in the existing issue plan.
+Extra infrastructure needs a concrete requirement or applicable threat; preserve host planning/review gates and honest outcome limits.
+
 ## New-model recalibration
 
 Apply this section only when the operator asks about a newly released model or a
